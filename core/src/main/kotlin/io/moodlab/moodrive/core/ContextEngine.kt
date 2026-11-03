@@ -32,8 +32,10 @@ class ContextEngine(
         val finaleEtaMinutes: Int = 5,
         /** 신호대기·잠깐 정차로 매번 '도착'이 되지 않도록, P단이 이 시간 이상 이어져야 정차 장면 */
         val parkConfirmMs: Long = 60_000,
-        /** 목적지까지 아직 멀면(ETA > 피날레 기준) 편의점·주유소 정차로 보고 10분 기다린다 */
-        val midTripParkConfirmMs: Long = 10 * 60_000,
+        /** 목적지까지 아직 멀면(ETA > 피날레 기준) 휴게소·주유소 정차로 보고 30분 기다린다 */
+        val midTripParkConfirmMs: Long = 30 * 60_000,
+        /** 목적지가 없으면 5분 정차부터 주행 종료로 본다 */
+        val noDestParkConfirmMs: Long = 5 * 60_000,
     )
 
     private var current: Scene? = null
@@ -95,8 +97,12 @@ class ContextEngine(
             val since = parkedSinceMs ?: s.timestampMs.also { parkedSinceMs = it }
             val prev = current
             // 출발 전(첫 판정)이거나 이미 정차면 바로. 주행 중 P단이면 60초, 목적지가 아직 멀면 10분 기다림
-            val midTrip = s.etaMinutes?.let { it > config.finaleEtaMinutes } == true
-            val confirm = if (midTrip) config.midTripParkConfirmMs else config.parkConfirmMs
+            val eta = s.etaMinutes
+            val confirm = when {
+                eta == null -> config.noDestParkConfirmMs
+                eta > config.finaleEtaMinutes -> config.midTripParkConfirmMs
+                else -> config.parkConfirmMs
+            }
             return if (prev == null || prev == Scene.PARKED || s.timestampMs - since >= confirm) Scene.PARKED else prev
         }
         parkedSinceMs = null
@@ -126,14 +132,16 @@ class ContextEngine(
         // 정차 중에 켠 전조등은 터널 진입이 아니다 → 주행 중의 전환만 인정
         val turnedOn = s.isDriving && prevLowBeam == false && s.lowBeamOn
         prevLowBeam = s.lowBeamOn
-        // GPS 신호가 멀쩡하면(흐린 날 오토라이트 등) 터널이 아니다. GPS 상태를 모르면(null) 조명 규칙만 사용
-        if (!s.lowBeamOn || !s.isDaytime() || s.wiper != WiperLevel.OFF || nearSunset(s) || s.gpsWeak == false) {
+        if (!s.lowBeamOn || !s.isDaytime() || s.wiper != WiperLevel.OFF || nearSunset(s)) {
             daytimeLowBeamSinceMs = null
             return false
         }
         if (turnedOn) daytimeLowBeamSinceMs = s.timestampMs
         val since = daytimeLowBeamSinceMs ?: return false
-        return s.timestampMs - since <= config.tunnelMaxMs
+        val inWindow = s.timestampMs - since <= config.tunnelMaxMs
+        // GPS 상태를 알면 '약해진 뒤'에만 터널로 확정 (전조등보다 몇 초 늦게 약해져도 창 안이면 인정).
+        // GPS가 계속 양호하면(흐린 날 오토라이트) 터널 아님. 모르면(null) 조명 규칙만 사용
+        return inWindow && s.gpsWeak != false
     }
 
     private fun nearSunset(s: VehicleSnapshot): Boolean {

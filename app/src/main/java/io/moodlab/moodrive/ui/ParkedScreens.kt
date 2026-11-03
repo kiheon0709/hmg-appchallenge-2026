@@ -42,7 +42,7 @@ private fun soft(c: AmbientCommand, k: Float = 0.72f): Color = lerp(Mc.bg, Color
 
 /** 정차 후 「오늘의 드라이브」 카드. 프로토타입 #card 와 같은 구성. */
 @Composable
-fun TripCardScreen(card: TripCard, onClose: () -> Unit, onSave: () -> Unit) {
+fun TripCardScreen(card: TripCard, onClose: () -> Unit) {
     Row(Modifier.fillMaxSize().background(Mc.bg).padding(Ms.xl), horizontalArrangement = Arrangement.spacedBy(Ms.xl)) {
         Column(Modifier.weight(0.6f).fillMaxHeight()) {
             Text("오늘의 드라이브", color = Mc.text, fontSize = Ms.title, fontWeight = FontWeight.Bold)
@@ -91,8 +91,7 @@ fun TripCardScreen(card: TripCard, onClose: () -> Unit, onSave: () -> Unit) {
             }
             Spacer(Modifier.weight(1f))
             Row(Modifier.padding(top = Ms.m), horizontalArrangement = Arrangement.spacedBy(Ms.s)) {
-                BigButton("닫기", Modifier.weight(1f), onClick = onClose)
-                BigButton("카드 저장", Modifier.weight(1f), primary = true, onClick = onSave)
+                BigButton("닫기", Modifier.weight(1f), primary = true, onClick = onClose)
             }
         }
     }

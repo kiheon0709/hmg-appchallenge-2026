@@ -24,6 +24,7 @@ const states = [
   { name: 'drive-tunnel-allow', q: 'screen=drive&t=70&allow=1', mode: 'driving' },
   { name: 'drive-jam-allow', q: 'screen=drive&t=100&allow=1', mode: 'driving' },
   { name: 'drive-finale-allow', q: 'screen=drive&t=158&allow=1', mode: 'driving' },
+  { name: 'drive-reststop', q: 'screen=drive&t=140&rest=1', mode: 'driving' },
   { name: 'card', q: 'screen=card', mode: 'parked' },
   { name: 'onboard', q: 'screen=onboard&sel=시티팝,재즈,인디', mode: 'parked' },
 ];

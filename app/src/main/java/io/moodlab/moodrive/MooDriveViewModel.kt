@@ -231,7 +231,11 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             sceneChanges = (driving.size - 1).coerceAtLeast(0),
             segments = segments,
             played = played.toList(),
-            moments = moments.drop(1).take(6), // 첫 멘트(출발 인사)는 제외
+            // 첫 멘트(출발 인사)는 제외하고 최대 6개, 피날레 순간은 항상 포함
+            moments = moments.drop(1).let { m ->
+                val fin = m.lastOrNull { it.text.startsWith("곧 도착") }
+                if (m.size <= 6) m else m.filter { it != fin }.take(5) + listOfNotNull(fin)
+            },
         )
     }
 

@@ -82,7 +82,8 @@ class MooDriveSession(
             s.copy(
                 timestampMs = nowMs,
                 minuteOfDay = (s.minuteOfDay + elapsedMin) % 1440,
-                etaMinutes = s.etaMinutes?.let { (it - elapsedMin).coerceAtLeast(0) },
+                // 남은 시간은 달리는 동안만 줄어든다 (주유소에 서 있다고 도착이 가까워지지 않음)
+                etaMinutes = if (s.isDriving) s.etaMinutes?.let { (it - elapsedMin).coerceAtLeast(0) } else s.etaMinutes,
             ),
         )
     }
@@ -110,7 +111,8 @@ class MooDriveSession(
             val prevScene = log.lastOrNull()?.scene
             actions += Action.SceneChanged(r.scene, r.mood)
             log += TripEvent(s.timestampMs, r.scene, nowPlaying?.id)
-            val greeting = r.djLine == null && log.size == 1 && r.scene != Scene.PARKED
+            // 주행의 첫 장면은 항상 출발 인사 (두 번째 주행이 "날이 개었네요"로 시작하지 않게)
+            val greeting = log.size == 1 && r.scene != Scene.PARKED
             val line = if (greeting) "출발할게요. ${r.scene.label} 분위기로 시작합니다." else r.djLine
             line?.let { text ->
                 // 안전 멘트는 음소거·간격 제한 무시. 출발·도착·피날레는 간격 제한만 무시(연출 핵심 순간).
@@ -157,7 +159,7 @@ class MooDriveSession(
         holdUntilMs = 0L
         heldMood = null
         restStopPending = false
-        lastRestOfferMs = null
+        // lastRestOfferMs는 유지: 잠깐 쉬었다 출발해도 30분 재제안 간격을 지킨다 (10분 이상 정차하면 별도로 초기화)
         lastDjAtMs = null
         lastDrivingMood = null
         tripActive = false
@@ -243,7 +245,7 @@ class MooDriveSession(
             val aboutSong = Regex("노래|곡").containsMatchIn(text)
             when {
                 intent == VoiceIntent.NO -> return answerRestStop(false)
-                intent == VoiceIntent.YES || intent == VoiceIntent.REST_STOP || intent == VoiceIntent.DROWSY -> return answerRestStop(true)
+                intent == VoiceIntent.YES || intent == VoiceIntent.REST_STOP || intent == VoiceIntent.REST_ASK || intent == VoiceIntent.DROWSY -> return answerRestStop(true)
                 intent == VoiceIntent.LIKE && !aboutSong -> return answerRestStop(true)
             }
         }
@@ -260,6 +262,12 @@ class MooDriveSession(
                 listOf(Action.Speak("조금 차분하게 갈게요."), play(r))
             }
             VoiceIntent.REST_STOP -> answerRestStop(true)
+            VoiceIntent.REST_ASK -> {
+                restStopPending = true
+                restOfferedAtMs = nowMs
+                lastRestOfferMs = nowMs
+                listOf(Action.Speak("가까운 휴게소에 들를까요?"), Action.SuggestRestStop)
+            }
             VoiceIntent.DROWSY -> {
                 // 졸림 호소엔 바로 경유지를 넣지 않고 먼저 묻는다
                 restStopPending = true
@@ -283,7 +291,7 @@ class MooDriveSession(
     /** 휴게소 제안에 답함 (음성 또는 화면 버튼). */
     fun answerRestStop(accept: Boolean): List<Action> {
         restStopPending = false
-        return if (accept) listOf(Action.Speak("가까운 휴게소를 경유지로 넣을게요."), Action.AddRestStop)
+        return if (accept) listOf(Action.Speak("알겠어요. 가까운 휴게소를 찾아볼게요."), Action.AddRestStop)
         else listOf(Action.Speak("알겠어요. 졸리면 언제든 말씀하세요."))
     }
 

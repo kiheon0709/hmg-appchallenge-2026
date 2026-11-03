@@ -396,8 +396,9 @@ class SessionTest {
         val shop = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = 40)) + s.tick(5 * 60_000L)
         assertTrue(shop.none { it is Action.TripEnded })
         assertTrue(s.currentScene != Scene.PARKED)
-        // 10분 넘게 서 있으면 도착(또는 일정 종료)으로 본다
-        assertTrue(s.tick(11 * 60_000L).any { it is Action.TripEnded })
+        // 휴게소에서 15분 쉬어도 같은 주행 (30분 넘게 서 있으면 일정 종료로 봄)
+        assertTrue(s.tick(15 * 60_000L).none { it is Action.TripEnded })
+        assertTrue(s.tick(31 * 60_000L).any { it is Action.TripEnded })
     }
 
     @Test
@@ -448,5 +449,42 @@ class SessionTest {
         val acts = s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = 4))
         assertEquals(Scene.ARRIVAL_FINALE, s.currentScene)
         assertTrue(acts.none { it is Action.Speak })
+    }
+
+    @Test
+    fun `gas station stop does not count down the eta`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(etaMinutes = 8))
+        s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = 8))
+        s.tick(7 * 60_000L)
+        assertTrue(s.currentScene != Scene.PARKED && s.currentScene != Scene.ARRIVAL_FINALE, "${s.currentScene}")
+    }
+
+    @Test
+    fun `second trip of the day starts with a greeting`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(etaMinutes = 0))
+        s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = 0)); s.tick(70_000)
+        val lines = s.onSnapshot(day.copy(timestampMs = 3_600_000, etaMinutes = 20)).filterIsInstance<Action.Speak>()
+        assertTrue(lines.any { it.text.startsWith("출발할게요") }, lines.toString())
+    }
+
+    @Test
+    fun `declined rest stop is not re-offered right after a short break`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val t0 = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125, etaMinutes = 60)
+        s.onSnapshot(t0); s.answerRestStop(false)
+        s.onSnapshot(t0.copy(timestampMs = 60_000, gear = Gear.P)); s.tick(3 * 60_000L)
+        assertTrue(s.onSnapshot(t0.copy(timestampMs = 4 * 60_000L)).none { it == Action.SuggestRestStop })
+    }
+
+    @Test
+    fun `asking where the rest stop is asks before adding`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day)
+        val a = s.onVoice("다음 휴게소 어디야")
+        assertTrue(a.contains(Action.SuggestRestStop) && a.none { it == Action.AddRestStop })
+        assertTrue(s.onVoice("어떡해").none { it == Action.AddRestStop })
+        assertTrue(s.onVoice("네 들를게요").contains(Action.AddRestStop))
     }
 }

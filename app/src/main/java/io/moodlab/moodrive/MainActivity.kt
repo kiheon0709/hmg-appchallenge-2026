@@ -55,10 +55,7 @@ class MainActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize().background(Mc.bg)) {
                     when {
                         !ui.onboarded && !ui.driving -> OnboardingScreen(onDone = vm::finishOnboarding)
-                        ui.tripCard != null && !ui.driving -> TripCardScreen(
-                            ui.tripCard!!, onClose = vm::dismissTripCard,
-                            onSave = { Toast.makeText(this@MainActivity, "카드 저장은 다음 버전에서 지원해요", Toast.LENGTH_SHORT).show() },
-                        )
+                        ui.tripCard != null && !ui.driving -> TripCardScreen(ui.tripCard!!, onClose = vm::dismissTripCard)
                         else -> DriveScreen(
                             ui, onLike = vm::like, onDislike = vm::dislike, onMic = ::onMic,
                             onLongPressGear = vm::toggleDemoPanel, onRestStop = vm::answerRestStop,

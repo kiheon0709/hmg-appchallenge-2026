@@ -106,6 +106,29 @@ class ContextEngineTest {
     }
 
     @Test
+    fun `real tunnel where GPS weakens a few seconds after the lights is still detected`() {
+        val e = ContextEngine()
+        e.update(day.copy(gpsWeak = false))
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 1_000, lowBeamOn = true, gpsWeak = false)).scene)
+        assertEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 6_000, lowBeamOn = true, gpsWeak = true)).scene)
+    }
+
+    @Test
+    fun `stop thresholds depend on the destination`() {
+        fun parkedAfter(eta: Int?, ms: Long): Boolean {
+            val e = ContextEngine()
+            e.update(day.copy(etaMinutes = eta))
+            e.update(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = eta))
+            return e.update(day.copy(timestampMs = 1_000 + ms, gear = Gear.P, etaMinutes = eta)).scene == Scene.PARKED
+        }
+        assertTrue(parkedAfter(2, 61_000))                 // 도착 직전: 1분
+        assertFalse(parkedAfter(null, 4 * 60_000L))       // 목적지 없음: 5분 전엔 아님
+        assertTrue(parkedAfter(null, 5 * 60_000L + 1))
+        assertFalse(parkedAfter(40, 20 * 60_000L))        // 휴게소·주유소 20분: 도착 아님
+        assertTrue(parkedAfter(40, 30 * 60_000L + 1))
+    }
+
+    @Test
     fun `lights switched on while parked do not start the trip as a tunnel`() {
         val e = ContextEngine()
         e.update(day.copy(gear = Gear.P))
@@ -124,9 +147,9 @@ class ContextEngineTest {
     fun `parked overrides everything`() {
         val e = ContextEngine()
         e.update(day.copy(wiper = WiperLevel.HIGH))
-        e.update(day.copy(timestampMs = 1_000, gear = Gear.P, wiper = WiperLevel.HIGH)) // P단 시작
+        e.update(day.copy(timestampMs = 1_000, gear = Gear.P, wiper = WiperLevel.HIGH, etaMinutes = 1)) // 도착 직전 P단
         // 60초 이상 P단이면 폭우여도 정차
-        assertEquals(Scene.PARKED, e.update(day.copy(timestampMs = 62_000, gear = Gear.P, wiper = WiperLevel.HIGH)).scene)
+        assertEquals(Scene.PARKED, e.update(day.copy(timestampMs = 62_000, gear = Gear.P, wiper = WiperLevel.HIGH, etaMinutes = 1)).scene)
     }
 
     @Test

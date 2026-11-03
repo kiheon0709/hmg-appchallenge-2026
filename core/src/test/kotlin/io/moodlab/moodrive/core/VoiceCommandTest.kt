@@ -17,6 +17,13 @@ class VoiceCommandTest {
         "잔잔한 거 틀어줘" to VoiceIntent.CALMER,
         "졸려" to VoiceIntent.DROWSY,
         "휴게소 들르자" to VoiceIntent.REST_STOP,
+        // 5바퀴 심사 회귀 케이스
+        "다음 휴게소 어디야" to VoiceIntent.REST_ASK,
+        "어떡해" to VoiceIntent.UNKNOWN,
+        "어디야" to VoiceIntent.UNKNOWN,
+        "네 들를게요" to VoiceIntent.YES,
+        "차분한 거 말고" to VoiceIntent.MORE_ENERGY,
+        "신나는 거 말고" to VoiceIntent.CALMER,
         "말 그만해" to VoiceIntent.MUTE_DJ,
         "조용히 해" to VoiceIntent.MUTE_DJ,
         "다시 말해줘" to VoiceIntent.UNMUTE_DJ,
