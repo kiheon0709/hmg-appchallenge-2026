@@ -510,4 +510,23 @@ class SessionTest {
         val back = s.onSnapshot(day.copy(timestampMs = 400_000, etaMinutes = 12))
         assertTrue(back.filterIsInstance<Action.Speak>().none { it.text.contains("날이 개었네요") }, back.toString())
     }
+
+    @Test
+    fun `finale still plays when traffic lasts until arrival`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day.copy(congestion = true, etaMinutes = 20))
+        assertEquals(Scene.TRAFFIC_JAM, s.currentScene)
+        s.onSnapshot(day.copy(timestampMs = 1_000, congestion = true, etaMinutes = 4))
+        assertEquals(Scene.ARRIVAL_FINALE, s.currentScene)
+    }
+
+    @Test
+    fun `while asked about a rest stop, criticising the song still skips it`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125))
+        val before = s.currentTrack
+        val a = s.onVoice("이거 별로야")
+        assertTrue(a.any { it is Action.Play } && s.currentTrack != before)
+        assertTrue(s.restStopPending)
+    }
 }

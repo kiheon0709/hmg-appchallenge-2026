@@ -242,7 +242,7 @@ class MooDriveSession(
         // 휴게소 질문 중: "응/네/좋아/휴게소/졸려"는 수락, "아니/괜찮아/안 졸려"는 거절.
         // 단 "이 노래 좋아"처럼 곡을 가리키면 곡 평가로 처리
         if (restStopPending) {
-            val aboutSong = Regex("노래|곡").containsMatchIn(text)
+            val aboutSong = Regex("노래|곡|이거").containsMatchIn(text)
             when {
                 intent == VoiceIntent.NO -> return answerRestStop(false)
                 // "싫어"처럼 곡을 가리키지 않는 거절은 휴게소 거절로 (곡을 넘기지 않음)

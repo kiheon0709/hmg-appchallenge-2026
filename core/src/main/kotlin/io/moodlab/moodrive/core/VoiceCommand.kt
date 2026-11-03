@@ -24,7 +24,7 @@ object VoiceCommandParser {
         VoiceIntent.MORE_ENERGY to listOf("신나게", "신나는", "텐션", "업시켜", "빠른곡", "흥겹게", "에너지"),
         VoiceIntent.CALMER to listOf("차분", "조용한곡", "잔잔", "느린곡", "편안하게", "릴렉스"),
         VoiceIntent.LIKE to listOf("좋아", "좋다", "좋네", "최고", "마음에들", "맘에들", "굿", "like"),
-        VoiceIntent.YES to listOf("응", "네", "예", "그래", "그러자", "그럴게", "오케이", "넣어줘", "추가해", "들르자", "들를게", "가자", "갈게"),
+        VoiceIntent.YES to listOf("응", "네", "예", "그래", "그러자", "그럴게", "그럴까", "알겠", "오케이", "넣어줘", "추가해", "들르자", "들를게", "가자", "갈게"),
     )
 
     private val restPlace = listOf("휴게소", "졸음쉼터", "쉼터")
@@ -32,9 +32,21 @@ object VoiceCommandParser {
     /** 짧은 대답 전체가 이 말이면 YES ("어떡해"·"어디야"의 '어'는 아님) */
     private val shortYes = Regex("^((응|어|네|예|그래|그러자|그럴게|좋아|오케이|ok|ㅇㅇ|웅)(요|용)?)+$")
 
+    // 휴게소 맥락의 판단은 문장 전체로 먼저 한다 ("쉬지 말고 가자", "계속 가다가 휴게소 들르자")
+    private val restContext = listOf("휴게소", "졸음쉼터", "쉼터", "들르", "들를", "쉬")
+    private val restStrongNo = listOf("지마", "지말", "안가", "안들러", "안들를", "지않", "필요없", "안해도")
+    private val restAccept = listOf("들르자", "들를게", "들를래", "들러", "넣어줘", "추가해", "세워", "가자", "갈래", "갈게")
+    private val keepGoing = listOf("그냥가", "그냥갈", "계속가", "계속갈", "집에가", "집으로", "빨리가", "쭉가")
+
     fun parse(text: String): VoiceIntent {
         val n = text.norm()
         if (n.isEmpty()) return VoiceIntent.UNKNOWN
+        if (restContext.any { it in n }) {
+            if (restStrongNo.any { it in n }) return VoiceIntent.NO
+            val place = restPlace.any { it in n } || "들르" in n || "들를" in n
+            if (place && restAccept.any { it in n }) return VoiceIntent.REST_STOP
+        }
+        if (keepGoing.any { it in n }) return VoiceIntent.NO
         // "A 말고 B" → B를 본다. "A 말고"로 끝나면 A의 반대 ("차분한 거 말고" = 더 신나게)
         if ("말고" in n) {
             val after = n.substringAfterLast("말고")
@@ -56,7 +68,7 @@ object VoiceCommandParser {
             return if (restVerb.any { it in t }) VoiceIntent.REST_STOP else VoiceIntent.REST_ASK
         }
         if (hit == VoiceIntent.YES) {
-            val explicit = listOf("넣어줘", "추가해", "들르자", "들를게", "가자", "갈게")
+            val explicit = listOf("넣어줘", "추가해", "들르자", "들를게", "가자", "갈게", "알겠", "그럴까")
             return if (shortYes.matches(t) || explicit.any { it in t }) VoiceIntent.YES else VoiceIntent.UNKNOWN
         }
         return hit ?: if (shortYes.matches(t)) VoiceIntent.YES else VoiceIntent.UNKNOWN

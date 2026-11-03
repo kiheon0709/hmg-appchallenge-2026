@@ -21,7 +21,7 @@ class VoiceCommandTest {
         "다음 휴게소 어디야" to VoiceIntent.REST_ASK,
         "어떡해" to VoiceIntent.UNKNOWN,
         "어디야" to VoiceIntent.UNKNOWN,
-        "네 들를게요" to VoiceIntent.YES,
+        "네 들를게요" to VoiceIntent.REST_STOP, // 들르겠다는 직접 지시 = 수락 (세션 테스트에서 AddRestStop 확인)
         "차분한 거 말고" to VoiceIntent.MORE_ENERGY,
         "신나는 거 말고" to VoiceIntent.CALMER,
         // 6바퀴 심사 회귀 케이스
@@ -30,6 +30,16 @@ class VoiceCommandTest {
         "휴게소 들르지 말고 집으로 가자" to VoiceIntent.NO,
         "응 그래" to VoiceIntent.YES,
         "그러자" to VoiceIntent.YES,
+        // 7바퀴 심사 회귀 케이스 (양방향)
+        "집에 가자" to VoiceIntent.NO,
+        "빨리 가자" to VoiceIntent.NO,
+        "그냥 쭉 가자" to VoiceIntent.NO,
+        "쉬지 말고 가자" to VoiceIntent.NO,
+        "계속 가다가 휴게소 들르자" to VoiceIntent.REST_STOP,
+        "휴게소 바로 가자" to VoiceIntent.REST_STOP,
+        "괜찮아 들를게" to VoiceIntent.REST_STOP,
+        "네 알겠어요" to VoiceIntent.YES,
+        "그럴까" to VoiceIntent.YES,
         "말 그만해" to VoiceIntent.MUTE_DJ,
         "조용히 해" to VoiceIntent.MUTE_DJ,
         "다시 말해줘" to VoiceIntent.UNMUTE_DJ,

@@ -69,7 +69,7 @@ enum class Scene(val priority: Int, val label: String) {
     TUNNEL(80, "터널"),
     RAIN(70, "비"),
     TRAFFIC_JAM(60, "정체"),
-    ARRIVAL_FINALE(55, "도착 피날레"),
+    ARRIVAL_FINALE(65, "도착 피날레"), // 정체(60)보다 위: 막혀도 도착 연출은 한다. 비·폭우·터널(안전)보다는 아래
     SPORT(50, "스포츠 주행"),
     SUNSET(40, "노을"),
     NIGHT(35, "야간"),
