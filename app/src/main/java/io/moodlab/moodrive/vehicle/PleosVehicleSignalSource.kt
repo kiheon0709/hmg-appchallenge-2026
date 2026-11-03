@@ -18,7 +18,8 @@ import kotlinx.coroutines.flow.emptyFlow
  *  5. HVAC: registerHvacTemperatureCurrent, getHvacTemperature
  *  6. 기어: 어느 도메인에서 오는지 확인 (DrivingMode? CarInfo?) → Gear
  *  7. NaviHelper: TripInfo/DrivingInfo의 남은 시간, TrafficCongestionInfo → etaMinutes, congestion
- *  8. FusedLocation: 위치 → 일몰/일출 계산 (sunsetMinute, sunriseMinute)
+ *  8. FusedLocation: 위치 → 일몰/일출 계산 (sunsetMinute, sunriseMinute),
+ *     정확도 50m 초과면 gpsWeak = true (터널 확인용), 속도 → 기어를 못 받을 때 주행 판정 대체
  *  각 콜백에서 최신 스냅샷을 copy로 갱신해 MutableStateFlow에 넣으면 된다 (ManualSignalSource 참고).
  */
 class PleosVehicleSignalSource(private val context: Context) : VehicleSignalSource {

@@ -96,6 +96,24 @@ class ContextEngineTest {
     }
 
     @Test
+    fun `overcast auto-light with good GPS is not a tunnel, weak GPS confirms it`() {
+        val e = ContextEngine()
+        e.update(day.copy(gpsWeak = false))
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 1_000, lowBeamOn = true, gpsWeak = false)).scene)
+        val e2 = ContextEngine()
+        e2.update(day.copy(gpsWeak = false))
+        assertEquals(Scene.TUNNEL, e2.update(day.copy(timestampMs = 1_000, lowBeamOn = true, gpsWeak = true)).scene)
+    }
+
+    @Test
+    fun `lights switched on while parked do not start the trip as a tunnel`() {
+        val e = ContextEngine()
+        e.update(day.copy(gear = Gear.P))
+        e.update(day.copy(timestampMs = 1_000, gear = Gear.P, lowBeamOn = true))
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 2_000, lowBeamOn = true)).scene)
+    }
+
+    @Test
     fun `low beam while wipers run is auto-light, not tunnel`() {
         val e = ContextEngine()
         e.update(day.copy(wiper = WiperLevel.LOW))

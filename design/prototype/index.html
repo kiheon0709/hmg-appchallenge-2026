@@ -212,7 +212,7 @@ function renderDrive(f) {
   $('title').textContent = tr ? tr.title : '—';
   $('artist').textContent = tr ? `${tr.artist} · ${tr.genre}` : '';
   $('progress').style.width = tr ? Math.min(100, f.positionSec / tr.durationSec * 100) + '%' : '0';
-  $('upnext').textContent = f.etaMin != null && f.etaMin <= 5 ? '도착에 맞춘 마지막 곡' : `${f.sceneLabel}에 맞춘 선곡 · ${moodWords(f.mood).split(' · ')[0]}`;
+  $('upnext').textContent = f.etaMin != null && f.etaMin <= 5 ? '도착 피날레 곡' : `${f.sceneLabel}에 맞춘 선곡 · ${moodWords(f.mood).split(' · ')[0]}`;
   const art = f.ambientTarget.color;
   $('art').style.background = `linear-gradient(135deg, ${hex(art)}, #1E2129 90%)`;
 }

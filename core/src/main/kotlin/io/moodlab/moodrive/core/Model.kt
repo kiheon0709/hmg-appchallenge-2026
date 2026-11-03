@@ -33,6 +33,11 @@ data class VehicleSnapshot(
     /** 위치 기반 일몰 시각(분). */
     val sunsetMinute: Int? = null,
     val sunriseMinute: Int? = null,
+    /**
+     * FusedLocation 정확도로 본 GPS 약함(예: 정확도 50m 초과). 터널 확인용 보조 신호.
+     * null = 모름(조명 규칙만 사용), false = GPS 양호 → 터널 아님.
+     */
+    val gpsWeak: Boolean? = null,
 ) {
     val isDriving: Boolean get() = gear == Gear.D || gear == Gear.R
 

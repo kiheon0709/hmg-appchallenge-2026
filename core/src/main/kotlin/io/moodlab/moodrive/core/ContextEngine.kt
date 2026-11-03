@@ -32,6 +32,8 @@ class ContextEngine(
         val finaleEtaMinutes: Int = 5,
         /** 신호대기·잠깐 정차로 매번 '도착'이 되지 않도록, P단이 이 시간 이상 이어져야 정차 장면 */
         val parkConfirmMs: Long = 60_000,
+        /** 목적지까지 아직 멀면(ETA > 피날레 기준) 편의점·주유소 정차로 보고 10분 기다린다 */
+        val midTripParkConfirmMs: Long = 10 * 60_000,
     )
 
     private var current: Scene? = null
@@ -92,8 +94,10 @@ class ContextEngine(
         if (!s.isDriving) {
             val since = parkedSinceMs ?: s.timestampMs.also { parkedSinceMs = it }
             val prev = current
-            // 출발 전(첫 판정)이거나 이미 정차면 바로, 주행 중 잠깐 P단이면 60초 기다림
-            return if (prev == null || prev == Scene.PARKED || s.timestampMs - since >= config.parkConfirmMs) Scene.PARKED else prev
+            // 출발 전(첫 판정)이거나 이미 정차면 바로. 주행 중 P단이면 60초, 목적지가 아직 멀면 10분 기다림
+            val midTrip = s.etaMinutes?.let { it > config.finaleEtaMinutes } == true
+            val confirm = if (midTrip) config.midTripParkConfirmMs else config.parkConfirmMs
+            return if (prev == null || prev == Scene.PARKED || s.timestampMs - since >= confirm) Scene.PARKED else prev
         }
         parkedSinceMs = null
         val candidates = buildList {
@@ -119,9 +123,11 @@ class ContextEngine(
      * 한계: 야간 터널, 4분 넘는 장대 터널은 구분 못 함 → NaviHelper 도로 정보가 확인되면 교체.
      */
     private fun updateTunnel(s: VehicleSnapshot): Boolean {
-        val turnedOn = prevLowBeam == false && s.lowBeamOn
+        // 정차 중에 켠 전조등은 터널 진입이 아니다 → 주행 중의 전환만 인정
+        val turnedOn = s.isDriving && prevLowBeam == false && s.lowBeamOn
         prevLowBeam = s.lowBeamOn
-        if (!s.lowBeamOn || !s.isDaytime() || s.wiper != WiperLevel.OFF || nearSunset(s)) {
+        // GPS 신호가 멀쩡하면(흐린 날 오토라이트 등) 터널이 아니다. GPS 상태를 모르면(null) 조명 규칙만 사용
+        if (!s.lowBeamOn || !s.isDaytime() || s.wiper != WiperLevel.OFF || nearSunset(s) || s.gpsWeak == false) {
             daytimeLowBeamSinceMs = null
             return false
         }

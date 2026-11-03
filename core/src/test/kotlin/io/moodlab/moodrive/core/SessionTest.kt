@@ -26,7 +26,7 @@ class SessionTest {
         val s = MooDriveSession(SampleCatalog.tracks)
         assertTrue(s.onSnapshot(day).none { it is Action.SetAmbient })
         // P단으로 바꾸면 차가 멈췄으니 조명은 바로 적용, 도착(카드)은 60초 뒤 확정
-        val stopped = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P))
+        val stopped = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = 0))
         assertTrue(stopped.any { it is Action.SetAmbient })
         val parked = s.tick(62_000)
         assertTrue(parked.any { it is Action.TripEnded })
@@ -121,7 +121,9 @@ class SessionTest {
     fun `voice rest stop and what song`() {
         val s = MooDriveSession(SampleCatalog.tracks)
         s.onSnapshot(day)
-        assertTrue(s.onVoice("졸려").contains(Action.AddRestStop))
+        // 졸림 호소엔 먼저 묻고, "응"이면 추가
+        assertTrue(s.onVoice("졸려").contains(Action.SuggestRestStop))
+        assertTrue(s.onVoice("응").contains(Action.AddRestStop))
         val say = s.onVoice("이 노래 뭐야").filterIsInstance<Action.Speak>().single().text
         assertTrue(say.contains(s.currentTrack!!.title))
         assertTrue(s.onVoice("오늘 저녁 뭐 먹지").isEmpty())
@@ -382,9 +384,60 @@ class SessionTest {
         s.onSnapshot(day)
         val stop = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P)) + s.tick(21_000)
         assertTrue(stop.none { it is Action.TripEnded })
-        s.onSnapshot(day.copy(timestampMs = 22_000))
-        val park = s.onSnapshot(day.copy(timestampMs = 30_000, gear = Gear.P)) + s.tick(95_000)
+        s.onSnapshot(day.copy(timestampMs = 22_000, etaMinutes = 2))
+        val park = s.onSnapshot(day.copy(timestampMs = 30_000, gear = Gear.P, etaMinutes = 2)) + s.tick(95_000)
         assertTrue(park.any { it is Action.TripEnded })
+    }
+
+    @Test
+    fun `mid-trip stop at a convenience store keeps the trip`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(etaMinutes = 40))
+        val shop = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P, etaMinutes = 40)) + s.tick(5 * 60_000L)
+        assertTrue(shop.none { it is Action.TripEnded })
+        assertTrue(s.currentScene != Scene.PARKED)
+        // 10분 넘게 서 있으면 도착(또는 일정 종료)으로 본다
+        assertTrue(s.tick(11 * 60_000L).any { it is Action.TripEnded })
+    }
+
+    @Test
+    fun `yes-like answers accept the rest stop, song likes do not`() {
+        val t0 = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125)
+        val a = MooDriveSession(SampleCatalog.tracks); a.onSnapshot(t0)
+        assertTrue(a.onVoice("네, 좋아요").contains(Action.AddRestStop))
+        val b = MooDriveSession(SampleCatalog.tracks); b.onSnapshot(t0)
+        assertTrue(b.onVoice("이 노래 좋아").none { it == Action.AddRestStop })
+        val c = MooDriveSession(SampleCatalog.tracks); c.onSnapshot(t0)
+        assertTrue(c.onVoice("졸리면 말할게").none { it == Action.AddRestStop })
+        assertTrue(!c.restStopPending)
+    }
+
+    @Test
+    fun `ticks move the clock so sunset arrives without new signals`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        val base = day.copy(minuteOfDay = 16 * 60 + 50, sunsetMinute = 17 * 60 + 30, sunriseMinute = 7 * 60, etaMinutes = null)
+        s.onSnapshot(base)
+        for (sec in 1..(30 * 60)) s.tick(sec * 1_000L)
+        assertEquals(Scene.SUNSET, s.currentScene)
+    }
+
+    @Test
+    fun `finale at eta 5 can pick a song that lasts until arrival`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day.copy(etaMinutes = 20))
+        val finale = s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = 5)).filterIsInstance<Action.Play>().single().track
+        assertTrue(finale.durationSec >= 300, "$finale")
+    }
+
+    @Test
+    fun `calm and bright genre fans both hear their genre on a clear day`() {
+        val misses = Genres.all.map { it.second }.mapNotNull { g ->
+            val s = MooDriveSession(SampleCatalog.tracks, taste = TasteModel(setOf(g)))
+            val picks = mutableListOf(s.onSnapshot(day.copy(etaMinutes = null)).filterIsInstance<Action.Play>().single().track)
+            repeat(9) { picks += s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().single().track }
+            if (picks.count { it.genre == g } >= 2) null else "$g: ${picks.map { it.genre }}"
+        }
+        assertEquals(emptyList(), misses)
     }
 
     @Test

@@ -15,7 +15,7 @@ class VoiceCommandTest {
         "텐션 올려줘" to VoiceIntent.MORE_ENERGY,
         "차분하게 가자" to VoiceIntent.CALMER,
         "잔잔한 거 틀어줘" to VoiceIntent.CALMER,
-        "졸려" to VoiceIntent.REST_STOP,
+        "졸려" to VoiceIntent.DROWSY,
         "휴게소 들르자" to VoiceIntent.REST_STOP,
         "말 그만해" to VoiceIntent.MUTE_DJ,
         "조용히 해" to VoiceIntent.MUTE_DJ,
@@ -44,9 +44,14 @@ class VoiceCommandTest {
         "다음 휴게소 들르지 마" to VoiceIntent.NO,
         "신나는 거 말고 차분하게" to VoiceIntent.CALMER,
         "차분한 거 말고 신나게" to VoiceIntent.MORE_ENERGY,
-        "졸린데 신나는 노래 틀어줘" to VoiceIntent.REST_STOP,
-        "피곤해" to VoiceIntent.REST_STOP,
+        "졸린데 신나는 노래 틀어줘" to VoiceIntent.DROWSY,
+        "피곤해" to VoiceIntent.DROWSY,
         "피곤하지 않아" to VoiceIntent.NO,
+        // 4바퀴 심사 회귀 케이스
+        "졸리면 말할게" to VoiceIntent.NO,
+        "별로 안 졸려" to VoiceIntent.NO,
+        "눈이 감겨" to VoiceIntent.DROWSY,
+        "잠 와" to VoiceIntent.DROWSY,
     )
 
     @Test

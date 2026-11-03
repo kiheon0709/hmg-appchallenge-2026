@@ -76,11 +76,23 @@ class MooDriveSession(
     fun tick(nowMs: Long): List<Action> {
         val s = lastRaw ?: return emptyList()
         if (nowMs <= s.timestampMs) return emptyList()
-        return onSnapshot(s.copy(timestampMs = nowMs))
+        // 마지막 실제 신호 기준으로 흐른 만큼 시계·ETA도 진행 (일몰·도착 판정이 멈추지 않게)
+        val elapsedMin = ((nowMs - s.timestampMs) / 60_000L).toInt()
+        return process(
+            s.copy(
+                timestampMs = nowMs,
+                minuteOfDay = (s.minuteOfDay + elapsedMin) % 1440,
+                etaMinutes = s.etaMinutes?.let { (it - elapsedMin).coerceAtLeast(0) },
+            ),
+        )
     }
 
     fun onSnapshot(raw: VehicleSnapshot): List<Action> {
         lastRaw = raw
+        return process(raw)
+    }
+
+    private fun process(raw: VehicleSnapshot): List<Action> {
         nowMs = raw.timestampMs
         // 휴게소 질문에 1분 동안 답이 없으면 거절로 보고 닫는다(30분 뒤 재제안)
         if (restStopPending && raw.timestampMs - restOfferedAtMs >= REST_ANSWER_TIMEOUT_MS) restStopPending = false
@@ -225,10 +237,15 @@ class MooDriveSession(
         val r = lastResult ?: return emptyList()
         val intent = VoiceCommandParser.parse(text)
         // 휴게소 질문 중: "응/네/휴게소"만 수락. "이 노래 좋아"는 곡 평가로 처리
-        if (restStopPending) when (intent) {
-            VoiceIntent.YES, VoiceIntent.REST_STOP -> return answerRestStop(true)
-            VoiceIntent.NO -> return answerRestStop(false)
-            else -> Unit
+        // 휴게소 질문 중: "응/네/좋아/휴게소/졸려"는 수락, "아니/괜찮아/안 졸려"는 거절.
+        // 단 "이 노래 좋아"처럼 곡을 가리키면 곡 평가로 처리
+        if (restStopPending) {
+            val aboutSong = Regex("노래|곡").containsMatchIn(text)
+            when {
+                intent == VoiceIntent.NO -> return answerRestStop(false)
+                intent == VoiceIntent.YES || intent == VoiceIntent.REST_STOP || intent == VoiceIntent.DROWSY -> return answerRestStop(true)
+                intent == VoiceIntent.LIKE && !aboutSong -> return answerRestStop(true)
+            }
         }
         return when (intent) {
             VoiceIntent.LIKE -> onFeedback(Feedback.LIKE) + Action.Speak("좋아요, 기억해 둘게요.")
@@ -243,6 +260,13 @@ class MooDriveSession(
                 listOf(Action.Speak("조금 차분하게 갈게요."), play(r))
             }
             VoiceIntent.REST_STOP -> answerRestStop(true)
+            VoiceIntent.DROWSY -> {
+                // 졸림 호소엔 바로 경유지를 넣지 않고 먼저 묻는다
+                restStopPending = true
+                restOfferedAtMs = nowMs
+                lastRestOfferMs = nowMs
+                listOf(Action.Speak("졸리시면 위험해요. 가까운 휴게소에 들를까요?"), Action.SuggestRestStop)
+            }
             VoiceIntent.HOLD -> {
                 holdUntilMs = nowMs + HOLD_MS
                 heldMood = targetMood(r)
