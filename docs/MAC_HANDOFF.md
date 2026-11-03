@@ -16,3 +16,12 @@
 7. 가능하면 `PleosVehicleSignalSource`에서 Wiper·LowBeam 구독을 먼저 연결.
 
 막히는 지점(로그인, SDK 신청 승인 대기 등)은 억지로 우회하지 말고 STATUS.md에 적고 멈춰라.
+
+## 11-03 이후 추가된 확인 항목
+
+- app 코드는 클라우드에서 JVM 하네스(`tools/app-compile-check`)로 컴파일 오류 0까지 확인함. AGP·리소스·매니페스트 처리는 미확인이라 3번 빌드에서 처음 드러날 수 있음.
+- 첫 실행 시 온보딩(장르 3개) → 주행 화면. 데모 패널은 왼쪽 위 기어 칩을 **길게 눌러** 연다.
+- `Action.AddRestStop`(휴게소 수락) 처리부는 TODO: NaviHelper로 가까운 휴게소 검색 → 경유지 추가.
+- 주행/정차 판정: 기어를 어느 Vehicle 도메인에서 주는지 확인. 없으면 FusedLocation 속도 5km/h 기준으로 대체하고 결과를 STATUS.md에 기록.
+- 와이퍼 강도 단계(INT/LOW/HIGH)가 API에 있는지 확인. 없으면 폭우 장면은 비 장면으로 합침.
+- 음성 인식·TTS가 에뮬레이터에서 동작하는지 확인(매니페스트 `<queries>` 선언 포함됨).
