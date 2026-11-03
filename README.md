@@ -23,7 +23,7 @@ VehicleSignalSource(Pleos / 시나리오 / 수동) ─▶ MooDriveSession ─▶
 1. Android Studio에서 저장소 열기 (`local.properties`의 `sdk.dir`이 잡히면 `app` 모듈이 자동 포함)
 2. Pleos Connect Emulator 2.1.0 (API 34, Automotive) 실행 → `docs/notion/02_개발 환경·SDK 구현 가능성.md` 설치 순서 참고
 3. `./gradlew :app:installDebug` 또는 Run
-4. 디버그 패널의 **▶ 비 오는 퇴근길**로 시나리오 재생 (약 3분: 노을 → 비 → 폭우 → 터널 → 정체 → 도착 피날레 → 주차)
+4. 첫 실행 시 장르 3개 선택 → 주행 화면 왼쪽 위 기어 칩(P)을 **길게 눌러** 데모 패널을 열고 **▶ 비 오는 퇴근길**로 시나리오 재생 (약 3분: 노을 → 비 → 폭우 → 터널 → 정체 → 도착 피날레 → 주차)
 
 ## 남은 작업
 
