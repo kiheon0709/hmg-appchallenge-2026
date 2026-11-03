@@ -617,6 +617,174 @@
    "bpm": 102,
    "source": "",
    "license": "placeholder"
+  },
+  {
+   "id": "ed5",
+   "title": "Rain Synth",
+   "artist": "샘플 음원",
+   "genre": "edm",
+   "durationSec": 214,
+   "mood": {
+    "energy": -0.35,
+    "valence": -0.15
+   },
+   "bpm": 100,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ed6",
+   "title": "Soft Circuit",
+   "artist": "샘플 음원",
+   "genre": "edm",
+   "durationSec": 208,
+   "mood": {
+    "energy": 0.1,
+    "valence": 0.55
+   },
+   "bpm": 108,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "rk4",
+   "title": "Wet Highway Ballad",
+   "artist": "샘플 음원",
+   "genre": "rock",
+   "durationSec": 233,
+   "mood": {
+    "energy": -0.4,
+    "valence": -0.2
+   },
+   "bpm": 84,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "rk5",
+   "title": "Open Window",
+   "artist": "샘플 음원",
+   "genre": "rock",
+   "durationSec": 221,
+   "mood": {
+    "energy": 0.2,
+    "valence": 0.55
+   },
+   "bpm": 108,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "hp4",
+   "title": "Lofi Rain Beat",
+   "artist": "샘플 음원",
+   "genre": "hiphop",
+   "durationSec": 182,
+   "mood": {
+    "energy": -0.45,
+    "valence": -0.1
+   },
+   "bpm": 82,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "hp5",
+   "title": "Sunday Cruise",
+   "artist": "샘플 음원",
+   "genre": "hiphop",
+   "durationSec": 204,
+   "mood": {
+    "energy": 0.1,
+    "valence": 0.6
+   },
+   "bpm": 96,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "fk4",
+   "title": "Slow Funk Drizzle",
+   "artist": "샘플 음원",
+   "genre": "funk",
+   "durationSec": 215,
+   "mood": {
+    "energy": -0.3,
+    "valence": -0.05
+   },
+   "bpm": 90,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cp5",
+   "title": "Night Rain City",
+   "artist": "샘플 음원",
+   "genre": "citypop",
+   "durationSec": 229,
+   "mood": {
+    "energy": -0.35,
+    "valence": -0.15
+   },
+   "bpm": 92,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cl3",
+   "title": "Grey Nocturne",
+   "artist": "샘플 음원",
+   "genre": "classical",
+   "durationSec": 276,
+   "mood": {
+    "energy": -0.6,
+    "valence": -0.4
+   },
+   "bpm": 66,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "in4",
+   "title": "Puddles",
+   "artist": "샘플 음원",
+   "genre": "indie",
+   "durationSec": 207,
+   "mood": {
+    "energy": -0.4,
+    "valence": -0.25
+   },
+   "bpm": 84,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp7",
+   "title": "Rainy Window Pop",
+   "artist": "샘플 음원",
+   "genre": "pop",
+   "durationSec": 210,
+   "mood": {
+    "energy": -0.4,
+    "valence": -0.1
+   },
+   "bpm": 88,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "jz4",
+   "title": "Sunset Swing",
+   "artist": "샘플 음원",
+   "genre": "jazz",
+   "durationSec": 226,
+   "mood": {
+    "energy": 0.2,
+    "valence": 0.65
+   },
+   "bpm": 104,
+   "source": "",
+   "license": "placeholder"
   }
  ]
 }

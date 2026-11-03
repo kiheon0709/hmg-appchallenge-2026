@@ -242,6 +242,10 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     private fun startPlaybackTicker() = viewModelScope.launch {
         while (isActive) {
             delay(1_000)
+            // 차량 SDK·수동 패널은 값이 바뀔 때만 신호를 주므로, 1초마다 시간만 흘려 장면 확정·운전 시간·질문 시간 초과를 진행
+            // (시나리오는 가상 차량 시간이라 tick이 무시됨)
+            handle(session.tick(System.currentTimeMillis()))
+            _ui.update { it.copy(scene = session.currentScene, restStopPrompt = it.restStopPrompt && session.restStopPending) }
             val st = _ui.value
             val t = st.track ?: continue
             if (st.scene == Scene.PARKED) continue

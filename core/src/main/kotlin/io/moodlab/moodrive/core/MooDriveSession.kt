@@ -66,8 +66,24 @@ class MooDriveSession(
     val fatigue: Boolean get() = lastResult?.fatigue == true
     val continuousDrivingMinutes: Int get() = drivingSinceMs?.let { ((nowMs - it) / 60_000L).toInt() } ?: 0
 
+    private var lastRaw: VehicleSnapshot? = null
+    private var restOfferedAtMs = 0L
+
+    /**
+     * 시간만 흐를 때 호출 (앱이 1초마다). 차량 SDK는 값이 바뀔 때만 콜백을 주므로,
+     * 마지막 스냅샷을 현재 시각으로 다시 넣어 15초 유지 판정·연속 운전 시간·질문 시간 초과가 진행되게 한다.
+     */
+    fun tick(nowMs: Long): List<Action> {
+        val s = lastRaw ?: return emptyList()
+        if (nowMs <= s.timestampMs) return emptyList()
+        return onSnapshot(s.copy(timestampMs = nowMs))
+    }
+
     fun onSnapshot(raw: VehicleSnapshot): List<Action> {
+        lastRaw = raw
         nowMs = raw.timestampMs
+        // 휴게소 질문에 1분 동안 답이 없으면 거절로 보고 닫는다(30분 뒤 재제안)
+        if (restStopPending && raw.timestampMs - restOfferedAtMs >= REST_ANSWER_TIMEOUT_MS) restStopPending = false
         updateDrivingTimer(raw)
         // 어댑터가 주는 값과 세션이 잰 값 중 큰 쪽 (어댑터가 모르면 0)
         val s = raw.copy(drivingMinutes = maxOf(raw.drivingMinutes, continuousDrivingMinutes))
@@ -99,10 +115,12 @@ class MooDriveSession(
                 energyBias = 0f
             } else {
                 tripActive = true
-                // 터널은 잠깐이라 곡은 그대로 두고 조명만 바꾼다(들어갈 때·나올 때 두 번 끊기는 것 방지)
-                val brief = r.scene == Scene.TUNNEL || prevScene == Scene.TUNNEL
                 // 분위기 유지 중이어도 안전 장면이거나, 지금 곡이 새 장면의 템포 상한을 넘으면 바꾼다
                 val overCap = Curator.bpmCap(r.scene)?.let { cap -> (nowPlaying?.bpm ?: 0) > cap } == true
+                // 터널은 잠깐이라 곡을 유지(들어갈 때·나올 때 두 번 끊기는 것 방지).
+                // 단 템포 상한을 넘는 곡이거나, 터널을 나와 비·폭우·정체로 바뀌면 바꾼다
+                val calmNeeded = r.scene == Scene.RAIN || r.scene == Scene.HEAVY_RAIN || r.scene == Scene.TRAFFIC_JAM
+                val brief = !overCap && (r.scene == Scene.TUNNEL || (prevScene == Scene.TUNNEL && !calmNeeded))
                 val held = isHeld() && r.scene != Scene.HEAVY_RAIN && !overCap
                 if (nowPlaying == null || (switchTrackOnSceneChange && !brief && !held)) actions += play(r)
             }
@@ -134,6 +152,7 @@ class MooDriveSession(
         val last = lastRestOfferMs
         if (last != null && s.timestampMs - last < REST_REOFFER_MS) return emptyList()
         lastRestOfferMs = s.timestampMs
+        restOfferedAtMs = s.timestampMs
         restStopPending = true
         val h = s.drivingMinutes / 60
         val m = s.drivingMinutes % 60
@@ -187,9 +206,10 @@ class MooDriveSession(
     fun onVoice(text: String, playedSec: Int? = null): List<Action> {
         val r = lastResult ?: return emptyList()
         val intent = VoiceCommandParser.parse(text)
+        // 휴게소 질문 중: "응/네/휴게소"만 수락. "이 노래 좋아"는 곡 평가로 처리
         if (restStopPending) when (intent) {
-            VoiceIntent.YES, VoiceIntent.LIKE, VoiceIntent.REST_STOP -> return answerRestStop(true)
-            VoiceIntent.NO, VoiceIntent.DISLIKE -> return answerRestStop(false)
+            VoiceIntent.YES, VoiceIntent.REST_STOP -> return answerRestStop(true)
+            VoiceIntent.NO -> return answerRestStop(false)
             else -> Unit
         }
         return when (intent) {
@@ -265,5 +285,6 @@ class MooDriveSession(
         const val HOLD_MS = 20 * 60_000L
         const val REST_REOFFER_MS = 30 * 60_000L
         const val REST_RESET_MS = 10 * 60_000L
+        const val REST_ANSWER_TIMEOUT_MS = 60_000L
     }
 }

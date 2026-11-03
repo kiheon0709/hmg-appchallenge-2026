@@ -161,3 +161,9 @@
 - **'2시간마다 휴식' 관련 휴식 마일리지 준수율(35%→87%):** 출처 기사를 특정하지 못함.
 - **Tesla·Apple CarPlay의 상황 기반 자동 음악 기능:** 해당 기능이 있다는 근거를 찾지 못함(없다고 단정하지도 않음).
 - **원문 미확인 도메인:** hyundaimotorgroup.com, genesis.com, mt.co.kr. 이 세션의 네트워크 허용 범위 밖이라 원문을 열지 못했고, 해당 URL의 내용은 검색 결과 발췌로만 확인함.
+
+---
+
+## 추가 (2026-11-03, 3바퀴 심사 대응)
+
+- **Android Auto + Gemini (2025-11 글로벌 롤아웃 시작):** 기존 Google 어시스턴트를 대체. 대화형 자연어 명령, 곡명 대신 기분 기반 음악 요청 가능(YouTube Music·Spotify 등). 기분·날씨·상황 기반 재생목록 제안 가능하다는 보도 있음. 요청이 있어야 동작하고, 차량 신호(와이퍼·전조등·기어)·실내 조명과의 연동은 보도에서 확인되지 않음. — https://www.androidauthority.com/gemini-android-auto-global-rollout-features-availability-3617789/ , https://techcrunch.com/2025/11/20/gemini-starts-rolling-out-to-android-auto-globally/ , https://www.channelnews.com.au/google-begins-global-rollout-of-gemini-on-android-auto-replacing-google-assistant/ — 2025-11

@@ -14,10 +14,10 @@ class DemoTraceTest {
     fun `at least six scene changes`() {
         val changes = frames.zipWithNext().count { (a, b) -> a.scene != b.scene }
         assertTrue(changes >= 6, "changes=$changes")
-        // 기획서·드라이브 카드가 인용하는 수치: 정차 제외 장면 전환 7회, 곡 9개, DJ 멘트 7회
+        // 기획서·드라이브 카드가 인용하는 수치: 정차 제외 장면 전환 7회, 곡 10개, DJ 멘트 7회
         val driving = frames.filter { it.gear != "P" }
         assertEquals(7, driving.zipWithNext().count { (a, b) -> a.scene != b.scene })
-        assertEquals(9, driving.mapNotNull { it.trackId }.fold(mutableListOf<String>()) { acc, id -> if (acc.lastOrNull() != id) acc.add(id); acc }.size)
+        assertEquals(10, driving.mapNotNull { it.trackId }.fold(mutableListOf<String>()) { acc, id -> if (acc.lastOrNull() != id) acc.add(id); acc }.size)
         assertEquals(7, frames.count { it.speak != null })
     }
 

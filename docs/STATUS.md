@@ -12,12 +12,12 @@
 
 | 항목 | 상태 |
 |---|---|
-| core 로직 | 자동 테스트 40개 통과 (`./gradlew :core:test`) |
-| 데모 시나리오 | 3분 동안 장면 전환 7회(정차 제외), 곡 9개, DJ 멘트 7회 (`./gradlew :core:demoTrace`) |
+| core 로직 | 자동 테스트 55개 통과 (`./gradlew :core:test`) |
+| 데모 시나리오 | 3분 동안 장면 전환 7회(정차 제외), 곡 10개, DJ 멘트 7회 (테스트로 고정) (`./gradlew :core:demoTrace`) |
 | 디자인 | 화면 3종. 자동 검사(조작 수·터치·글자·실측 대비) 1920×720, 1408×792 모두 통과. 토큰 동기화 검사 통과 |
 | app (Android) | JVM 하네스 컴파일 오류 0 (`tools/app-compile-check`). 실제 Android 빌드는 맥에서 미확인 |
-| 기획서 | v0.3. 독립 심사 1차(v0.2) 2.8/5 → v0.3 재심사는 `docs/review/plan-review-v3.md` |
-| 음원 | 자리표시 44곡. 실제 음원 태깅은 `docs/music-tagging.md` 기준으로 진행 예정 |
+| 기획서 | 독립 심사 점수: v0.2 2.8 → 1바퀴 2.9 (`plan-review-v3.md`) → 2바퀴 3.1 (`plan-review-r2.md`) → 3바퀴 `plan-review-r3.md` |
+| 음원 | 자리표시 56곡(장르마다 차분한 곡 포함). 실제 음원 태깅은 `docs/music-tagging.md` 기준으로 진행 예정 |
 
 ## 10-29 접수 메일 문의 (11-03 현재 답 없음)
 
@@ -29,6 +29,8 @@
 6. 2차 PT 시연 환경
 
 ## 남은 일
+
+- **사용자 직접**: Playground에서 SDK 사용 신청(아직 안 함). 심사에서 가장 큰 감점 요인이 'SDK 연결 0%'라 11/09까지 Wiper·하향등 구독과 앰비언트 set 1회가 목표.
 
 - 맥: `docs/MAC_HANDOFF.md` (빌드, Pleos SDK 연결, D단 앰비언트 시험, 음원, 시연 영상)
 - 클라우드: 독립 심사 평균 4.0 이상까지 기획서·코드 보완 루프 (`docs/GOAL_PROMPT.md`)

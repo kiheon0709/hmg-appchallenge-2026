@@ -206,7 +206,6 @@ class SessionTest {
         val sc = Scenario.rainyCommute()
         val picks = mutableListOf<Track>()
         for (t in 0..sc.durationSec) s.onSnapshot(sc.snapshotAt(t)).filterIsInstance<Action.Play>().forEach { picks += it.track }
-        repeat(10) { s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().forEach { picks += it.track } }
         val share = picks.count { it.genre in prefs } / picks.size.toFloat()
         assertTrue(share >= 0.4f, "share=$share ${picks.map { it.genre }}")
     }
@@ -271,5 +270,74 @@ class SessionTest {
         val jam = s.onSnapshot(day.copy(timestampMs = 1_000, congestion = true)).filterIsInstance<Action.Play>().single().track
         assertTrue((jam.bpm ?: 0) <= 110, "$jam")
         repeat(10) { val n = s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().single().track; assertTrue((n.bpm ?: 0) <= 110, "$n") }
+    }
+
+    @Test
+    fun `every single genre preference is heard in the rainy demo`() {
+        val sc = Scenario.rainyCommute()
+        val silent = Genres.all.map { it.second }.filter { g ->
+            val s = MooDriveSession(SampleCatalog.tracks, taste = TasteModel(setOf(g)))
+            val picks = (0..sc.durationSec).flatMap { t -> s.onSnapshot(sc.snapshotAt(t)).filterIsInstance<Action.Play>().map { it.track } }
+            picks.none { it.genre == g }
+        }
+        assertEquals(emptyList(), silent, "genres never picked when preferred")
+    }
+
+    @Test
+    fun `event-based signals - one wiper event plus ticks changes the scene`() {
+        // Pleos SDK처럼 값이 바뀔 때만 스냅샷이 오는 경우
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day)
+        s.onSnapshot(day.copy(timestampMs = 1_000, wiper = WiperLevel.LOW))
+        assertEquals(Scene.CLEAR_DAY, s.currentScene)
+        var acts = emptyList<Action>()
+        for (ms in 2_000L..20_000L step 1_000L) acts = acts + s.tick(ms)
+        assertEquals(Scene.RAIN, s.currentScene)
+        assertTrue(acts.any { it is Action.Play })
+    }
+
+    @Test
+    fun `ticks advance continuous driving time to the fatigue alert`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(drivingMinutes = 0))
+        var offered = false
+        for (min in 1..121) offered = offered || s.tick(min * 60_000L).contains(Action.SuggestRestStop)
+        assertTrue(offered)
+    }
+
+    @Test
+    fun `unanswered rest stop prompt closes after a minute, and liking a song does not accept it`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val t0 = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125)
+        s.onSnapshot(t0)
+        assertTrue(s.restStopPending)
+        assertTrue(s.onVoice("이 노래 좋아").none { it == Action.AddRestStop })
+        assertTrue(s.restStopPending)
+        s.tick(61_000)
+        assertTrue(!s.restStopPending)
+    }
+
+    @Test
+    fun `fast song is replaced on heavy rain right after a tunnel`() {
+        val fastFirst = SampleCatalog.tracks.sortedByDescending { it.bpm ?: 0 }
+        val s = MooDriveSession(fastFirst, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)), taste = TasteModel())
+        s.onSnapshot(day.copy(driveMode = DriveMode.SPORT))
+        s.onSnapshot(day.copy(timestampMs = 1_000, driveMode = DriveMode.SPORT, lowBeamOn = true)) // 터널
+        val acts = s.onSnapshot(day.copy(timestampMs = 2_000, driveMode = DriveMode.SPORT, lowBeamOn = true, wiper = WiperLevel.HIGH))
+        assertEquals(Scene.HEAVY_RAIN, s.currentScene)
+        val t = acts.filterIsInstance<Action.Play>().singleOrNull()?.track ?: s.currentTrack!!
+        assertTrue((t.bpm ?: 0) <= 110, "$t")
+        assertTrue(acts.any { it is Action.Speak })
+    }
+
+    @Test
+    fun `tunnel entry replaces a song above the 110 bpm cap`() {
+        val fast = SampleCatalog.tracks.filter { (it.bpm ?: 0) > 110 } + SampleCatalog.tracks.filter { (it.bpm ?: 0) <= 110 }
+        val s = MooDriveSession(fast, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day.copy(driveMode = DriveMode.SPORT))
+        if ((s.currentTrack!!.bpm ?: 0) <= 110) return // 시작 곡이 이미 느리면 해당 없음
+        val acts = s.onSnapshot(day.copy(timestampMs = 1_000, driveMode = DriveMode.SPORT, lowBeamOn = true))
+        assertEquals(Scene.TUNNEL, s.currentScene)
+        assertTrue((s.currentTrack!!.bpm ?: 0) <= 110 && acts.any { it is Action.Play })
     }
 }

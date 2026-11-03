@@ -36,6 +36,10 @@ class VoiceCommandTest {
         "괜찮아요" to VoiceIntent.NO,
         "이 분위기 유지해줘" to VoiceIntent.HOLD,
         "바꾸지 마" to VoiceIntent.HOLD,
+        "졸리지 않아" to VoiceIntent.NO,
+        "휴게소 가지 말자" to VoiceIntent.NO,
+        "쉬고 싶지 않아" to VoiceIntent.NO,
+        "이 노래 좋지 않아" to VoiceIntent.DISLIKE,
     )
 
     @Test

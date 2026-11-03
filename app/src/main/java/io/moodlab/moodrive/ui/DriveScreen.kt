@@ -135,6 +135,8 @@ fun DriveScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(Ms.s)) {
                     BigButton("괜찮아요", Modifier.weight(1f)) { onRestStop(false) }
                     BigButton("경유지 추가", Modifier.weight(1f), primary = true) { onRestStop(true) }
+                    // 음성으로도 답할 수 있게 말하기 유지 (조작 요소 3개)
+                    BigButton(if (ui.listening) "듣는 중…" else "🎤", Modifier.weight(0.6f), onClick = onMic)
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(Ms.s)) {

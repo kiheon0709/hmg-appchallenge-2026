@@ -618,6 +618,174 @@ window.TRACE = {
             "bpm": 102,
             "source": "",
             "license": "placeholder"
+        },
+        {
+            "id": "ed5",
+            "title": "Rain Synth",
+            "artist": "샘플 음원",
+            "genre": "edm",
+            "durationSec": 214,
+            "mood": {
+                "energy": -0.35,
+                "valence": -0.15
+            },
+            "bpm": 100,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "ed6",
+            "title": "Soft Circuit",
+            "artist": "샘플 음원",
+            "genre": "edm",
+            "durationSec": 208,
+            "mood": {
+                "energy": 0.1,
+                "valence": 0.55
+            },
+            "bpm": 108,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "rk4",
+            "title": "Wet Highway Ballad",
+            "artist": "샘플 음원",
+            "genre": "rock",
+            "durationSec": 233,
+            "mood": {
+                "energy": -0.4,
+                "valence": -0.2
+            },
+            "bpm": 84,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "rk5",
+            "title": "Open Window",
+            "artist": "샘플 음원",
+            "genre": "rock",
+            "durationSec": 221,
+            "mood": {
+                "energy": 0.2,
+                "valence": 0.55
+            },
+            "bpm": 108,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "hp4",
+            "title": "Lofi Rain Beat",
+            "artist": "샘플 음원",
+            "genre": "hiphop",
+            "durationSec": 182,
+            "mood": {
+                "energy": -0.45,
+                "valence": -0.1
+            },
+            "bpm": 82,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "hp5",
+            "title": "Sunday Cruise",
+            "artist": "샘플 음원",
+            "genre": "hiphop",
+            "durationSec": 204,
+            "mood": {
+                "energy": 0.1,
+                "valence": 0.6
+            },
+            "bpm": 96,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "fk4",
+            "title": "Slow Funk Drizzle",
+            "artist": "샘플 음원",
+            "genre": "funk",
+            "durationSec": 215,
+            "mood": {
+                "energy": -0.3,
+                "valence": -0.05
+            },
+            "bpm": 90,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "cp5",
+            "title": "Night Rain City",
+            "artist": "샘플 음원",
+            "genre": "citypop",
+            "durationSec": 229,
+            "mood": {
+                "energy": -0.35,
+                "valence": -0.15
+            },
+            "bpm": 92,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "cl3",
+            "title": "Grey Nocturne",
+            "artist": "샘플 음원",
+            "genre": "classical",
+            "durationSec": 276,
+            "mood": {
+                "energy": -0.6,
+                "valence": -0.4
+            },
+            "bpm": 66,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "in4",
+            "title": "Puddles",
+            "artist": "샘플 음원",
+            "genre": "indie",
+            "durationSec": 207,
+            "mood": {
+                "energy": -0.4,
+                "valence": -0.25
+            },
+            "bpm": 84,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "pp7",
+            "title": "Rainy Window Pop",
+            "artist": "샘플 음원",
+            "genre": "pop",
+            "durationSec": 210,
+            "mood": {
+                "energy": -0.4,
+                "valence": -0.1
+            },
+            "bpm": 88,
+            "source": "",
+            "license": "placeholder"
+        },
+        {
+            "id": "jz4",
+            "title": "Sunset Swing",
+            "artist": "샘플 음원",
+            "genre": "jazz",
+            "durationSec": 226,
+            "mood": {
+                "energy": 0.2,
+                "valence": 0.65
+            },
+            "bpm": 104,
+            "source": "",
+            "license": "placeholder"
         }
     ],
     "frames": [
@@ -1295,7 +1463,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
@@ -1325,7 +1493,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
@@ -1355,7 +1523,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
@@ -1385,7 +1553,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
@@ -1415,7 +1583,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 40,
             "ambient": null,
             "ambientTarget": {
@@ -1445,7 +1613,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 50,
             "ambient": null,
             "ambientTarget": {
@@ -1475,7 +1643,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 60,
             "ambient": null,
             "ambientTarget": {
@@ -1505,7 +1673,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 70,
             "ambient": null,
             "ambientTarget": {
@@ -1535,7 +1703,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 80,
             "ambient": null,
             "ambientTarget": {
@@ -1565,7 +1733,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 90,
             "ambient": null,
             "ambientTarget": {
@@ -1595,7 +1763,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 100,
             "ambient": null,
             "ambientTarget": {
@@ -1625,7 +1793,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 110,
             "ambient": null,
             "ambientTarget": {
@@ -1655,7 +1823,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 120,
             "ambient": null,
             "ambientTarget": {
@@ -1685,7 +1853,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 130,
             "ambient": null,
             "ambientTarget": {
@@ -1715,7 +1883,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 140,
             "ambient": null,
             "ambientTarget": {
@@ -1745,7 +1913,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 150,
             "ambient": null,
             "ambientTarget": {
@@ -1775,7 +1943,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 160,
             "ambient": null,
             "ambientTarget": {
@@ -1805,7 +1973,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 170,
             "ambient": null,
             "ambientTarget": {
@@ -1835,7 +2003,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 180,
             "ambient": null,
             "ambientTarget": {
@@ -1865,7 +2033,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 190,
             "ambient": null,
             "ambientTarget": {
@@ -1895,7 +2063,7 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
+            "trackId": "pp7",
             "positionSec": 200,
             "ambient": null,
             "ambientTarget": {
@@ -1925,8 +2093,8 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
-            "positionSec": 210,
+            "trackId": "hp4",
+            "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -1955,8 +2123,8 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
-            "positionSec": 220,
+            "trackId": "hp4",
+            "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -1985,8 +2153,8 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
-            "positionSec": 230,
+            "trackId": "hp4",
+            "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2015,8 +2183,8 @@ window.TRACE = {
                 "energy": -0.4,
                 "valence": -0.1
             },
-            "trackId": "jz1",
-            "positionSec": 240,
+            "trackId": "hp4",
+            "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2045,7 +2213,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
@@ -2075,7 +2243,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
@@ -2105,7 +2273,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
@@ -2135,7 +2303,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
@@ -2165,7 +2333,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 40,
             "ambient": null,
             "ambientTarget": {
@@ -2195,7 +2363,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 50,
             "ambient": null,
             "ambientTarget": {
@@ -2225,7 +2393,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 60,
             "ambient": null,
             "ambientTarget": {
@@ -2255,7 +2423,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 70,
             "ambient": null,
             "ambientTarget": {
@@ -2285,7 +2453,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 80,
             "ambient": null,
             "ambientTarget": {
@@ -2315,7 +2483,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 90,
             "ambient": null,
             "ambientTarget": {
@@ -2345,7 +2513,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 100,
             "ambient": null,
             "ambientTarget": {
@@ -2375,7 +2543,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 110,
             "ambient": null,
             "ambientTarget": {
@@ -2405,7 +2573,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 120,
             "ambient": null,
             "ambientTarget": {
@@ -2435,7 +2603,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 130,
             "ambient": null,
             "ambientTarget": {
@@ -2465,7 +2633,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 140,
             "ambient": null,
             "ambientTarget": {
@@ -2495,7 +2663,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 150,
             "ambient": null,
             "ambientTarget": {
@@ -2525,7 +2693,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 160,
             "ambient": null,
             "ambientTarget": {
@@ -2555,7 +2723,7 @@ window.TRACE = {
                 "energy": -0.7,
                 "valence": -0.3
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 170,
             "ambient": null,
             "ambientTarget": {
@@ -2585,7 +2753,7 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 180,
             "ambient": null,
             "ambientTarget": {
@@ -2615,7 +2783,7 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 190,
             "ambient": null,
             "ambientTarget": {
@@ -2645,7 +2813,7 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "ac1",
+            "trackId": "cl3",
             "positionSec": 200,
             "ambient": null,
             "ambientTarget": {
@@ -2675,8 +2843,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 0,
+            "trackId": "cl3",
+            "positionSec": 210,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2705,8 +2873,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 10,
+            "trackId": "cl3",
+            "positionSec": 220,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2735,8 +2903,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 20,
+            "trackId": "cl3",
+            "positionSec": 230,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2765,8 +2933,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 30,
+            "trackId": "cl3",
+            "positionSec": 240,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2795,8 +2963,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 40,
+            "trackId": "cl3",
+            "positionSec": 250,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2825,8 +2993,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 50,
+            "trackId": "cl3",
+            "positionSec": 260,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2855,8 +3023,8 @@ window.TRACE = {
                 "energy": 0.1,
                 "valence": -0.4
             },
-            "trackId": "am2",
-            "positionSec": 60,
+            "trackId": "cl3",
+            "positionSec": 270,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2886,7 +3054,7 @@ window.TRACE = {
                 "valence": -0.4
             },
             "trackId": "am2",
-            "positionSec": 70,
+            "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2916,7 +3084,7 @@ window.TRACE = {
                 "valence": -0.4
             },
             "trackId": "am2",
-            "positionSec": 80,
+            "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2946,7 +3114,7 @@ window.TRACE = {
                 "valence": -0.4
             },
             "trackId": "am2",
-            "positionSec": 90,
+            "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -2976,7 +3144,7 @@ window.TRACE = {
                 "valence": -0.4
             },
             "trackId": "am2",
-            "positionSec": 100,
+            "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3006,7 +3174,7 @@ window.TRACE = {
                 "valence": -0.4
             },
             "trackId": "am2",
-            "positionSec": 110,
+            "positionSec": 40,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3036,7 +3204,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 120,
+            "positionSec": 50,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3066,7 +3234,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 130,
+            "positionSec": 60,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3096,7 +3264,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 140,
+            "positionSec": 70,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3126,7 +3294,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 150,
+            "positionSec": 80,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3156,7 +3324,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 160,
+            "positionSec": 90,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3186,7 +3354,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 170,
+            "positionSec": 100,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3216,7 +3384,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 180,
+            "positionSec": 110,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3246,7 +3414,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 190,
+            "positionSec": 120,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3276,7 +3444,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 200,
+            "positionSec": 130,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3306,7 +3474,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 210,
+            "positionSec": 140,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3336,7 +3504,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 220,
+            "positionSec": 150,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3366,7 +3534,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 230,
+            "positionSec": 160,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3396,7 +3564,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "am2",
-            "positionSec": 240,
+            "positionSec": 170,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3425,8 +3593,8 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "pp6",
-            "positionSec": 0,
+            "trackId": "am2",
+            "positionSec": 180,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3455,8 +3623,8 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "pp6",
-            "positionSec": 10,
+            "trackId": "am2",
+            "positionSec": 190,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3485,8 +3653,8 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "pp6",
-            "positionSec": 20,
+            "trackId": "am2",
+            "positionSec": 200,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -3515,8 +3683,8 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "pp6",
-            "positionSec": 30,
+            "trackId": "am2",
+            "positionSec": 210,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -4145,7 +4313,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
@@ -4175,7 +4343,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
@@ -4205,7 +4373,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
@@ -4235,7 +4403,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
@@ -4265,7 +4433,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 40,
             "ambient": null,
             "ambientTarget": {
@@ -4295,7 +4463,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 50,
             "ambient": null,
             "ambientTarget": {
@@ -4325,7 +4493,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 60,
             "ambient": null,
             "ambientTarget": {
@@ -4355,7 +4523,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 70,
             "ambient": null,
             "ambientTarget": {
@@ -4385,7 +4553,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 80,
             "ambient": null,
             "ambientTarget": {
@@ -4415,7 +4583,7 @@ window.TRACE = {
                 "energy": 0.0,
                 "valence": 0.70000005
             },
-            "trackId": "pp1",
+            "trackId": "pp6",
             "positionSec": 90,
             "ambient": null,
             "ambientTarget": {
@@ -4445,7 +4613,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
@@ -4475,7 +4643,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
@@ -4505,7 +4673,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
@@ -4535,7 +4703,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
@@ -4565,7 +4733,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 40,
             "ambient": null,
             "ambientTarget": {
@@ -4595,7 +4763,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 50,
             "ambient": null,
             "ambientTarget": {
@@ -4625,7 +4793,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 60,
             "ambient": null,
             "ambientTarget": {
@@ -4655,7 +4823,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 70,
             "ambient": null,
             "ambientTarget": {
@@ -4685,7 +4853,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 80,
             "ambient": null,
             "ambientTarget": {
@@ -4715,7 +4883,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 90,
             "ambient": null,
             "ambientTarget": {
@@ -4745,7 +4913,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 100,
             "ambient": null,
             "ambientTarget": {
@@ -4775,7 +4943,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 110,
             "ambient": null,
             "ambientTarget": {
@@ -4805,7 +4973,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 120,
             "ambient": null,
             "ambientTarget": {
@@ -4835,7 +5003,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 130,
             "ambient": null,
             "ambientTarget": {
@@ -4865,7 +5033,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 140,
             "ambient": null,
             "ambientTarget": {
@@ -4895,7 +5063,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 150,
             "ambient": null,
             "ambientTarget": {
@@ -4925,7 +5093,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 160,
             "ambient": null,
             "ambientTarget": {
@@ -4955,7 +5123,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 170,
             "ambient": null,
             "ambientTarget": {
@@ -4985,7 +5153,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 180,
             "ambient": null,
             "ambientTarget": {
@@ -5015,7 +5183,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 190,
             "ambient": null,
             "ambientTarget": {
@@ -5045,7 +5213,7 @@ window.TRACE = {
                 "energy": -0.1,
                 "valence": 0.8
             },
-            "trackId": "cp2",
+            "trackId": "hp5",
             "positionSec": 200,
             "ambient": null,
             "ambientTarget": {
@@ -5076,7 +5244,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "cp2",
-            "positionSec": 210,
+            "positionSec": 0,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -5106,7 +5274,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "cp2",
-            "positionSec": 220,
+            "positionSec": 10,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -5136,7 +5304,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "cp2",
-            "positionSec": 230,
+            "positionSec": 20,
             "ambient": null,
             "ambientTarget": {
                 "color": {
@@ -5166,7 +5334,7 @@ window.TRACE = {
                 "valence": 0.8
             },
             "trackId": "cp2",
-            "positionSec": 240,
+            "positionSec": 30,
             "ambient": null,
             "ambientTarget": {
                 "color": {
