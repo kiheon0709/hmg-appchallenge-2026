@@ -41,15 +41,16 @@ class AmbientPlanner(
      */
     fun colorFor(mood: Mood): RgbColor {
         val angle = Math.toDegrees(atan2(mood.energy.toDouble(), mood.valence.toDouble())) // -180..180, 0=밝음
-        // 각도 → 색상(hue). valence+ → 30°(주황), energy+ → 330°(핑크), valence− → 220°(딥블루), energy− → 170°(민트)
+        // 각도 → 색상(hue). valence+ → 35°(앰버), energy+ → 335°(핑크), valence− → 220°(딥블루), energy− → 170°(민트). 경계에서 연속.
         val hue = when {
-            angle >= 0 && angle <= 90 -> lerp(30.0, -30.0, angle / 90.0)
-            angle > 90 -> lerp(-30.0, -140.0, (angle - 90) / 90.0) // 핑크 → 보라 → 딥블루(220°)
-            angle < 0 && angle >= -90 -> lerp(30.0, 170.0, -angle / 90.0)
+            angle >= 0 && angle <= 90 -> lerp(35.0, -25.0, angle / 90.0)
+            angle > 90 -> lerp(-25.0, -140.0, (angle - 90) / 90.0) // 핑크 → 보라 → 딥블루(220°)
+            angle < 0 && angle >= -90 -> lerp(35.0, 170.0, -angle / 90.0)
             else -> lerp(170.0, 220.0, (-angle - 90) / 90.0)
         }.let { ((it % 360) + 360) % 360 }
         val intensity = sqrt(mood.energy * mood.energy + mood.valence * mood.valence).coerceIn(0f, 1f)
-        val saturation = 0.45 + 0.5 * intensity
+        // 실내 조명은 은은하게: 채도 상한 0.8 (원색 빨강·시안 방지)
+        val saturation = 0.4 + 0.4 * intensity
         return hsvToRgb(hue, saturation, 1.0)
     }
 

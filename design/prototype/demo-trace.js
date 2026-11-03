@@ -641,8 +641,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -671,8 +671,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -701,8 +701,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -731,8 +731,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -761,8 +761,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -791,8 +791,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -821,8 +821,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -851,8 +851,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -881,8 +881,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -911,8 +911,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -941,8 +941,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -971,8 +971,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1001,8 +1001,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1031,8 +1031,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1061,8 +1061,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1091,8 +1091,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1121,8 +1121,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1151,8 +1151,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1181,8 +1181,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1211,8 +1211,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1241,8 +1241,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1271,8 +1271,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -1300,9 +1300,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1330,9 +1330,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1360,9 +1360,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1390,9 +1390,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1420,9 +1420,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1450,9 +1450,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1480,9 +1480,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1510,9 +1510,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1540,9 +1540,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1570,9 +1570,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1600,9 +1600,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1630,9 +1630,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1660,9 +1660,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1690,9 +1690,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1720,9 +1720,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1750,9 +1750,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1780,9 +1780,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1810,9 +1810,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1840,9 +1840,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1870,9 +1870,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1900,9 +1900,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1930,9 +1930,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1960,9 +1960,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -1990,9 +1990,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -2020,9 +2020,9 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
+                    "r": 111,
                     "g": 255,
-                    "b": 249
+                    "b": 250
                 },
                 "brightness": 48,
                 "transitionMs": 4000
@@ -2050,8 +2050,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2080,8 +2080,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2110,8 +2110,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2140,8 +2140,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2170,8 +2170,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2200,8 +2200,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2230,8 +2230,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2260,8 +2260,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2290,8 +2290,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2320,8 +2320,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2350,8 +2350,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2380,8 +2380,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2410,8 +2410,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2440,8 +2440,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2470,8 +2470,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2500,8 +2500,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2530,8 +2530,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2560,8 +2560,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 43,
-                    "g": 245,
+                    "r": 75,
+                    "g": 246,
                     "b": 255
                 },
                 "brightness": 39,
@@ -2590,8 +2590,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2620,8 +2620,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2650,8 +2650,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2680,8 +2680,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2710,8 +2710,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2740,8 +2740,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2770,8 +2770,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2800,8 +2800,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2830,8 +2830,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2860,8 +2860,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2890,8 +2890,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2920,8 +2920,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2950,8 +2950,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -2980,8 +2980,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -3010,8 +3010,8 @@ window.TRACE = {
             "ambient": null,
             "ambientTarget": {
                 "color": {
-                    "r": 88,
-                    "g": 96,
+                    "r": 111,
+                    "g": 116,
                     "b": 255
                 },
                 "brightness": 63,
@@ -3041,8 +3041,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3071,8 +3071,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3101,8 +3101,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3131,8 +3131,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3161,8 +3161,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3191,8 +3191,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3221,8 +3221,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3251,8 +3251,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3281,8 +3281,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3311,8 +3311,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3341,8 +3341,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3371,8 +3371,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3401,8 +3401,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3431,8 +3431,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3461,8 +3461,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3491,8 +3491,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3521,8 +3521,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -3551,8 +3551,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3581,8 +3581,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3611,8 +3611,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3641,8 +3641,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3671,8 +3671,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3701,8 +3701,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3731,8 +3731,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3761,8 +3761,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3791,8 +3791,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3821,8 +3821,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3851,8 +3851,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3881,8 +3881,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3911,8 +3911,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3941,8 +3941,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -3971,8 +3971,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4001,8 +4001,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4031,8 +4031,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4061,8 +4061,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4091,8 +4091,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4121,8 +4121,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4151,8 +4151,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4181,8 +4181,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4211,8 +4211,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4241,8 +4241,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4271,8 +4271,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4301,8 +4301,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4331,8 +4331,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4361,8 +4361,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4391,8 +4391,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4421,8 +4421,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 153,
-                    "b": 51
+                    "g": 183,
+                    "b": 82
                 },
                 "brightness": 60,
                 "transitionMs": 4000
@@ -4451,8 +4451,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4481,8 +4481,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4511,8 +4511,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4541,8 +4541,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4571,8 +4571,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4601,8 +4601,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4631,8 +4631,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4661,8 +4661,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4691,8 +4691,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4721,8 +4721,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4751,8 +4751,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4781,8 +4781,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4811,8 +4811,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4841,8 +4841,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4871,8 +4871,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4901,8 +4901,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4931,8 +4931,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4961,8 +4961,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -4991,8 +4991,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5021,8 +5021,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5051,8 +5051,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5081,8 +5081,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5111,8 +5111,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5141,8 +5141,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5171,8 +5171,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 186,
-                    "b": 37
+                    "g": 211,
+                    "b": 71
                 },
                 "brightness": 57,
                 "transitionMs": 4000
@@ -5201,8 +5201,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5231,8 +5231,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5261,8 +5261,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5291,8 +5291,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5321,8 +5321,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5351,8 +5351,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5381,8 +5381,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5411,8 +5411,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5441,8 +5441,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5471,8 +5471,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5501,8 +5501,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5531,8 +5531,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5561,8 +5561,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5591,8 +5591,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5621,8 +5621,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5651,8 +5651,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5681,8 +5681,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5711,8 +5711,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5741,8 +5741,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5771,8 +5771,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5801,8 +5801,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5831,8 +5831,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5861,8 +5861,8 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 32,
-                    "b": 13
+                    "g": 84,
+                    "b": 51
                 },
                 "brightness": 81,
                 "transitionMs": 4000
@@ -5889,18 +5889,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
@@ -5937,18 +5937,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
@@ -5975,18 +5975,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
@@ -6013,18 +6013,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
@@ -6051,18 +6051,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 45,
                 "transitionMs": 4000
@@ -6089,18 +6089,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6127,18 +6127,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6165,18 +6165,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6203,18 +6203,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6241,18 +6241,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6279,18 +6279,18 @@ window.TRACE = {
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
             },
             "ambientTarget": {
                 "color": {
-                    "r": 92,
+                    "r": 110,
                     "g": 255,
-                    "b": 59
+                    "b": 88
                 },
                 "brightness": 40,
                 "transitionMs": 4000
