@@ -15,7 +15,7 @@ VehicleSignalSource(Pleos / 시나리오 / 수동) ─▶ MooDriveSession ─▶
                                                ├ ContextEngine  → Scene + Mood
                                                ├ Curator/Taste  → Play
                                                ├ AmbientPlanner → SetAmbient (주행 중 보류 정책)
-                                               └ DJ 멘트         → Speak (10분 간격, 안전 멘트는 예외)
+                                               └ DJ 멘트         → Speak (일반 멘트 5분 간격, 안전 멘트는 예외)
 ```
 
 ## 실행 (맥)
