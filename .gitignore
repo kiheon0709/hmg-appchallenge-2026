@@ -6,3 +6,5 @@ local.properties
 build/
 .idea/
 *.iml
+tools/app-compile-check/build/
+tools/app-compile-check/.gradle/

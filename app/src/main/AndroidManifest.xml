@@ -18,6 +18,19 @@
     <!-- 음성 명령. TODO: Pleos SpeechToText SDK로 교체 시 그 퍼미션으로 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!--
+        Android 11+(API 30) 패키지 가시성: 선언이 없으면 SpeechRecognizer.isRecognitionAvailable()이 false,
+        TextToSpeech가 엔진에 바인딩하지 못해 음성 인식·DJ 멘트가 조용히 동작하지 않는다.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:label="@string/app_name"

@@ -147,20 +147,17 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     fun like() = handle(session.onFeedback(Feedback.LIKE))
     fun dislike() = handle(session.onFeedback(Feedback.DISLIKE))
     fun onVoiceText(text: String) = handle(session.onVoice(text))
+    fun skip() = handle(session.onTrackEnded(completed = false, playedSec = _ui.value.positionSec))
     fun setListening(on: Boolean) = _ui.update { it.copy(listening = on) }
     fun dismissTripCard() = _ui.update { it.copy(tripCard = null) }
-    fun answerRestStop(accept: Boolean) {
-        _ui.update { it.copy(restStopPrompt = false) }
-        if (accept) {
-            // TODO: NaviHelper로 근처 휴게소 검색 → RequestWaypointInfo로 경유지 추가
-            speak("가까운 휴게소를 경유지로 넣었어요.")
-        }
-    }
+    fun answerRestStop(accept: Boolean) = handle(session.answerRestStop(accept))
 
     private fun onSnapshot(s: VehicleSnapshot) {
         if (tripStartClock == null && s.isDriving) tripStartClock = clock(s)
         _ui.update { it.copy(snapshot = s) }
         handle(session.onSnapshot(s))
+        // 음성으로 답했거나 제안이 끝났으면 질문 UI를 닫는다
+        if (!session.restStopPending) _ui.update { it.copy(restStopPrompt = false) }
         val target = session.currentMood?.let { session.targetMood() }
         _ui.update {
             it.copy(
@@ -172,6 +169,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun handle(actions: List<Action>) {
+        if (!session.restStopPending && actions.isNotEmpty()) _ui.update { it.copy(restStopPrompt = false) }
         for (a in actions) when (a) {
             is Action.Play -> {
                 _ui.update { it.copy(track = a.track, positionSec = 0) }
@@ -189,6 +187,9 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             }
             is Action.SceneChanged -> Unit
             Action.SuggestRestStop -> _ui.update { it.copy(restStopPrompt = true) }
+            Action.AddRestStop -> {
+                // TODO: NaviHelper로 근처 휴게소 검색 → RequestWaypointInfo로 경유지 추가
+            }
             is Action.TripEnded -> _ui.update { it.copy(tripCard = buildCard(a.log)) }
         }
     }
@@ -236,7 +237,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             val t = st.track ?: continue
             if (st.scene == Scene.PARKED) continue
             if (st.positionSec + timeScale >= t.durationSec) {
-                handle(session.onTrackEnded(completed = true))
+                handle(session.onTrackEnded(completed = true, playedSec = st.positionSec))
             } else {
                 _ui.update { it.copy(positionSec = it.positionSec + timeScale) }
             }
