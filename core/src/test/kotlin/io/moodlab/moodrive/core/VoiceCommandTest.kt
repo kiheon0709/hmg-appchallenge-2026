@@ -33,3 +33,21 @@ class VoiceCommandTest {
         assertEquals(emptyList(), wrong)
     }
 }
+
+class GenresTest {
+    @Test
+    fun `every catalog genre has an onboarding label and vice versa`() {
+        val catalogGenres = SampleCatalog.tracks.map { it.genre }.toSet()
+        val keys = Genres.all.map { it.second }.toSet()
+        assertEquals(catalogGenres, keys)
+    }
+
+    @Test
+    fun `preferred genres bias selection`() {
+        val taste = TasteModel()
+        taste.setPreferredGenres(setOf("jazz"))
+        val c = Curator(SampleCatalog.tracks, taste, Curator.Config(tasteWeight = 0.5f))
+        val pick = c.next(Mood(-0.3f, 0.0f), Scene.NIGHT)
+        assertEquals("jazz", pick.genre)
+    }
+}

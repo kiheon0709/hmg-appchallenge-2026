@@ -30,7 +30,7 @@ fun scenarioFlow(scenario: Scenario, onCaption: (String, Int) -> Unit): Flow<Veh
 /** 디버그 패널 버튼으로 신호를 직접 바꾸는 소스. Virtual Console 없이도 반응을 확인할 수 있다. */
 class ManualSignalSource : VehicleSignalSource {
     private val state = MutableStateFlow(
-        VehicleSnapshot(timestampMs = System.currentTimeMillis(), minuteOfDay = nowMinute(), gear = Gear.D, etaMinutes = 25),
+        VehicleSnapshot(timestampMs = System.currentTimeMillis(), minuteOfDay = nowMinute(), gear = Gear.P, etaMinutes = 25),
     )
     override val snapshots: StateFlow<VehicleSnapshot> = state.asStateFlow()
 

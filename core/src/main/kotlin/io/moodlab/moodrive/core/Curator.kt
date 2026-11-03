@@ -5,7 +5,14 @@ package io.moodlab.moodrive.core
  * 장르 온보딩 선택은 모든 장면에 사전 점수로 들어간다.
  */
 class TasteModel(preferredGenres: Set<String> = emptySet()) {
-    private val prior = preferredGenres.associateWith { 1f }
+    private var prior = preferredGenres.associateWith { 1f }
+
+    /** 온보딩에서 고른 장르(내부 키, [Genres] 참고). */
+    fun setPreferredGenres(genres: Set<String>) {
+        prior = genres.associateWith { 1f }
+    }
+
+    val preferredGenres: Set<String> get() = prior.keys
     private val scores = mutableMapOf<String, Float>()
 
     fun score(scene: Scene, genre: String): Float =
