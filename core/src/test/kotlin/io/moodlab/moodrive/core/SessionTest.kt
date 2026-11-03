@@ -487,4 +487,27 @@ class SessionTest {
         assertTrue(s.onVoice("어떡해").none { it == Action.AddRestStop })
         assertTrue(s.onVoice("네 들를게요").contains(Action.AddRestStop))
     }
+
+    @Test
+    fun `rest prompt - plain refusal declines without skipping, casual yes accepts`() {
+        val t0 = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125)
+        val a = MooDriveSession(SampleCatalog.tracks); a.onSnapshot(t0)
+        val track = a.currentTrack
+        assertTrue(a.onVoice("싫어").none { it is Action.Play || it == Action.AddRestStop })
+        assertTrue(!a.restStopPending)
+        assertEquals(track, a.currentTrack)
+        val b = MooDriveSession(SampleCatalog.tracks); b.onSnapshot(t0)
+        assertTrue(b.onVoice("응 그래").contains(Action.AddRestStop))
+        val c = MooDriveSession(SampleCatalog.tracks); c.onSnapshot(t0)
+        assertTrue(c.onVoice("그냥 가자").none { it == Action.AddRestStop } && !c.restStopPending)
+    }
+
+    @Test
+    fun `eta going back up during the finale stays quiet`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day.copy(etaMinutes = 20))
+        s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = 4))
+        val back = s.onSnapshot(day.copy(timestampMs = 400_000, etaMinutes = 12))
+        assertTrue(back.filterIsInstance<Action.Speak>().none { it.text.contains("날이 개었네요") }, back.toString())
+    }
 }

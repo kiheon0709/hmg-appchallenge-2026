@@ -125,7 +125,11 @@ fun DriveScreen(
             }
             val eta = ui.snapshot?.etaMinutes
             Text(
-                if (eta != null && eta <= 5) "도착 피날레 곡" else ui.scene?.let { "${it.label}에 맞춘 선곡" } ?: "",
+                when {
+                    ui.scene == io.moodlab.moodrive.core.Scene.TUNNEL -> "터널 · 곡은 그대로"
+                    eta != null && eta <= 5 -> "도착 피날레 곡"
+                    else -> ui.scene?.let { "${it.label}에 맞춘 선곡" } ?: ""
+                },
                 color = Mc.textDim, fontSize = Ms.label, modifier = Modifier.padding(top = Ms.m),
             )
             Spacer(Modifier.weight(1f))

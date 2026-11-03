@@ -17,20 +17,20 @@ object VoiceCommandParser {
         VoiceIntent.MUTE_DJ to listOf("말그만", "조용히해", "그만말", "디제이꺼", "dj꺼", "말하지마", "멘트그만"),
         VoiceIntent.DISLIKE to listOf("안좋아", "좋지않", "별로", "싫어", "싫다", "이상해", "구려", "노잼"),
         // 거절은 휴게소보다 먼저: "휴게소 안 가도 돼"는 휴게소 요청이 아니다
-        VoiceIntent.NO to listOf("안가", "안들러", "안졸", "안피곤", "지않", "지말", "지마", "안쉬", "아니", "괜찮아", "됐어", "필요없", "안해도"),
+        VoiceIntent.NO to listOf("안가", "안들러", "안졸", "안피곤", "지않", "지말", "지마", "안쉬", "그냥가", "그냥갈", "계속가", "계속갈", "바로가", "집으로", "아니", "괜찮아", "됐어", "필요없", "안해도"),
         VoiceIntent.REST_STOP to listOf("쉬고싶", "쉬어가", "쉬었다", "쉬자"),
         VoiceIntent.DROWSY to listOf("졸려", "졸리", "졸린", "졸음", "피곤", "눈이감", "잠와", "잠이와", "하품"),
         VoiceIntent.SKIP to listOf("다음곡", "넘겨", "스킵", "다음노래", "패스", "skip", "next"),
         VoiceIntent.MORE_ENERGY to listOf("신나게", "신나는", "텐션", "업시켜", "빠른곡", "흥겹게", "에너지"),
         VoiceIntent.CALMER to listOf("차분", "조용한곡", "잔잔", "느린곡", "편안하게", "릴렉스"),
         VoiceIntent.LIKE to listOf("좋아", "좋다", "좋네", "최고", "마음에들", "맘에들", "굿", "like"),
-        VoiceIntent.YES to listOf("응", "네", "예", "그래", "넣어줘", "추가해", "들르자", "들를게", "가자", "갈게"),
+        VoiceIntent.YES to listOf("응", "네", "예", "그래", "그러자", "그럴게", "오케이", "넣어줘", "추가해", "들르자", "들를게", "가자", "갈게"),
     )
 
     private val restPlace = listOf("휴게소", "졸음쉼터", "쉼터")
     private val restVerb = listOf("들르", "들를", "가자", "갈래", "갈게", "넣어", "추가", "세워")
     /** 짧은 대답 전체가 이 말이면 YES ("어떡해"·"어디야"의 '어'는 아님) */
-    private val shortYes = Regex("^(응|어|네|예|그래|좋아|ㅇㅇ|웅)(요|용)?$")
+    private val shortYes = Regex("^((응|어|네|예|그래|그러자|그럴게|좋아|오케이|ok|ㅇㅇ|웅)(요|용)?)+$")
 
     fun parse(text: String): VoiceIntent {
         val n = text.norm()

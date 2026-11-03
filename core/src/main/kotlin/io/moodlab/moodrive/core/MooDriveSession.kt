@@ -245,6 +245,8 @@ class MooDriveSession(
             val aboutSong = Regex("노래|곡").containsMatchIn(text)
             when {
                 intent == VoiceIntent.NO -> return answerRestStop(false)
+                // "싫어"처럼 곡을 가리키지 않는 거절은 휴게소 거절로 (곡을 넘기지 않음)
+                intent == VoiceIntent.DISLIKE && !aboutSong -> return answerRestStop(false)
                 intent == VoiceIntent.YES || intent == VoiceIntent.REST_STOP || intent == VoiceIntent.REST_ASK || intent == VoiceIntent.DROWSY -> return answerRestStop(true)
                 intent == VoiceIntent.LIKE && !aboutSong -> return answerRestStop(true)
             }

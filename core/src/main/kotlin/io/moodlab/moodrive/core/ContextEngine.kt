@@ -190,6 +190,8 @@ class ContextEngine(
      */
     private fun djLineFor(scene: Scene, prev: Scene): String? {
         if (scene == Scene.TUNNEL) return null
+        // 피날레 중 ETA가 다시 늘어 기본 장면으로 돌아가도 엉뚱한 안내("날이 개었네요")는 하지 않음
+        if (prev == Scene.ARRIVAL_FINALE && scene != Scene.PARKED && scene != Scene.HEAVY_RAIN) return null
         if (prev == Scene.TUNNEL && scene != Scene.HEAVY_RAIN) return null
         val back = scene.priority <= Scene.SPORT.priority && scene != Scene.PARKED
         if (back) when (prev) {

@@ -12,11 +12,11 @@
 
 | 항목 | 상태 |
 |---|---|
-| core 로직 | 자동 테스트 74개 통과 (`./gradlew :core:test`) |
+| core 로직 | 자동 테스트 76개 통과 (`./gradlew :core:test`) |
 | 데모 시나리오 | 3분 동안 장면 전환 7회(정차 제외), 곡 10개, DJ 멘트 7회 (테스트로 고정) (`./gradlew :core:demoTrace`) |
 | 디자인 | 화면 3종. 자동 검사(조작 수·터치·글자·실측 대비) 1920×720, 1408×792 모두 통과. 토큰 동기화 검사 통과 |
 | app (Android) | JVM 하네스 컴파일 오류 0 (`tools/app-compile-check`). 실제 Android 빌드는 맥에서 미확인 |
-| 기획서 | 독립 심사 점수: v0.2 2.8 → 1바퀴 2.9 (`plan-review-v3.md`) → 2바퀴 3.1 (`plan-review-r2.md`) → 3바퀴 3.3 (`plan-review-r3.md`) → 4바퀴 3.35 (`plan-review-r4.md`) → 5바퀴 3.50 (`plan-review-r5.md`) → 6바퀴 `plan-review-r6.md`. 심사 판단: SDK·APK·영상 없이 도달 가능 3.7~3.8, 4.0+는 실측 1건 필요 |
+| 기획서 | 독립 심사 점수: v0.2 2.8 → 1바퀴 2.9 (`plan-review-v3.md`) → 2바퀴 3.1 (`plan-review-r2.md`) → 3바퀴 3.3 (`plan-review-r3.md`) → 4바퀴 3.35 (`plan-review-r4.md`) → 5바퀴 3.50 (`plan-review-r5.md`) → 6바퀴 3.53 (`plan-review-r6.md`) → 7바퀴 `plan-review-r7.md`. 심사 판단: SDK·APK·영상 없이 도달 가능 3.7~3.8, 4.0+는 실측 1건 필요 |
 | 음원 | 자리표시 66곡(장르마다 차분한 곡·밝은 곡 포함). 실제 음원 태깅은 `docs/music-tagging.md` 기준으로 진행 예정 |
 
 ## 10-29 접수 메일 문의 (11-03 현재 답 없음)
