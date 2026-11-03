@@ -53,23 +53,29 @@ class ContextEngineTest {
     }
 
     @Test
-    fun `late night long drive triggers fatigue boost immediately`() {
+    fun `fatigue is an overlay - two hours any hour, 90 minutes late night`() {
         val e = ContextEngine()
-        val night = day.copy(minuteOfDay = 2 * 60, drivingMinutes = 100, cruiseOn = true)
-        e.update(night)
-        val r = e.update(night.copy(timestampMs = 1_000, drivingMinutes = 130))
-        assertEquals(Scene.FATIGUE_BOOST, r.scene)
-        assertTrue(r.mood.energy > 0.5f)
+        assertTrue(e.update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 121)).fatigue)
+        assertTrue(ContextEngine().update(day.copy(minuteOfDay = 1 * 60, drivingMinutes = 95)).fatigue)
+        assertFalse(ContextEngine().update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 95)).fatigue)
     }
 
     @Test
-    fun `two hours of driving triggers fatigue at any hour`() {
+    fun `fatigue does not hide heavy rain, jam or finale`() {
+        val tired = day.copy(drivingMinutes = 150)
+        assertEquals(Scene.HEAVY_RAIN, ContextEngine().update(tired.copy(wiper = WiperLevel.HIGH)).scene)
+        assertEquals(Scene.TRAFFIC_JAM, ContextEngine().update(tired.copy(congestion = true)).scene)
+        assertEquals(Scene.ARRIVAL_FINALE, ContextEngine().update(tired.copy(etaMinutes = 3)).scene)
+    }
+
+    @Test
+    fun `heavy rain right after a tunnel still gets the safety line`() {
         val e = ContextEngine()
-        assertEquals(Scene.FATIGUE_BOOST, e.update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 121)).scene)
-        val e2 = ContextEngine()
-        assertEquals(Scene.FATIGUE_BOOST, e2.update(day.copy(minuteOfDay = 1 * 60, drivingMinutes = 95)).scene)
-        val e3 = ContextEngine()
-        assertNotEquals(Scene.FATIGUE_BOOST, e3.update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 95)).scene)
+        e.update(day)
+        e.update(day.copy(timestampMs = 1_000, lowBeamOn = true))
+        val r = e.update(day.copy(timestampMs = 2_000, lowBeamOn = true, wiper = WiperLevel.HIGH))
+        assertEquals(Scene.HEAVY_RAIN, r.scene)
+        assertNotNull(r.djLine)
     }
 
     @Test

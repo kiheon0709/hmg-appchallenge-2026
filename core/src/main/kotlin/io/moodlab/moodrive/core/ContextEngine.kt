@@ -7,6 +7,11 @@ data class ContextResult(
     val changed: Boolean,
     /** 보이스 DJ가 말할 한 문장 (장면이 바뀌었을 때만). */
     val djLine: String?,
+    /**
+     * 장시간 운전 경보. 장면과 별개로 겹쳐서 켜진다(장면을 덮지 않음 → 폭우·정체·피날레 판정은 계속 동작).
+     * 한국도로공사 권고: 2시간 이상 연속 운전 시 휴식. 심야(23~05시)는 90분.
+     */
+    val fatigue: Boolean = false,
 )
 
 /**
@@ -42,7 +47,7 @@ class ContextEngine(
         val candidate = detectScene(s)
         val prev = current
         // 터널·각성·주차·출발은 기다리지 않고 바로 전환
-        val immediate = candidate == Scene.TUNNEL || candidate == Scene.FATIGUE_BOOST ||
+        val immediate = candidate == Scene.TUNNEL ||
             candidate == Scene.PARKED || prev == Scene.PARKED || prev == Scene.TUNNEL || prev == null
 
         val next: Scene = when {
@@ -67,8 +72,12 @@ class ContextEngine(
             mood = moodFor(next, s),
             changed = changed,
             djLine = if (changed && prev != null) djLineFor(next, prev) else null,
+            fatigue = s.isDriving && s.drivingMinutes >= fatigueThreshold(s.minuteOfDay),
         )
     }
+
+    fun fatigueThreshold(minuteOfDay: Int): Int =
+        if (isLateNight(minuteOfDay)) config.fatigueLateNightMinutes else config.fatigueDrivingMinutes
 
     private fun detectScene(s: VehicleSnapshot): Scene {
         // 터널 판정용 상태는 장면과 무관하게 항상 갱신
@@ -76,8 +85,6 @@ class ContextEngine(
 
         if (!s.isDriving) return Scene.PARKED
         val candidates = buildList {
-            val fatigueAt = if (isLateNight(s.minuteOfDay)) config.fatigueLateNightMinutes else config.fatigueDrivingMinutes
-            if (s.drivingMinutes >= fatigueAt) add(Scene.FATIGUE_BOOST)
             if (s.wiper == WiperLevel.HIGH) add(Scene.HEAVY_RAIN)
             if (tunnel) add(Scene.TUNNEL)
             if (s.wiper == WiperLevel.INTERMITTENT || s.wiper == WiperLevel.LOW) add(Scene.RAIN)
@@ -117,7 +124,6 @@ class ContextEngine(
     /** 장면별 기본 무드 + 가벼운 보정. */
     fun moodFor(scene: Scene, s: VehicleSnapshot): Mood {
         val base = when (scene) {
-            Scene.FATIGUE_BOOST -> Mood(0.6f, 0.7f) // 밝고 경쾌하게, 과속 유발하는 고템포는 피함(BPM 상한 별도)
             Scene.HEAVY_RAIN -> Mood(-0.7f, -0.4f)
             Scene.TUNNEL -> Mood(0.1f, -0.5f)
             Scene.RAIN -> Mood(-0.4f, -0.2f)
@@ -143,9 +149,13 @@ class ContextEngine(
         }
     }
 
-    /** 기본 장면(노을·낮·밤·크루징·에코·스포츠)으로 '돌아올 때'는 돌아온 이유를 말한다. 터널은 짧아서 침묵. */
+    /**
+     * 기본 장면(노을·낮·밤·크루징·에코·스포츠)으로 '돌아올 때'는 돌아온 이유를 말한다.
+     * 터널은 짧아서 침묵. 단 터널을 나오자마자 폭우면 안전 안내는 한다.
+     */
     private fun djLineFor(scene: Scene, prev: Scene): String? {
-        if (scene == Scene.TUNNEL || prev == Scene.TUNNEL) return null
+        if (scene == Scene.TUNNEL) return null
+        if (prev == Scene.TUNNEL && scene != Scene.HEAVY_RAIN) return null
         val back = scene.priority <= Scene.SPORT.priority && scene != Scene.PARKED
         if (back) when (prev) {
             Scene.RAIN, Scene.HEAVY_RAIN -> return "비가 그쳤네요. 다시 ${scene.label} 분위기로 갈게요."
@@ -156,7 +166,6 @@ class ContextEngine(
     }
 
     private fun djLineFor(scene: Scene): String = when (scene) {
-        Scene.FATIGUE_BOOST -> "두 시간 넘게 달리셨어요. 밝은 곡으로 바꿀게요. 휴게소에 들를까요?"
         Scene.HEAVY_RAIN -> "비가 많이 와요. 아주 차분한 곡으로 갈게요. 운전 조심하세요."
         Scene.TUNNEL -> "터널이에요. 잠깐 공간감 있는 곡으로 바꿀게요."
         Scene.RAIN -> "비가 오기 시작했네요. 조금 차분하게 갈게요."

@@ -447,7 +447,7 @@
                 "energy": 0.85,
                 "valence": 0.2
             },
-            "bpm": 140,
+            "bpm": 130,
             "source": "",
             "license": "placeholder"
         },
@@ -461,7 +461,7 @@
                 "energy": 0.75,
                 "valence": 0.45
             },
-            "bpm": 134,
+            "bpm": 128,
             "source": "",
             "license": "placeholder"
         },
@@ -5889,11 +5889,11 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "ambientTarget": {
@@ -5937,11 +5937,11 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "ambientTarget": {
@@ -5975,11 +5975,11 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "ambientTarget": {
@@ -6013,11 +6013,11 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "ambientTarget": {
@@ -6051,11 +6051,11 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "ambientTarget": {
@@ -6089,9 +6089,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6127,9 +6127,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6165,9 +6165,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6203,9 +6203,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6241,9 +6241,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6279,9 +6279,9 @@
             "positionSec": 220,
             "ambient": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000

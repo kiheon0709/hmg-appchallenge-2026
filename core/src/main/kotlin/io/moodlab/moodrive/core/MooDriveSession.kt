@@ -47,15 +47,31 @@ class MooDriveSession(
         private set
     /** 음성 "이 분위기 유지" → 이 시각(차량 시간)까지 장면이 바뀌어도 곡을 바꾸지 않음. 안전 장면은 예외. */
     private var holdUntilMs = 0L
+    private var heldMood: Mood? = null
     private var nowMs = 0L
+    private var trackStartMs = 0L
+    /** 연속 운전 시간 계산 (차량 시간). 10분 넘게 정차하면 초기화. */
+    private var drivingSinceMs: Long? = null
+    private var parkedSinceMs: Long? = null
+    /** 마지막 휴게소 제안 시각. 거절해도 30분 뒤 다시 제안. */
+    private var lastRestOfferMs: Long? = null
+    /** 이번 주행에서 반응이 좋았던 장르 (피날레 선곡에 사용) */
+    private val tripGenre = mutableMapOf<String, Float>()
+    /** 마지막 주행 중 무드 → 정차 시 실내 조명을 '그날의 마지막 무드'로 */
+    private var lastDrivingMood: Mood? = null
 
     val currentScene: Scene? get() = lastResult?.scene
     val currentMood: Mood? get() = lastResult?.mood
     val currentTrack: Track? get() = nowPlaying
+    val fatigue: Boolean get() = lastResult?.fatigue == true
+    val continuousDrivingMinutes: Int get() = drivingSinceMs?.let { ((nowMs - it) / 60_000L).toInt() } ?: 0
 
-    fun onSnapshot(s: VehicleSnapshot): List<Action> {
+    fun onSnapshot(raw: VehicleSnapshot): List<Action> {
+        nowMs = raw.timestampMs
+        updateDrivingTimer(raw)
+        // 어댑터가 주는 값과 세션이 잰 값 중 큰 쪽 (어댑터가 모르면 0)
+        val s = raw.copy(drivingMinutes = maxOf(raw.drivingMinutes, continuousDrivingMinutes))
         lastSnapshot = s
-        nowMs = s.timestampMs
         val r = engine.update(s)
         lastResult = r
         val actions = mutableListOf<Action>()
@@ -68,7 +84,7 @@ class MooDriveSession(
             val line = if (greeting) "출발할게요. ${r.scene.label} 분위기로 시작합니다." else r.djLine
             line?.let { text ->
                 // 안전 멘트는 음소거·간격 제한 무시. 출발·도착·피날레는 간격 제한만 무시(연출 핵심 순간).
-                val safety = r.scene == Scene.FATIGUE_BOOST || r.scene == Scene.HEAVY_RAIN
+                val safety = r.scene == Scene.HEAVY_RAIN
                 val keyMoment = greeting || r.scene == Scene.PARKED || r.scene == Scene.ARRIVAL_FINALE
                 val last = lastDjAtMs
                 val intervalOk = last == null || s.timestampMs - last >= djMinIntervalMs
@@ -76,10 +92,6 @@ class MooDriveSession(
                     actions += Action.Speak(text)
                     if (!keyMoment) lastDjAtMs = s.timestampMs
                 }
-            }
-            if (r.scene == Scene.FATIGUE_BOOST && !restStopPending) {
-                restStopPending = true
-                actions += Action.SuggestRestStop
             }
             if (r.scene == Scene.PARKED) {
                 if (tripActive) actions += Action.TripEnded(log.toList())
@@ -89,24 +101,61 @@ class MooDriveSession(
                 tripActive = true
                 // 터널은 잠깐이라 곡은 그대로 두고 조명만 바꾼다(들어갈 때·나올 때 두 번 끊기는 것 방지)
                 val brief = r.scene == Scene.TUNNEL || prevScene == Scene.TUNNEL
-                val held = s.timestampMs < holdUntilMs && r.scene != Scene.FATIGUE_BOOST && r.scene != Scene.HEAVY_RAIN
+                // 분위기 유지 중이어도 안전 장면이거나, 지금 곡이 새 장면의 템포 상한을 넘으면 바꾼다
+                val overCap = Curator.bpmCap(r.scene)?.let { cap -> (nowPlaying?.bpm ?: 0) > cap } == true
+                val held = isHeld() && r.scene != Scene.HEAVY_RAIN && !overCap
                 if (nowPlaying == null || (switchTrackOnSceneChange && !brief && !held)) actions += play(r)
             }
         }
-        ambient.plan(targetMood(r), s)?.let { actions += Action.SetAmbient(it) }
+        actions += fatigueCheck(r, s)
+        if (r.scene != Scene.PARKED) lastDrivingMood = targetMood(r)
+        // 정차하면 실내 조명은 그날 마지막 주행 무드(대개 피날레)로
+        val ambientMood = if (r.scene == Scene.PARKED) lastDrivingMood ?: targetMood(r) else targetMood(r)
+        ambient.plan(ambientMood, s)?.let { actions += Action.SetAmbient(it) }
         return actions
     }
+
+    private fun updateDrivingTimer(s: VehicleSnapshot) {
+        if (s.isDriving) {
+            parkedSinceMs = null
+            if (drivingSinceMs == null) drivingSinceMs = s.timestampMs
+        } else {
+            val since = parkedSinceMs ?: s.timestampMs.also { parkedSinceMs = it }
+            if (s.timestampMs - since >= REST_RESET_MS) {
+                drivingSinceMs = null
+                lastRestOfferMs = null
+            }
+        }
+    }
+
+    /** 장시간 운전 경보: 장면과 별개. 처음 넘을 때, 그리고 거절 후 30분마다 다시 제안. 안전 멘트라 음소거 무시. */
+    private fun fatigueCheck(r: ContextResult, s: VehicleSnapshot): List<Action> {
+        if (!r.fatigue || restStopPending) return emptyList()
+        val last = lastRestOfferMs
+        if (last != null && s.timestampMs - last < REST_REOFFER_MS) return emptyList()
+        lastRestOfferMs = s.timestampMs
+        restStopPending = true
+        val h = s.drivingMinutes / 60
+        val m = s.drivingMinutes % 60
+        val dur = if (h > 0 && m > 0) "${h}시간 ${m}분" else if (h > 0) "${h}시간" else "${m}분"
+        lastDjAtMs = s.timestampMs
+        return listOf(Action.Speak("${dur}째 운전 중이에요. 휴게소에 들를까요?"), Action.SuggestRestStop)
+    }
+
+    private fun isHeld() = nowMs < holdUntilMs
 
     /**
      * @param completed 끝까지 들었는지
      * @param playedSec 스킵 시 들은 시간. 30초 안에 넘기면 감점, 그 뒤 스킵은 중립.
      */
-    fun onTrackEnded(completed: Boolean, playedSec: Int = 0): List<Action> {
+    fun onTrackEnded(completed: Boolean, playedSec: Int? = null): List<Action> {
         val r = lastResult ?: return emptyList()
+        // 들은 시간을 모르면 세션이 잰 차량 시간으로 계산
+        val played = playedSec ?: ((nowMs - trackStartMs) / 1000L).toInt()
         nowPlaying?.let {
             when {
-                completed -> taste.record(r.scene, it.genre, Feedback.COMPLETED)
-                playedSec < EARLY_SKIP_SEC -> taste.record(r.scene, it.genre, Feedback.SKIPPED_EARLY)
+                completed -> record(r.scene, it, Feedback.COMPLETED)
+                played < EARLY_SKIP_SEC -> record(r.scene, it, Feedback.SKIPPED_EARLY)
             }
         }
         if (r.scene == Scene.PARKED) {
@@ -120,12 +169,22 @@ class MooDriveSession(
     fun onFeedback(feedback: Feedback): List<Action> {
         val r = lastResult ?: return emptyList()
         val track = nowPlaying ?: return emptyList()
-        taste.record(r.scene, track.genre, feedback)
+        record(r.scene, track, feedback)
         return if (feedback == Feedback.DISLIKE) listOf(play(r)) else emptyList()
     }
 
+    /** 특정 곡에 대한 피드백 기록 (테스트·드라이브 카드에서 지난 곡 평가용). */
+    internal fun onFeedbackFor(track: Track, feedback: Feedback) {
+        record(lastResult?.scene ?: Scene.CLEAR_DAY, track, feedback)
+    }
+
+    private fun record(scene: Scene, track: Track, feedback: Feedback) {
+        taste.record(scene, track.genre, feedback)
+        tripGenre[track.genre] = (tripGenre[track.genre] ?: 0f) + feedback.weight
+    }
+
     /** STT 텍스트 처리. 인식 못 하면 빈 목록. */
-    fun onVoice(text: String): List<Action> {
+    fun onVoice(text: String, playedSec: Int? = null): List<Action> {
         val r = lastResult ?: return emptyList()
         val intent = VoiceCommandParser.parse(text)
         if (restStopPending) when (intent) {
@@ -136,7 +195,7 @@ class MooDriveSession(
         return when (intent) {
             VoiceIntent.LIKE -> onFeedback(Feedback.LIKE) + Action.Speak("좋아요, 기억해 둘게요.")
             VoiceIntent.DISLIKE -> onFeedback(Feedback.DISLIKE)
-            VoiceIntent.SKIP -> onTrackEnded(completed = false)
+            VoiceIntent.SKIP -> onTrackEnded(completed = false, playedSec = playedSec)
             VoiceIntent.MORE_ENERGY -> {
                 energyBias = (energyBias + 0.3f).coerceAtMost(0.6f)
                 listOf(Action.Speak("조금 더 신나게 갈게요."), play(r))
@@ -148,6 +207,7 @@ class MooDriveSession(
             VoiceIntent.REST_STOP -> answerRestStop(true)
             VoiceIntent.HOLD -> {
                 holdUntilMs = nowMs + HOLD_MS
+                heldMood = targetMood(r)
                 listOf(Action.Speak("20분 동안 이 분위기 그대로 갈게요."))
             }
             VoiceIntent.YES, VoiceIntent.NO -> emptyList()
@@ -175,17 +235,35 @@ class MooDriveSession(
         return FinalePlanner.plan(curator.rank(r.mood, r.scene, exclude = setOf(finale.id)), eta * 60, finale)
     }
 
-    /** 장면 무드 + 사용자 보정. */
-    fun targetMood(r: ContextResult = lastResult!!): Mood = r.mood.copy(energy = r.mood.energy + energyBias).clamped()
+    /**
+     * 목표 무드 = 장면 무드 + 사용자 보정(더 신나게/차분하게)
+     * + 장시간 운전이면 조금 더 밝고 경쾌하게(비·정체·터널에선 그대로, 템포 상한은 장면 기준 유지)
+     * 분위기 유지 중이면 유지 시작 때의 무드(폭우는 예외).
+     */
+    fun targetMood(r: ContextResult = lastResult!!): Mood {
+        heldMood?.let { if (isHeld() && r.scene != Scene.HEAVY_RAIN) return it }
+        val calmScene = r.scene in setOf(Scene.RAIN, Scene.HEAVY_RAIN, Scene.TRAFFIC_JAM, Scene.TUNNEL, Scene.PARKED)
+        val boost = if (r.fatigue && !calmScene) 0.2f else 0f
+        return Mood(r.mood.energy + energyBias + boost, r.mood.valence + boost).clamped()
+    }
 
     private fun play(r: ContextResult): Action.Play {
-        val t = curator.next(targetMood(r), r.scene)
+        // 피날레는 이번 주행에서 반응이 좋았던 장르에 가산점
+        val bonus: (Track) -> Float = if (r.scene == Scene.ARRIVAL_FINALE) {
+            { t -> (tripGenre[t.genre] ?: 0f).coerceIn(-2f, 3f) * 0.1f }
+        } else {
+            { 0f }
+        }
+        val t = curator.next(targetMood(r), r.scene, bonus)
         nowPlaying = t
+        trackStartMs = nowMs
         return Action.Play(t, r.scene)
     }
 
     private companion object {
         const val EARLY_SKIP_SEC = 30
         const val HOLD_MS = 20 * 60_000L
+        const val REST_REOFFER_MS = 30 * 60_000L
+        const val REST_RESET_MS = 10 * 60_000L
     }
 }

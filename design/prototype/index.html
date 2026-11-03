@@ -241,7 +241,7 @@ function renderCard() {
   // 장면이 바뀐 순간: DJ 멘트 첫 문장, 말하지 않은 장면(터널 등)은 장면 이름으로
   const moments = frames.filter((f, i) => i && f.scene !== frames[i - 1].scene && f.scene !== 'PARKED').slice(0, 6);
   $('moments').innerHTML = moments.map(f => {
-    const x = f.speak ? f.speak.split('. ')[0].replace(/\.$/, '') : (f.scene === 'TUNNEL' ? '터널 · 곡 유지, 조명만' : `${f.sceneLabel}로 전환`);
+    const x = f.speak ? f.speak.split('. ')[0].replace(/\.$/, '') : (f.scene === 'TUNNEL' ? '터널 · 곡 유지' : `${f.sceneLabel}로 전환`);
     return `<div class="moment"><span class="c">${f.clock}</span><span class="x">${x}</span></div>`;
   }).join('');
   $('cardSub').textContent = `${frames[0].clock} 출발 · ${frames.at(-1).clock} 도착 · ${T.scenario}`;

@@ -41,7 +41,8 @@ class Curator(
 ) {
     data class Config(
         val moodWeight: Float = 1f,
-        val tasteWeight: Float = 0.12f,
+        /** 취향 가중치. 온보딩 장르(+1)가 무드 거리 약 0.3만큼을 이길 수 있게. */
+        val tasteWeight: Float = 0.3f,
         /** 최근 재생한 곡 몇 개를 다시 고르지 않을지. */
         val noRepeatCount: Int = 8,
     )
@@ -56,15 +57,16 @@ class Curator(
         -config.moodWeight * track.mood.distanceTo(target) +
             config.tasteWeight * taste.score(scene, track.genre)
 
-    fun rank(target: Mood, scene: Scene, exclude: Set<String> = emptySet()): List<Track> {
+    fun rank(target: Mood, scene: Scene, exclude: Set<String> = emptySet(), bonus: (Track) -> Float = { 0f }): List<Track> {
         val blocked = history.toSet() + exclude
         val cap = bpmCap(scene)
         val tempoOk = catalog.filter { t -> cap == null || (t.bpm ?: 0) <= cap }.ifEmpty { catalog }
         val pool = tempoOk.filter { it.id !in blocked }.ifEmpty { tempoOk.filter { it.id !in exclude } }.ifEmpty { tempoOk }
-        return pool.sortedByDescending { score(it, target, scene) }
+        return pool.sortedByDescending { score(it, target, scene) + bonus(it) }
     }
 
-    fun next(target: Mood, scene: Scene): Track = rank(target, scene).first().also { markPlayed(it) }
+    fun next(target: Mood, scene: Scene, bonus: (Track) -> Float = { 0f }): Track =
+        rank(target, scene, bonus = bonus).first().also { markPlayed(it) }
 
     companion object {
         /**

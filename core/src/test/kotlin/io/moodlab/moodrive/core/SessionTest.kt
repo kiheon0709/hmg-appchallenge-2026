@@ -126,10 +126,105 @@ class SessionTest {
     }
 
     @Test
-    fun `fatigue suggests rest stop`() {
+    fun `fatigue suggests rest stop with the real duration`() {
         val s = MooDriveSession(SampleCatalog.tracks)
-        val night = day.copy(minuteOfDay = 2 * 60, drivingMinutes = 125)
-        assertTrue(s.onSnapshot(night).contains(Action.SuggestRestStop))
+        val night = day.copy(minuteOfDay = 2 * 60, drivingMinutes = 95)
+        val a = s.onSnapshot(night)
+        assertTrue(a.contains(Action.SuggestRestStop))
+        assertTrue(a.filterIsInstance<Action.Speak>().any { it.text.contains("1시간 35분째") }, a.toString())
+    }
+
+    @Test
+    fun `declined rest stop is offered again after 30 minutes, not before`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val t0 = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125)
+        assertTrue(s.onSnapshot(t0).contains(Action.SuggestRestStop))
+        s.answerRestStop(false)
+        assertTrue(!s.onSnapshot(t0.copy(timestampMs = 20 * 60_000L, drivingMinutes = 145)).contains(Action.SuggestRestStop))
+        assertTrue(s.onSnapshot(t0.copy(timestampMs = 31 * 60_000L, drivingMinutes = 156)).contains(Action.SuggestRestStop))
+    }
+
+    @Test
+    fun `session measures continuous driving itself and resets after a 10 minute stop`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val base = day.copy(drivingMinutes = 0) // 어댑터가 주행 시간을 모르는 경우
+        var fired = false
+        for (m in 0..125 step 5) fired = fired || s.onSnapshot(base.copy(timestampMs = m * 60_000L)).contains(Action.SuggestRestStop)
+        assertTrue(fired)
+        s.answerRestStop(true)
+        s.onSnapshot(base.copy(timestampMs = 126 * 60_000L, gear = Gear.P))
+        s.onSnapshot(base.copy(timestampMs = 137 * 60_000L, gear = Gear.P))
+        s.onSnapshot(base.copy(timestampMs = 138 * 60_000L))
+        assertTrue(s.continuousDrivingMinutes < 5, "${s.continuousDrivingMinutes}")
+    }
+
+    @Test
+    fun `hold keeps the mood for the next songs, but switches if tempo is over the new cap`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        s.onVoice("이 분위기 유지")
+        val held = s.targetMood()
+        s.onSnapshot(day.copy(timestampMs = 1_000, wiper = WiperLevel.LOW))
+        assertEquals(held, s.targetMood())
+        val next = s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().single().track
+        assertTrue(next.mood.distanceTo(held) <= 0.6f)
+        // 비(110 BPM 상한)에서 빠른 곡이 걸려 있으면 유지 중이어도 바뀐다
+        val fast = MooDriveSession(SampleCatalog.tracks.filter { (it.bpm ?: 0) > 110 }, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        fast.onSnapshot(day)
+        fast.onVoice("이 분위기 유지")
+        val acts = fast.onSnapshot(day.copy(timestampMs = 1_000, congestion = true))
+        assertTrue(acts.any { it is Action.Play })
+    }
+
+    @Test
+    fun `voice skip uses played time - late voice skip is neutral`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val t = s.onSnapshot(day).filterIsInstance<Action.Play>().single().track
+        s.onVoice("다음 곡", playedSec = 120)
+        assertEquals(0f, s.taste.score(Scene.CLEAR_DAY, t.genre))
+        // 들은 시간을 안 주면 차량 시간으로 계산: 2분 뒤 스킵은 중립
+        val s2 = MooDriveSession(SampleCatalog.tracks)
+        val t2 = s2.onSnapshot(day).filterIsInstance<Action.Play>().single().track
+        s2.onSnapshot(day.copy(timestampMs = 120_000))
+        s2.onVoice("넘겨")
+        assertEquals(0f, s2.taste.score(Scene.CLEAR_DAY, t2.genre))
+    }
+
+    @Test
+    fun `parking applies the last driving mood to the cabin light`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day.copy(etaMinutes = 3))
+        val finale = s.targetMood()
+        val light = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P)).filterIsInstance<Action.SetAmbient>().single()
+        assertEquals(AmbientPlanner().commandFor(finale, night = false).color, light.command.color)
+    }
+
+    @Test
+    fun `onboarding genres get a real share of picks`() {
+        val prefs = setOf("jazz", "lofi", "indie")
+        val s = MooDriveSession(SampleCatalog.tracks, taste = TasteModel(prefs))
+        val sc = Scenario.rainyCommute()
+        val picks = mutableListOf<Track>()
+        for (t in 0..sc.durationSec) s.onSnapshot(sc.snapshotAt(t)).filterIsInstance<Action.Play>().forEach { picks += it.track }
+        repeat(10) { s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().forEach { picks += it.track } }
+        val share = picks.count { it.genre in prefs } / picks.size.toFloat()
+        assertTrue(share >= 0.4f, "share=$share ${picks.map { it.genre }}")
+    }
+
+    @Test
+    fun `finale favours the genre liked during this trip`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        // 이번 주행에서 indie를 세 번 좋아함
+        val indie = SampleCatalog.tracks.first { it.genre == "indie" }
+        repeat(3) { s.onFeedbackFor(indie, Feedback.LIKE) }
+        val finale = s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = 3)).filterIsInstance<Action.Play>().single().track
+        assertEquals("indie", finale.genre)
+    }
+
+    @Test
+    fun `no-sleepy is not a rest stop request`() {
+        assertEquals(VoiceIntent.NO, VoiceCommandParser.parse("안 졸려"))
     }
 
     @Test

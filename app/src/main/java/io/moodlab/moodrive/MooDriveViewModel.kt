@@ -146,7 +146,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     // ── 사용자 입력 ──
     fun like() = handle(session.onFeedback(Feedback.LIKE))
     fun dislike() = handle(session.onFeedback(Feedback.DISLIKE))
-    fun onVoiceText(text: String) = handle(session.onVoice(text))
+    fun onVoiceText(text: String) = handle(session.onVoice(text, playedSec = _ui.value.positionSec))
     fun skip() = handle(session.onTrackEnded(completed = false, playedSec = _ui.value.positionSec))
     fun setListening(on: Boolean) = _ui.update { it.copy(listening = on) }
     fun dismissTripCard() = _ui.update { it.copy(tripCard = null) }
@@ -183,9 +183,18 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             is Action.Speak -> {
                 speak(a.text)
                 val s = _ui.value.snapshot
-                if (s != null && session.currentScene != Scene.PARKED) moments += Moment(clock(s), a.text.substringBefore(". ").removeSuffix("."))
+                if (s != null && session.currentScene != Scene.PARKED) {
+                    val m = Moment(clock(s), a.text.substringBefore(". ").removeSuffix("."))
+                    if (moments.lastOrNull()?.clock == m.clock) moments[moments.lastIndex] = m else moments += m
+                }
             }
-            is Action.SceneChanged -> Unit
+            is Action.SceneChanged -> {
+                // 말하지 않는 장면(터널 등)도 카드 '순간'에 남긴다. 같은 순간에 멘트가 오면 아래 Speak가 덮어씀
+                val s = _ui.value.snapshot
+                if (s != null && a.scene != Scene.PARKED && played.isNotEmpty()) {
+                    moments += Moment(clock(s), if (a.scene == Scene.TUNNEL) "터널 · 곡 유지" else "${a.scene.label}로 전환")
+                }
+            }
             Action.SuggestRestStop -> _ui.update { it.copy(restStopPrompt = true) }
             Action.AddRestStop -> {
                 // TODO: NaviHelper로 근처 휴게소 검색 → RequestWaypointInfo로 경유지 추가

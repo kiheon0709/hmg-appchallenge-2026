@@ -60,7 +60,6 @@ data class Mood(val energy: Float, val valence: Float) {
 
 /** 감지된 장면. 위에 있을수록 우선순위가 높다(아래 Scene.priority). */
 enum class Scene(val priority: Int, val label: String) {
-    FATIGUE_BOOST(100, "각성 부스트"),
     HEAVY_RAIN(90, "폭우"),
     TUNNEL(80, "터널"),
     RAIN(70, "비"),
