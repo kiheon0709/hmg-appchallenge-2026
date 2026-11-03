@@ -9,7 +9,7 @@ data class Scenario(
     val start: VehicleSnapshot,
     val steps: List<Step>,
     val durationSec: Int,
-    /** 시나리오 1초가 실제 몇 초인지. 시각·주행시간·ETA 진행에만 쓰고, 디바운스용 timestamp는 실시간. */
+    /** 시나리오 1초가 차량 시간으로 몇 초인지. 시각·주행시간·ETA·timestamp 모두 이 배율로 진행(가상 차량 시간). */
     val timeScale: Int = 1,
 ) {
     data class Step(val atSec: Int, val caption: String, val change: (VehicleSnapshot) -> VehicleSnapshot)
@@ -22,7 +22,7 @@ data class Scenario(
         }
         val elapsedMin = tSec * timeScale / 60
         return s.copy(
-            timestampMs = start.timestampMs + tSec * 1000L,
+            timestampMs = start.timestampMs + tSec * timeScale * 1000L,
             minuteOfDay = (start.minuteOfDay + elapsedMin) % 1440,
             drivingMinutes = if (s.isDriving) s.drivingMinutes + elapsedMin else s.drivingMinutes,
             etaMinutes = s.etaMinutes?.let { (it - elapsedMin).coerceAtLeast(0) },

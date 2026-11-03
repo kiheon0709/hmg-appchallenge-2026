@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MooDrive Prototype</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: #050507; color: var(--text); font-family: "Pretendard", system-ui, sans-serif; }
+  body { padding: 0; }
+  /* 차량 디스플레이 프레임. 기본 1920×720, ?w=&h= 로 변경 */
+  #car { position: relative; overflow: hidden; background: var(--bg); width: var(--w, 1920px); height: var(--h, 720px); }
+  .screen { position: absolute; inset: 0; display: none; }
+  .screen.on { display: flex; }
+
+  /* ── 주행 화면 ─────────────────────────── */
+  #drive { padding: var(--s-l); gap: var(--s-l); }
+  .stage { position: relative; flex: 1 1 58%; border-radius: var(--r-l); overflow: hidden; background: var(--surface);
+           padding: var(--s-xl); display: flex; flex-direction: column; }
+  .glow { position: absolute; inset: 0; transition: background var(--ambient-ms) ease, opacity var(--ambient-ms) ease; pointer-events: none; }
+  .stage > *:not(.glow) { position: relative; }
+  .status { display: flex; gap: var(--s-m); align-items: center; font-size: var(--fs-label); font-weight: var(--fw-label); }
+  .status .gear { padding: 4px 16px; border-radius: 999px; background: rgba(11,12,16,.72); color: var(--text); }
+  .status .dim { color: var(--text); opacity: 1; background: rgba(11,12,16,.72); padding: 4px 16px; border-radius: 999px; }
+  .scene { margin-top: auto; font-size: var(--fs-display); font-weight: var(--fw-display); line-height: 1.05;
+           letter-spacing: -0.02em; text-shadow: 0 2px 24px rgba(0,0,0,.45); }
+  .scene-sub { margin-top: var(--s-s); font-size: var(--fs-body); font-weight: var(--fw-body); }
+  .scene-sub span { background: rgba(11,12,16,.72); padding: 6px 16px; border-radius: 999px; }
+  .dj { margin-top: var(--s-l); align-self: flex-start; max-width: 100%; font-size: var(--fs-body); font-weight: var(--fw-body);
+        line-height: 1.35; background: rgba(11,12,16,.78); border: 1px solid rgba(255,255,255,.08);
+        padding: 16px 24px; border-radius: var(--r-m); min-height: 74px; display: flex; align-items: center; gap: 12px; }
+  .dj.empty { visibility: hidden; }
+  .chip-warn { position: absolute; top: var(--s-xl); right: var(--s-xl); font-size: var(--fs-label); font-weight: var(--fw-label);
+               color: var(--warning); background: rgba(11,12,16,.85); padding: 8px 18px; border-radius: 999px; }
+
+  .player { flex: 1 1 42%; display: flex; flex-direction: column; background: var(--surface); border-radius: var(--r-l); padding: var(--s-xl); }
+  .now { display: flex; gap: var(--s-l); align-items: center; }
+  .art { width: 168px; height: 168px; flex: none; border-radius: var(--r-m); transition: background var(--ambient-ms) ease; }
+  .meta { min-width: 0; }
+  .title { font-size: var(--fs-title); font-weight: var(--fw-title); line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .artist { margin-top: 8px; font-size: var(--fs-body); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar { margin-top: var(--s-l); height: 8px; border-radius: 4px; background: var(--outline); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--text); width: 0; transition: width 1s linear; }
+  .controls { margin-top: auto; display: flex; gap: var(--s-s); }
+  .btn { flex: 1; min-height: var(--touch-primary); border: 0; border-radius: var(--r-m); font: inherit;
+         font-size: var(--fs-label); font-weight: var(--fw-label); color: var(--text); background: var(--surface-raised);
+         display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn svg { width: 32px; height: 32px; }
+
+  /* ── 드라이브 카드 (정차) ─────────────────────── */
+  #card { padding: var(--s-xl); gap: var(--s-xl); background: var(--bg); }
+  #card .left { flex: 1 1 60%; display: flex; flex-direction: column; min-width: 0; }
+  #card h1 { font-size: var(--fs-title); font-weight: var(--fw-title); }
+  #card .sub { margin-top: 8px; font-size: var(--fs-body); color: var(--text-dim); }
+  .timeline { margin-top: var(--s-l); height: 72px; display: flex; border-radius: var(--r-s); overflow: hidden; }
+  .timeline > i { display: block; height: 100%; }
+  .scenes { margin-top: var(--s-s); display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: var(--fs-caption); }
+  .scenes span { display: inline-flex; align-items: center; gap: 8px; color: var(--text-dim); }
+  .scenes b { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .stats { margin-top: auto; display: flex; gap: var(--s-m); }
+  .stat { flex: 1; background: var(--surface); border-radius: var(--r-m); padding: var(--s-m); }
+  .stat .v { font-size: var(--fs-title); font-weight: var(--fw-title); }
+  .stat .k { margin-top: 4px; font-size: var(--fs-caption); color: var(--text-dim); }
+  #card .right { flex: 1 1 40%; background: var(--surface); border-radius: var(--r-l); padding: var(--s-l); display: flex; flex-direction: column; min-width: 0; }
+  #card .right h2 { font-size: var(--fs-label); font-weight: var(--fw-label); color: var(--text-dim); }
+  .songs { margin-top: var(--s-s); display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .song { display: flex; align-items: center; gap: var(--s-s); font-size: var(--fs-caption); }
+  .song i { width: 40px; height: 40px; border-radius: 10px; flex: none; }
+  .song .n { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .song .sc { color: var(--text-dim); }
+  #card .controls { margin-top: auto; padding-top: var(--s-m); }
+
+  /* ── 온보딩 (정차) ─────────────────────── */
+  #onboard { padding: var(--s-xl) 96px; flex-direction: column; }
+  #onboard h1 { font-size: var(--fs-title); font-weight: var(--fw-title); }
+  #onboard .sub { margin-top: 8px; font-size: var(--fs-body); color: var(--text-dim); }
+  .genres { margin-top: var(--s-l); display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s-s); }
+  .genre { min-height: var(--touch-primary); border-radius: var(--r-m); border: 2px solid var(--outline); background: var(--surface);
+           color: var(--text); font: inherit; font-size: var(--fs-label); font-weight: var(--fw-label); cursor: pointer; }
+  .genre.sel { border-color: var(--accent); background: #2A1E14; color: var(--text); }
+  #onboard .controls { margin-top: auto; justify-content: flex-end; }
+  #onboard .btn { flex: 0 0 360px; }
+  #onboard .btn[disabled] { background: var(--surface-raised); color: var(--text-dim); cursor: default; }
+
+  /* ── 데모 컨트롤 (차량 화면 밖, 검증 대상 아님) ── */
+  #demo { display: flex; gap: 12px; align-items: center; padding: 12px 16px; font: 14px system-ui; color: #ccc; background: #111; }
+  #demo button { font: inherit; padding: 6px 12px; }
+  #demo input[type=range] { flex: 1; }
+  .hidden-demo #demo { display: none; }
+</style>
+</head>
+<body>
+<div id="car">
+  <section id="drive" class="screen" data-mode="driving">
+    <div class="stage">
+      <div class="glow" id="glow"></div>
+      <div class="status"><span class="gear" id="gear">D</span><span class="dim" id="clock">17:10</span><span class="dim" id="eta">도착 30분</span></div>
+      <div class="chip-warn" id="pending">조명은 정차하면 바뀌어요</div>
+      <div class="scene" id="scene">—</div>
+      <div class="scene-sub"><span id="moodText">—</span></div>
+      <div class="dj empty" id="dj"><span aria-hidden="true">🎙</span><span id="djText"></span></div>
+    </div>
+    <div class="player">
+      <div class="now">
+        <div class="art" id="art"></div>
+        <div class="meta"><div class="title" id="title">—</div><div class="artist" id="artist">—</div></div>
+      </div>
+      <div class="bar"><i id="progress"></i></div>
+      <div class="controls" id="driveControls">
+        <button class="btn" id="like"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11H4V10h3zm0 0 4-7a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 17.6 21H7"/></svg>좋아</button>
+        <button class="btn" id="dislike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l14 0M5 4v16M19 4v16M5 20h14" opacity="0"/><path d="M6 6l12 12M18 6 6 18"/></svg>별로</button>
+        <button class="btn primary" id="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>말하기</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="card" class="screen" data-mode="parked">
+    <div class="left">
+      <h1>오늘의 드라이브</h1>
+      <div class="sub" id="cardSub">—</div>
+      <div class="timeline" id="timeline"></div>
+      <div class="scenes" id="sceneLegend"></div>
+      <div class="stats">
+        <div class="stat"><div class="v" id="stTime">—</div><div class="k">주행 시간</div></div>
+        <div class="stat"><div class="v" id="stScenes">—</div><div class="k">장면 전환</div></div>
+        <div class="stat"><div class="v" id="stSongs">—</div><div class="k">들은 곡</div></div>
+      </div>
+    </div>
+    <div class="right">
+      <h2>이번 길의 사운드트랙</h2>
+      <div class="songs" id="songs"></div>
+      <div class="controls">
+        <button class="btn">닫기</button>
+        <button class="btn primary">카드 저장</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="onboard" class="screen" data-mode="parked">
+    <h1>어떤 음악을 좋아하세요?</h1>
+    <div class="sub">3개를 고르면 상황에 맞춰 이 취향 안에서 골라 드려요.</div>
+    <div class="genres" id="genres"></div>
+    <div class="controls"><button class="btn primary" id="start" disabled>시작하기</button></div>
+  </section>
+</div>
+
+<div id="demo">
+  <button data-s="drive">주행</button><button data-s="card">드라이브 카드</button><button data-s="onboard">온보딩</button>
+  <button id="play">▶ 재생</button>
+  <label><input type="checkbox" id="allow"> 주행 중 조명 허용</label>
+  <input type="range" id="seek" min="0" value="0">
+  <span id="cap" style="min-width:360px"></span>
+</div>
+
+<script src="demo-trace.js"></script>
+<script>
+const T = window.TRACE;
+const tracks = Object.fromEntries(T.tracks.map(t => [t.id, t]));
+const q = new URLSearchParams(location.search);
+const car = document.getElementById('car');
+if (q.get('w')) car.style.setProperty('--w', q.get('w') + 'px');
+if (q.get('h')) car.style.setProperty('--h', q.get('h') + 'px');
+if (q.get('nodemo')) document.body.classList.add('hidden-demo');
+const $ = id => document.getElementById(id);
+const hex = c => '#' + [c.r, c.g, c.b].map(v => v.toString(16).padStart(2, '0')).join('');
+const rgba = (c, a) => `rgba(${c.r},${c.g},${c.b},${a})`;
+
+let allow = q.get('allow') === '1';
+$('allow').checked = allow;
+let t = Number(q.get('t') || 0);
+let lastSpeakT = -99, lastSpeak = '';
+
+function moodWords(m) {
+  const e = m.energy > 0.35 ? '신나게' : m.energy < -0.35 ? '차분하게' : '적당히';
+  const v = m.valence > 0.35 ? '밝고 따뜻하게' : m.valence < -0.35 ? '깊고 어둡게' : '담담하게';
+  return `${e} · ${v}`;
+}
+
+function renderDrive(f) {
+  const amb = allow ? f.ambientTarget : f.ambient;
+  const driving = f.gear === 'D' || f.gear === 'R';
+  $('gear').textContent = f.gear;
+  $('clock').textContent = f.clock;
+  $('eta').textContent = f.etaMin != null ? `도착 ${f.etaMin}분` : '목적지 없음';
+  $('scene').textContent = f.sceneLabel;
+  $('moodText').textContent = moodWords(f.mood);
+  $('pending').style.display = (!allow && driving) ? '' : 'none';
+  $('glow').style.background = amb
+    ? `radial-gradient(120% 140% at 85% 10%, ${rgba(amb.color, 0.25 + amb.brightness / 100 * 0.6)} 0%, ${rgba(amb.color, 0.12)} 45%, rgba(21,23,29,0) 80%)`
+    : 'none';
+  if (f.speak) { lastSpeak = f.speak; lastSpeakT = f.t; }
+  const showDj = lastSpeak && f.t - lastSpeakT < 12;
+  $('dj').classList.toggle('empty', !showDj);
+  $('djText').textContent = showDj ? lastSpeak : '';
+  const tr = f.trackId && tracks[f.trackId];
+  $('title').textContent = tr ? tr.title : '—';
+  $('artist').textContent = tr ? `${tr.artist} · ${tr.genre}` : '';
+  $('progress').style.width = tr ? Math.min(100, f.positionSec / tr.durationSec * 100) + '%' : '0';
+  const art = f.ambientTarget.color;
+  $('art').style.background = `linear-gradient(135deg, ${hex(art)}, #1E2129 90%)`;
+}
+
+function renderCard() {
+  const frames = T.frames.filter(f => f.gear !== 'P');
+  const tl = $('timeline'); tl.innerHTML = '';
+  const legend = new Map();
+  for (const f of frames) {
+    const i = document.createElement('i');
+    i.style.flex = '1'; i.style.background = hex(f.ambientTarget.color);
+    tl.appendChild(i);
+    if (!legend.has(f.sceneLabel)) legend.set(f.sceneLabel, hex(f.ambientTarget.color));
+  }
+  $('sceneLegend').innerHTML = [...legend].map(([k, c]) => `<span><b style="background:${c}"></b>${k}</span>`).join('');
+  const changes = frames.reduce((n, f, i) => n + (i && f.scene !== frames[i - 1].scene ? 1 : 0), 0);
+  const minutes = Math.round(frames.length * T.timeScale / 60);
+  $('stTime').textContent = `${minutes}분`;
+  $('stScenes').textContent = `${changes}번`;
+  const played = [];
+  for (const f of frames) if (f.trackId && played.at(-1)?.id !== f.trackId) played.push({ id: f.trackId, scene: f.sceneLabel, c: hex(f.ambientTarget.color) });
+  $('stSongs').textContent = `${played.length}곡`;
+  $('cardSub').textContent = `${frames[0].clock} 출발 · ${frames.at(-1).clock} 도착 · ${T.scenario}`;
+  $('songs').innerHTML = played.slice(0, 7).map(p =>
+    `<div class="song"><i style="background:linear-gradient(135deg,${p.c},#1E2129)"></i><span class="n">${tracks[p.id].title}</span><span class="sc">${p.scene}</span></div>`).join('');
+}
+
+const GENRES = ['시티팝', '어쿠스틱', '로파이', '앰비언트', '펑크', 'EDM', '팝', '재즈', '록', '클래식', '힙합', '인디'];
+function renderOnboard() {
+  const sel = new Set((q.get('sel') || '시티팝,재즈').split(',').filter(Boolean));
+  const g = $('genres');
+  g.innerHTML = GENRES.map(x => `<button class="genre${sel.has(x) ? ' sel' : ''}">${x}</button>`).join('');
+  const sync = () => { $('start').disabled = sel.size !== 3; $('start').textContent = sel.size === 3 ? '시작하기' : `${3 - sel.size}개 더 골라 주세요`; };
+  g.querySelectorAll('.genre').forEach(b => b.onclick = () => {
+    const x = b.textContent;
+    if (sel.has(x)) sel.delete(x); else if (sel.size < 3) sel.add(x);
+    b.classList.toggle('sel', sel.has(x)); sync();
+  });
+  sync();
+}
+
+function show(s) {
+  document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === s));
+  if (s === 'card') renderCard();
+  if (s === 'onboard') renderOnboard();
+  if (s === 'drive') renderDrive(T.frames[t]);
+}
+
+const seek = $('seek'); seek.max = T.frames.length - 1;
+function goto(n) {
+  t = Math.max(0, Math.min(T.frames.length - 1, n)); seek.value = t;
+  // 건너뛸 때도 DJ 자막이 맞도록 직전 멘트를 찾는다
+  lastSpeak = ''; lastSpeakT = -99;
+  for (let i = t; i >= 0 && i > t - 12; i--) if (T.frames[i].speak) { lastSpeak = T.frames[i].speak; lastSpeakT = i; break; }
+  const f = T.frames[t];
+  $('cap').textContent = `${t}s · ${f.caption}`;
+  if (f.tripEnded && autoplay) { show('card'); return; }
+  renderDrive(f);
+}
+let timer = null, autoplay = false;
+$('play').onclick = () => {
+  if (timer) { clearInterval(timer); timer = null; autoplay = false; $('play').textContent = '▶ 재생'; return; }
+  show('drive'); autoplay = true; $('play').textContent = '⏸ 정지';
+  timer = setInterval(() => { if (t >= T.frames.length - 1) { clearInterval(timer); timer = null; return; } goto(t + 1); }, 1000 / Number(q.get('speed') || 1));
+};
+seek.oninput = () => { show('drive'); goto(Number(seek.value)); };
+$('allow').onchange = e => { allow = e.target.checked; goto(t); };
+document.querySelectorAll('#demo [data-s]').forEach(b => b.onclick = () => show(b.dataset.s));
+
+show(q.get('screen') || 'drive');
+goto(t);
+if (q.get('screen') && q.get('screen') !== 'drive') show(q.get('screen'));
+if (q.get('autoplay')) $('play').click();
+</script>
+</body>
+</html>

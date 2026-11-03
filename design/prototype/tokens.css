@@ -1,0 +1,30 @@
+/* design/tokens.json 과 동일한 값. 바꿀 땐 같이 바꿀 것. */
+@font-face {
+  font-family: "Pretendard";
+  src: url("fonts/PretendardVariable.woff2") format("woff2-variations");
+  font-weight: 45 920;
+}
+:root {
+  --bg: #0B0C10;
+  --surface: #15171D;
+  --surface-raised: #1E2129;
+  --outline: #2C303A;
+  --text: #F4F5F7;
+  --text-dim: #A9AFBC;
+  --text-muted: #7C8392;
+  --accent: #FF9F5A;
+  --warning: #FFC46B;
+  --positive: #7BE0A6;
+  --on-accent: #16110C;
+
+  --fs-display: 64px; --fw-display: 750;
+  --fs-title: 40px; --fw-title: 700;
+  --fs-body: 26px; --fw-body: 500;
+  --fs-label: 24px; --fw-label: 600;
+  --fs-caption: 20px; --fw-caption: 500;
+
+  --s-xs: 8px; --s-s: 16px; --s-m: 24px; --s-l: 32px; --s-xl: 48px;
+  --r-s: 16px; --r-m: 24px; --r-l: 32px;
+  --touch-min: 76px; --touch-primary: 96px;
+  --ambient-ms: 4000ms; --scene-ms: 600ms;
+}

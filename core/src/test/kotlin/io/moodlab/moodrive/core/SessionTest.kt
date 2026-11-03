@@ -96,4 +96,39 @@ class SessionTest {
         assertTrue(warm.r > warm.b, "warm=${warm.hex()}")
         assertTrue(a.commandFor(Mood(0.9f, 0.6f), night = true).brightness <= 40)
     }
+
+    @Test
+    fun `voice more energy raises next track energy`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val first = s.onSnapshot(day).filterIsInstance<Action.Play>().single().track
+        val up = s.onVoice("좀 더 신나게").filterIsInstance<Action.Play>().single().track
+        assertTrue(up.mood.energy > first.mood.energy, "$up vs $first")
+    }
+
+    @Test
+    fun `voice mute silences normal lines but not safety`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        s.onVoice("말 그만해")
+        assertTrue(s.djMuted)
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 1_000, wiper = WiperLevel.LOW)).none { it is Action.Speak })
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 2_000, wiper = WiperLevel.HIGH)).any { it is Action.Speak })
+    }
+
+    @Test
+    fun `voice rest stop and what song`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day)
+        assertTrue(s.onVoice("졸려").contains(Action.SuggestRestStop))
+        val say = s.onVoice("이 노래 뭐야").filterIsInstance<Action.Speak>().single().text
+        assertTrue(say.contains(s.currentTrack!!.title))
+        assertTrue(s.onVoice("오늘 저녁 뭐 먹지").isEmpty())
+    }
+
+    @Test
+    fun `fatigue suggests rest stop`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val night = day.copy(minuteOfDay = 2 * 60, drivingMinutes = 125)
+        assertTrue(s.onSnapshot(night).contains(Action.SuggestRestStop))
+    }
 }

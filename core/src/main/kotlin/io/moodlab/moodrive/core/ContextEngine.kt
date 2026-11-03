@@ -64,7 +64,7 @@ class ContextEngine(
             scene = next,
             mood = moodFor(next, s),
             changed = changed,
-            djLine = if (changed && prev != null) djLineFor(next) else null,
+            djLine = if (changed && prev != null) djLineFor(next, prev) else null,
         )
     }
 
@@ -133,6 +133,18 @@ class ContextEngine(
         } else {
             base.copy(energy = base.energy + delta).clamped()
         }
+    }
+
+    /** 기본 장면(노을·낮·밤·크루징·에코·스포츠)으로 '돌아올 때'는 돌아온 이유를 말한다. 터널은 짧아서 침묵. */
+    private fun djLineFor(scene: Scene, prev: Scene): String? {
+        if (scene == Scene.TUNNEL || prev == Scene.TUNNEL) return null
+        val back = scene.priority <= Scene.SPORT.priority && scene != Scene.PARKED
+        if (back) when (prev) {
+            Scene.RAIN, Scene.HEAVY_RAIN -> return "비가 그쳤네요. 다시 ${scene.label} 분위기로 갈게요."
+            Scene.TRAFFIC_JAM -> return "길이 뚫렸네요. 다시 ${scene.label} 분위기로 갈게요."
+            else -> Unit
+        }
+        return djLineFor(scene)
     }
 
     private fun djLineFor(scene: Scene): String = when (scene) {

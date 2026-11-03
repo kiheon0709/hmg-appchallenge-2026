@@ -1,0 +1,622 @@
+{
+ "version": 1,
+ "note": "자리표시 카탈로그. docs/music-tagging.md 기준으로 실제 CC0/로열티프리 음원으로 교체",
+ "tracks": [
+  {
+   "id": "cp1",
+   "title": "City Lights",
+   "artist": "MoodLab Sample",
+   "genre": "citypop",
+   "durationSec": 232,
+   "mood": {
+    "energy": 0.5,
+    "valence": 0.8
+   },
+   "bpm": 112,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cp2",
+   "title": "Sunset Avenue",
+   "artist": "MoodLab Sample",
+   "genre": "citypop",
+   "durationSec": 248,
+   "mood": {
+    "energy": 0.2,
+    "valence": 0.9
+   },
+   "bpm": 98,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cp3",
+   "title": "Neon Highway",
+   "artist": "MoodLab Sample",
+   "genre": "citypop",
+   "durationSec": 215,
+   "mood": {
+    "energy": 0.7,
+    "valence": 0.6
+   },
+   "bpm": 120,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cp4",
+   "title": "Plastic Summer",
+   "artist": "MoodLab Sample",
+   "genre": "citypop",
+   "durationSec": 226,
+   "mood": {
+    "energy": 0.55,
+    "valence": 0.75
+   },
+   "bpm": 116,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ac1",
+   "title": "Rain on Glass",
+   "artist": "MoodLab Sample",
+   "genre": "acoustic",
+   "durationSec": 201,
+   "mood": {
+    "energy": -0.6,
+    "valence": -0.2
+   },
+   "bpm": 72,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ac2",
+   "title": "Wet Asphalt",
+   "artist": "MoodLab Sample",
+   "genre": "acoustic",
+   "durationSec": 189,
+   "mood": {
+    "energy": -0.4,
+    "valence": 0.0
+   },
+   "bpm": 80,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ac3",
+   "title": "Grey Morning",
+   "artist": "MoodLab Sample",
+   "genre": "acoustic",
+   "durationSec": 224,
+   "mood": {
+    "energy": -0.7,
+    "valence": -0.5
+   },
+   "bpm": 66,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ac4",
+   "title": "Umbrella Song",
+   "artist": "MoodLab Sample",
+   "genre": "acoustic",
+   "durationSec": 197,
+   "mood": {
+    "energy": -0.35,
+    "valence": 0.25
+   },
+   "bpm": 84,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "lf1",
+   "title": "Low Tide",
+   "artist": "MoodLab Sample",
+   "genre": "lofi",
+   "durationSec": 176,
+   "mood": {
+    "energy": -0.5,
+    "valence": 0.2
+   },
+   "bpm": 78,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "lf2",
+   "title": "Window Seat",
+   "artist": "MoodLab Sample",
+   "genre": "lofi",
+   "durationSec": 168,
+   "mood": {
+    "energy": -0.3,
+    "valence": 0.3
+   },
+   "bpm": 82,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "lf3",
+   "title": "Drizzle Tape",
+   "artist": "MoodLab Sample",
+   "genre": "lofi",
+   "durationSec": 184,
+   "mood": {
+    "energy": -0.55,
+    "valence": -0.15
+   },
+   "bpm": 74,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "lf4",
+   "title": "Wiper Beat",
+   "artist": "MoodLab Sample",
+   "genre": "lofi",
+   "durationSec": 172,
+   "mood": {
+    "energy": -0.2,
+    "valence": -0.1
+   },
+   "bpm": 86,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "am1",
+   "title": "Under the Mountain",
+   "artist": "MoodLab Sample",
+   "genre": "ambient",
+   "durationSec": 260,
+   "mood": {
+    "energy": 0.0,
+    "valence": -0.6
+   },
+   "bpm": 90,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "am2",
+   "title": "Echo Chamber",
+   "artist": "MoodLab Sample",
+   "genre": "ambient",
+   "durationSec": 242,
+   "mood": {
+    "energy": 0.2,
+    "valence": -0.4
+   },
+   "bpm": 100,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "am3",
+   "title": "Deep Water",
+   "artist": "MoodLab Sample",
+   "genre": "ambient",
+   "durationSec": 278,
+   "mood": {
+    "energy": -0.8,
+    "valence": -0.6
+   },
+   "bpm": 60,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "am4",
+   "title": "Long Corridor",
+   "artist": "MoodLab Sample",
+   "genre": "ambient",
+   "durationSec": 251,
+   "mood": {
+    "energy": 0.15,
+    "valence": -0.55
+   },
+   "bpm": 96,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "fk1",
+   "title": "Groove Lane",
+   "artist": "MoodLab Sample",
+   "genre": "funk",
+   "durationSec": 210,
+   "mood": {
+    "energy": 0.5,
+    "valence": 0.5
+   },
+   "bpm": 108,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "fk2",
+   "title": "Open Road",
+   "artist": "MoodLab Sample",
+   "genre": "funk",
+   "durationSec": 198,
+   "mood": {
+    "energy": 0.4,
+    "valence": 0.4
+   },
+   "bpm": 104,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "fk3",
+   "title": "Bassline Drive",
+   "artist": "MoodLab Sample",
+   "genre": "funk",
+   "durationSec": 204,
+   "mood": {
+    "energy": 0.6,
+    "valence": 0.35
+   },
+   "bpm": 110,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ed1",
+   "title": "Overdrive",
+   "artist": "MoodLab Sample",
+   "genre": "edm",
+   "durationSec": 205,
+   "mood": {
+    "energy": 0.9,
+    "valence": 0.5
+   },
+   "bpm": 128,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ed2",
+   "title": "Wake Up Call",
+   "artist": "MoodLab Sample",
+   "genre": "edm",
+   "durationSec": 190,
+   "mood": {
+    "energy": 0.95,
+    "valence": 0.7
+   },
+   "bpm": 130,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ed3",
+   "title": "Night Voltage",
+   "artist": "MoodLab Sample",
+   "genre": "edm",
+   "durationSec": 212,
+   "mood": {
+    "energy": 0.85,
+    "valence": 0.1
+   },
+   "bpm": 126,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp1",
+   "title": "Smile Again",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 203,
+   "mood": {
+    "energy": 0.3,
+    "valence": 0.7
+   },
+   "bpm": 104,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp2",
+   "title": "Golden Hour",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 221,
+   "mood": {
+    "energy": -0.1,
+    "valence": 0.75
+   },
+   "bpm": 92,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp3",
+   "title": "Homecoming",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 236,
+   "mood": {
+    "energy": 0.75,
+    "valence": 0.85
+   },
+   "bpm": 122,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp4",
+   "title": "Traffic Smile",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 199,
+   "mood": {
+    "energy": 0.1,
+    "valence": 0.65
+   },
+   "bpm": 100,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp5",
+   "title": "Last Mile",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 228,
+   "mood": {
+    "energy": 0.65,
+    "valence": 0.9
+   },
+   "bpm": 118,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "pp6",
+   "title": "Warm Glow",
+   "artist": "MoodLab Sample",
+   "genre": "pop",
+   "durationSec": 214,
+   "mood": {
+    "energy": -0.2,
+    "valence": 0.6
+   },
+   "bpm": 88,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "jz1",
+   "title": "Midnight Drive",
+   "artist": "MoodLab Sample",
+   "genre": "jazz",
+   "durationSec": 255,
+   "mood": {
+    "energy": -0.3,
+    "valence": -0.1
+   },
+   "bpm": 84,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "jz2",
+   "title": "Blue Dashboard",
+   "artist": "MoodLab Sample",
+   "genre": "jazz",
+   "durationSec": 244,
+   "mood": {
+    "energy": -0.2,
+    "valence": 0.1
+   },
+   "bpm": 90,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "jz3",
+   "title": "Soft Neon",
+   "artist": "MoodLab Sample",
+   "genre": "jazz",
+   "durationSec": 238,
+   "mood": {
+    "energy": -0.45,
+    "valence": 0.05
+   },
+   "bpm": 76,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "rk1",
+   "title": "Redline",
+   "artist": "MoodLab Sample",
+   "genre": "rock",
+   "durationSec": 199,
+   "mood": {
+    "energy": 0.85,
+    "valence": 0.2
+   },
+   "bpm": 140,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "rk2",
+   "title": "Fast Lane",
+   "artist": "MoodLab Sample",
+   "genre": "rock",
+   "durationSec": 207,
+   "mood": {
+    "energy": 0.75,
+    "valence": 0.45
+   },
+   "bpm": 134,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cl1",
+   "title": "Still Lake",
+   "artist": "MoodLab Sample",
+   "genre": "classical",
+   "durationSec": 290,
+   "mood": {
+    "energy": -0.75,
+    "valence": 0.3
+   },
+   "bpm": 62,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "cl2",
+   "title": "Morning Etude",
+   "artist": "MoodLab Sample",
+   "genre": "classical",
+   "durationSec": 265,
+   "mood": {
+    "energy": -0.1,
+    "valence": 0.45
+   },
+   "bpm": 94,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "hp1",
+   "title": "Cruise Control",
+   "artist": "MoodLab Sample",
+   "genre": "hiphop",
+   "durationSec": 211,
+   "mood": {
+    "energy": 0.45,
+    "valence": 0.2
+   },
+   "bpm": 96,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "hp2",
+   "title": "Late Shift",
+   "artist": "MoodLab Sample",
+   "genre": "hiphop",
+   "durationSec": 219,
+   "mood": {
+    "energy": 0.2,
+    "valence": -0.2
+   },
+   "bpm": 90,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "in1",
+   "title": "Coastline",
+   "artist": "MoodLab Sample",
+   "genre": "indie",
+   "durationSec": 231,
+   "mood": {
+    "energy": 0.25,
+    "valence": 0.55
+   },
+   "bpm": 110,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "in2",
+   "title": "Paper Moon",
+   "artist": "MoodLab Sample",
+   "genre": "indie",
+   "durationSec": 218,
+   "mood": {
+    "energy": -0.25,
+    "valence": 0.35
+   },
+   "bpm": 86,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "in3",
+   "title": "Arrival",
+   "artist": "MoodLab Sample",
+   "genre": "indie",
+   "durationSec": 240,
+   "mood": {
+    "energy": 0.6,
+    "valence": 0.8
+   },
+   "bpm": 120,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "ed4",
+   "title": "Tunnel Vision",
+   "artist": "MoodLab Sample",
+   "genre": "edm",
+   "durationSec": 218,
+   "mood": {
+    "energy": 0.55,
+    "valence": -0.35
+   },
+   "bpm": 124,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "rk3",
+   "title": "Storm Chaser",
+   "artist": "MoodLab Sample",
+   "genre": "rock",
+   "durationSec": 224,
+   "mood": {
+    "energy": 0.7,
+    "valence": -0.3
+   },
+   "bpm": 138,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "hp3",
+   "title": "Concrete Rain",
+   "artist": "MoodLab Sample",
+   "genre": "hiphop",
+   "durationSec": 206,
+   "mood": {
+    "energy": 0.35,
+    "valence": -0.45
+   },
+   "bpm": 92,
+   "source": "",
+   "license": "placeholder"
+  },
+  {
+   "id": "am5",
+   "title": "Sodium Lights",
+   "artist": "MoodLab Sample",
+   "genre": "ambient",
+   "durationSec": 247,
+   "mood": {
+    "energy": 0.3,
+    "valence": -0.2
+   },
+   "bpm": 102,
+   "source": "",
+   "license": "placeholder"
+  }
+ ]
+}

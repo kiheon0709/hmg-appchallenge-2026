@@ -1,5 +1,7 @@
 package io.moodlab.moodrive.core
 
+import kotlinx.serialization.Serializable
+
 /** 와이퍼 상태. Pleos Wiper API는 State/Switch 수준만 확인됨 → 어댑터에서 가능한 만큼 매핑. */
 enum class WiperLevel { OFF, INTERMITTENT, LOW, HIGH }
 
@@ -45,6 +47,7 @@ data class VehicleSnapshot(
  * 무드 좌표 (Russell 감정 원형 모델).
  * energy: -1(차분) ~ +1(신남), valence: -1(어두움·우울) ~ +1(밝음·따뜻)
  */
+@Serializable
 data class Mood(val energy: Float, val valence: Float) {
     fun distanceTo(o: Mood): Float {
         val de = energy - o.energy
@@ -72,6 +75,7 @@ enum class Scene(val priority: Int, val label: String) {
     PARKED(0, "정차"),
 }
 
+@Serializable
 data class Track(
     val id: String,
     val title: String,
@@ -79,15 +83,20 @@ data class Track(
     val genre: String,
     val durationSec: Int,
     val mood: Mood,
+    val bpm: Int? = null,
     /** 앱 assets 내 경로 또는 URI. 비어 있으면 앱이 시뮬레이션 재생. */
     val source: String = "",
+    /** 라이선스 표기 (예: "CC0", "Pixabay Content License"). 제출 전 전 곡 확인. */
+    val license: String = "",
 )
 
+@Serializable
 data class RgbColor(val r: Int, val g: Int, val b: Int) {
     fun toArgb(): Int = (0xFF shl 24) or (r shl 16) or (g shl 8) or b
     fun hex(): String = "#%02X%02X%02X".format(r, g, b)
 }
 
+@Serializable
 data class AmbientCommand(
     val color: RgbColor,
     /** 0~100 */
