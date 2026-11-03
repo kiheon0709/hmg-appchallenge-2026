@@ -79,6 +79,23 @@ class ContextEngineTest {
     }
 
     @Test
+    fun `rain stopping with auto-lights already on is not a tunnel`() {
+        val e = ContextEngine(ContextEngine.Config(sceneHoldMs = 0))
+        e.update(day.copy(wiper = WiperLevel.LOW, lowBeamOn = true))
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 1_000, lowBeamOn = true)).scene)
+    }
+
+    @Test
+    fun `daytime headlights kept on and dusk auto-lights are not tunnels`() {
+        val e = ContextEngine()
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(lowBeamOn = true)).scene) // 처음부터 켜져 있음
+        val dusk = day.copy(minuteOfDay = 17 * 60 + 30, sunsetMinute = 17 * 60 + 40)
+        val e2 = ContextEngine()
+        e2.update(dusk)
+        assertNotEquals(Scene.TUNNEL, e2.update(dusk.copy(timestampMs = 1_000, lowBeamOn = true)).scene)
+    }
+
+    @Test
     fun `low beam while wipers run is auto-light, not tunnel`() {
         val e = ContextEngine()
         e.update(day.copy(wiper = WiperLevel.LOW))
@@ -89,7 +106,9 @@ class ContextEngineTest {
     fun `parked overrides everything`() {
         val e = ContextEngine()
         e.update(day.copy(wiper = WiperLevel.HIGH))
-        assertEquals(Scene.PARKED, e.update(day.copy(timestampMs = 1_000, gear = Gear.P, wiper = WiperLevel.HIGH)).scene)
+        e.update(day.copy(timestampMs = 1_000, gear = Gear.P, wiper = WiperLevel.HIGH)) // P단 시작
+        // 60초 이상 P단이면 폭우여도 정차
+        assertEquals(Scene.PARKED, e.update(day.copy(timestampMs = 62_000, gear = Gear.P, wiper = WiperLevel.HIGH)).scene)
     }
 
     @Test

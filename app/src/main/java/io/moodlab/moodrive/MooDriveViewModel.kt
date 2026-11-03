@@ -133,6 +133,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun resetTrip() {
         session.engine.reset()
+        session.startTrip()
         played.clear(); moments.clear(); tripStartClock = null
     }
 

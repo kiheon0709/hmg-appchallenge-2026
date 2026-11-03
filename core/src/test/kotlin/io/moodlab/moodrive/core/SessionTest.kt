@@ -25,8 +25,10 @@ class SessionTest {
     fun `ambient is held while driving by default and applied when parked`() {
         val s = MooDriveSession(SampleCatalog.tracks)
         assertTrue(s.onSnapshot(day).none { it is Action.SetAmbient })
-        val parked = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P))
-        assertTrue(parked.any { it is Action.SetAmbient })
+        // P단으로 바꾸면 차가 멈췄으니 조명은 바로 적용, 도착(카드)은 60초 뒤 확정
+        val stopped = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P))
+        assertTrue(stopped.any { it is Action.SetAmbient })
+        val parked = s.tick(62_000)
         assertTrue(parked.any { it is Action.TripEnded })
     }
 
@@ -332,12 +334,66 @@ class SessionTest {
 
     @Test
     fun `tunnel entry replaces a song above the 110 bpm cap`() {
-        val fast = SampleCatalog.tracks.filter { (it.bpm ?: 0) > 110 } + SampleCatalog.tracks.filter { (it.bpm ?: 0) <= 110 }
-        val s = MooDriveSession(fast, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        // 곡 2개짜리 카탈로그로 시작 곡이 반드시 빠른 곡이 되게 고정
+        val fast = Track("f", "Fast", "t", "edm", 200, Mood(0.6f, 0.3f), bpm = 128)
+        val slow = Track("s", "Slow", "t", "ambient", 200, Mood(0.1f, -0.5f), bpm = 90)
+        val s = MooDriveSession(listOf(fast, slow), engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
         s.onSnapshot(day.copy(driveMode = DriveMode.SPORT))
-        if ((s.currentTrack!!.bpm ?: 0) <= 110) return // 시작 곡이 이미 느리면 해당 없음
+        assertEquals("f", s.currentTrack!!.id)
         val acts = s.onSnapshot(day.copy(timestampMs = 1_000, driveMode = DriveMode.SPORT, lowBeamOn = true))
         assertEquals(Scene.TUNNEL, s.currentScene)
-        assertTrue((s.currentTrack!!.bpm ?: 0) <= 110 && acts.any { it is Action.Play })
+        assertEquals("s", acts.filterIsInstance<Action.Play>().single().track.id)
+    }
+
+    @Test
+    fun `slow song is kept through a tunnel`() {
+        val slow = Track("s", "Slow", "t", "ambient", 200, Mood(0.1f, -0.5f), bpm = 90)
+        val other = Track("o", "Other", "t", "pop", 200, Mood(0.3f, 0.6f), bpm = 100)
+        val s = MooDriveSession(listOf(slow, other), engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day.copy(etaMinutes = null))
+        val first = s.currentTrack
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = null, lowBeamOn = true)).none { it is Action.Play })
+        assertEquals(first, s.currentTrack)
+    }
+
+    @Test
+    fun `replaying the demo gives the same lines and a fresh card`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        fun run(offset: Long): Pair<Int, List<TripEvent>> {
+            val sc = Scenario.rainyCommute(startMs = offset)
+            var lines = 0
+            var card: List<TripEvent> = emptyList()
+            for (t in 0..sc.durationSec) s.onSnapshot(sc.snapshotAt(t)).forEach {
+                if (it is Action.Speak) lines++
+                if (it is Action.TripEnded) card = it.log
+            }
+            return lines to card
+        }
+        val (l1, c1) = run(0)
+        s.engine.reset()
+        val (l2, c2) = run(100_000_000L)
+        assertEquals(l1, l2)
+        assertEquals(c1.map { it.scene }, c2.map { it.scene })
+    }
+
+    @Test
+    fun `short stop in P is not an arrival`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day)
+        val stop = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.P)) + s.tick(21_000)
+        assertTrue(stop.none { it is Action.TripEnded })
+        s.onSnapshot(day.copy(timestampMs = 22_000))
+        val park = s.onSnapshot(day.copy(timestampMs = 30_000, gear = Gear.P)) + s.tick(95_000)
+        assertTrue(park.any { it is Action.TripEnded })
+    }
+
+    @Test
+    fun `no finale line while the mood is held`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        s.onVoice("이 분위기 유지")
+        val acts = s.onSnapshot(day.copy(timestampMs = 1_000, etaMinutes = 4))
+        assertEquals(Scene.ARRIVAL_FINALE, s.currentScene)
+        assertTrue(acts.none { it is Action.Speak })
     }
 }

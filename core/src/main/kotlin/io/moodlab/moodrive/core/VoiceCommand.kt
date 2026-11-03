@@ -14,8 +14,8 @@ object VoiceCommandParser {
         VoiceIntent.MUTE_DJ to listOf("말그만", "조용히해", "그만말", "디제이꺼", "dj꺼", "말하지마", "멘트그만"),
         VoiceIntent.DISLIKE to listOf("안좋아", "좋지않", "별로", "싫어", "싫다", "이상해", "구려", "노잼"),
         // 거절은 휴게소보다 먼저: "휴게소 안 가도 돼"는 휴게소 요청이 아니다
-        VoiceIntent.NO to listOf("안가", "안들러", "안졸", "안피곤", "지않", "지말", "가지마", "안쉬", "아니", "괜찮아", "됐어", "필요없", "안해도"),
-        VoiceIntent.REST_STOP to listOf("휴게소", "졸려", "졸리", "쉬고싶", "쉬어가", "졸음쉼터"),
+        VoiceIntent.NO to listOf("안가", "안들러", "안졸", "안피곤", "지않", "지말", "지마", "안쉬", "아니", "괜찮아", "됐어", "필요없", "안해도"),
+        VoiceIntent.REST_STOP to listOf("휴게소", "졸려", "졸리", "졸린", "졸음", "피곤", "쉬고싶", "쉬어가", "졸음쉼터"),
         VoiceIntent.SKIP to listOf("다음곡", "넘겨", "스킵", "다음노래", "패스", "skip", "next"),
         VoiceIntent.MORE_ENERGY to listOf("신나게", "신나는", "텐션", "업시켜", "빠른곡", "흥겹게", "에너지"),
         VoiceIntent.CALMER to listOf("차분", "조용한곡", "잔잔", "느린곡", "편안하게", "릴렉스"),
@@ -24,7 +24,8 @@ object VoiceCommandParser {
     )
 
     fun parse(text: String): VoiceIntent {
-        val t = text.norm()
+        // "A 말고 B" → B만 본다 ("신나는 거 말고 차분하게" = 차분하게)
+        val t = text.norm().let { n -> if ("말고" in n) n.substringAfterLast("말고").ifEmpty { n } else n }
         if (t.isEmpty()) return VoiceIntent.UNKNOWN
         val hit = rules.firstOrNull { (_, keys) -> keys.any { it in t } }?.first ?: return VoiceIntent.UNKNOWN
         // 짧은 대답(응/네/어)은 문장 전체가 그 말일 때만 YES로 본다 ("어쿠스틱"의 '어' 등 오탐 방지)

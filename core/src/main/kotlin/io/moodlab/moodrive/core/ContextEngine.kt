@@ -30,17 +30,23 @@ class ContextEngine(
         val fatigueDrivingMinutes: Int = 120,
         val fatigueLateNightMinutes: Int = 90,
         val finaleEtaMinutes: Int = 5,
+        /** 신호대기·잠깐 정차로 매번 '도착'이 되지 않도록, P단이 이 시간 이상 이어져야 정차 장면 */
+        val parkConfirmMs: Long = 60_000,
     )
 
     private var current: Scene? = null
     private var pending: Scene? = null
     private var pendingSinceMs = 0L
     private var daytimeLowBeamSinceMs: Long? = null
+    private var prevLowBeam: Boolean? = null
+    private var parkedSinceMs: Long? = null
 
     fun reset() {
         current = null
         pending = null
         daytimeLowBeamSinceMs = null
+        prevLowBeam = null
+        parkedSinceMs = null
     }
 
     fun update(s: VehicleSnapshot): ContextResult {
@@ -83,7 +89,13 @@ class ContextEngine(
         // 터널 판정용 상태는 장면과 무관하게 항상 갱신
         val tunnel = updateTunnel(s)
 
-        if (!s.isDriving) return Scene.PARKED
+        if (!s.isDriving) {
+            val since = parkedSinceMs ?: s.timestampMs.also { parkedSinceMs = it }
+            val prev = current
+            // 출발 전(첫 판정)이거나 이미 정차면 바로, 주행 중 잠깐 P단이면 60초 기다림
+            return if (prev == null || prev == Scene.PARKED || s.timestampMs - since >= config.parkConfirmMs) Scene.PARKED else prev
+        }
+        parkedSinceMs = null
         val candidates = buildList {
             if (s.wiper == WiperLevel.HIGH) add(Scene.HEAVY_RAIN)
             if (tunnel) add(Scene.TUNNEL)
@@ -101,17 +113,26 @@ class ContextEngine(
     }
 
     /**
-     * 터널 추정: 주간에 하향등이 켜진 순간부터 [Config.tunnelMaxMs] 동안.
-     * 와이퍼가 돌고 있으면 비·흐림으로 오토라이트가 켜진 것으로 보고 터널로 보지 않는다.
+     * 터널 추정: 주간에 하향등이 **꺼짐→켜짐으로 바뀐 순간**부터 [Config.tunnelMaxMs] 동안.
+     * 제외: 와이퍼 작동 중(비·흐림 오토라이트), 비가 그쳐도 이미 켜져 있던 전조등, 주간 상시 점등,
+     * 일몰 15분 전~60분 후(해질녘 오토라이트).
      * 한계: 야간 터널, 4분 넘는 장대 터널은 구분 못 함 → NaviHelper 도로 정보가 확인되면 교체.
      */
     private fun updateTunnel(s: VehicleSnapshot): Boolean {
-        if (s.lowBeamOn && s.isDaytime() && s.wiper == WiperLevel.OFF) {
-            val since = daytimeLowBeamSinceMs ?: s.timestampMs.also { daytimeLowBeamSinceMs = it }
-            return s.timestampMs - since <= config.tunnelMaxMs
+        val turnedOn = prevLowBeam == false && s.lowBeamOn
+        prevLowBeam = s.lowBeamOn
+        if (!s.lowBeamOn || !s.isDaytime() || s.wiper != WiperLevel.OFF || nearSunset(s)) {
+            daytimeLowBeamSinceMs = null
+            return false
         }
-        daytimeLowBeamSinceMs = null
-        return false
+        if (turnedOn) daytimeLowBeamSinceMs = s.timestampMs
+        val since = daytimeLowBeamSinceMs ?: return false
+        return s.timestampMs - since <= config.tunnelMaxMs
+    }
+
+    private fun nearSunset(s: VehicleSnapshot): Boolean {
+        val set = s.sunsetMinute ?: return false
+        return s.minuteOfDay in (set - 15)..(set + 60)
     }
 
     private fun isLateNight(minute: Int) = minute >= 23 * 60 || minute < 5 * 60
@@ -170,8 +191,8 @@ class ContextEngine(
         Scene.TUNNEL -> "터널이에요. 잠깐 공간감 있는 곡으로 바꿀게요."
         Scene.RAIN -> "비가 오기 시작했네요. 조금 차분하게 갈게요."
         Scene.TRAFFIC_JAM -> "길이 막히네요. 기분 좋아지는 곡으로 바꿀게요."
-        Scene.ARRIVAL_FINALE -> "곧 도착이에요. 오늘의 마지막 곡입니다."
-        Scene.SPORT -> "스포츠 모드네요. 템포 올립니다."
+        Scene.ARRIVAL_FINALE -> "곧 도착이에요. 오늘의 피날레 곡입니다."
+        Scene.SPORT -> "스포츠 모드네요. 경쾌한 곡으로 갈게요."
         Scene.SUNSET -> "노을 시간이에요. 따뜻한 곡으로 갈게요."
         Scene.NIGHT -> "어두워졌네요. 조용한 밤 드라이브 곡으로 바꿀게요."
         Scene.CRUISING -> "도로가 시원하게 뚫렸네요. 그루브 있는 곡으로 갈게요."

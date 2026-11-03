@@ -12,7 +12,7 @@
 
 | 항목 | 상태 |
 |---|---|
-| core 로직 | 자동 테스트 55개 통과 (`./gradlew :core:test`) |
+| core 로직 | 자동 테스트 61개 통과 (`./gradlew :core:test`) |
 | 데모 시나리오 | 3분 동안 장면 전환 7회(정차 제외), 곡 10개, DJ 멘트 7회 (테스트로 고정) (`./gradlew :core:demoTrace`) |
 | 디자인 | 화면 3종. 자동 검사(조작 수·터치·글자·실측 대비) 1920×720, 1408×792 모두 통과. 토큰 동기화 검사 통과 |
 | app (Android) | JVM 하네스 컴파일 오류 0 (`tools/app-compile-check`). 실제 Android 빌드는 맥에서 미확인 |

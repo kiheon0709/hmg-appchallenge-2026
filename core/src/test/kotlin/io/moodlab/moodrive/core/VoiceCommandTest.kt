@@ -40,6 +40,13 @@ class VoiceCommandTest {
         "휴게소 가지 말자" to VoiceIntent.NO,
         "쉬고 싶지 않아" to VoiceIntent.NO,
         "이 노래 좋지 않아" to VoiceIntent.DISLIKE,
+        // 3바퀴 심사 회귀 케이스
+        "다음 휴게소 들르지 마" to VoiceIntent.NO,
+        "신나는 거 말고 차분하게" to VoiceIntent.CALMER,
+        "차분한 거 말고 신나게" to VoiceIntent.MORE_ENERGY,
+        "졸린데 신나는 노래 틀어줘" to VoiceIntent.REST_STOP,
+        "피곤해" to VoiceIntent.REST_STOP,
+        "피곤하지 않아" to VoiceIntent.NO,
     )
 
     @Test

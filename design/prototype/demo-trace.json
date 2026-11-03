@@ -5375,7 +5375,7 @@
                 "brightness": 78,
                 "transitionMs": 4000
             },
-            "speak": "곧 도착이에요. 오늘의 마지막 곡입니다.",
+            "speak": "곧 도착이에요. 오늘의 피날레 곡입니다.",
             "restStop": false,
             "tripEnded": null
         },
@@ -6047,14 +6047,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 1,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 0,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6066,26 +6066,16 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
-            "speak": "도착했어요. 오늘 드라이브 카드를 만들어 둘게요.",
+            "speak": null,
             "restStop": false,
-            "tripEnded": [
-                "노을",
-                "비",
-                "폭우",
-                "터널",
-                "노을",
-                "정체",
-                "노을",
-                "도착 피날레",
-                "정차"
-            ]
+            "tripEnded": null
         },
         {
             "t": 176,
@@ -6095,14 +6085,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 1,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 10,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6114,11 +6104,11 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -6133,14 +6123,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 1,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 20,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6152,11 +6142,11 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -6171,14 +6161,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 1,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 30,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6190,11 +6180,11 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -6209,14 +6199,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 1,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 40,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6228,11 +6218,11 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
-                "brightness": 45,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -6247,14 +6237,14 @@
             "wiper": "OFF",
             "lowBeam": false,
             "etaMin": 0,
-            "scene": "PARKED",
-            "sceneLabel": "정차",
+            "scene": "ARRIVAL_FINALE",
+            "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": -0.5,
-                "valence": 0.4
+                "energy": 0.6,
+                "valence": 0.90000004
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6266,9 +6256,9 @@
             },
             "ambientTarget": {
                 "color": {
-                    "r": 110,
-                    "g": 255,
-                    "b": 88
+                    "r": 255,
+                    "g": 94,
+                    "b": 51
                 },
                 "brightness": 40,
                 "transitionMs": 4000
@@ -6291,8 +6281,8 @@
                 "energy": -0.5,
                 "valence": 0.4
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6311,9 +6301,19 @@
                 "brightness": 40,
                 "transitionMs": 4000
             },
-            "speak": null,
+            "speak": "도착했어요. 오늘 드라이브 카드를 만들어 둘게요.",
             "restStop": false,
-            "tripEnded": null
+            "tripEnded": [
+                "노을",
+                "비",
+                "폭우",
+                "터널",
+                "노을",
+                "정체",
+                "노을",
+                "도착 피날레",
+                "정차"
+            ]
         },
         {
             "t": 182,
@@ -6329,8 +6329,8 @@
                 "energy": -0.5,
                 "valence": 0.4
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6367,8 +6367,8 @@
                 "energy": -0.5,
                 "valence": 0.4
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6405,8 +6405,8 @@
                 "energy": -0.5,
                 "valence": 0.4
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,
@@ -6443,8 +6443,8 @@
                 "energy": -0.5,
                 "valence": 0.4
             },
-            "trackId": "pp5",
-            "positionSec": 220,
+            "trackId": "pp3",
+            "positionSec": 50,
             "ambient": {
                 "color": {
                     "r": 255,

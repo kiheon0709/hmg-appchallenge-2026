@@ -93,6 +93,8 @@ class MooDriveSession(
         val actions = mutableListOf<Action>()
 
         if (r.changed) {
+            // 정차 → 주행이면 새 주행: 이전 주행 기록·보정·질문 상태를 비운다 (데모 재생 반복·하루 여러 번 운전)
+            if (r.scene != Scene.PARKED && !tripActive) startTrip()
             val prevScene = log.lastOrNull()?.scene
             actions += Action.SceneChanged(r.scene, r.mood)
             log += TripEvent(s.timestampMs, r.scene, nowPlaying?.id)
@@ -102,9 +104,11 @@ class MooDriveSession(
                 // 안전 멘트는 음소거·간격 제한 무시. 출발·도착·피날레는 간격 제한만 무시(연출 핵심 순간).
                 val safety = r.scene == Scene.HEAVY_RAIN
                 val keyMoment = greeting || r.scene == Scene.PARKED || r.scene == Scene.ARRIVAL_FINALE
+                // 분위기 유지 중엔 무드가 안 바뀌므로 피날레 안내도 하지 않음
+                val heldFinale = r.scene == Scene.ARRIVAL_FINALE && isHeld()
                 val last = lastDjAtMs
                 val intervalOk = last == null || s.timestampMs - last >= djMinIntervalMs
-                if (safety || (!djMuted && (keyMoment || intervalOk))) {
+                if (safety || (!djMuted && !heldFinale && (keyMoment || intervalOk))) {
                     actions += Action.Speak(text)
                     if (!keyMoment) lastDjAtMs = s.timestampMs
                 }
@@ -131,6 +135,20 @@ class MooDriveSession(
         val ambientMood = if (r.scene == Scene.PARKED) lastDrivingMood ?: targetMood(r) else targetMood(r)
         ambient.plan(ambientMood, s)?.let { actions += Action.SetAmbient(it) }
         return actions
+    }
+
+    /** 새 주행 시작. 엔진 판정 상태는 유지(이미 이번 스냅샷을 판정함), 주행 단위 상태만 초기화. */
+    fun startTrip() {
+        log.clear()
+        tripGenre.clear()
+        energyBias = 0f
+        holdUntilMs = 0L
+        heldMood = null
+        restStopPending = false
+        lastRestOfferMs = null
+        lastDjAtMs = null
+        lastDrivingMood = null
+        tripActive = false
     }
 
     private fun updateDrivingTimer(s: VehicleSnapshot) {
@@ -269,8 +287,10 @@ class MooDriveSession(
 
     private fun play(r: ContextResult): Action.Play {
         // 피날레는 이번 주행에서 반응이 좋았던 장르에 가산점
+        // 그리고 남은 시간을 덮는 길이의 곡을 우선 (도착 전에 끝나 다른 곡이 끼어드는 일을 줄임)
+        val remainSec = (lastSnapshot?.etaMinutes ?: 0) * 60
         val bonus: (Track) -> Float = if (r.scene == Scene.ARRIVAL_FINALE) {
-            { t -> (tripGenre[t.genre] ?: 0f).coerceIn(-2f, 3f) * 0.1f }
+            { t -> (tripGenre[t.genre] ?: 0f).coerceIn(-2f, 3f) * 0.1f + if (t.durationSec >= remainSec) 0.15f else 0f }
         } else {
             { 0f }
         }

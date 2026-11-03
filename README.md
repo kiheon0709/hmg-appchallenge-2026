@@ -32,6 +32,6 @@ VehicleSignalSource(Pleos / 시나리오 / 수동) ─▶ MooDriveSession ─▶
 - [ ] D단에서 앰비언트 set 호출이 막히는지 에뮬레이터로 시험 → `docs/STATUS.md` 기록
 - [ ] 로열티프리 음원 번들 + 무드 태깅, Media3 재생
 - [ ] Pleos TTS(HYBRID), STT 음성 명령
-- [ ] release APK → `apk/` (제출 파일명: 영문팀명_MooDrive_release.apk)
+- [ ] release APK → `apk/` (제출 파일명: MoodLab_MooDrive_release.apk)
 
 Playground 프로젝트 Key 같은 비밀값은 `local.properties`에만 두고 커밋하지 않는다.
