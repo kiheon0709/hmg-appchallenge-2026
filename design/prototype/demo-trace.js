@@ -6,7 +6,7 @@ window.TRACE = {
         {
             "id": "cp1",
             "title": "City Lights",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "citypop",
             "durationSec": 232,
             "mood": {
@@ -20,7 +20,7 @@ window.TRACE = {
         {
             "id": "cp2",
             "title": "Sunset Avenue",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "citypop",
             "durationSec": 248,
             "mood": {
@@ -34,7 +34,7 @@ window.TRACE = {
         {
             "id": "cp3",
             "title": "Neon Highway",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "citypop",
             "durationSec": 215,
             "mood": {
@@ -48,7 +48,7 @@ window.TRACE = {
         {
             "id": "cp4",
             "title": "Plastic Summer",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "citypop",
             "durationSec": 226,
             "mood": {
@@ -62,7 +62,7 @@ window.TRACE = {
         {
             "id": "ac1",
             "title": "Rain on Glass",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "acoustic",
             "durationSec": 201,
             "mood": {
@@ -76,7 +76,7 @@ window.TRACE = {
         {
             "id": "ac2",
             "title": "Wet Asphalt",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "acoustic",
             "durationSec": 189,
             "mood": {
@@ -90,7 +90,7 @@ window.TRACE = {
         {
             "id": "ac3",
             "title": "Grey Morning",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "acoustic",
             "durationSec": 224,
             "mood": {
@@ -104,7 +104,7 @@ window.TRACE = {
         {
             "id": "ac4",
             "title": "Umbrella Song",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "acoustic",
             "durationSec": 197,
             "mood": {
@@ -118,7 +118,7 @@ window.TRACE = {
         {
             "id": "lf1",
             "title": "Low Tide",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "lofi",
             "durationSec": 176,
             "mood": {
@@ -132,7 +132,7 @@ window.TRACE = {
         {
             "id": "lf2",
             "title": "Window Seat",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "lofi",
             "durationSec": 168,
             "mood": {
@@ -146,7 +146,7 @@ window.TRACE = {
         {
             "id": "lf3",
             "title": "Drizzle Tape",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "lofi",
             "durationSec": 184,
             "mood": {
@@ -160,7 +160,7 @@ window.TRACE = {
         {
             "id": "lf4",
             "title": "Wiper Beat",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "lofi",
             "durationSec": 172,
             "mood": {
@@ -174,7 +174,7 @@ window.TRACE = {
         {
             "id": "am1",
             "title": "Under the Mountain",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "ambient",
             "durationSec": 260,
             "mood": {
@@ -188,7 +188,7 @@ window.TRACE = {
         {
             "id": "am2",
             "title": "Echo Chamber",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "ambient",
             "durationSec": 242,
             "mood": {
@@ -202,7 +202,7 @@ window.TRACE = {
         {
             "id": "am3",
             "title": "Deep Water",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "ambient",
             "durationSec": 278,
             "mood": {
@@ -216,7 +216,7 @@ window.TRACE = {
         {
             "id": "am4",
             "title": "Long Corridor",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "ambient",
             "durationSec": 251,
             "mood": {
@@ -230,7 +230,7 @@ window.TRACE = {
         {
             "id": "fk1",
             "title": "Groove Lane",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "funk",
             "durationSec": 210,
             "mood": {
@@ -244,7 +244,7 @@ window.TRACE = {
         {
             "id": "fk2",
             "title": "Open Road",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "funk",
             "durationSec": 198,
             "mood": {
@@ -258,7 +258,7 @@ window.TRACE = {
         {
             "id": "fk3",
             "title": "Bassline Drive",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "funk",
             "durationSec": 204,
             "mood": {
@@ -272,7 +272,7 @@ window.TRACE = {
         {
             "id": "ed1",
             "title": "Overdrive",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "edm",
             "durationSec": 205,
             "mood": {
@@ -286,7 +286,7 @@ window.TRACE = {
         {
             "id": "ed2",
             "title": "Wake Up Call",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "edm",
             "durationSec": 190,
             "mood": {
@@ -300,7 +300,7 @@ window.TRACE = {
         {
             "id": "ed3",
             "title": "Night Voltage",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "edm",
             "durationSec": 212,
             "mood": {
@@ -314,7 +314,7 @@ window.TRACE = {
         {
             "id": "pp1",
             "title": "Smile Again",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 203,
             "mood": {
@@ -328,7 +328,7 @@ window.TRACE = {
         {
             "id": "pp2",
             "title": "Golden Hour",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 221,
             "mood": {
@@ -342,7 +342,7 @@ window.TRACE = {
         {
             "id": "pp3",
             "title": "Homecoming",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 236,
             "mood": {
@@ -356,7 +356,7 @@ window.TRACE = {
         {
             "id": "pp4",
             "title": "Traffic Smile",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 199,
             "mood": {
@@ -370,7 +370,7 @@ window.TRACE = {
         {
             "id": "pp5",
             "title": "Last Mile",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 228,
             "mood": {
@@ -384,7 +384,7 @@ window.TRACE = {
         {
             "id": "pp6",
             "title": "Warm Glow",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "pop",
             "durationSec": 214,
             "mood": {
@@ -398,7 +398,7 @@ window.TRACE = {
         {
             "id": "jz1",
             "title": "Midnight Drive",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "jazz",
             "durationSec": 255,
             "mood": {
@@ -412,7 +412,7 @@ window.TRACE = {
         {
             "id": "jz2",
             "title": "Blue Dashboard",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "jazz",
             "durationSec": 244,
             "mood": {
@@ -426,7 +426,7 @@ window.TRACE = {
         {
             "id": "jz3",
             "title": "Soft Neon",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "jazz",
             "durationSec": 238,
             "mood": {
@@ -440,7 +440,7 @@ window.TRACE = {
         {
             "id": "rk1",
             "title": "Redline",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "rock",
             "durationSec": 199,
             "mood": {
@@ -454,7 +454,7 @@ window.TRACE = {
         {
             "id": "rk2",
             "title": "Fast Lane",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "rock",
             "durationSec": 207,
             "mood": {
@@ -468,7 +468,7 @@ window.TRACE = {
         {
             "id": "cl1",
             "title": "Still Lake",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "classical",
             "durationSec": 290,
             "mood": {
@@ -482,7 +482,7 @@ window.TRACE = {
         {
             "id": "cl2",
             "title": "Morning Etude",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "classical",
             "durationSec": 265,
             "mood": {
@@ -496,7 +496,7 @@ window.TRACE = {
         {
             "id": "hp1",
             "title": "Cruise Control",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "hiphop",
             "durationSec": 211,
             "mood": {
@@ -510,7 +510,7 @@ window.TRACE = {
         {
             "id": "hp2",
             "title": "Late Shift",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "hiphop",
             "durationSec": 219,
             "mood": {
@@ -524,7 +524,7 @@ window.TRACE = {
         {
             "id": "in1",
             "title": "Coastline",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "indie",
             "durationSec": 231,
             "mood": {
@@ -538,7 +538,7 @@ window.TRACE = {
         {
             "id": "in2",
             "title": "Paper Moon",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "indie",
             "durationSec": 218,
             "mood": {
@@ -552,7 +552,7 @@ window.TRACE = {
         {
             "id": "in3",
             "title": "Arrival",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "indie",
             "durationSec": 240,
             "mood": {
@@ -566,7 +566,7 @@ window.TRACE = {
         {
             "id": "ed4",
             "title": "Tunnel Vision",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "edm",
             "durationSec": 218,
             "mood": {
@@ -580,7 +580,7 @@ window.TRACE = {
         {
             "id": "rk3",
             "title": "Storm Chaser",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "rock",
             "durationSec": 224,
             "mood": {
@@ -594,7 +594,7 @@ window.TRACE = {
         {
             "id": "hp3",
             "title": "Concrete Rain",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "hiphop",
             "durationSec": 206,
             "mood": {
@@ -608,7 +608,7 @@ window.TRACE = {
         {
             "id": "am5",
             "title": "Sodium Lights",
-            "artist": "MoodLab Sample",
+            "artist": "샘플 음원",
             "genre": "ambient",
             "durationSec": 247,
             "mood": {
@@ -5192,7 +5192,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5201,10 +5201,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": "곧 도착이에요. 오늘의 마지막 곡입니다.",
@@ -5222,7 +5222,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5231,10 +5231,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5252,7 +5252,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5261,10 +5261,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5282,7 +5282,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5291,10 +5291,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5312,7 +5312,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5321,10 +5321,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5342,7 +5342,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5351,10 +5351,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5372,7 +5372,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5381,10 +5381,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5402,7 +5402,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5411,10 +5411,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5432,7 +5432,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5441,10 +5441,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5462,7 +5462,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5471,10 +5471,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5492,7 +5492,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5501,10 +5501,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5522,7 +5522,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5531,10 +5531,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5552,7 +5552,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5561,10 +5561,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5582,7 +5582,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5591,10 +5591,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5612,7 +5612,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5621,10 +5621,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5642,7 +5642,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5651,10 +5651,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5672,7 +5672,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5681,10 +5681,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5702,7 +5702,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5711,10 +5711,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5732,7 +5732,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5741,10 +5741,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5762,7 +5762,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5771,10 +5771,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5792,7 +5792,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5801,10 +5801,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5822,7 +5822,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5831,10 +5831,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,
@@ -5852,7 +5852,7 @@ window.TRACE = {
             "scene": "ARRIVAL_FINALE",
             "sceneLabel": "도착 피날레",
             "mood": {
-                "energy": 0.7,
+                "energy": 0.6,
                 "valence": 0.90000004
             },
             "trackId": "pp5",
@@ -5861,10 +5861,10 @@ window.TRACE = {
             "ambientTarget": {
                 "color": {
                     "r": 255,
-                    "g": 84,
+                    "g": 94,
                     "b": 51
                 },
-                "brightness": 81,
+                "brightness": 78,
                 "transitionMs": 4000
             },
             "speak": null,

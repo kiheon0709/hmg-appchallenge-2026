@@ -63,6 +63,23 @@ class ContextEngineTest {
     }
 
     @Test
+    fun `two hours of driving triggers fatigue at any hour`() {
+        val e = ContextEngine()
+        assertEquals(Scene.FATIGUE_BOOST, e.update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 121)).scene)
+        val e2 = ContextEngine()
+        assertEquals(Scene.FATIGUE_BOOST, e2.update(day.copy(minuteOfDay = 1 * 60, drivingMinutes = 95)).scene)
+        val e3 = ContextEngine()
+        assertNotEquals(Scene.FATIGUE_BOOST, e3.update(day.copy(minuteOfDay = 15 * 60, drivingMinutes = 95)).scene)
+    }
+
+    @Test
+    fun `low beam while wipers run is auto-light, not tunnel`() {
+        val e = ContextEngine()
+        e.update(day.copy(wiper = WiperLevel.LOW))
+        assertNotEquals(Scene.TUNNEL, e.update(day.copy(timestampMs = 1_000, wiper = WiperLevel.LOW, lowBeamOn = true)).scene)
+    }
+
+    @Test
     fun `parked overrides everything`() {
         val e = ContextEngine()
         e.update(day.copy(wiper = WiperLevel.HIGH))

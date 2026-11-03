@@ -24,6 +24,18 @@ class VoiceCommandTest {
         "누구 노래야" to VoiceIntent.WHAT_SONG,
         "오늘 저녁 뭐 먹지" to VoiceIntent.UNKNOWN,
         "" to VoiceIntent.UNKNOWN,
+        // 리뷰에서 나온 오분류 회귀 케이스
+        "휴게소 안 가도 돼" to VoiceIntent.NO,
+        "이 노래 뭔지 말해줘" to VoiceIntent.WHAT_SONG,
+        "더 크게" to VoiceIntent.UNKNOWN,
+        "아니 별로야" to VoiceIntent.DISLIKE,
+        "어쿠스틱 틀어줘" to VoiceIntent.UNKNOWN,
+        "응" to VoiceIntent.YES,
+        "네" to VoiceIntent.YES,
+        "경유지 추가해" to VoiceIntent.YES,
+        "괜찮아요" to VoiceIntent.NO,
+        "이 분위기 유지해줘" to VoiceIntent.HOLD,
+        "바꾸지 마" to VoiceIntent.HOLD,
     )
 
     @Test

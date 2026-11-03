@@ -5,7 +5,7 @@
   {
    "id": "cp1",
    "title": "City Lights",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "citypop",
    "durationSec": 232,
    "mood": {
@@ -19,7 +19,7 @@
   {
    "id": "cp2",
    "title": "Sunset Avenue",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "citypop",
    "durationSec": 248,
    "mood": {
@@ -33,7 +33,7 @@
   {
    "id": "cp3",
    "title": "Neon Highway",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "citypop",
    "durationSec": 215,
    "mood": {
@@ -47,7 +47,7 @@
   {
    "id": "cp4",
    "title": "Plastic Summer",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "citypop",
    "durationSec": 226,
    "mood": {
@@ -61,7 +61,7 @@
   {
    "id": "ac1",
    "title": "Rain on Glass",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "acoustic",
    "durationSec": 201,
    "mood": {
@@ -75,7 +75,7 @@
   {
    "id": "ac2",
    "title": "Wet Asphalt",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "acoustic",
    "durationSec": 189,
    "mood": {
@@ -89,7 +89,7 @@
   {
    "id": "ac3",
    "title": "Grey Morning",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "acoustic",
    "durationSec": 224,
    "mood": {
@@ -103,7 +103,7 @@
   {
    "id": "ac4",
    "title": "Umbrella Song",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "acoustic",
    "durationSec": 197,
    "mood": {
@@ -117,7 +117,7 @@
   {
    "id": "lf1",
    "title": "Low Tide",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "lofi",
    "durationSec": 176,
    "mood": {
@@ -131,7 +131,7 @@
   {
    "id": "lf2",
    "title": "Window Seat",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "lofi",
    "durationSec": 168,
    "mood": {
@@ -145,7 +145,7 @@
   {
    "id": "lf3",
    "title": "Drizzle Tape",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "lofi",
    "durationSec": 184,
    "mood": {
@@ -159,7 +159,7 @@
   {
    "id": "lf4",
    "title": "Wiper Beat",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "lofi",
    "durationSec": 172,
    "mood": {
@@ -173,7 +173,7 @@
   {
    "id": "am1",
    "title": "Under the Mountain",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "ambient",
    "durationSec": 260,
    "mood": {
@@ -187,7 +187,7 @@
   {
    "id": "am2",
    "title": "Echo Chamber",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "ambient",
    "durationSec": 242,
    "mood": {
@@ -201,7 +201,7 @@
   {
    "id": "am3",
    "title": "Deep Water",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "ambient",
    "durationSec": 278,
    "mood": {
@@ -215,7 +215,7 @@
   {
    "id": "am4",
    "title": "Long Corridor",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "ambient",
    "durationSec": 251,
    "mood": {
@@ -229,7 +229,7 @@
   {
    "id": "fk1",
    "title": "Groove Lane",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "funk",
    "durationSec": 210,
    "mood": {
@@ -243,7 +243,7 @@
   {
    "id": "fk2",
    "title": "Open Road",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "funk",
    "durationSec": 198,
    "mood": {
@@ -257,7 +257,7 @@
   {
    "id": "fk3",
    "title": "Bassline Drive",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "funk",
    "durationSec": 204,
    "mood": {
@@ -271,7 +271,7 @@
   {
    "id": "ed1",
    "title": "Overdrive",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "edm",
    "durationSec": 205,
    "mood": {
@@ -285,7 +285,7 @@
   {
    "id": "ed2",
    "title": "Wake Up Call",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "edm",
    "durationSec": 190,
    "mood": {
@@ -299,7 +299,7 @@
   {
    "id": "ed3",
    "title": "Night Voltage",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "edm",
    "durationSec": 212,
    "mood": {
@@ -313,7 +313,7 @@
   {
    "id": "pp1",
    "title": "Smile Again",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 203,
    "mood": {
@@ -327,7 +327,7 @@
   {
    "id": "pp2",
    "title": "Golden Hour",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 221,
    "mood": {
@@ -341,7 +341,7 @@
   {
    "id": "pp3",
    "title": "Homecoming",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 236,
    "mood": {
@@ -355,7 +355,7 @@
   {
    "id": "pp4",
    "title": "Traffic Smile",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 199,
    "mood": {
@@ -369,7 +369,7 @@
   {
    "id": "pp5",
    "title": "Last Mile",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 228,
    "mood": {
@@ -383,7 +383,7 @@
   {
    "id": "pp6",
    "title": "Warm Glow",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "pop",
    "durationSec": 214,
    "mood": {
@@ -397,7 +397,7 @@
   {
    "id": "jz1",
    "title": "Midnight Drive",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "jazz",
    "durationSec": 255,
    "mood": {
@@ -411,7 +411,7 @@
   {
    "id": "jz2",
    "title": "Blue Dashboard",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "jazz",
    "durationSec": 244,
    "mood": {
@@ -425,7 +425,7 @@
   {
    "id": "jz3",
    "title": "Soft Neon",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "jazz",
    "durationSec": 238,
    "mood": {
@@ -439,7 +439,7 @@
   {
    "id": "rk1",
    "title": "Redline",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "rock",
    "durationSec": 199,
    "mood": {
@@ -453,7 +453,7 @@
   {
    "id": "rk2",
    "title": "Fast Lane",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "rock",
    "durationSec": 207,
    "mood": {
@@ -467,7 +467,7 @@
   {
    "id": "cl1",
    "title": "Still Lake",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "classical",
    "durationSec": 290,
    "mood": {
@@ -481,7 +481,7 @@
   {
    "id": "cl2",
    "title": "Morning Etude",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "classical",
    "durationSec": 265,
    "mood": {
@@ -495,7 +495,7 @@
   {
    "id": "hp1",
    "title": "Cruise Control",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "hiphop",
    "durationSec": 211,
    "mood": {
@@ -509,7 +509,7 @@
   {
    "id": "hp2",
    "title": "Late Shift",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "hiphop",
    "durationSec": 219,
    "mood": {
@@ -523,7 +523,7 @@
   {
    "id": "in1",
    "title": "Coastline",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "indie",
    "durationSec": 231,
    "mood": {
@@ -537,7 +537,7 @@
   {
    "id": "in2",
    "title": "Paper Moon",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "indie",
    "durationSec": 218,
    "mood": {
@@ -551,7 +551,7 @@
   {
    "id": "in3",
    "title": "Arrival",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "indie",
    "durationSec": 240,
    "mood": {
@@ -565,7 +565,7 @@
   {
    "id": "ed4",
    "title": "Tunnel Vision",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "edm",
    "durationSec": 218,
    "mood": {
@@ -579,7 +579,7 @@
   {
    "id": "rk3",
    "title": "Storm Chaser",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "rock",
    "durationSec": 224,
    "mood": {
@@ -593,7 +593,7 @@
   {
    "id": "hp3",
    "title": "Concrete Rain",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "hiphop",
    "durationSec": 206,
    "mood": {
@@ -607,7 +607,7 @@
   {
    "id": "am5",
    "title": "Sodium Lights",
-   "artist": "MoodLab Sample",
+   "artist": "샘플 음원",
    "genre": "ambient",
    "durationSec": 247,
    "mood": {

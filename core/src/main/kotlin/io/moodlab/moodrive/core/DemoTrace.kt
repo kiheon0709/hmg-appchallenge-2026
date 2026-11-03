@@ -55,7 +55,7 @@ object DemoTrace {
             // 시뮬레이션 재생: 시나리오 1초 = 차량 시간 timeScale초
             if (track != null && session.currentScene != Scene.PARKED && actions.none { it is Action.Play }) {
                 pos += scenario.timeScale
-                if (pos >= track.durationSec) actions += session.onTrackEnded(completed = true)
+                if (pos >= track.durationSec) actions += session.onTrackEnded(completed = true, playedSec = pos)
             }
             var speak: String? = null
             var tripEnded: List<String>? = null
@@ -66,6 +66,7 @@ object DemoTrace {
                 is Action.Speak -> speak = listOfNotNull(speak, a.text).joinToString(" ")
                 is Action.TripEnded -> tripEnded = a.log.map { it.scene.label }.distinctConsecutive()
                 Action.SuggestRestStop -> rest = true
+                Action.AddRestStop -> Unit
                 is Action.SceneChanged -> Unit
             }
             val scene = session.currentScene!!

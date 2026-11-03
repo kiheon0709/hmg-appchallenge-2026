@@ -58,11 +58,25 @@ class Curator(
 
     fun rank(target: Mood, scene: Scene, exclude: Set<String> = emptySet()): List<Track> {
         val blocked = history.toSet() + exclude
-        val pool = catalog.filter { it.id !in blocked }.ifEmpty { catalog.filter { it.id !in exclude } }.ifEmpty { catalog }
+        val cap = bpmCap(scene)
+        val tempoOk = catalog.filter { t -> cap == null || (t.bpm ?: 0) <= cap }.ifEmpty { catalog }
+        val pool = tempoOk.filter { it.id !in blocked }.ifEmpty { tempoOk.filter { it.id !in exclude } }.ifEmpty { tempoOk }
         return pool.sortedByDescending { score(it, target, scene) }
     }
 
     fun next(target: Mood, scene: Scene): Track = rank(target, scene).first().also { markPlayed(it) }
+
+    companion object {
+        /**
+         * 안전 템포 상한. 빠른 템포가 시뮬레이터 주행 속도·신호위반을 늘린다는 연구(Brodsky 2001)를 반영:
+         * 비·폭우·정체·터널에선 110 BPM, 그 외 주행 장면도 130 BPM을 넘기지 않는다. BPM 미태깅 곡은 통과.
+         */
+        fun bpmCap(scene: Scene): Int? = when (scene) {
+            Scene.RAIN, Scene.HEAVY_RAIN, Scene.TRAFFIC_JAM, Scene.TUNNEL -> 110
+            Scene.PARKED -> null
+            else -> 130
+        }
+    }
 
     fun markPlayed(track: Track) {
         history.remove(track.id)

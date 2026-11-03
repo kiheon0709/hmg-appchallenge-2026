@@ -119,7 +119,7 @@ class SessionTest {
     fun `voice rest stop and what song`() {
         val s = MooDriveSession(SampleCatalog.tracks)
         s.onSnapshot(day)
-        assertTrue(s.onVoice("졸려").contains(Action.SuggestRestStop))
+        assertTrue(s.onVoice("졸려").contains(Action.AddRestStop))
         val say = s.onVoice("이 노래 뭐야").filterIsInstance<Action.Speak>().single().text
         assertTrue(say.contains(s.currentTrack!!.title))
         assertTrue(s.onVoice("오늘 저녁 뭐 먹지").isEmpty())
@@ -130,5 +130,51 @@ class SessionTest {
         val s = MooDriveSession(SampleCatalog.tracks)
         val night = day.copy(minuteOfDay = 2 * 60, drivingMinutes = 125)
         assertTrue(s.onSnapshot(night).contains(Action.SuggestRestStop))
+    }
+
+    @Test
+    fun `rest stop prompt is answered by voice yes or no`() {
+        val night = day.copy(minuteOfDay = 15 * 60, drivingMinutes = 125)
+        val a = MooDriveSession(SampleCatalog.tracks)
+        assertTrue(a.onSnapshot(night).contains(Action.SuggestRestStop))
+        assertTrue(a.restStopPending)
+        assertTrue(a.onVoice("응").contains(Action.AddRestStop))
+        assertTrue(!a.restStopPending)
+
+        val b = MooDriveSession(SampleCatalog.tracks)
+        b.onSnapshot(night)
+        assertTrue(b.onVoice("괜찮아").none { it == Action.AddRestStop })
+        assertTrue(!b.restStopPending)
+    }
+
+    @Test
+    fun `hold keeps the song across scene changes but not for safety`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        s.onVoice("이 분위기 유지해줘")
+        val t = s.currentTrack
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 1_000, congestion = true)).none { it is Action.Play })
+        assertEquals(t, s.currentTrack)
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 2_000, wiper = WiperLevel.HIGH)).any { it is Action.Play })
+    }
+
+    @Test
+    fun `late skip is neutral, early skip is negative`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        val t1 = s.onSnapshot(day).filterIsInstance<Action.Play>().single().track
+        s.onTrackEnded(completed = false, playedSec = 90)
+        assertEquals(0f, s.taste.score(Scene.CLEAR_DAY, t1.genre))
+        val t2 = s.currentTrack!!
+        s.onTrackEnded(completed = false, playedSec = 10)
+        assertTrue(s.taste.score(Scene.CLEAR_DAY, t2.genre) < 0f)
+    }
+
+    @Test
+    fun `rain and jam respect the 110 bpm cap`() {
+        val s = MooDriveSession(SampleCatalog.tracks, engine = ContextEngine(ContextEngine.Config(sceneHoldMs = 0)))
+        s.onSnapshot(day)
+        val jam = s.onSnapshot(day.copy(timestampMs = 1_000, congestion = true)).filterIsInstance<Action.Play>().single().track
+        assertTrue((jam.bpm ?: 0) <= 110, "$jam")
+        repeat(10) { val n = s.onTrackEnded(completed = true).filterIsInstance<Action.Play>().single().track; assertTrue((n.bpm ?: 0) <= 110, "$n") }
     }
 }

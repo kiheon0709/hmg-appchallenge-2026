@@ -19,7 +19,7 @@
   .stage { position: relative; flex: 1 1 58%; border-radius: var(--r-l); overflow: hidden; background: var(--surface);
            padding: var(--s-xl); display: flex; flex-direction: column; }
   .glow { position: absolute; inset: 0; transition: background var(--ambient-ms) ease, opacity var(--ambient-ms) ease; pointer-events: none; }
-  .stage > *:not(.glow):not(.chip-warn) { position: relative; }
+  .stage > *:not(.glow):not(.chip-warn):not(.chip-on) { position: relative; }
   .status { display: flex; gap: var(--s-m); align-items: center; font-size: var(--fs-label); font-weight: var(--fw-label); }
   .status .gear { padding: 4px 16px; border-radius: 999px; background: rgba(11,12,16,.72); color: var(--text); }
   .status .dim { color: var(--text); opacity: 1; background: rgba(11,12,16,.72); padding: 4px 16px; border-radius: 999px; }
@@ -31,6 +31,8 @@
         line-height: 1.35; background: rgba(11,12,16,.78); border: 1px solid rgba(255,255,255,.08);
         padding: 16px 24px; border-radius: var(--r-m); min-height: 74px; display: flex; align-items: center; gap: 12px; }
   .dj.empty { visibility: hidden; }
+  .chip-on { position: absolute; top: var(--s-xl); right: var(--s-xl); font-size: var(--fs-label); font-weight: var(--fw-label);
+             color: var(--positive); background: rgba(11,12,16,.85); padding: 8px 18px; border-radius: 999px; }
   .chip-warn { position: absolute; top: var(--s-xl); right: var(--s-xl); font-size: var(--fs-label); font-weight: var(--fw-label);
                color: var(--warning); background: rgba(11,12,16,.85); padding: 8px 18px; border-radius: 999px; }
 
@@ -104,6 +106,7 @@
       <div class="glow" id="glow"></div>
       <div class="status"><span class="gear" id="gear">D</span><span class="dim" id="clock">17:10</span><span class="dim" id="eta">도착 30분</span></div>
       <div class="chip-warn" id="pending">실내 조명은 정차 시 적용</div>
+      <div class="chip-on" id="linked">실내 조명 연동 중 · 허용 모드</div>
       <div class="scene" id="scene">—</div>
       <div class="scene-sub"><span id="moodText">—</span></div>
       <div class="dj empty" id="dj"><span aria-hidden="true">🎙</span><span id="djText"></span></div>
@@ -197,6 +200,7 @@ function renderDrive(f) {
   $('scene').textContent = f.sceneLabel;
   $('moodText').textContent = moodWords(f.mood);
   $('pending').style.display = (!allow && driving) ? '' : 'none';
+  $('linked').style.display = (allow && driving) ? '' : 'none';
   $('glow').style.background = amb
     ? `radial-gradient(120% 140% at 85% 10%, ${rgba(amb.color, (0.25 + amb.brightness / 100 * 0.6) * strength)} 0%, ${rgba(amb.color, 0.12 * strength)} 45%, rgba(21,23,29,0) 80%)`
     : 'none';
@@ -234,11 +238,17 @@ function renderCard() {
   for (const f of frames) if (f.trackId && played.at(-1)?.id !== f.trackId) played.push({ id: f.trackId, scene: f.sceneLabel, c: soft(f.ambientTarget.color, 0.85) });
   $('stSongs').textContent = `${played.length}곡`;
   // 장면이 바뀐 순간의 DJ 멘트 첫 문장 (짧게)
-  const moments = frames.filter((f, i) => i && f.scene !== frames[i - 1].scene && f.speak && f.scene !== 'PARKED').slice(0, 6);
-  $('moments').innerHTML = moments.map(f => `<div class="moment"><span class="c">${f.clock}</span><span class="x">${f.speak.split('. ')[0].replace(/\.$/, '')}</span></div>`).join('');
+  // 장면이 바뀐 순간: DJ 멘트 첫 문장, 말하지 않은 장면(터널 등)은 장면 이름으로
+  const moments = frames.filter((f, i) => i && f.scene !== frames[i - 1].scene && f.scene !== 'PARKED').slice(0, 6);
+  $('moments').innerHTML = moments.map(f => {
+    const x = f.speak ? f.speak.split('. ')[0].replace(/\.$/, '') : (f.scene === 'TUNNEL' ? '터널 · 곡 유지, 조명만' : `${f.sceneLabel}로 전환`);
+    return `<div class="moment"><span class="c">${f.clock}</span><span class="x">${x}</span></div>`;
+  }).join('');
   $('cardSub').textContent = `${frames[0].clock} 출발 · ${frames.at(-1).clock} 도착 · ${T.scenario}`;
-  $('songs').innerHTML = played.slice(0, 7).map(p =>
-    `<div class="song"><i style="background:linear-gradient(135deg,${p.c},#1E2129)"></i><span class="n">${tracks[p.id].title}</span><span class="sc">${p.scene}</span></div>`).join('');
+  const shown = played.length > 7 ? 6 : 7;
+  $('songs').innerHTML = played.slice(0, shown).map(p =>
+    `<div class="song"><i style="background:linear-gradient(135deg,${p.c},#1E2129)"></i><span class="n">${tracks[p.id].title}</span><span class="sc">${p.scene}</span></div>`).join('')
+    + (played.length > shown ? `<div class="song"><i style="background:var(--surface-raised)"></i><span class="n" style="color:var(--text-dim)">외 ${played.length - shown}곡</span></div>` : '');
 }
 
 const GENRES = ['시티팝', '어쿠스틱', '로파이', '앰비언트', '펑크', 'EDM', '팝', '재즈', '록', '클래식', '힙합', '인디'];

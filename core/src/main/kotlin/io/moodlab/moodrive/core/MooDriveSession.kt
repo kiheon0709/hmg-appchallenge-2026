@@ -7,8 +7,10 @@ sealed interface Action {
     data class Speak(val text: String) : Action
     data class SceneChanged(val scene: Scene, val mood: Mood) : Action
     data class TripEnded(val log: List<TripEvent>) : Action
-    /** 휴게소 경유 제안. 앱은 NaviHelper로 근처 휴게소를 찾아 확인 후 경유지 추가. */
+    /** 휴게소 경유 제안(확인 대기). 앱은 질문 UI를 띄우고, 음성 "응/아니"나 버튼으로 답을 받는다. */
     data object SuggestRestStop : Action
+    /** 운전자가 수락 → 앱이 NaviHelper로 가장 가까운 휴게소를 경유지로 추가. */
+    data object AddRestStop : Action
 }
 
 data class TripEvent(val timestampMs: Long, val scene: Scene, val trackId: String?)
@@ -40,6 +42,12 @@ class MooDriveSession(
     private var energyBias = 0f
     var djMuted = false
         private set
+    /** 휴게소 제안에 대한 답을 기다리는 중 */
+    var restStopPending = false
+        private set
+    /** 음성 "이 분위기 유지" → 이 시각(차량 시간)까지 장면이 바뀌어도 곡을 바꾸지 않음. 안전 장면은 예외. */
+    private var holdUntilMs = 0L
+    private var nowMs = 0L
 
     val currentScene: Scene? get() = lastResult?.scene
     val currentMood: Mood? get() = lastResult?.mood
@@ -47,6 +55,7 @@ class MooDriveSession(
 
     fun onSnapshot(s: VehicleSnapshot): List<Action> {
         lastSnapshot = s
+        nowMs = s.timestampMs
         val r = engine.update(s)
         lastResult = r
         val actions = mutableListOf<Action>()
@@ -68,7 +77,10 @@ class MooDriveSession(
                     if (!keyMoment) lastDjAtMs = s.timestampMs
                 }
             }
-            if (r.scene == Scene.FATIGUE_BOOST) actions += Action.SuggestRestStop
+            if (r.scene == Scene.FATIGUE_BOOST && !restStopPending) {
+                restStopPending = true
+                actions += Action.SuggestRestStop
+            }
             if (r.scene == Scene.PARKED) {
                 if (tripActive) actions += Action.TripEnded(log.toList())
                 tripActive = false
@@ -77,16 +89,26 @@ class MooDriveSession(
                 tripActive = true
                 // 터널은 잠깐이라 곡은 그대로 두고 조명만 바꾼다(들어갈 때·나올 때 두 번 끊기는 것 방지)
                 val brief = r.scene == Scene.TUNNEL || prevScene == Scene.TUNNEL
-                if (nowPlaying == null || (switchTrackOnSceneChange && !brief)) actions += play(r)
+                val held = s.timestampMs < holdUntilMs && r.scene != Scene.FATIGUE_BOOST && r.scene != Scene.HEAVY_RAIN
+                if (nowPlaying == null || (switchTrackOnSceneChange && !brief && !held)) actions += play(r)
             }
         }
         ambient.plan(targetMood(r), s)?.let { actions += Action.SetAmbient(it) }
         return actions
     }
 
-    fun onTrackEnded(completed: Boolean): List<Action> {
+    /**
+     * @param completed 끝까지 들었는지
+     * @param playedSec 스킵 시 들은 시간. 30초 안에 넘기면 감점, 그 뒤 스킵은 중립.
+     */
+    fun onTrackEnded(completed: Boolean, playedSec: Int = 0): List<Action> {
         val r = lastResult ?: return emptyList()
-        nowPlaying?.let { taste.record(r.scene, it.genre, if (completed) Feedback.COMPLETED else Feedback.SKIPPED_EARLY) }
+        nowPlaying?.let {
+            when {
+                completed -> taste.record(r.scene, it.genre, Feedback.COMPLETED)
+                playedSec < EARLY_SKIP_SEC -> taste.record(r.scene, it.genre, Feedback.SKIPPED_EARLY)
+            }
+        }
         if (r.scene == Scene.PARKED) {
             nowPlaying = null
             return emptyList()
@@ -105,7 +127,13 @@ class MooDriveSession(
     /** STT 텍스트 처리. 인식 못 하면 빈 목록. */
     fun onVoice(text: String): List<Action> {
         val r = lastResult ?: return emptyList()
-        return when (VoiceCommandParser.parse(text)) {
+        val intent = VoiceCommandParser.parse(text)
+        if (restStopPending) when (intent) {
+            VoiceIntent.YES, VoiceIntent.LIKE, VoiceIntent.REST_STOP -> return answerRestStop(true)
+            VoiceIntent.NO, VoiceIntent.DISLIKE -> return answerRestStop(false)
+            else -> Unit
+        }
+        return when (intent) {
             VoiceIntent.LIKE -> onFeedback(Feedback.LIKE) + Action.Speak("좋아요, 기억해 둘게요.")
             VoiceIntent.DISLIKE -> onFeedback(Feedback.DISLIKE)
             VoiceIntent.SKIP -> onTrackEnded(completed = false)
@@ -117,12 +145,24 @@ class MooDriveSession(
                 energyBias = (energyBias - 0.3f).coerceAtLeast(-0.6f)
                 listOf(Action.Speak("조금 차분하게 갈게요."), play(r))
             }
-            VoiceIntent.REST_STOP -> listOf(Action.Speak("가까운 휴게소를 찾아볼게요."), Action.SuggestRestStop)
+            VoiceIntent.REST_STOP -> answerRestStop(true)
+            VoiceIntent.HOLD -> {
+                holdUntilMs = nowMs + HOLD_MS
+                listOf(Action.Speak("20분 동안 이 분위기 그대로 갈게요."))
+            }
+            VoiceIntent.YES, VoiceIntent.NO -> emptyList()
             VoiceIntent.MUTE_DJ -> { djMuted = true; listOf(Action.Speak("알겠어요. 안전 안내만 할게요.")) }
             VoiceIntent.UNMUTE_DJ -> { djMuted = false; listOf(Action.Speak("다시 이야기할게요.")) }
             VoiceIntent.WHAT_SONG -> nowPlaying?.let { listOf(Action.Speak("${it.artist}의 ${it.title}이에요.")) } ?: emptyList()
             VoiceIntent.UNKNOWN -> emptyList()
         }
+    }
+
+    /** 휴게소 제안에 답함 (음성 또는 화면 버튼). */
+    fun answerRestStop(accept: Boolean): List<Action> {
+        restStopPending = false
+        return if (accept) listOf(Action.Speak("가까운 휴게소를 경유지로 넣을게요."), Action.AddRestStop)
+        else listOf(Action.Speak("알겠어요. 졸리면 언제든 말씀하세요."))
     }
 
     /** 도착 피날레 큐 (남은 시간에 맞춰 곡 순서 제안). ETA를 모르면 null. */
@@ -142,5 +182,10 @@ class MooDriveSession(
         val t = curator.next(targetMood(r), r.scene)
         nowPlaying = t
         return Action.Play(t, r.scene)
+    }
+
+    private companion object {
+        const val EARLY_SKIP_SEC = 30
+        const val HOLD_MS = 20 * 60_000L
     }
 }
