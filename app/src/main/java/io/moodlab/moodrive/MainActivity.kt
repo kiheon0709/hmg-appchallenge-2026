@@ -119,6 +119,7 @@ private fun DemoPanel(ui: UiState, vm: MooDriveViewModel, modifier: Modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(Ms.xs), verticalAlignment = Alignment.CenterVertically) {
             OutlinedButton(onClick = vm::playScenario) { Text("▶ 비 오는 퇴근길 (3분)") }
             OutlinedButton(onClick = vm::useManual) { Text("수동") }
+            OutlinedButton(onClick = vm::useVehicle) { Text("차량 신호") }
             ui.scenarioCaption?.let { Text("${ui.scenarioT}s · $it", color = Mc.text) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Ms.xs)) {
@@ -131,7 +132,7 @@ private fun DemoPanel(ui: UiState, vm: MooDriveViewModel, modifier: Modifier) {
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Ms.xs)) {
             Switch(checked = ui.allowAmbientWhileDriving, onCheckedChange = vm::setAllowAmbientWhileDriving)
-            Text("주행 중 실내 조명 변경 허용 (공식 답변 전까지 OFF)", color = Mc.text)
+            Text("P단 밖 실내 조명 변경 시도 (공식 답변 전까지 OFF)", color = Mc.text)
             OutlinedButton(onClick = vm::toggleDemoPanel) { Text("닫기") }
         }
     }

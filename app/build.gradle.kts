@@ -7,6 +7,8 @@ plugins {
 android {
     namespace = "io.moodlab.moodrive"
     compileSdk = 34
+    // 공개 Pleos SDK에 기어 API가 없어 AAOS 표준 Car API로 읽는다
+    useLibrary("android.car")
 
     defaultConfig {
         applicationId = "io.moodlab.moodrive"
@@ -46,8 +48,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-    // TODO(맥): Playground SDK 탭에서 안내하는 Pleos Connect SDK 좌표로 교체
-    // implementation("ai.pleos:connect-vehicle:<version>")
-    // implementation("ai.pleos:connect-navihelper:<version>")
-    // implementation("ai.pleos:connect-tts:<version>")
+    implementation("ai.pleos.playground:Vehicle:2.3.2")
+    implementation("ai.pleos.playground:NaviHelper:3.0.5")
 }

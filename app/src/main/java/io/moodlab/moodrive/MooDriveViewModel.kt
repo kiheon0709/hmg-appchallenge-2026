@@ -20,8 +20,11 @@ import io.moodlab.moodrive.core.TripEvent
 import io.moodlab.moodrive.core.VehicleSnapshot
 import io.moodlab.moodrive.vehicle.ManualSignalSource
 import io.moodlab.moodrive.vehicle.PleosAmbientController
+import io.moodlab.moodrive.vehicle.PleosVehicleSignalSource
 import io.moodlab.moodrive.vehicle.scenarioFlow
 import kotlinx.coroutines.Job
+import ai.pleos.playground.vehicle.Vehicle
+import android.util.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +60,9 @@ data class UiState(
     val screenAmbient: AmbientCommand? = null,
     /** 실제 차량에 보낸 마지막 조명 */
     val carAmbient: AmbientCommand? = null,
+    /** 차량이 돌려준 조명 색(ARGB). 에뮬레이터에서 실제 API 동작을 보여 주는 값. */
+    val carAmbientReported: Int? = null,
+    val vehicleConnected: Boolean = false,
     val allowAmbientWhileDriving: Boolean = false,
     val djLine: String? = null,
     val djAtMs: Long = 0,
@@ -75,7 +81,10 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("moodrive", Context.MODE_PRIVATE)
     private val session = MooDriveSession(SampleCatalog.tracks)
     private val screenPlanner = AmbientPlanner(allowWhileDriving = true)
-    private val pleosAmbient = PleosAmbientController(app)
+    private val vehicle: Vehicle? = runCatching { Vehicle(app).also { it.initialize() } }
+        .onFailure { Log.w("MooDriveMeasure", "vehicle init failed: $it") }.getOrNull()
+    private val pleosAmbient = PleosAmbientController(vehicle) { argb -> _ui.update { it.copy(carAmbientReported = argb) } }
+    private val pleosSource = vehicle?.let { PleosVehicleSignalSource(app, it) }
     val manual = ManualSignalSource()
 
     private val _ui = MutableStateFlow(UiState())
@@ -100,6 +109,11 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
         }
         startPlaybackTicker()
         useManual()
+        // Vehicle Service가 응답하는 기기(Pleos)면 실제 신호로 시작
+        vehicle?.getWiper()?.checkWiperStateCapabilities(
+            onComplete = { _, _ -> viewModelScope.launch { useVehicle() } },
+            onFailed = { Log.i("MooDriveMeasure", "vehicle service not available: $it") },
+        )
     }
 
     // ── 온보딩 ──
@@ -111,6 +125,17 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // ── 신호 소스 ──
+    fun useVehicle() {
+        val source = pleosSource ?: return
+        sourceJob?.cancel()
+        resetTrip()
+        timeScale = 1
+        _ui.update { it.copy(scenarioCaption = null, scenarioT = null, vehicleConnected = true, demoPanel = false) }
+        source.start()
+        pleosAmbient.prepare()
+        sourceJob = viewModelScope.launch { source.snapshots.collect(::onSnapshot) }
+    }
+
     fun useManual() {
         sourceJob?.cancel()
         resetTrip()
@@ -271,6 +296,9 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         tts?.shutdown()
+        pleosSource?.stop()
+        pleosAmbient.release()
+        runCatching { vehicle?.release() }
         super.onCleared()
     }
 

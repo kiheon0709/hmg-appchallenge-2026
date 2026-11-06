@@ -1,36 +1,203 @@
 package io.moodlab.moodrive.vehicle
 
+import ai.pleos.playground.navi.data.DrivingInfo
+import ai.pleos.playground.navi.data.TripInfo
+import ai.pleos.playground.navi.helper.NaviHelper
+import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
+import ai.pleos.playground.vehicle.Vehicle
+import ai.pleos.playground.vehicle.api.model.area.SeatArea
+import ai.pleos.playground.vehicle.api.model.area.WindowArea
+import ai.pleos.playground.vehicle.constant.area.SeatValue
+import ai.pleos.playground.vehicle.constant.area.WindowValue
+import ai.pleos.playground.vehicle.constant.control.CruiseControl
+import ai.pleos.playground.vehicle.constant.control.DrivingModeType
+import ai.pleos.playground.vehicle.constant.control.LightState
+import ai.pleos.playground.vehicle.constant.control.WiperState
+import ai.pleos.playground.vehicle.constant.control.WiperSwitch
+import ai.pleos.playground.vehicle.listener.CruiseControlStateListener
+import ai.pleos.playground.vehicle.listener.DrivingModeStateListener
+import ai.pleos.playground.vehicle.listener.LightStateListener
+import ai.pleos.playground.vehicle.listener.WiperStateListener
+import android.car.Car
+import android.car.VehicleGear
+import android.car.VehiclePropertyIds
+import android.car.hardware.CarPropertyValue
+import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.util.Log
 import io.moodlab.moodrive.core.AmbientCommand
+import io.moodlab.moodrive.core.DriveMode
+import io.moodlab.moodrive.core.Gear
 import io.moodlab.moodrive.core.VehicleSnapshot
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import io.moodlab.moodrive.core.WiperLevel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import java.util.Calendar
+
+/** 실측 기록용 로그 태그: adb logcat -s MooDriveMeasure */
+private const val TAG = "MooDriveMeasure"
 
 /**
  * Pleos Vehicle SDK / NaviHelper → [VehicleSnapshot] 어댑터.
- *
- * TODO(맥, SDK 받은 뒤): 아래 순서로 구현. 클라우드 환경에선 SDK 저장소·문서 접근이 막혀 있어 비워 둠.
- *  1. 각 도메인 checkXXXCapabilities()로 지원 여부 확인 → 미지원 신호는 기본값 유지 (graceful degradation)
- *  2. Wiper: getCurrentWiperState / registerWiperState → WiperLevel 매핑 (강도 단계 값 확인 필요)
- *  3. Light: registerLowBeamLightState → lowBeamOn
- *  4. DrivingMode: registerDrivingModeState, registerCruiseControlState
- *  5. HVAC: registerHvacTemperatureCurrent, getHvacTemperature
- *  6. 기어: 어느 도메인에서 오는지 확인 (DrivingMode? CarInfo?) → Gear
- *  7. NaviHelper: TripInfo/DrivingInfo의 남은 시간, TrafficCongestionInfo → etaMinutes, congestion
- *  8. FusedLocation: 위치 → 일몰/일출 계산 (sunsetMinute, sunriseMinute),
- *     정확도 50m 초과면 gpsWeak = true (터널 확인용), 속도 → 기어를 못 받을 때 주행 판정 대체
- *     단, 조명 set의 허용 판단은 속도로 대체하지 말 것: 신호대기 D단이 P단으로 잘못 잡힌다
- *  각 콜백에서 최신 스냅샷을 copy로 갱신해 MutableStateFlow에 넣으면 된다 (ManualSignalSource 참고).
+ * 콜백은 바인더 스레드로 올 수 있어 MutableStateFlow.update로만 상태를 바꾼다.
  */
-class PleosVehicleSignalSource(private val context: Context) : VehicleSignalSource {
-    override val snapshots: Flow<VehicleSnapshot> = emptyFlow<VehicleSnapshot>().also {
-        Log.w(TAG, "Pleos SDK adapter not implemented yet")
+class PleosVehicleSignalSource(private val context: Context, private val vehicle: Vehicle) : VehicleSignalSource {
+    private val state = MutableStateFlow(
+        VehicleSnapshot(timestampMs = System.currentTimeMillis(), minuteOfDay = nowMinute(), gear = Gear.D),
+    )
+    override val snapshots: StateFlow<VehicleSnapshot> = state.asStateFlow()
+
+    private val wiper by lazy { vehicle.getWiper() }
+    private val light by lazy { vehicle.getLight() }
+    private val drivingMode by lazy { vehicle.getDrivingMode() }
+    private val frontWindshield = WindowArea(WindowValue.FRONT_WINDSHIELD)
+    private var car: Car? = null
+    private var navi: NaviHelper? = null
+
+    private val wiperListener = object : WiperStateListener {
+        override fun onWiperStateUpdated(state: WiperState?) {
+            Log.i(TAG, "wiper state=$state")
+            readWiperSwitch(state)
+        }
+        override fun onFailed(e: Exception) = logFailure("wiper listener", e)
+    }
+    private val lowBeamListener = object : LightStateListener {
+        override fun onLightStateUpdated(state: LightState?) {
+            Log.i(TAG, "lowBeam state=$state")
+            edit { it.copy(lowBeamOn = state == LightState.ON) }
+        }
+        override fun onFailed(e: Exception) = logFailure("lowBeam listener", e)
+    }
+    private val driveModeListener = object : DrivingModeStateListener {
+        override fun onDrivingModeStateUpdated(state: DrivingModeType?) {
+            Log.i(TAG, "driveMode=$state")
+            edit { it.copy(driveMode = state?.toDriveMode() ?: DriveMode.UNKNOWN) }
+        }
+        override fun onFailed(e: Exception) = logFailure("driveMode listener", e)
+    }
+    private val cruiseListener = object : CruiseControlStateListener {
+        override fun onCruiseControlStateUpdated(state: CruiseControl?) {
+            Log.i(TAG, "cruise=$state")
+            edit { it.copy(cruiseOn = state == CruiseControl.ACTIVATED) }
+        }
+        override fun onFailed(e: Exception) = logFailure("cruise listener", e)
+    }
+    private val gearCallback = object : CarPropertyManager.CarPropertyEventCallback {
+        override fun onChangeEvent(value: CarPropertyValue<*>) {
+            Log.i(TAG, "gear raw=${value.value}")
+            (value.value as? Int)?.let { raw -> edit { it.copy(gear = raw.toGear()) } }
+        }
+        override fun onErrorEvent(propId: Int, zone: Int) = Log.w(TAG, "gear error prop=$propId zone=$zone").let { }
+    }
+    private val naviListener = object : NaviHelperEventListener {
+        override fun onDrivingInfo(drivingInfo: DrivingInfo) {
+            Log.i(TAG, "navi drivingInfo=$drivingInfo")
+            drivingInfo.destination?.duration?.let { sec -> edit { it.copy(etaMinutes = sec / 60) } }
+        }
+        override fun onTripInfo(tripInfo: TripInfo) {
+            Log.i(TAG, "navi tripInfo=$tripInfo")
+            tripInfo.eta?.let { sec -> edit { it.copy(etaMinutes = sec / 60) } }
+        }
     }
 
-    private companion object {
-        const val TAG = "PleosVehicle"
+    /** 지원 여부를 먼저 확인해 미지원 신호는 기본값을 유지한다. */
+    fun start() {
+        wiper.checkWiperStateCapabilities(
+            onComplete = { config, _ ->
+                Log.i(TAG, "wiper capability=$config")
+                wiper.getCurrentWiperState(frontWindshield, ::readWiperSwitch) { logFailure("wiper get", it) }
+                wiper.registerWiperState(frontWindshield, wiperListener)
+            },
+            onFailed = { logFailure("wiper capability", it) },
+        )
+        light.getCurrentLowBeamLightState(
+            onComplete = { s -> edit { it.copy(lowBeamOn = s == LightState.ON) } },
+            onFailed = { logFailure("lowBeam get", it) },
+        )
+        light.registerLowBeamLightState(lowBeamListener)
+        drivingMode.registerDrivingModeState(driveModeListener)
+        drivingMode.registerCruiseControlState(cruiseListener)
+        startGear()
+        startNavi()
     }
+
+    fun stop() {
+        runCatching { wiper.unregisterWiperState(frontWindshield, wiperListener) }
+        runCatching { light.unregisterLowBeamLightState(lowBeamListener) }
+        runCatching { drivingMode.unregisterDrivingModeState(driveModeListener) }
+        runCatching { drivingMode.unregisterCruiseControlState(cruiseListener) }
+        runCatching { (car?.getCarManager(Car.PROPERTY_SERVICE) as? CarPropertyManager)?.unregisterCallback(gearCallback) }
+        runCatching { car?.disconnect() }
+        runCatching { navi?.removeListener(naviListener); navi?.release() }
+    }
+
+    private fun readWiperSwitch(wiperState: WiperState?) {
+        wiper.getCurrentWiperSwitch(
+            frontWindshield,
+            onComplete = { sw ->
+                Log.i(TAG, "wiper switch=$sw")
+                edit { it.copy(wiper = sw.toWiperLevel(wiperState)) }
+            },
+            onFailed = {
+                logFailure("wiper switch", it)
+                edit { s -> s.copy(wiper = if (wiperState == WiperState.ON) WiperLevel.LOW else WiperLevel.OFF) }
+            },
+        )
+    }
+
+    /** 공개 SDK에 기어 API가 없다. 읽지 못하면 조명은 계속 보류되도록 D로 둔다. */
+    private fun startGear() = runCatching {
+        val c = Car.createCar(context) ?: error("Car service unavailable")
+        car = c
+        val pm = c.getCarManager(Car.PROPERTY_SERVICE) as CarPropertyManager
+        pm.registerCallback(gearCallback, VehiclePropertyIds.GEAR_SELECTION, CarPropertyManager.SENSOR_RATE_ONCHANGE)
+        Log.i(TAG, "gear subscribed")
+    }.onFailure { Log.w(TAG, "gear unavailable, assuming D: $it") }
+
+    private fun startNavi() = runCatching {
+        navi = NaviHelper(context).also {
+            it.initialize()
+            it.addListener(naviListener)
+        }
+    }.onFailure { Log.w(TAG, "navi unavailable: $it") }
+
+    private fun edit(f: (VehicleSnapshot) -> VehicleSnapshot) =
+        state.update { f(it).copy(timestampMs = System.currentTimeMillis(), minuteOfDay = nowMinute()) }
+
+    private fun nowMinute(): Int = Calendar.getInstance().let { it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE) }
+}
+
+private fun logFailure(what: String, e: Exception) {
+    Log.w(TAG, "$what failed type=${e.javaClass.name} code=${e.vehicleErrorCode()} message=${e.message}")
+}
+
+/** 배포된 SDK에서 VehicleException 타입을 컴파일 시점에 참조할 수 없어 문서의 getErrorCode()를 이름으로 읽는다. */
+private fun Exception.vehicleErrorCode(): String? =
+    runCatching { javaClass.getMethod("getErrorCode").invoke(this)?.toString() }.getOrNull()
+
+private fun WiperSwitch?.toWiperLevel(state: WiperState?): WiperLevel = when (this) {
+    WiperSwitch.OFF -> WiperLevel.OFF
+    WiperSwitch.MIST,
+    WiperSwitch.INTERMITTENT_LEVEL_1, WiperSwitch.INTERMITTENT_LEVEL_2, WiperSwitch.INTERMITTENT_LEVEL_3,
+    WiperSwitch.INTERMITTENT_LEVEL_4, WiperSwitch.INTERMITTENT_LEVEL_5 -> WiperLevel.INTERMITTENT
+    WiperSwitch.CONTINUOUS_LEVEL_1, WiperSwitch.CONTINUOUS_LEVEL_2 -> WiperLevel.LOW
+    WiperSwitch.CONTINUOUS_LEVEL_3, WiperSwitch.CONTINUOUS_LEVEL_4, WiperSwitch.CONTINUOUS_LEVEL_5 -> WiperLevel.HIGH
+    else -> if (state == WiperState.ON) WiperLevel.LOW else WiperLevel.OFF
+}
+
+private fun DrivingModeType.toDriveMode(): DriveMode = when (this) {
+    DrivingModeType.ECO -> DriveMode.ECO
+    DrivingModeType.SPORT -> DriveMode.SPORT
+    else -> DriveMode.NORMAL
+}
+
+private fun Int.toGear(): Gear = when (this) {
+    VehicleGear.GEAR_PARK -> Gear.P
+    VehicleGear.GEAR_REVERSE -> Gear.R
+    VehicleGear.GEAR_NEUTRAL -> Gear.N
+    else -> Gear.D
 }
 
 /** 실내 조명 출력. 미리보기(화면 시각화)와 실제 Pleos Light API 두 구현을 같이 쓴다. */
@@ -40,14 +207,63 @@ interface AmbientController {
 }
 
 /**
- * TODO(맥): Light 도메인 연결
- *  - 시작 시 setAmbientColorAutoByDriveModeEnabled(false), 종료 시 원래 값으로 복원
- *  - setAmbientLightBrightnessColor(밝기, 색). 색이 프리셋/인덱스 방식이면 가장 가까운 값으로 양자화
- *  - transitionMs는 API가 지원하지 않으면 여러 단계로 나눠 호출하지 말고 한 번에 (깜빡임 방지)
- *  - D단에서 호출이 거부되는지 에뮬레이터에서 직접 시험 → 결과를 docs/STATUS.md에 기록
+ * Light 도메인 연결. 에뮬레이터는 조명 변화를 표시하지 않으므로 set 뒤 값을 다시 읽어 [onReported]로 알린다.
+ * @param onReported 차량이 돌려준 ARGB. 요청 완료만으로 값이 바뀌었다고 보지 않는다.
  */
-class PleosAmbientController(private val context: Context) : AmbientController {
+class PleosAmbientController(private val vehicle: Vehicle?, private val onReported: (Int) -> Unit) : AmbientController {
+    private val area = SeatArea(SeatValue.ROW_1_LEFT)
+    private var autoColorBefore: Boolean? = null
+
+    /** 주행모드 자동 색이 앱 색을 덮어쓰지 않게 끈다. [release]에서 복원. */
+    fun prepare() {
+        val light = vehicle?.getLight() ?: return
+        light.checkAmbientLightBrightnessColorCapabilities(
+            onComplete = { config, areas -> Log.i(TAG, "ambient capability=$config areas=$areas") },
+            onFailed = { logFailure("ambient capability", it) },
+        )
+        light.getAmbientColorAutoByDriveModeEnabled(
+            onComplete = { enabled ->
+                autoColorBefore = enabled
+                if (enabled == true) {
+                    light.setAmbientColorAutoByDriveModeEnabled(false, onComplete = { }, onFailed = { logFailure("ambient auto off", it) })
+                }
+            },
+            onFailed = { logFailure("ambient auto get", it) },
+        )
+    }
+
     override fun apply(command: AmbientCommand, onRestricted: () -> Unit) {
-        Log.i("PleosAmbient", "TODO set ambient ${command.color.hex()} @${command.brightness}%")
+        val light = vehicle?.getLight() ?: return
+        val argb = command.color.toArgb()
+        light.setAmbientLightBrightnessColor(
+            area, argb,
+            onComplete = { _, value ->
+                Log.i(TAG, "ambient set complete requested=${Integer.toHexString(argb)} value=${value?.let(Integer::toHexString)}")
+                light.getAmbientLightBrightnessColor(
+                    area,
+                    onComplete = { read ->
+                        Log.i(TAG, "ambient readback=${read?.let(Integer::toHexString)}")
+                        read?.let(onReported)
+                    },
+                    onFailed = { logFailure("ambient readback", it) },
+                )
+            },
+            onFailed = { e ->
+                logFailure("ambient set", e)
+                if (e.vehicleErrorCode() == "ERROR_DRIVING_RESTRICTED") onRestricted()
+            },
+        )
+        light.setAmbientLightBrightness(
+            area, command.brightness,
+            onComplete = { _, value -> Log.i(TAG, "ambient brightness complete value=$value") },
+            onFailed = { logFailure("ambient brightness", it) },
+        )
+    }
+
+    fun release() {
+        val light = vehicle?.getLight() ?: return
+        if (autoColorBefore == true) {
+            runCatching { light.setAmbientColorAutoByDriveModeEnabled(true, onComplete = { }, onFailed = { logFailure("ambient auto restore", it) }) }
+        }
     }
 }

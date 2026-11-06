@@ -22,7 +22,6 @@ allprojects {
     repositories {
         if (gradle.extra["hasAndroidSdk"] as Boolean) google()
         mavenCentral()
-        // TODO(맥): Pleos Connect SDK 저장소. Playground > My Project > SDK 탭에 안내된 주소로 교체
-        // maven { url = uri("https://nexus-playground.pleos.ai/repository/...") }
+        maven { url = uri("https://nexus-playground.pleos.ai/repository/maven-releases/") }
     }
 }

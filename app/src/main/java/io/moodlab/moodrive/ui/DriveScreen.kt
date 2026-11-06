@@ -100,7 +100,11 @@ fun DriveScreen(
                 }
             }
             if (ui.ambientHeld) {
-                Pill("실내 조명은 정차 시 적용", Modifier.align(Alignment.TopEnd), color = Mc.warning)
+                Pill("실내 조명은 P단에서 적용", Modifier.align(Alignment.TopEnd), color = Mc.warning)
+            } else {
+                ui.carAmbientReported?.let { argb ->
+                    Pill("차량 조명 응답 #%06X".format(argb and 0xFFFFFF), Modifier.align(Alignment.TopEnd), color = Color(argb))
+                }
             }
         }
 

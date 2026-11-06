@@ -13,7 +13,13 @@
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_LIGHTS" />
     <uses-permission android:name="pleos.car.permission.CAR_CLIMATE" />
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
-    <!-- TODO: Wiper 도메인 퍼미션 이름 확인 후 추가 -->
+    <!-- Wiper 조회 -->
+    <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
+    <!-- NaviHelper 경로·주행 정보 -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
+    <!-- AAOS 표준 기어 조회 (공개 Pleos SDK에 기어 API 없음) -->
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 음성 명령. TODO: Pleos SpeechToText SDK로 교체 시 그 퍼미션으로 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
