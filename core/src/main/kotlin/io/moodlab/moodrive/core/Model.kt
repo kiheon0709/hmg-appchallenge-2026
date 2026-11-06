@@ -41,6 +41,9 @@ data class VehicleSnapshot(
 ) {
     val isDriving: Boolean get() = gear == Gear.D || gear == Gear.R
 
+    /** Vehicle Service의 주행 제한 기준. N단이나 D단 신호대기는 P단이 아니다. */
+    val inPark: Boolean get() = gear == Gear.P
+
     fun isDaytime(): Boolean {
         val rise = sunriseMinute ?: 6 * 60 + 30
         val set = sunsetMinute ?: 18 * 60

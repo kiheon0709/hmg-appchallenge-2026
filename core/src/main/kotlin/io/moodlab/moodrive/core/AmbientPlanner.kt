@@ -7,8 +7,8 @@ import kotlin.math.sqrt
 /**
  * F3 앰비언트 싱크. 무드 좌표를 실내 조명 색·밝기로 바꾼다.
  *
- * 정책 플래그 [allowWhileDriving]: 주행 중 set 호출 허용 여부가 공식 답변 전이라 기본값은 false.
- * false면 주행 중에는 조명을 바꾸지 않고(null), 정차하면 마지막 목표를 적용한다.
+ * 정책 플래그 [allowWhileDriving]: 앰비언트 set이 P단 밖에서 허용되는지 공식 확정 전이라 기본값은 false.
+ * false면 P단이 아닐 때 조명을 바꾸지 않고(null), P단이 되면 마지막 목표를 적용한다.
  */
 class AmbientPlanner(
     var allowWhileDriving: Boolean = false,
@@ -19,12 +19,18 @@ class AmbientPlanner(
 
     /** 이번 스냅샷에서 보낼 명령. 바꿀 필요가 없거나 정책상 못 바꾸면 null. */
     fun plan(mood: Mood, s: VehicleSnapshot): AmbientCommand? {
-        if (s.isDriving && !allowWhileDriving) return null
+        if (!s.inPark && !allowWhileDriving) return null
         val cmd = commandFor(mood, night = !s.isDaytime())
         val prev = lastSent
         if (prev != null && prev.color == cmd.color && prev.brightness == cmd.brightness) return null
         lastSent = cmd
         return cmd
+    }
+
+    /** 차량이 set을 ERROR_DRIVING_RESTRICTED로 거부했을 때. 주행 중 전환을 끄고 다음 P단에서 다시 보낸다. */
+    fun onRestricted() {
+        allowWhileDriving = false
+        lastSent = null
     }
 
     fun commandFor(mood: Mood, night: Boolean): AmbientCommand {

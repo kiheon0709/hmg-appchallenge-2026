@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.emptyFlow
  *  7. NaviHelper: TripInfo/DrivingInfo의 남은 시간, TrafficCongestionInfo → etaMinutes, congestion
  *  8. FusedLocation: 위치 → 일몰/일출 계산 (sunsetMinute, sunriseMinute),
  *     정확도 50m 초과면 gpsWeak = true (터널 확인용), 속도 → 기어를 못 받을 때 주행 판정 대체
+ *     단, 조명 set의 허용 판단은 속도로 대체하지 말 것: 신호대기 D단이 P단으로 잘못 잡힌다
  *  각 콜백에서 최신 스냅샷을 copy로 갱신해 MutableStateFlow에 넣으면 된다 (ManualSignalSource 참고).
  */
 class PleosVehicleSignalSource(private val context: Context) : VehicleSignalSource {
@@ -34,7 +35,8 @@ class PleosVehicleSignalSource(private val context: Context) : VehicleSignalSour
 
 /** 실내 조명 출력. 미리보기(화면 시각화)와 실제 Pleos Light API 두 구현을 같이 쓴다. */
 interface AmbientController {
-    fun apply(command: AmbientCommand)
+    /** @param onRestricted 차량이 ERROR_DRIVING_RESTRICTED로 거부했을 때 호출 */
+    fun apply(command: AmbientCommand, onRestricted: () -> Unit)
 }
 
 /**
@@ -45,7 +47,7 @@ interface AmbientController {
  *  - D단에서 호출이 거부되는지 에뮬레이터에서 직접 시험 → 결과를 docs/STATUS.md에 기록
  */
 class PleosAmbientController(private val context: Context) : AmbientController {
-    override fun apply(command: AmbientCommand) {
+    override fun apply(command: AmbientCommand, onRestricted: () -> Unit) {
         Log.i("PleosAmbient", "TODO set ambient ${command.color.hex()} @${command.brightness}%")
     }
 }

@@ -68,7 +68,7 @@ data class UiState(
     val tripCard: TripCard? = null,
 ) {
     val driving: Boolean get() = snapshot?.isDriving == true
-    val ambientHeld: Boolean get() = driving && !allowAmbientWhileDriving
+    val ambientHeld: Boolean get() = snapshot?.inPark == false && !allowAmbientWhileDriving
 }
 
 class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
@@ -178,7 +178,12 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
                 if (played.lastOrNull()?.track?.id != a.track.id) played += PlayedTrack(a.track, a.scene, color)
             }
             is Action.SetAmbient -> {
-                pleosAmbient.apply(a.command)
+                pleosAmbient.apply(a.command, onRestricted = {
+                    viewModelScope.launch {
+                        session.ambient.onRestricted()
+                        _ui.update { it.copy(allowAmbientWhileDriving = false, carAmbient = null) }
+                    }
+                })
                 _ui.update { it.copy(carAmbient = a.command) }
             }
             is Action.Speak -> {

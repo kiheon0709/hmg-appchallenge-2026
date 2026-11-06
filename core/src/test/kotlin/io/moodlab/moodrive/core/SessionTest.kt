@@ -43,6 +43,26 @@ class SessionTest {
     }
 
     @Test
+    fun `ambient is held in neutral because only park lifts the restriction`() {
+        val s = MooDriveSession(SampleCatalog.tracks)
+        s.onSnapshot(day)
+        val neutral = s.onSnapshot(day.copy(timestampMs = 1_000, gear = Gear.N))
+        assertTrue(neutral.none { it is Action.SetAmbient })
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 2_000, gear = Gear.P)).any { it is Action.SetAmbient })
+    }
+
+    @Test
+    fun `restricted ambient stops changes while driving and resends in park`() {
+        val s = MooDriveSession(SampleCatalog.tracks, ambient = AmbientPlanner(allowWhileDriving = true))
+        assertTrue(s.onSnapshot(day).any { it is Action.SetAmbient })
+        s.ambient.onRestricted()
+        assertTrue(!s.ambient.allowWhileDriving)
+        assertTrue(s.onSnapshot(day.copy(timestampMs = 1_000, lowBeamOn = true)).none { it is Action.SetAmbient })
+        val resent = s.onSnapshot(day.copy(timestampMs = 2_000, lowBeamOn = true, gear = Gear.P))
+        assertTrue(resent.any { it is Action.SetAmbient })
+    }
+
+    @Test
     fun `dislike lowers genre score and skips`() {
         val s = MooDriveSession(SampleCatalog.tracks)
         val t = s.onSnapshot(day).filterIsInstance<Action.Play>().single().track
