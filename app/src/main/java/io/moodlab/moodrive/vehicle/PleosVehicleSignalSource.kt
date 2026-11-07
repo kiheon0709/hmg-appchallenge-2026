@@ -7,7 +7,6 @@ import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
 import ai.pleos.playground.vehicle.Vehicle
 import ai.pleos.playground.vehicle.api.model.area.SeatArea
 import ai.pleos.playground.vehicle.api.model.area.WindowArea
-import ai.pleos.playground.vehicle.constant.area.SeatValue
 import ai.pleos.playground.vehicle.constant.area.WindowValue
 import ai.pleos.playground.vehicle.constant.control.CruiseControl
 import ai.pleos.playground.vehicle.constant.control.DrivingModeType
@@ -133,12 +132,18 @@ class PleosVehicleSignalSource(private val context: Context, private val vehicle
         runCatching { navi?.removeListener(naviListener); navi?.release() }
     }
 
+    /** 작동 중 단계만 바뀌면 WiperState 알림이 오지 않아 주기적으로 스위치를 읽는다. */
+    fun refreshWiper() {
+        if (state.value.wiper != WiperLevel.OFF) readWiperSwitch(WiperState.ON)
+    }
+
     private fun readWiperSwitch(wiperState: WiperState?) {
         wiper.getCurrentWiperSwitch(
             frontWindshield,
             onComplete = { sw ->
-                Log.i(TAG, "wiper switch=$sw")
-                edit { it.copy(wiper = sw.toWiperLevel(wiperState)) }
+                if (sw.toWiperLevel(wiperState) != state.value.wiper) Log.i(TAG, "wiper switch=$sw")
+                val level = sw.toWiperLevel(wiperState)
+                if (level != state.value.wiper) edit { it.copy(wiper = level) }
             },
             onFailed = {
                 logFailure("wiper switch", it)
@@ -177,6 +182,15 @@ private fun logFailure(what: String, e: Exception) {
 private fun Exception.vehicleErrorCode(): String? =
     runCatching { javaClass.getMethod("getErrorCode").invoke(this)?.toString() }.getOrNull()
 
+/**
+ * 에뮬레이터 실측: P단이 아닐 때 제한 대상 set은 일반 Exception에 메시지 "...: 50001"로 온다
+ * (도어 set으로 P 성공, D·N 실패 확인, 2026-11-07).
+ */
+private fun Exception.isDrivingRestricted(): Boolean =
+    vehicleErrorCode() == "ERROR_DRIVING_RESTRICTED" ||
+        message?.contains("DRIVING_RESTRICTED") == true ||
+        message?.endsWith("50001") == true
+
 private fun WiperSwitch?.toWiperLevel(state: WiperState?): WiperLevel = when (this) {
     WiperSwitch.OFF -> WiperLevel.OFF
     WiperSwitch.MIST,
@@ -211,14 +225,23 @@ interface AmbientController {
  * @param onReported 차량이 돌려준 ARGB. 요청 완료만으로 값이 바뀌었다고 보지 않는다.
  */
 class PleosAmbientController(private val vehicle: Vehicle?, private val onReported: (Int) -> Unit) : AmbientController {
-    private val area = SeatArea(SeatValue.ROW_1_LEFT)
+    /** 차량이 지원한다고 답한 영역. 고정값을 쓰면 "area ID not supported"로 실패한다. */
+    private var area: SeatArea? = null
+    private var pending: Pair<AmbientCommand, () -> Unit>? = null
     private var autoColorBefore: Boolean? = null
 
     /** 주행모드 자동 색이 앱 색을 덮어쓰지 않게 끈다. [release]에서 복원. */
     fun prepare() {
         val light = vehicle?.getLight() ?: return
         light.checkAmbientLightBrightnessColorCapabilities(
-            onComplete = { config, areas -> Log.i(TAG, "ambient capability=$config areas=$areas") },
+            onComplete = { config, areas ->
+                Log.i(TAG, "ambient capability=$config areas=${areas?.map { it.values.toList() }}")
+                area = areas?.firstOrNull()
+                pending?.let { (command, restricted) ->
+                    pending = null
+                    apply(command, restricted)
+                }
+            },
             onFailed = { logFailure("ambient capability", it) },
         )
         light.getAmbientColorAutoByDriveModeEnabled(
@@ -234,6 +257,10 @@ class PleosAmbientController(private val vehicle: Vehicle?, private val onReport
 
     override fun apply(command: AmbientCommand, onRestricted: () -> Unit) {
         val light = vehicle?.getLight() ?: return
+        val area = area ?: run {
+            pending = command to onRestricted
+            return
+        }
         val argb = command.color.toArgb()
         light.setAmbientLightBrightnessColor(
             area, argb,
@@ -250,7 +277,7 @@ class PleosAmbientController(private val vehicle: Vehicle?, private val onReport
             },
             onFailed = { e ->
                 logFailure("ambient set", e)
-                if (e.vehicleErrorCode() == "ERROR_DRIVING_RESTRICTED") onRestricted()
+                if (e.isDrivingRestricted()) onRestricted()
             },
         )
         light.setAmbientLightBrightness(

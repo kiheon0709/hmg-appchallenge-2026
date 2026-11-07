@@ -137,6 +137,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun useManual() {
+        _ui.update { it.copy(vehicleConnected = false) }
         sourceJob?.cancel()
         resetTrip()
         timeScale = 1
@@ -145,6 +146,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun playScenario() {
+        _ui.update { it.copy(vehicleConnected = false) }
         sourceJob?.cancel()
         resetTrip()
         val sc = Scenario.rainyCommute(startMs = System.currentTimeMillis())
@@ -203,12 +205,15 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
                 if (played.lastOrNull()?.track?.id != a.track.id) played += PlayedTrack(a.track, a.scene, color)
             }
             is Action.SetAmbient -> {
-                pleosAmbient.apply(a.command, onRestricted = {
-                    viewModelScope.launch {
-                        session.ambient.onRestricted()
-                        _ui.update { it.copy(allowAmbientWhileDriving = false, carAmbient = null) }
-                    }
-                })
+                // 수동·시나리오 신호로는 실제 차량 조명을 바꾸지 않는다
+                if (_ui.value.vehicleConnected) {
+                    pleosAmbient.apply(a.command, onRestricted = {
+                        viewModelScope.launch {
+                            session.ambient.onRestricted()
+                            _ui.update { it.copy(allowAmbientWhileDriving = false, carAmbient = null) }
+                        }
+                    })
+                }
                 _ui.update { it.copy(carAmbient = a.command) }
             }
             is Action.Speak -> {
@@ -280,6 +285,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             // 차량 SDK·수동 패널은 값이 바뀔 때만 신호를 주므로, 1초마다 시간만 흘려 장면 확정·운전 시간·질문 시간 초과를 진행
             // (시나리오는 가상 차량 시간이라 tick이 무시됨)
             handle(session.tick(System.currentTimeMillis()))
+            if (_ui.value.vehicleConnected) pleosSource?.refreshWiper()
             _ui.update { it.copy(scene = session.currentScene, restStopPrompt = it.restStopPrompt && session.restStopPending) }
             val st = _ui.value
             val t = st.track ?: continue

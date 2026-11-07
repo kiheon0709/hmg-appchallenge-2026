@@ -103,7 +103,7 @@ fun DriveScreen(
                 Pill("실내 조명은 P단에서 적용", Modifier.align(Alignment.TopEnd), color = Mc.warning)
             } else {
                 ui.carAmbientReported?.let { argb ->
-                    Pill("차량 조명 응답 #%06X".format(argb and 0xFFFFFF), Modifier.align(Alignment.TopEnd), color = Color(argb))
+                    Pill("차량 조명 응답 #%06X".format(argb and 0xFFFFFF), Modifier.align(Alignment.TopEnd), color = Color(argb or (0xFF shl 24)))
                 }
             }
         }
