@@ -56,7 +56,7 @@
 
 ## 5. 점검 결과 (2026-11-13, 상위 세션이 저장소 파일과 직접 대조)
 
-최종 소스 `e10f0d1`, 최종 빌드 커밋 `7d5e8f7`(06:57 빌드, release 스모크 크래시 0). 푸시하지 않았다. 1절의 `[x]`는 아래 표의 대조를 마친 항목이다.
+최종 소스 `76e8f7a`, 최종 빌드 커밋 `7e1f452`(07:48 빌드, release 스모크 크래시 0, core 77개·app 65개 테스트 통과). 푸시하지 않았다. 1절의 `[x]`는 아래 표의 대조를 마친 항목이다.
 
 | # | 완료 조건 | 판정 | 대조한 증거 |
 | --- | --- | --- | --- |
@@ -64,16 +64,16 @@
 | 기획 2 | 상황별 공식 출처, 없는 것은 제외 | 충족 | `docs/plan/safety-sources.md`(15개 상황, 출처 URL과 확인 수준), 명세 5.2.1 표(S01~S11 링크). 출처 없는 S12는 챕터에서 제외(core 커밋 `4bf8a16`) |
 | 기획 3 | 접수양식 순서의 기획서 초안 | 충족 | `docs/plan/application-draft.md` 1~8번 절(기존 접수양식 초안 `기획서_초안.md`와 같은 항목 순서) |
 | 앱 1 | core 테스트 통과, 판정·점수·코치가 core에 | 충족 | 상위 세션이 `./gradlew :core:test` 직접 실행: 77개 통과, 실패 0. `core/src/main/kotlin/io/moodlab/sideseat/core/`의 `DefaultTrainingEngine.kt`·`DefaultDriveCoach.kt`·`TrainingConfig.kt`, 테스트 `TrainingEngineTest.kt`·`DriveCoachTest.kt`·`MiniGameTest.kt` 등 |
-| 앱 2 | assembleRelease, apk/ | 충족 | `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(06:57). `docs/STATUS.md` "최종 빌드"와 "release APK" 절(release 스모크 크래시 0) |
+| 앱 2 | assembleRelease, apk/ | 충족 | `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(07:48). `docs/STATUS.md` "최종 빌드"와 "release APK" 절(release 스모크 크래시 0) |
 | 앱 3-1 | P단 훈련 → 주행 화면이 움직임 | 충족 | `docs/STATUS.md` 장면 표 1번, 프레임 표(58~60fps). 캡처 `c1_s01_heavy_rain_active_landscape.jpg`, `v2_calm_cruise_traffic_wiper_off.jpg`(상위 세션이 캡처를 직접 확인) |
 | 앱 3-2 | 실제 신호 판정 5개 이상 | 충족 (9개) | 장면 표 2번과 로그 발췌(`training … SUCCESS steps=…`). 캡처 `c1_*`, `c2_*`, `c3_s10_*`, `c4_*` |
-| 앱 3-3 | 앰비언트 set, 효과음·TTS | 충족 (소리는 로그 기준) | 로그 `app ambient ALERT ok=true`, `app say …`. 캡처 `11-virtual-console.png`, `virtual_console_ambient_alert_red.jpg`. 소리를 사람이 듣는 확인은 하지 않음 |
+| 앱 3-3 | 앰비언트 set, 효과음·TTS | 충족 | 로그 `app ambient ALERT ok=true`, `app say …`. 캡처 `11-virtual-console.png`, `virtual_console_ambient_alert_red.jpg`. 소리는 `docs/STATUS.md` "소리 출력 확인(기기 기준)"에서 믹서 트랙으로 확인: 빗소리 반복과 TTS가 동시에 활성, TTS 중 효과음 약 10dB 감쇄, 주행 전환 때 정지. 효과음 파일 18개는 `tools/sfx/REPORT.md`에서 클리핑 0, 트루 피크 -1.4dBTP 이하 |
 | 앱 3-4 | D로 바꾸면 훈련 닫힘·코치 | 충족 | 로그 `app mode TRAINING -> COACH`. 캡처 `coach_after_leaving_p_training_closed.jpg` |
 | 앱 3-5 | 코치 규칙 3개 이상 | 충족 (K01·K05·K06, K08 경유지) | 로그 `app coach say rule=K01…`. 캡처 `coach_k01_*`, `coach_k05_*`, `coach_k06_*`, `coach_k08_rest_stop_navi_search.jpg` |
 | 앱 3-6 | P 복귀 → 요약·음성 총평 | 충족 | 로그 `app mode COACH -> REVIEW`, `review first sentence`. 캡처 `review_after_park_*.jpg` |
 | 앱 3-7 | 금고 다이얼(조향각) | 충족 | 로그 `app safedial solved=3/3`. 캡처 `m1_safe_dial_*.jpg` |
 | 앱 3-8 | 가로·세로 창 | 충족 (창 크기 변경으로 확인) | 가로 1682×1210, 세로 835×1210. 캡처 `portrait_*`, `v2_portrait_*`. 폼 팩터 콘솔(12.9·14.6인치) 확인은 아래 "추가 확인" 참조 |
-| 앱 4 | 음성 스트리밍과 지연 측정 | 충족 (목표 1초에는 미달, 측정값과 원인 기록) | 코드 `app/src/main/java/io/moodlab/sideseat/voice/`: `TtsSpeaker.kt`(문장을 `speak(s, false)`로 이어 보냄), `SeniorInstructor.kt`(STT 중간 결과로 빠른 길 판단·예열, Claude 스트리밍), `FastPath.kt`, `SentenceChunker.kt`. 실측 `docs/STATUS.md` 통합 뒤 실측 ②: 빠른 길 약 10ms, Claude 답 시작 1.31~1.72초, 0.6초에 채움말. 말하는 중 `request()`는 열림, 끼어들기 인식은 미확인으로 기록 |
+| 앱 4 | 음성 스트리밍과 지연 측정 | 충족 (목표 1초 이내 달성) | 코드 `app/src/main/java/io/moodlab/sideseat/voice/`: `TtsSpeaker.kt`(문장을 `speak(s, false)`로 이어 보냄), `SeniorInstructor.kt`(STT 중간 결과로 빠른 길 판단·예열, Claude 스트리밍), `FastPath.kt`, `SentenceChunker.kt`. 실측 `docs/STATUS.md`: 빠른 길 중앙값 약 20ms. Claude 답 시작 중앙값 0.75초(15초 간격 12회)·0.76초(60초 간격 12회), 24회 모두 연결 재사용. 처음에는 1.3~1.7초였고, 원인(답을 자를 때 소켓을 끊어 매번 새 연결)을 찾아 고쳤다(voice `76e8f7a`). 음성 인식이 말 끝 뒤 약 0.4초에 결과를 주므로 실제 말 끝 기준으로는 약 1.2초. 말하는 중 `request()`는 열림, 끼어들기 인식은 미확인으로 기록 |
 | 앱 5 | 실측 표 | 충족 | `docs/STATUS.md` 실측 표(신호 지연, 프레임, P·D단 제어)와 ③ CPU·메모리(4코어 기준 10~15%, PSS 114MB) |
 | 앱 6 | 시연 대본 | 충족 | `docs/plan/demo-script.md`(1분 영상 표, PT 순서, Virtual Console 실제 카드 이름) |
 
