@@ -222,6 +222,8 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
             "click" to 0.7f,
             "tick" to 0.5f,
             "wiper" to 0.55f,
+            "unlock" to 0.75f,
+            "buzzer" to 0.6f,
             "success" to 0.7f,
             "fail" to 0.6f,
         )

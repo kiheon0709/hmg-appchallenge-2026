@@ -16,6 +16,8 @@
 - click       단발  금고 다이얼 딸깍(M1). 기계식 짧은 딸깍
 - tick        단발  초시계 째깍
 - wiper       단발  와이퍼가 한 번 쓸고 가는 소리
+- unlock      단발  금고 번호 하나를 맞춤(M1). 묵직한 걸쇠 '철컥' + 짧은 금속 울림
+- buzzer      단발  퀴즈 미니게임 먼저 누르기. 밝고 경쾌한 '삐빅'
 - success     단발  해결. 밝은 종소리 아르페지오
 - fail        단발  실패. 부드럽게 내려가는 두 음(다그치지 않는 느낌)
 
@@ -408,6 +410,39 @@ def wiper():
     return norm_peak(fade(x, 0.01, 0.03), -4)
 
 
+def unlock():
+    sec = 0.6
+    n = int(SR * sec)
+    t = t_axis(sec)
+    # 걸쇠가 빠지는 '철': 고역 금속 접점 두 번
+    latch = hp(white(n), 2500, 2) * exp_decay(n, 0.002)
+    latch += place(hp(white(n), 3500, 2) * exp_decay(n, 0.0015) * 0.7, n, 0.035)
+    # 무거운 몸체 '컥': 낮은 공진 + 짧은 저역 노이즈
+    body = np.sin(2 * np.pi * 95 * t) * exp_decay(n, 0.05) + lp(white(n), 400, 2) * exp_decay(n, 0.02) * 2.0
+    body = place(body, n, 0.03)
+    # 금속 울림(금고 문 철판): 비조화 배음 몇 개
+    ring = np.zeros(n)
+    for f, a, tau in [(1720, 0.35, 0.18), (2650, 0.2, 0.12), (4130, 0.1, 0.07)]:
+        ring += a * np.sin(2 * np.pi * f * t) * exp_decay(n, tau)
+    ring = place(ring, n, 0.032)
+    x = latch * 0.8 + body * 0.9 + ring * 0.5
+    x = reverb(x, 0.5, 0.1)[:n]
+    return norm_peak(fade(x, 0.0005, 0.08), -3)
+
+
+def buzzer():
+    # 퀴즈쇼 버튼: 빠르게 올라가는 두 음 + 끝음을 살짝 길게
+    n = int(SR * 0.5)
+    out = np.zeros(n)
+    for f, at, ln in [(1318.5, 0.0, 0.07), (1975.5, 0.075, 0.22)]:
+        m = int(SR * ln)
+        y = soft_square(f, ln, 4) * 0.6 + np.sin(2 * np.pi * f * t_axis(ln)) * 0.6
+        y *= env_adsr(m, 0.004, 0.03, 0.6, ln * 0.5, 0.6)
+        out += place(y, n, at)
+    out = reverb(out, 0.5, 0.12)[:n]
+    return norm_peak(fade(out, 0.001, 0.05), -4)
+
+
 def success():
     # 밝은 종소리 아르페지오 C6-E6-G6-C7, 마지막 음은 길게
     notes = [(1046.5, 0.0), (1318.5, 0.09), (1568.0, 0.18), (2093.0, 0.29)]
@@ -443,7 +478,7 @@ def fail():
 SOUNDS = {
     "rain": rain, "wind": wind, "engine": engine, "engine_rise": engine_rise, "thunder": thunder,
     "tire": tire, "alarm": alarm, "chime": chime, "click": click, "tick": tick, "wiper": wiper,
-    "success": success, "fail": fail,
+    "unlock": unlock, "buzzer": buzzer, "success": success, "fail": fail,
 }
 
 if __name__ == "__main__":
