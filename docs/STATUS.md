@@ -4,6 +4,56 @@
 
 빌드: 디버그 APK(공유 폴더를 복사한 격리 빌드), Pleos Connect Emulator 2.1.0. 조작은 모두 Virtual Console HTTP API(아래 실측 절)로 했고, 시나리오 실행기가 앱 로그(`SideSeatMeasure`)를 보며 다음 조작과 캡처를 했다. 캡처는 `docs/screens/sim/`(파일 이름이 장면 이름).
 
+### 통합 뒤 실측 (공유 폴더 빌드 a25a667 기준, 2026-11-13 06시)
+
+**① 주행 화면 프레임** (`frame scene` 로그, 2초 구간, 교관 대결로 장면을 붙잡아 측정. 저사양 모드는 켜지지 않음)
+
+| 장면 | 가로 1682×1210 | 세로 835×1210 |
+| --- | --- | --- |
+| 평온 주행(앞차·옆 차로 차) | 60.0 / 60.0 fps, 33 ms 넘는 프레임 0 | 60.0 / 60.0 fps, 0 |
+| 폭우, 와이퍼 꺼짐 | 60.0 / 60.0 / 59.0 fps(최대 50 ms 1회) | 60.0 / 60.0 / 58.0 fps(최대 83 ms 1회) |
+| 짙은 안개 + 상향등 | 60.0 / 58.5 / 60.0 fps(최대 50 ms 1회) | 59.5 / 60.0 / 60.0 fps |
+
+그리기 기록 시간은 평균 0.6~1.0 ms, 최대 9 ms.
+
+**② 음성 지연 "말 끝 → 첫 음성"** (입력: 맥 합성 음성 PCM을 `listenFromPcm`으로 실시간 속도로 넣음, 디버그 명령 `ask_pcm`. 값은 STT 최종 결과 → TTS 시작. STT 최종 결과는 음성이 끝난 뒤 약 0.4초에 오므로 실제 말 끝 기준은 +0.4초)
+
+| 길 | 시행 | STT 최종 → 첫 음성 | 중앙값(범위) | 말 끝 기준 추정 |
+| --- | --- | --- | --- | --- |
+| 빠른 길(지식 파일 즉답: "안개등 어떻게 켜?", "앞유리에 김이 서려") | 6 | 7, 14, 25, 16, 10, 7 ms | **10 ms (7~25)** | 약 0.4초 |
+| Claude 스트리밍(claude-haiku-5-5, "왜 외기로 바꿔야 해") | 3(+이전 1) | 869, 1290, 1981 ms (이전 939) | **1.1초 (0.87~1.98)** | 약 1.5초 |
+
+- Claude 길의 첫 음성은 0.6초에 넣는 필러("음, 잠깐만요.")이고, 실제 LLM 첫 글자는 705 / 1114 / 1767 ms에 왔다(프롬프트 캐시 적중 `cacheRead=8688`). 필러의 TTS 시작이 266~1377 ms로 흔들려 voice 세션에 알림.
+- 스트리밍 확인: `llm start … cacheRead=8688` → `llm first text` → `tts chunk first chars=…` → `tts chunk final totalChars=104~163`. 문장 단위로 TTS에 이어 보냄(`chunkedTts=true`).
+- 리뷰 총평(claude-opus-5-5) 첫 문장 0.7초 / 2.8초. 키가 없는 release에서는 `llmEnabled=false`로 규칙 기반 3문장이 나옴(release 스모크에서 확인).
+- 짧은 "응" PCM은 listen이 빈 문자열을 돌려줌(3/3). voice 세션에 알림.
+
+**③ 정차 중 CPU·메모리** (훈련 화면 폭우, `top -d 2` 3회, `dumpsys meminfo`)
+
+| 항목 | 가로 | 세로 | 기준 |
+| --- | --- | --- | --- |
+| 앱 CPU | 50 / 54 / 59 % (코어 1개 기준) → 4코어 전체의 약 13~15 % | 38 / 42 / 45 % → 약 10~11 % | 정차 25 % 이하 |
+| 메모리 PSS | 113.7 MB (RSS 217 MB) | 115.3 MB (RSS 220 MB) | 400 MB 이하 |
+
+**④ 신호 → 판정(화면 반영) 지연** (VC 요청 시각 → `app step done` 로그, 3회씩. 화면에는 다음 프레임(최대 16.7 ms)에 보인다)
+
+| 조작 | 지연 |
+| --- | --- |
+| 와이퍼 Off → High (폭우) | 26, 10, 22 ms |
+| 앞유리 성에 제거 On (김서림) | 20, -6, 8 ms (±10 ms는 시계 보정 오차) |
+| 브레이크 80 % (급정거) | 30, 13, 55 ms |
+| 와이퍼 단계만 바뀜(켜진 채 Low↔High, 200 ms 조회) | 59, 116 ms |
+
+**vehicle 게이트웨이 확인(dev-vehicle-core 요청 8항목)**: P→D `parked=false` 18 ms(UX_RESTRICTIONS), 조향 VC +45 → 45.0(부호 반전 맞음), 착좌 VC Occupied → `occupied[PASSENGER]=true`, 창문 VC 50 % → `window[DRIVER]=5→50%`, setAmbient ALERT `#ff1e1e`·SUCCESS `#1ee86a`·CALM `#fff1dc` 각 2~5 ms(VC 색 일치), 휴게소 → 내비 "휴게소" 검색 화면(`coach_k08_rest_stop_navi_search.jpg`), FusedLocation `sun rise=404 set=1021`. 위치 권한을 실행 뒤에 허용하면 게이트웨이를 다시 시작하도록 함.
+
+**차량 마이크 STT(`request()`)**: 마이크가 열리고(`createAudioRecord`) 녹음 루프가 69번 읽어 인식기에 넣지만 말소리가 없어 7초 뒤 `stt timeout speechSeen=false`로 끝남. `adb emu avd hostmicon`으로 호스트 마이크를 켰으므로 맥의 마이크 권한(에뮬레이터)이 원인으로 보임 → `docs/plan/needs-user.md`에 절차를 적음. 시연 대체 입력: 화면 선택 버튼(정차 중), 디버그 녹음 입력(화면에 "[녹음 입력]" 표시).
+
+**관찰**: 같은 세션에서 `am task resize`로 창을 여러 번 바꾼 뒤 D단에서 차량 시스템이 "주행 중에는 사용할 수 없습니다" 화면을 앱 위에 두 번 띄웠다. 앱을 새로 시작한 뒤에는 가로·세로·훈련 중단 직후 D 모두 3/3 정상(코치 화면)이었다. 실제 창 크기 변경이 아닌 시험용 강제 리사이즈의 부작용으로 보지만, 최종 확인에서 계속 본다.
+
+**테스트**: `./gradlew :core:test` 77개 통과, `./gradlew :app:testDebugUnitTest` 57개 통과.
+
+다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
+
 ### 완료 조건 8개 장면
 
 | # | 완료 조건 | 결과 | 증거(캡처) |
