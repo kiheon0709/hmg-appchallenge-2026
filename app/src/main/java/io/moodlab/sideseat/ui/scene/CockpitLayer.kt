@@ -106,7 +106,7 @@ internal class CockpitLayer {
         // 경고등이 뜨면 앞유리에 크게 비춰 보여 준다
         if (sim.warn > 0.02f) {
             val s = h * 0.085f
-            val wy = h * 0.3f
+            val wy = h * 0.4f
             val blink = 0.6f + 0.4f * sin(sim.t * 6f)
             drawCircle(Color(0xFF0A0D14), s * 1.9f, Offset(cx, wy), alpha = 0.78f * sim.warn)
             drawCircle(Color(0xFFFFC21A), s * 1.9f, Offset(cx, wy), alpha = sim.warn * blink, style = Stroke(s * 0.1f))
