@@ -207,6 +207,7 @@ data class TrainingProgress(
 
 // ---------- 주행 코치 ----------
 
+@Serializable
 data class CoachUtterance(val ruleId: String, val text: String, val urgent: Boolean, val expectReply: ReplyKind? = null)
 
 interface DriveCoach {
@@ -222,6 +223,8 @@ sealed interface CoachAction {
     data class AddRestStopWaypoint(val reason: String) : CoachAction
 }
 
+/** 직렬화 가능: 앱이 지난 주행 요약을 저장한다. */
+@Serializable
 data class DriveSummary(
     val durationMin: Int,
     val rainMin: Int,

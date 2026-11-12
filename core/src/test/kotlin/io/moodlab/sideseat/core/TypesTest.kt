@@ -19,6 +19,15 @@ class TypesTest {
     }
 
     @Test
+    fun `drive summary round-trips through json`() {
+        val s = DriveSummary(
+            30, 5, 10, listOf(CoachUtterance("K08", "쉬어 갈까요?", false, ReplyKind.YES_NO)),
+            mapOf("NO_SIGNAL_TURN" to 1), SituationId.DROWSY, listOf("a", "b", "c"),
+        )
+        assertEquals(s, Json.decodeFromString<DriveSummary>(Json.encodeToString(s)))
+    }
+
+    @Test
     fun `unknown vehicle key falls back to unknown license`() {
         val p = TrainingProgress(licenses = mapOf(TrainingProgress.UNKNOWN_VEHICLE to VehicleLicense(licensed = true)))
         assertEquals(true, p.licenseFor(null).licensed)
