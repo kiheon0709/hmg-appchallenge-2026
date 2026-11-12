@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 06:22, dev-integration)**: 소스 기준 커밋 `5f76c80`(vehicle 6b80523·ui 4144bb7·voice 5f76c80 반영, 세 세션 "완료" 확인). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 57개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 06:22 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 발화 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 8.1초에 열림. 캡처 `v3_*.jpg`(급정거 근접 `v3_s03_sudden_stop_close.jpg`). 같은 소스의 디버그 빌드로 Claude 질문 3회: 채움말 0.61~0.64초, 실제 답 시작 1.31 / 1.34 / 1.72초.
+> **최종 빌드 (2026-11-13 06:57, dev-integration)**: 소스 기준 `e10f0d1`(ui a7d894b 질문하기 버튼 수정 포함, vehicle 6b80523·voice 5f76c80). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 57개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 06:57 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 2.6초). 06:22 빌드(5f76c80)에서는 급정거 ★1·금고 다이얼 8.1초까지 확인(`v3_*.jpg`). 디버그 빌드로 Claude 질문 3회: 채움말 0.61~0.64초, 실제 답 시작 1.31 / 1.34 / 1.72초. 폼 팩터 12.9″ 세로·14.6″ 가로 확인(`ff_*.jpg`). 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
