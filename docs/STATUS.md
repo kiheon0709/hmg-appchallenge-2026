@@ -68,6 +68,29 @@
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
 
+### 폼 팩터·차량 마이크 시도 (2026-11-13 06:30~06:55)
+
+**폼 팩터: 확인됨.** 문서 절차의 Host Display Bridge는 `host-display-bridge.zip`(문서 사이트에서 내려받기)과 Go 1.22가 필요한데 둘 다 이 맥에 없고, 내려받기는 사용자 승인 없이 하지 않았다. 대신 브리지가 하는 일(에뮬레이터에 DISPLAY2 만들기)을 에뮬레이터 콘솔 명령으로 직접 했다. 크기는 기기 안 FormFactorConsole이 보여 주는 프리셋 값을 그대로 썼다.
+
+| 프리셋(FormFactorConsole) | 만든 디스플레이 | 명령 |
+| --- | --- | --- |
+| Connect-S 12.9″ · 160 DPI · Portrait → 628×855 px | 628×855, 160 dpi | `adb emu multidisplay add 2 628 855 160 0` |
+| Connect-S 14.6″ · 200 DPI · Landscape → 1700×1185 px(1360×948 dp) | 1700×1185, 200 dpi | `adb emu multidisplay add 2 1700 1185 200 0` |
+
+앱은 `adb shell am start --display <id>`로 띄우고(14.6″은 디스플레이 id 3), 화면은 `adb emu screenrecord screenshot <폴더> --display 2`로 캡처했다. 홈·훈련(폭우 발생·성공)·코치·코치 K01·리뷰를 두 크기 모두 확인: `ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`. 잘림 1건: 두 크기 모두 리뷰 화면 TalkButton 글자("말하는 중 · 눌러서 멈추기")가 잘림 → dev-sim-ui에 넘김. 나머지 화면은 잘림·겹침 없음.
+
+**차량 마이크 STT `request()`: 불가(사람 목소리 필요), 원인은 확인.**
+
+| 시도 | 결과 |
+| --- | --- |
+| ① `adb emu avd hostmicon` | 처음 켠 에뮬레이터(옵션 없음)에서는 녹음 루프가 돌지만 무음 |
+| ① 실행 옵션 `-allow-host-audio` | 도움말: "Allows sending of audio from audio input devices. Otherwise, zeroes out audio." 이 옵션으로 다시 켜자 STT 입력 RMS가 호스트 마이크 켬 25~44 / 끔 0.1~0.7 → **맥의 실제 마이크 소리가 들어옴** |
+| ② 맥 마이크 권한(TCC) 읽기 | `TCC.db`는 읽기 권한이 없어 직접 확인 불가. 대신 위 RMS 차이로 에뮬레이터가 이미 맥 마이크를 받고 있음을 확인(권한 창이 필요 없음) |
+| ③ 가상 마이크에 소리 넣기 | 에뮬레이터 콘솔에는 오디오 주입 명령이 없음. gRPC `EmulatorController.injectAudio`(127.0.0.1:8554, discovery 파일 토큰)를 표준 라이브러리 HTTP/2 클라이언트로 호출 → **에뮬레이터가 2/2 즉시 종료**(SIGSEGV `audio_forwarder_enable` ← `QemuAudioInputEngine::start` ← `injectAudio`, 주소 0x58, 맥 크래시 리포트). 에뮬레이터 36.6.11의 버그로 판단. 다시 켤 때 크래시 보고는 보내지 않음(`-crash-report-mode never`) |
+| ④ 호스트 마이크 켬 + 맥 스피커로 `say` | 맥 출력이 음소거(`output muted:true`, 볼륨 19)라 소리가 나지 않아 인식 0. 시스템 설정을 바꾸지 않으려고 음소거를 풀지 않음 |
+
+결론: 남은 것은 사람이 맥 마이크에 직접 말하는 것뿐(절차는 `docs/plan/needs-user.md`). 앱 경로(마이크 열기 → 녹음 → 인식기 → 시간 제한 → 결과)는 로그로 확인했고, 인식 자체는 같은 STT 엔진에 PCM을 넣는 경로로 확인함. 에뮬레이터는 지금 `-allow-host-audio -crash-report-mode never`로 켜져 있다.
+
 ### 완료 조건 8개 장면
 
 | # | 완료 조건 | 결과 | 증거(캡처) |
