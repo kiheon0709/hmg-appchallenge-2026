@@ -7,7 +7,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 
@@ -137,20 +139,15 @@ internal class SeniorInstructor(
         meter.onAnswerRequested(if (spec != null) "llm-speculative" else "llm")
         val source = spec ?: client.stream(LlmClient.Route.FAST, system, InstructorPrompt.question(q, parked, context), maxTokens(parked))
         val maxSentences = if (parked) 4 else 2
-        var fillerPending = false // withFiller의 잠금 안에서 쓰고, 순서상 그 뒤에 읽는다
         val sentences = source.toSentences()
             .take(maxSentences)
             .withFallback(FIRST_SENTENCE_TIMEOUT_MS, onFailure = { log("llm answer fallback cause=${it?.javaClass?.simpleName}: ${it?.message?.take(120)}") }) {
                 fastPath.fallback(q, parked)
             }
-            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken"); meter.onFiller(); fillerPending = true })
-        var first = true
-        sentences.collect {
-            // 채움말은 첫 문장으로 세지 않는다(지연을 채움말 기준과 실제 답 기준으로 나눠 잰다).
-            if (fillerPending && it == FILLER) fillerPending = false
-            else if (first) { first = false; meter.onFirstSentence() }
-            emit(it)
-        }
+            // 첫 문장이 "만들어진" 시각을 잰다(재생 차례를 기다리는 시간과 나눠 보려고). withFiller가 위쪽을 먼저 모아 두므로 여기는 생산 시점이다.
+            .onEach { meter.onFirstSentence() }
+            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken"); meter.onFiller() })
+        emitAll(sentences)
     }
 
     override fun review(summary: DriveSummary): Flow<String> {
@@ -174,7 +171,11 @@ internal class SeniorInstructor(
     private fun maxTokens(parked: Boolean): Long = if (parked) ANSWER_MAX_TOKENS_PARKED else ANSWER_MAX_TOKENS_DRIVING
 
     companion object {
-        const val FILLER = "음, 잠깐만요."
+        /**
+         * 채움말. 순차 재생이라 채움말이 끝나야 답이 나오므로 아주 짧게 둔다.
+         * 실측(11-14): "음, 잠깐만요."(약 1.3초)를 쓰면 LLM 첫 문장이 0.7~1.6초에 와도 답이 약 2초에 나왔다.
+         */
+        const val FILLER = "음."
         const val FILLER_AFTER_MS = 600L
         /** 이 안에 첫 문장이 없으면 LLM을 버리고 지식 파일 답으로. */
         const val FIRST_SENTENCE_TIMEOUT_MS = 3_500L
