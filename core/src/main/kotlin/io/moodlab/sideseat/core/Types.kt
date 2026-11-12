@@ -158,6 +158,9 @@ interface TrainingEngine {
 
     /** 저장해 둔 기록을 불러온다. 앱 시작 때 한 번. */
     fun restore(progress: TrainingProgress)
+
+    /** P를 벗어나 중단된 챕터. 같은 id로 [start]하면 남은 상황부터 이어 한다. 없으면 null. */
+    fun resumableChapter(): String?
 }
 
 data class ChapterInfo(
