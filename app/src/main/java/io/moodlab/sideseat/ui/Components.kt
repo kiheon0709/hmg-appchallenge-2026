@@ -216,7 +216,7 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
     val label = when {
         talk.listening -> "듣고 있어요"
         talk.thinking -> "잠깐만요"
-        talk.speaking -> "말하는 중 · 눌러서 멈추기"
+        talk.speaking -> "눌러서 멈추기"
         else -> "질문하기"
     }
     val bg = when { talk.listening -> Sc.pink; active -> Sc.surfaceHi; else -> Sc.accent }
@@ -225,12 +225,16 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
     Row(
         modifier.height(height).clip(shape).background(bg)
             .clickable { onAction(if (active) UiAction.StopTalking else UiAction.AskQuestion) }
-            .padding(horizontal = sz.dp(32f)),
+            .padding(horizontal = sz.dp(20f)),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
-        Canvas(Modifier.size(height * 0.5f)) { micGlyph(fg, size.width / 2f, size.height / 2f, size.minDimension * 0.8f) }
+        Canvas(Modifier.size(height * 0.42f)) { micGlyph(fg, size.width / 2f, size.height / 2f, size.minDimension * 0.8f) }
         Spacer(Modifier.width(sz.dp(18f)))
-        Text(label, color = fg, fontSize = sz.h2, fontWeight = FontWeight.Bold, maxLines = 1)
+        // 좁은 버튼에서도 글자가 잘리지 않게 긴 문구는 한 단계 작게 쓴다
+        Text(
+            label, color = fg, fontSize = if (label.length > 5) sz.body else sz.h2, fontWeight = FontWeight.Bold,
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
+        )
     }
 }
 
