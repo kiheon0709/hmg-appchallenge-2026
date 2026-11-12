@@ -160,7 +160,8 @@ class PleosVehicleGateway(
     private val frontWindshield = WindowArea(WindowValue.FRONT_WINDSHIELD)
     private var defrostArea: WindowArea = frontWindshield
     private var ambientArea: SeatArea? = null
-    private var ambientBefore: Pair<Int?, Int?>? = null
+    private var ambientBeforeColor: Int? = null
+    private var ambientBeforeBrightness: Int? = null
 
     // ---------- 수명 ----------
 
@@ -185,6 +186,11 @@ class PleosVehicleGateway(
         log("gateway started config=$config")
     }
 
+    /**
+     * 구독을 모두 풀고 SDK를 놓는다. 같은 객체로 [start]를 다시 불러도 된다(권한 허용 뒤 재시작 등).
+     * 마지막 신호 값은 지우지 않는다. 재시작 순간 parked가 잠깐 false로 튀어 훈련이 닫히는 일을 막고,
+     * 다시 구독하면서 받는 현재 값으로 곧 바뀐다.
+     */
     override fun stop() {
         if (!started) return
         started = false
@@ -559,9 +565,20 @@ class PleosVehicleGateway(
             // 고정 영역(ROW_1_LEFT 단독)은 not supported → 차가 알려 준 영역 그룹을 쓴다(실측 11-07).
             val area = areas?.firstOrNull() ?: return@checkAmbientLightBrightnessColorCapabilities
             ambientArea = area
-            light.getAmbientLightBrightnessColor(area, { color ->
-                ambientBefore = color to ambientBefore?.second
-            }, { fail("ambient get", it) })
+            // 앱이 바꾸기 전의 색·밝기를 처음 한 번만 기억한다. stop/start로 다시 시작해도 앱이 칠한 색으로 덮어쓰지 않는다.
+            if (ambientBeforeColor == null) {
+                light.getAmbientLightBrightnessColor(area, { color ->
+                    // 읽은 값에는 알파가 없다(실측 11-07: ff47ebff → 47ebff). 불투명으로 맞춘다.
+                    if (ambientBeforeColor == null) ambientBeforeColor = color?.let { if (it ushr 24 == 0) it or 0xFF000000.toInt() else it }
+                    log("ambient original color=${ambientBeforeColor?.let(Integer::toHexString)}")
+                }, { fail("ambient get", it) })
+            }
+            if (ambientBeforeBrightness == null) {
+                light.getAmbientLightBrightness(area, { b ->
+                    if (ambientBeforeBrightness == null) ambientBeforeBrightness = b
+                    log("ambient original brightness=$b")
+                }, { fail("ambient brightness get", it) })
+            }
         }, { fail("cap ambient", it) })
     }
 
@@ -572,7 +589,8 @@ class PleosVehicleGateway(
             AmbientMood.CALM -> 0xFFFFF1DC.toInt() to 35
             AmbientMood.ALERT -> 0xFFFF1E1E.toInt() to 100
             AmbientMood.SUCCESS -> 0xFF1EE86A.toInt() to 80
-            AmbientMood.OFF -> (ambientBefore?.first ?: 0xFFFFF1DC.toInt()) to 35
+            // OFF = 앱이 켜기 전 상태로 복원. 읽지 못했으면 평온 색.
+            AmbientMood.OFF -> (ambientBeforeColor ?: 0xFFFFF1DC.toInt()) to (ambientBeforeBrightness ?: 35)
         }
         val t0 = SystemClock.elapsedRealtime()
         val ok = withTimeoutOrNull(2_000) {
