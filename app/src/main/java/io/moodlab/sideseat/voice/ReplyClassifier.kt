@@ -38,6 +38,21 @@ object ReplyClassifier {
         return Reply.UNKNOWN
     }
 
+    /**
+     * 중간 결과가 끝난 문장처럼 보이는지(말 끝 추측용). 물음표·마침표로 끝나거나, 마지막 글자가 한국어 문장 끝 어미이면 true.
+     * "너의 의기로 바꿔야 해" → true, "너의 의기로" → false. 틀려도 추측 요청이 하나 버려질 뿐이다.
+     */
+    fun looksComplete(text: String): Boolean {
+        val t = text.trim()
+        if (t.isEmpty()) return false
+        if (t.last() in "?.!？。！") return true
+        val last = t.lastOrNull { it.isLetterOrDigit() } ?: return false
+        return last in SENTENCE_ENDINGS
+    }
+
+    /** 반말·해요체 질문과 서술의 끝 글자. */
+    private const val SENTENCE_ENDINGS = "요까해어야지니나냐래데죠줘돼게다라봐워와랴쥬예얘려"
+
     /** 띄어쓰기·문장부호를 없애고 소문자로. 비교용. */
     fun normalize(text: String): String =
         text.lowercase().filter { it.isLetterOrDigit() }

@@ -1,6 +1,7 @@
 package io.moodlab.sideseat.voice
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -28,6 +29,15 @@ class ReplyClassifierTest {
 
     @Test fun repeat() {
         listOf("뭐라고?", "다시 말해 줘", "잘 안 들렸어").forEach { assertEquals(it, Reply.REPEAT, c(it)) }
+    }
+
+    @Test fun looksCompleteForSpeechEndGuess() {
+        listOf("너의 의기로 바꿔야 해", "안개등 어떻게 켜?", "앞유리가 뿌예", "왜 그래요", "외기로 바꿀까", "이거 뭐야", "졸려 죽겠다").forEach {
+            assertTrue(it, ReplyClassifier.looksComplete(it))
+        }
+        listOf("너의 의기로", "안개등을", "앞유리가", "외기는 왜", "").forEach {
+            assertFalse(it, ReplyClassifier.looksComplete(it))
+        }
     }
 
     @Test fun questionsAreNotReplies() {

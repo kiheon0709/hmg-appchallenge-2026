@@ -193,9 +193,11 @@ internal class PleosVoice(
                     Log.i(MEASURE_TAG, "stt ${if (endedAt != null) "no final after end" else "timeout"} speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
                     break@loop
                 }
-                // 중간 결과가 [QUIET_GUESS_MS] 동안 새로 오지 않으면 말이 끝났다고 추측한다(듣기는 계속).
+                // 중간 결과가 잠시 새로 오지 않으면 말이 끝났다고 추측한다(듣기는 계속).
+                // 끝난 문장처럼 보이면 짧게(QUIET_GUESS_COMPLETE_MS), 아니면 길게 기다린다(말하는 중 중간 결과는 약 400ms마다 온다).
+                val quietMs = if (ReplyClassifier.looksComplete(lastPartial)) QUIET_GUESS_COMPLETE_MS else QUIET_GUESS_MS
                 val guessIn = lastPartialAt?.takeIf { endedAt == null && ReplyClassifier.normalize(lastPartial) != guessedNorm }
-                    ?.let { QUIET_GUESS_MS - (now - it) }
+                    ?.let { quietMs - (now - it) }
                 if (guessIn != null && guessIn <= 0) {
                     guessEnd("quiet")
                     continue@loop
@@ -279,6 +281,11 @@ internal class PleosVoice(
         const val SILENCE_HOLD_MS = 350L
         /** 중간 결과가 이만큼 새로 오지 않으면 말 끝으로 추측(실측: 말하는 동안 중간 결과는 약 400ms마다). */
         const val QUIET_GUESS_MS = 450L
+        /**
+         * 중간 결과가 끝난 문장처럼 보일 때의 기준. 실측(11-14 PCM): 마지막 중간 결과 뒤 약 0.41초에 인식이 끝나
+         * 450ms로는 한 번도 추측하지 못했다. 220ms면 최종 결과보다 약 0.19초 먼저 요청이 나간다.
+         */
+        const val QUIET_GUESS_COMPLETE_MS = 220L
         /** 한 번 듣는 동안 추측 요청 최대 횟수(말을 이어 가면 글이 바뀌어 다시 보낸다). */
         const val MAX_GUESSES = 3
     }

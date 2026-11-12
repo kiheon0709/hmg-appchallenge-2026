@@ -57,6 +57,19 @@ internal class SeniorInstructor(
     @Volatile private var prepared: Prepared? = null
     @Volatile private var speculation: Speculation? = null
 
+    /** 추측 요청 통계(버려지는 비율을 로그로 본다). 시작 = 맞음 + 틀림 + 새 추측에 밀림 + 쓰지 않음. */
+    private var specStarted = 0
+    private var specHit = 0
+    private var specMiss = 0
+    private var specReplaced = 0
+    private var specUnused = 0
+
+    private fun logSpecStats(event: String) {
+        val discarded = specMiss + specReplaced + specUnused
+        val rate = if (specStarted == 0) 0 else discarded * 100 / specStarted
+        log("llm speculative $event stats started=$specStarted hit=$specHit miss=$specMiss replaced=$specReplaced unused=$specUnused discarded=$rate%")
+    }
+
     override fun prepareQuestion(parked: Boolean, context: String) {
         prepared = Prepared(parked, context)
     }
@@ -66,8 +79,9 @@ internal class SeniorInstructor(
         val t = now()
         if (t - lastPrewarmAt < PREWARM_INTERVAL_MS) return
         lastPrewarmAt = t
-        log("llm prewarm route=FAST")
-        client.prewarm(LlmClient.Route.FAST, system)
+        // 연결 두 개를 데운다: 추측 요청이 버려져 남은 응답을 읽는 동안에도 실제 요청이 핸드셰이크 없이 나가게.
+        log("llm prewarm route=FAST x$PREWARM_CONNECTIONS")
+        repeat(PREWARM_CONNECTIONS) { client.prewarm(LlmClient.Route.FAST, system) }
     }
 
     override fun onEpdEnd(lastPartial: String) {
@@ -78,7 +92,7 @@ internal class SeniorInstructor(
         if (fastPath.decide(lastPartial, p.parked, llmAvailable = true) != null) return
         val key = ReplyClassifier.normalize(lastPartial)
         if (speculation?.key == key) return
-        speculation?.job?.cancel()
+        speculation?.let { it.job.cancel(); specReplaced++ }
         val ch = Channel<String>(Channel.UNLIMITED)
         val startedAt = now()
         lateinit var spec: Speculation
@@ -93,6 +107,7 @@ internal class SeniorInstructor(
         }
         spec = Speculation(key, p.parked, p.context, ch, job, startedAt)
         speculation = spec
+        specStarted++
         lastPrewarmAt = startedAt // 연결을 방금 썼다
         log("llm speculative start chars=${lastPartial.length}")
     }
@@ -107,10 +122,13 @@ internal class SeniorInstructor(
         val hit = s.key == ReplyClassifier.normalize(question) && s.parked == parked && s.context == context
         if (!hit) {
             s.job.cancel()
-            log("llm speculative miss")
+            specMiss++
+            logSpecStats("miss")
             return null
         }
+        specHit++
         log("llm speculative hit lead=${now() - s.startedAt}ms")
+        logSpecStats("hit")
         meter.onLlmRequest(s.startedAt)
         s.firstTokenAt?.let { meter.onLlmFirstToken(it) }
         // 실패로 닫힌 채널은 읽을 때 그 예외를 던진다 → withFallback이 받는다.
@@ -131,13 +149,13 @@ internal class SeniorInstructor(
         prepared = null
         val q = question.trim()
         if (q.isEmpty()) {
-            speculation?.job?.cancel(); speculation = null
+            speculation?.let { it.job.cancel(); specUnused++; logSpecStats("unused") }; speculation = null
             meter.cancel()
             return@flow
         }
         val fast = fastPath.decide(q, parked, llmAvailable = llm != null)
         if (fast != null) {
-            speculation?.job?.cancel(); speculation = null
+            speculation?.let { it.job.cancel(); specUnused++; logSpecStats("unused") }; speculation = null
             meter.onAnswerRequested(if (fast is FastPath.Decision.ShortReply) "fast-reply" else "fast-knowledge")
             fast.sentences.forEachIndexed { i, s -> if (i == 0) meter.onFirstSentence(); emit(s) }
             return@flow
@@ -193,7 +211,12 @@ internal class SeniorInstructor(
          * 실측(11-14): "음, 잠깐만요."(약 1.3초)를 쓰면 LLM 첫 문장이 0.7~1.6초에 와도 답이 약 2초에 나왔다.
          */
         const val FILLER = "음."
-        const val FILLER_AFTER_MS = 600L
+        /**
+         * 이 시간 안에 첫 조각이 없고 LLM 글자도 아직 안 왔으면 채움말. 명세 10.2는 0.6초였지만 실측(11-14, 24회)에서
+         * 1초를 넘은 6회가 모두 "0.6초에 채움말 시작 → 첫 조각이 곧 왔는데 채움말이 끝날 때까지 0.43~0.59초 대기"였다.
+         * 서버 첫 토큰 중앙값이 0.53~0.57초라 0.9초면 거의 항상 글자가 먼저 와서 채움말이 생략된다.
+         */
+        const val FILLER_AFTER_MS = 900L
         /** 이 안에 첫 문장이 없으면 LLM을 버리고 지식 파일 답으로. */
         const val FIRST_SENTENCE_TIMEOUT_MS = 3_500L
         const val REVIEW_FILLER = "오늘 운전, 같이 돌아볼게요."
@@ -209,5 +232,6 @@ internal class SeniorInstructor(
          * 없으면 사용자가 말하는 동안(1초 이상) TLS를 새로 맺어 둔다. 바로 앞(3초 안)에 연결을 썼으면 건너뛴다.
          */
         const val PREWARM_INTERVAL_MS = 3_000L
+        const val PREWARM_CONNECTIONS = 2
     }
 }

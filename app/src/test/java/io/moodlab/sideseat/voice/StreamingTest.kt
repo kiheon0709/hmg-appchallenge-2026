@@ -192,7 +192,8 @@ class SeniorInstructorTest {
         val llm = FakeLlm()
         val (ins, _) = instructor(llm)
         ins.onListenStart(); ins.onListenStart()
-        assertEquals(1, llm.prewarms.size)
+        // 한 번 데울 때 연결 두 개(추측 요청이 버려져도 실제 요청이 새 연결을 맺지 않게), 바로 다시 부르면 생략
+        assertEquals(SeniorInstructor.PREWARM_CONNECTIONS, llm.prewarms.size)
     }
 
     @Test fun speculativeRequestAtEpdIsReusedWhenFinalMatches() = runTest {
@@ -207,6 +208,7 @@ class SeniorInstructorTest {
         assertEquals(1, llm.calls.size)
         assertEquals("외기로 바꾸면 습기가 빠져요.", out.first())
         assertTrue(logs.any { "speculative hit" in it })
+        assertTrue(logs.toString(), logs.any { "stats started=1 hit=1 miss=0 replaced=0 unused=0 discarded=0%" in it })
         meter.onTtsStart()
         // 말 끝(500ms 시점) → 첫 문장은 추측 요청 덕에 300ms 뒤면 나온다
         assertTrue("latency=${meter.last.value}", meter.last.value!! < 800)
@@ -222,7 +224,20 @@ class SeniorInstructorTest {
         assertEquals(2, llm.calls.size)
         assertTrue(llm.calls[1].second.contains("<question>외기는 왜 바꿔야 돼?</question>"))
         assertEquals("외기로 바꾸면 습기가 빠져요.", out.first())
-        assertTrue(logs.any { "speculative miss" in it })
+        assertTrue(logs.toString(), logs.any { "speculative miss stats started=1 hit=0 miss=1" in it && "discarded=100%" in it })
+    }
+
+    @Test fun replacedSpeculationCountsAsDiscarded() = runTest {
+        val llm = FakeLlm(firstDelayMs = 600)
+        val (ins, _) = instructor(llm)
+        ins.prepareQuestion(parked = false, context = "")
+        ins.onEpdEnd("외기는 왜")          // 말하는 중 추측
+        delay(100)
+        ins.onEpdEnd("외기는 왜 바꿔")     // 글이 바뀌어 다시 추측 → 앞의 것은 버림
+        delay(300)
+        ins.onFinal("외기는 왜 바꿔?")
+        ins.answer("외기는 왜 바꿔?", parked = false, context = "").toList()
+        assertTrue(logs.toString(), logs.any { "stats started=2 hit=1 miss=0 replaced=1 unused=0 discarded=50%" in it })
     }
 
     @Test fun noSpeculationWithoutPrepare() = runTest {
@@ -243,7 +258,7 @@ class SeniorInstructorTest {
             meter.onTtsStart() // 순차 재생: 문장마다 onStart
         }
         assertEquals(SeniorInstructor.FILLER, out.first())
-        assertEquals(610L, meter.last.value) // 첫 음성 = 채움말
+        assertEquals(SeniorInstructor.FILLER_AFTER_MS + 10, meter.last.value) // 첫 음성 = 채움말
         val firstLine = logs.single { it.startsWith("latency total=") }
         assertTrue(firstLine, "first=filler" in firstLine)
         val answerLine = logs.single { it.startsWith("latency answer=") }
