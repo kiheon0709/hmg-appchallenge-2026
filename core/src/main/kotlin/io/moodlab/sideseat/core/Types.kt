@@ -33,6 +33,7 @@ data class VehicleState(
     val recirculationOn: Boolean? = null,
     /** 0 = 닫힘. */
     val driverWindowOpenPct: Int? = null,
+    /** 좌석별 창문 열림(%). 게이트웨이는 운전석도 함께 넣는다(M3 버저). */
     val windowOpenPct: Map<Seat, Int> = emptyMap(),
     val occupied: Set<Seat> = emptySet(),
     val parkingBrakeOn: Boolean? = null,
@@ -245,4 +246,52 @@ data class SafeDialView(
     val currentDeg: Float,
     val closeness: Float,
     val done: Boolean,
+    val elapsedMs: Long = 0,
+    /** 맞은 자리에서 멈춰 있는 정도 0~1. 1이 되면 철컥. */
+    val holdProgress: Float = 0f,
+)
+
+/** M2 깜빡이 모스. */
+interface TurnSignalGame {
+    fun start(nowMs: Long)
+    fun tick(turnSignal: TurnSignal?, nowMs: Long): Pair<TurnSignalGameView, List<CoachEvent>>
+}
+
+enum class MiniGamePhase { SHOW, INPUT, ROUND_CLEAR, OVER, DONE }
+
+data class TurnSignalGameView(
+    val round: Int,
+    /** 따라 할 순서. LEFT/RIGHT만. */
+    val pattern: List<TurnSignal>,
+    /** SHOW 단계에서 지금 보여 줄 칸(없으면 -1). */
+    val showingIndex: Int,
+    /** 지금까지 맞게 입력한 개수. */
+    val inputCount: Int,
+    val phase: MiniGamePhase,
+    /** 깬 라운드 수. */
+    val score: Int,
+    val inputLimitMs: Long,
+    val inputElapsedMs: Long,
+)
+
+/** M3 창문 버저 퀴즈. */
+interface WindowBuzzerGame {
+    fun start(nowMs: Long)
+    fun tick(windowOpenPct: Map<Seat, Int>, nowMs: Long): Pair<WindowBuzzerView, List<CoachEvent>>
+    /** 버저를 누른 사람의 답(말 또는 화면 선택). */
+    fun answer(choiceOrText: String, nowMs: Long)
+}
+
+enum class BuzzerPhase { ASK, BUZZED, REVEAL, DONE }
+
+data class WindowBuzzerView(
+    val questionIndex: Int,
+    val questionCount: Int,
+    val question: String,
+    val options: List<String>,
+    val phase: BuzzerPhase,
+    val buzzedSeat: Seat?,
+    /** REVEAL에서 맞았는지. */
+    val lastCorrect: Boolean?,
+    val scores: Map<Seat, Int>,
 )
