@@ -23,6 +23,8 @@ class LatencyMeter(
     private var firstSentenceAt: Long? = null
     private var fillerAt: Long? = null
     private var firstVoiceAt: Long? = null
+    private var llmRequestAt: Long? = null
+    private var llmFirstTokenAt: Long? = null
     private var path: String = "?"
 
     @Synchronized fun onEpdEnd() { if (speechEndAt == null) epdEndAt = now() }
@@ -34,7 +36,13 @@ class LatencyMeter(
         fillerAt = null
         firstVoiceAt = null
         path = "?"
+        // llmRequestAt·llmFirstTokenAt은 지우지 않는다: 추측 요청은 STT 최종보다 먼저 나간다.
     }
+
+    /** LLM 요청을 보낸 시각(추측 요청이면 STT 최종보다 이르다). [at]이 없으면 지금. */
+    @Synchronized fun onLlmRequest(at: Long = now()) { llmRequestAt = at; llmFirstTokenAt = null }
+
+    @Synchronized fun onLlmFirstToken(at: Long = now()) { if (llmFirstTokenAt == null) llmFirstTokenAt = at }
 
     /** 채움말("음, 잠깐만요.")을 내보냄. 채움말은 첫 문장으로 세지 않는다. */
     @Synchronized fun onFiller() {
@@ -69,15 +77,25 @@ class LatencyMeter(
             val ready = (if (filler) fillerAt else firstSentenceAt)
             val first = ready?.let { f -> answerAt?.let { f - it } }
             val tts = ready?.let { t - it }
-            log("latency total=${total}ms first=${if (filler) "filler" else "answer"} path=$path speechEnd->final=${epd ?: "-"}ms final->answer=${req ?: "-"}ms answer->firstSentence=${first ?: "-"}ms firstSentence->ttsStart=${tts ?: "-"}ms")
+            log("latency total=${total}ms first=${if (filler) "filler" else "answer"} path=$path guessEnd->final=${epd ?: "-"}ms final->answer=${req ?: "-"}ms answer->firstSentence=${first ?: "-"}ms firstSentence->ttsStart=${tts ?: "-"}ms ${llmStages(end, t)}")
             if (!filler) clear()
             return
         }
         // 채움말 뒤: 실제 답의 첫 문장이 준비된 뒤의 첫 onStart
         val real = firstSentenceAt ?: return
         if (t < real) return
-        log("latency answer=${t - end}ms path=$path afterFiller=yes final->llmFirstSentence=${answerAt?.let { real - it } ?: "-"}ms firstSentence->ttsStart=${t - real}ms")
+        log("latency answer=${t - end}ms path=$path afterFiller=yes final->llmFirstSentence=${answerAt?.let { real - it } ?: "-"}ms firstSentence->ttsStart=${t - real}ms ${llmStages(end, t)}")
         clear()
+    }
+
+    /** 구간 분해: final→요청(추측이면 음수), 요청→첫 토큰, 첫 토큰→첫 조각, 첫 조각→TTS 시작. */
+    private fun llmStages(end: Long, ttsStart: Long): String {
+        val req = llmRequestAt ?: return "llm=-"
+        if (!path.startsWith("llm")) return "llm=-"
+        val tok = llmFirstTokenAt
+        val first = firstSentenceAt
+        return "stages final->request=${req - end}ms request->firstToken=${tok?.let { it - req } ?: "-"}ms " +
+            "firstToken->firstChunk=${if (tok != null && first != null) first - tok else "-"}ms firstChunk->ttsStart=${first?.let { ttsStart - it } ?: "-"}ms"
     }
 
     private fun clear() {
@@ -85,6 +103,8 @@ class LatencyMeter(
         epdEndAt = null
         fillerAt = null
         firstVoiceAt = null
+        llmRequestAt = null
+        llmFirstTokenAt = null
     }
 
     /** 듣기가 아무 결과 없이 끝나면 재던 것을 버린다. */

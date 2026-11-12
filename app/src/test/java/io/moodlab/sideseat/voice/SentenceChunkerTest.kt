@@ -68,4 +68,22 @@ class SentenceChunkerTest {
         val out = listOf("안녕하", "세요. 선배", "예요. 잘 부탁", "해요").asFlow().toSentences().toList()
         assertEquals(listOf("안녕하세요.", "선배예요.", "잘 부탁해요"), out)
     }
+
+    @Test fun firstPieceCanBreakAtComma() {
+        val c = SentenceChunker(firstPieceAtComma = true)
+        assertEquals(emptyList<String>(), c.push("외기로 바꾸면"))
+        assertEquals(listOf("외기로 바꾸면,"), c.push(", 습기가"))
+        // 두 번째부터는 쉼표에서 끊지 않는다
+        assertEquals(listOf("습기가 빠져요, 그래서 덜 뿌예요."), c.push(" 빠져요, 그래서 덜 뿌예요."))
+    }
+
+    @Test fun shortClauseBeforeCommaIsNotSplit() {
+        val c = SentenceChunker(firstPieceAtComma = true)
+        assertEquals(listOf("네, 좋아요."), c.push("네, 좋아요."))
+    }
+
+    @Test fun takeSentencesDoesNotCountCommaPiece() = runTest {
+        val out = listOf("외기로 바꾸면,", "습기가 빠져요.", "에어컨도 켜요.", "셋째.").asFlow().takeSentences(2).toList()
+        assertEquals(listOf("외기로 바꾸면,", "습기가 빠져요.", "에어컨도 켜요."), out)
+    }
 }

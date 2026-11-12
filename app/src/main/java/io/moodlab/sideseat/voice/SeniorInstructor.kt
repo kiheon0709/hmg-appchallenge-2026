@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** LLM 한 번 호출. 텍스트 조각을 흘려보내고, 실패(거절·네트워크·인증)는 예외로 알린다. */
 interface LlmClient {
@@ -48,7 +50,9 @@ internal class SeniorInstructor(
 
     // ---------- 추측 요청 ----------
     private class Prepared(val parked: Boolean, val context: String)
-    private class Speculation(val key: String, val parked: Boolean, val context: String, val channel: Channel<String>, val job: Job)
+    private class Speculation(val key: String, val parked: Boolean, val context: String, val channel: Channel<String>, val job: Job, val startedAt: Long) {
+        @Volatile var firstTokenAt: Long? = null
+    }
 
     @Volatile private var prepared: Prepared? = null
     @Volatile private var speculation: Speculation? = null
@@ -76,16 +80,20 @@ internal class SeniorInstructor(
         if (speculation?.key == key) return
         speculation?.job?.cancel()
         val ch = Channel<String>(Channel.UNLIMITED)
+        val startedAt = now()
+        lateinit var spec: Speculation
         val job = scope.launch {
             try {
                 client.stream(LlmClient.Route.FAST, system, InstructorPrompt.question(lastPartial, p.parked, p.context), maxTokens(p.parked))
-                    .collect { ch.send(it) }
+                    .collect { if (spec.firstTokenAt == null) spec.firstTokenAt = now(); ch.send(it) }
                 ch.close()
             } catch (e: Throwable) {
                 ch.close(e)
             }
         }
-        speculation = Speculation(key, p.parked, p.context, ch, job)
+        spec = Speculation(key, p.parked, p.context, ch, job, startedAt)
+        speculation = spec
+        lastPrewarmAt = startedAt // 연결을 방금 썼다
         log("llm speculative start chars=${lastPartial.length}")
     }
 
@@ -102,11 +110,16 @@ internal class SeniorInstructor(
             log("llm speculative miss")
             return null
         }
-        log("llm speculative hit")
+        log("llm speculative hit lead=${now() - s.startedAt}ms")
+        meter.onLlmRequest(s.startedAt)
+        s.firstTokenAt?.let { meter.onLlmFirstToken(it) }
         // 실패로 닫힌 채널은 읽을 때 그 예외를 던진다 → withFallback이 받는다.
         return flow {
             try {
-                for (piece in s.channel) emit(piece)
+                for (piece in s.channel) {
+                    s.firstTokenAt?.let { meter.onLlmFirstToken(it) }
+                    emit(piece)
+                }
             } finally {
                 s.job.cancel()
             }
@@ -137,16 +150,20 @@ internal class SeniorInstructor(
         }
         val spec = takeSpeculation(q, parked, context)
         meter.onAnswerRequested(if (spec != null) "llm-speculative" else "llm")
-        val source = spec ?: client.stream(LlmClient.Route.FAST, system, InstructorPrompt.question(q, parked, context), maxTokens(parked))
+        val textStarted = AtomicBoolean(false) // LLM 스트림(IO)에서 쓰고 채움말 타이머에서 읽는다
+        val source = (spec ?: client.stream(LlmClient.Route.FAST, system, InstructorPrompt.question(q, parked, context), maxTokens(parked))
+            .onStart { meter.onLlmRequest(); lastPrewarmAt = now() })
+            .onEach { textStarted.set(true); meter.onLlmFirstToken() }
         val maxSentences = if (parked) 4 else 2
-        val sentences = source.toSentences()
-            .take(maxSentences)
+        val sentences = source.toSentences(firstPieceAtComma = true)
+            .takeSentences(maxSentences)
             .withFallback(FIRST_SENTENCE_TIMEOUT_MS, onFailure = { log("llm answer fallback cause=${it?.javaClass?.simpleName}: ${it?.message?.take(120)}") }) {
                 fastPath.fallback(q, parked)
             }
             // 첫 문장이 "만들어진" 시각을 잰다(재생 차례를 기다리는 시간과 나눠 보려고). withFiller가 위쪽을 먼저 모아 두므로 여기는 생산 시점이다.
             .onEach { meter.onFirstSentence() }
-            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken"); meter.onFiller() })
+            // LLM 글자가 이미 오기 시작했으면 첫 조각이 곧 나오므로 채움말을 내지 않는다(채움말이 끝날 때까지 답이 기다리게 되므로).
+            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken"); meter.onFiller() }, suppress = { textStarted.get() })
         emitAll(sentences)
     }
 
@@ -186,7 +203,10 @@ internal class SeniorInstructor(
         const val ANSWER_MAX_TOKENS_PARKED = 800L
         /** 총평 모델은 생각(thinking)을 끌 수 없어 그 몫까지 둔다. */
         const val REVIEW_MAX_TOKENS = 4_000L
-        /** 5분 캐시가 끝나기 전에 다시 데운다. */
-        const val PREWARM_INTERVAL_MS = 4 * 60_000L
+        /**
+         * 연결·캐시를 다시 데우는 간격. 듣기 시작할 때 마지막 사용에서 이만큼 지났으면 max_tokens 0 요청을 보낸다.
+         * 캐시(5분)보다 짧게 잡은 이유는 놀고 있는 TLS 연결이 닫히기 전에 다시 쓰기 위해서다(질문마다 핸드셰이크를 피함).
+         */
+        const val PREWARM_INTERVAL_MS = 45_000L
     }
 }

@@ -18,13 +18,19 @@ import kotlinx.coroutines.withTimeout
  * 첫 문장이 [afterMs] 안에 안 오면 [filler]("음, 잠깐만요.")를 먼저 흘려보낸다.
  * 첫 문장이 먼저 오면 [filler]는 나가지 않는다. 순서는 항상 filler → 본문.
  */
-fun Flow<String>.withFiller(afterMs: Long, filler: String, onFiller: () -> Unit = {}): Flow<String> = channelFlow {
+fun Flow<String>.withFiller(
+    afterMs: Long,
+    filler: String,
+    onFiller: () -> Unit = {},
+    /** true면 채움말을 내지 않는다(예: LLM 글자가 이미 오기 시작해 첫 문장이 곧 나올 때). */
+    suppress: () -> Boolean = { false },
+): Flow<String> = channelFlow {
     val lock = Mutex()
     var firstClaimed = false
     val fillerJob = launch {
         delay(afterMs)
         lock.withLock {
-            if (!firstClaimed) {
+            if (!firstClaimed && !suppress()) {
                 firstClaimed = true
                 onFiller()
                 send(filler)

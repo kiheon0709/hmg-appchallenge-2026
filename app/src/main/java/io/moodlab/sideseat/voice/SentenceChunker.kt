@@ -1,7 +1,9 @@
 package io.moodlab.sideseat.voice
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.transformWhile
 
 /**
  * LLM이 조금씩 흘려보내는 글자를 TTS에 넘길 문장으로 끊는다. 안드로이드 의존 없음(JVM 테스트 대상).
@@ -10,8 +12,13 @@ import kotlinx.coroutines.flow.flow
  * - 끝맺음 없이 [maxChars]를 넘으면 마지막 쉼표나 띄어쓰기에서 끊는다(첫 음성을 늦추지 않으려고).
  * - TTS가 그대로 읽어 버리는 마크다운 기호(*, #, `, 목록 머리표)는 지운다.
  */
-class SentenceChunker(private val maxChars: Int = 90) {
+class SentenceChunker(
+    private val maxChars: Int = 90,
+    /** 첫 조각만 첫 쉼표에서 끊는다(쉼표 앞이 [MIN_FIRST_CHARS]자 이상일 때). 첫 음성을 문장 끝까지 기다리지 않으려고. */
+    private val firstPieceAtComma: Boolean = false,
+) {
     private val buf = StringBuilder()
+    private var emittedAny = false
 
     /** 조각을 넣고, 완성된 문장들을 돌려준다. */
     fun push(delta: String): List<String> {
@@ -34,6 +41,13 @@ class SentenceChunker(private val maxChars: Int = 90) {
     }
 
     private fun findCut(): Int? {
+        if (firstPieceAtComma && !emittedAny) {
+            val comma = buf.indexOfFirst { it == ',' || it == '，' }
+            val stop = buf.indexOfFirst { it in TERMINATORS || it == '\n' }
+            if (comma >= 0 && (stop < 0 || comma < stop) && buf.substring(0, comma).count { it.isLetterOrDigit() } >= MIN_FIRST_CHARS) {
+                return comma + 1
+            }
+        }
         for (i in buf.indices) {
             val c = buf[i]
             if (c == '\n') return i + 1
@@ -64,10 +78,14 @@ class SentenceChunker(private val maxChars: Int = 90) {
 
     private fun emit(raw: String, out: MutableList<String>) {
         val cleaned = clean(raw)
-        if (cleaned.any { it.isLetterOrDigit() }) out += cleaned
+        if (cleaned.any { it.isLetterOrDigit() }) {
+            out += cleaned
+            emittedAny = true
+        }
     }
 
     companion object {
+        private const val MIN_FIRST_CHARS = 6
         private val TERMINATORS = setOf('.', '?', '!', '…', '。', '？', '！')
         private val CLOSERS = setOf('"', '\'', '”', '’', ')', '」', '』')
         private val LIST_MARK = Regex("""^\s*(?:[-*•·]|\d+[.)])\s+""")
@@ -83,8 +101,20 @@ class SentenceChunker(private val maxChars: Int = 90) {
 }
 
 /** 글자 조각 흐름 → 문장 흐름. */
-fun Flow<String>.toSentences(maxChars: Int = 90): Flow<String> = flow {
-    val chunker = SentenceChunker(maxChars)
+fun Flow<String>.toSentences(maxChars: Int = 90, firstPieceAtComma: Boolean = false): Flow<String> = flow {
+    val chunker = SentenceChunker(maxChars, firstPieceAtComma)
     collect { delta -> chunker.push(delta).forEach { emit(it) } }
     chunker.flush().forEach { emit(it) }
+}
+
+/** 문장 [n]개까지 흘려보낸다. 쉼표로 끝나는 조각(첫 쉼표 조각)은 문장으로 세지 않는다. */
+fun Flow<String>.takeSentences(n: Int): Flow<String> = flow {
+    var count = 0 // 모을 때마다 새로 센다
+    emitAll(
+        this@takeSentences.transformWhile { piece ->
+            emit(piece)
+            if (!piece.endsWith(",") && !piece.endsWith("，")) count++
+            count < n
+        },
+    )
 }

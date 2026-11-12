@@ -19,7 +19,8 @@ object InstructorPrompt {
     }
 
     fun question(question: String, parked: Boolean, context: String): String = buildString {
-        appendLine(if (parked) "<mode>정차 중: 3~4문장까지</mode>" else "<mode>주행 중: 1~2문장, 40자 안팎</mode>")
+        // 첫 문장을 짧게: 첫 조각이 빨리 만들어져 첫 음성이 빨라진다.
+        appendLine(if (parked) "<mode>정차 중: 3~4문장까지. 첫 문장은 15자 안팎으로 짧게</mode>" else "<mode>주행 중: 1~2문장, 40자 안팎. 첫 문장은 15자 안팎으로 짧게</mode>")
         if (context.isNotBlank()) appendLine("<vehicle>${context.trim()}</vehicle>")
         appendLine("<question>${question.trim()}</question>")
     }

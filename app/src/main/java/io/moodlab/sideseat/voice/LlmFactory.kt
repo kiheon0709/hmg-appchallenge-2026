@@ -1,10 +1,11 @@
 package io.moodlab.sideseat.voice
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -40,49 +41,57 @@ internal class AnthropicLlmClient(
         val model = model(route)
         val t0 = System.nanoTime()
         val conn = open(model)
-        val job = currentCoroutineContext()[Job]
-        val handle = job?.invokeOnCompletion { runCatching { conn.disconnect() } } // 취소되면 읽기를 끊는다
-        try {
-            conn.outputStream.use { it.write(ClaudeWire.body(model, system, user, maxTokens, stream = true).toByteArray(Charsets.UTF_8)) }
-            val code = conn.responseCode
-            if (code != 200) {
-                val type = runCatching { conn.errorStream?.bufferedReader()?.use { it.readText() }?.let(ClaudeWire::errorType) }.getOrNull()
-                log("llm http=$code type=$type route=$route model=$model")
-                throw LlmException("http $code $type")
+        var clean = false
+        coroutineScope {
+            // 취소되면 막혀 있는 readLine을 풀려고 연결을 끊는다. 정상으로 끝나면 끊지 않는다:
+            // 응답을 끝까지 읽고 닫기만 하면 TLS 연결이 풀로 돌아가 다음 질문이 핸드셰이크 없이 바로 나간다(실측 11-14: 매번 끊고 있었음).
+            val watcher = launch(start = CoroutineStart.UNDISPATCHED) {
+                try { awaitCancellation() } finally { if (!clean) runCatching { conn.disconnect() } }
             }
-            log("llm headers route=$route model=$model at=${ms(t0)}ms")
-            val parser = ClaudeWire.SseParser()
-            var firstText = true
-            var stopReason: String? = null
-            val reader = conn.inputStream.bufferedReader(Charsets.UTF_8)
             try {
-                while (true) {
-                    currentCoroutineContext().ensureActive()
-                    val line = reader.readLine() ?: break
-                    val data = parser.line(line)?.second ?: continue
-                    when (val e = ClaudeWire.decode(data)) {
-                        is ClaudeWire.StreamEvent.Text -> if (e.text.isNotEmpty()) {
-                            if (firstText) { firstText = false; log("llm first text route=$route at=${ms(t0)}ms") }
-                            emit(e.text)
-                        }
-                        is ClaudeWire.StreamEvent.Started ->
-                            log("llm start route=$route served=${e.model} input=${e.inputTokens} cacheRead=${e.cacheRead} cacheWrite=${e.cacheWrite} at=${ms(t0)}ms")
-                        is ClaudeWire.StreamEvent.Stopped -> {
-                            stopReason = e.stopReason ?: stopReason
-                            e.outputTokens?.let { log("llm stop=$stopReason out=$it at=${ms(t0)}ms") }
-                        }
-                        is ClaudeWire.StreamEvent.Failed -> { log("llm stream error type=${e.type}"); throw LlmException("stream ${e.type}") }
-                        ClaudeWire.StreamEvent.Fallback -> log("llm server fallback route=$route")
-                        ClaudeWire.StreamEvent.Ignored -> Unit
-                    }
+                conn.outputStream.use { it.write(ClaudeWire.body(model, system, user, maxTokens, stream = true).toByteArray(Charsets.UTF_8)) }
+                log("llm sent route=$route at=${ms(t0)}ms") // 연결(재사용이면 거의 0)·TLS·본문 쓰기까지
+                val code = conn.responseCode
+                if (code != 200) {
+                    val type = runCatching { conn.errorStream?.bufferedReader()?.use { it.readText() }?.let(ClaudeWire::errorType) }.getOrNull()
+                    log("llm http=$code type=$type route=$route model=$model")
+                    throw LlmException("http $code $type")
                 }
+                log("llm headers route=$route model=$model at=${ms(t0)}ms")
+                val parser = ClaudeWire.SseParser()
+                var firstText = true
+                var stopReason: String? = null
+                val reader = conn.inputStream.bufferedReader(Charsets.UTF_8)
+                try {
+                    while (true) {
+                        ensureActive()
+                        val line = reader.readLine() ?: break
+                        val data = parser.line(line)?.second ?: continue
+                        when (val e = ClaudeWire.decode(data)) {
+                            is ClaudeWire.StreamEvent.Text -> if (e.text.isNotEmpty()) {
+                                if (firstText) { firstText = false; log("llm first text route=$route at=${ms(t0)}ms") }
+                                emit(e.text)
+                            }
+                            is ClaudeWire.StreamEvent.Started ->
+                                log("llm start route=$route served=${e.model} input=${e.inputTokens} cacheRead=${e.cacheRead} cacheWrite=${e.cacheWrite} at=${ms(t0)}ms")
+                            is ClaudeWire.StreamEvent.Stopped -> {
+                                stopReason = e.stopReason ?: stopReason
+                                e.outputTokens?.let { log("llm stop=$stopReason out=$it at=${ms(t0)}ms") }
+                            }
+                            is ClaudeWire.StreamEvent.Failed -> { log("llm stream error type=${e.type}"); throw LlmException("stream ${e.type}") }
+                            ClaudeWire.StreamEvent.Fallback -> log("llm server fallback route=$route")
+                            ClaudeWire.StreamEvent.Ignored -> Unit
+                        }
+                    }
+                    clean = true
+                } finally {
+                    runCatching { reader.close() }
+                }
+                if (stopReason == "refusal") throw LlmException("refusal")
             } finally {
-                runCatching { reader.close() }
+                watcher.cancel()
+                if (!clean) runCatching { conn.disconnect() }
             }
-            if (stopReason == "refusal") throw LlmException("refusal")
-        } finally {
-            handle?.dispose()
-            runCatching { conn.disconnect() }
         }
     }.flowOn(Dispatchers.IO)
 

@@ -140,11 +140,25 @@ internal class PleosVoice(
         var rmsMax = 0.0
         var rmsMin = -1.0
         var quietSince: Long? = null
+        var prevPartialNorm = ""
+        var lastPartialAt: Long? = null
+        var guessedNorm = ""
+        var guesses = 0
+        /** 말이 끝났다고 "추측"되면 Instructor가 LLM 요청을 먼저 보낸다. 듣기는 계속한다. 같은 글에는 한 번만. */
+        fun guessEnd(source: String) {
+            val norm = ReplyClassifier.normalize(lastPartial)
+            if (norm.isEmpty() || norm == guessedNorm || guesses >= MAX_GUESSES) return
+            guessedNorm = norm
+            guesses++
+            Log.i(MEASURE_TAG, "stt guess end ($source) #$guesses chars=${lastPartial.length} at=${SystemClock.elapsedRealtime() - t0}ms")
+            hooks.onEpdEnd(lastPartial)
+        }
+        /** 엔진 EPD·RMS로 말 끝이 확인됨: 최종 결과 대기 시간 제한을 건다. */
         fun markSpeechEnd(source: String) {
             if (epdAt != null) return
             epdAt = SystemClock.elapsedRealtime()
             Log.i(MEASURE_TAG, "stt speech end ($source) at=${epdAt!! - t0}ms")
-            hooks.onEpdEnd(lastPartial)
+            guessEnd(source)
         }
         var firstPartialAt: Long? = null
         var sender: Job? = null
@@ -179,7 +193,14 @@ internal class PleosVoice(
                     Log.i(MEASURE_TAG, "stt ${if (endedAt != null) "no final after end" else "timeout"} speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
                     break@loop
                 }
-                val e = withTimeoutOrNull(deadline) { events.receive() } ?: continue@loop
+                // 중간 결과가 [QUIET_GUESS_MS] 동안 새로 오지 않으면 말이 끝났다고 추측한다(듣기는 계속).
+                val guessIn = lastPartialAt?.takeIf { endedAt == null && ReplyClassifier.normalize(lastPartial) != guessedNorm }
+                    ?.let { QUIET_GUESS_MS - (now - it) }
+                if (guessIn != null && guessIn <= 0) {
+                    guessEnd("quiet")
+                    continue@loop
+                }
+                val e = withTimeoutOrNull(if (guessIn != null) minOf(deadline, guessIn) else deadline) { events.receive() } ?: continue@loop
                 when (e) {
                     SttEvent.Ready -> Unit
                     SttEvent.Started -> if (startedLogged++ == 0) Log.i(MEASURE_TAG, "stt started at=${SystemClock.elapsedRealtime() - t0}ms")
@@ -198,8 +219,13 @@ internal class PleosVoice(
                             }
                             speechSeen = true
                             lastPartial = text
+                            lastPartialAt = SystemClock.elapsedRealtime()
                             onPartial(text)
                             hooks.onPartial(text)
+                            // 같은 중간 결과가 한 번 더 오면 말이 멈춘 것으로 보고 LLM 요청을 먼저 보낸다.
+                            val norm = ReplyClassifier.normalize(text)
+                            if (norm == prevPartialNorm) guessEnd("stable")
+                            prevPartialNorm = norm
                         }
                     }
                     is SttEvent.Epd -> {
@@ -251,6 +277,10 @@ internal class PleosVoice(
         /** 말하는 동안의 최대 RMS 대비 이 비율 아래로 [SILENCE_HOLD_MS] 이어지면 말 끝으로 본다(추측 요청 신호). */
         const val SILENCE_RATIO = 0.18
         const val SILENCE_HOLD_MS = 350L
+        /** 중간 결과가 이만큼 새로 오지 않으면 말 끝으로 추측(실측: 말하는 동안 중간 결과는 약 400ms마다). */
+        const val QUIET_GUESS_MS = 450L
+        /** 한 번 듣는 동안 추측 요청 최대 횟수(말을 이어 가면 글이 바뀌어 다시 보낸다). */
+        const val MAX_GUESSES = 3
     }
 
     private data class Limits(val noSpeechMs: Long, val maxMs: Long, val finalAfterEpdMs: Long) {

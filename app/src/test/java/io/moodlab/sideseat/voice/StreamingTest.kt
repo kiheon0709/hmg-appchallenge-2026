@@ -25,6 +25,11 @@ class StreamOpsTest {
         assertEquals(listOf("하나.", "둘."), src.withFiller(600, "음.").toList())
     }
 
+    @Test fun fillerSuppressedWhenAsked() = runTest {
+        val src = flow { delay(900); emit("본문.") }
+        assertEquals(listOf("본문."), src.withFiller(600, "음.", suppress = { true }).toList())
+    }
+
     @Test fun noFillerWhenSourceIsEmptyAndQuick() = runTest {
         assertEquals(emptyList<String>(), flow<String> { delay(100) }.withFiller(600, "음.").toList())
     }
@@ -73,6 +78,7 @@ private class FakeLlm(
     private val pieces: List<String> = listOf("외기로 바꾸면 ", "습기가 빠져요. ", "에어컨도 ", "같이 켜요. ", "셋째. ", "넷째. ", "다섯째."),
     private val firstDelayMs: Long = 300,
     private val fail: Throwable? = null,
+    private val pieceDelayMs: Long = 20,
 ) : LlmClient {
     val calls = mutableListOf<Pair<LlmClient.Route, String>>()
     val prewarms = mutableListOf<LlmClient.Route>()
@@ -83,7 +89,7 @@ private class FakeLlm(
         systems += system
         delay(firstDelayMs)
         fail?.let { throw it }
-        pieces.forEach { emit(it); delay(20) }
+        pieces.forEach { emit(it); delay(pieceDelayMs) }
     }
 
     override fun prewarm(route: LlmClient.Route, system: String) { prewarms += route; systems += system }
@@ -243,6 +249,35 @@ class SeniorInstructorTest {
         val answerLine = logs.single { it.startsWith("latency answer=") }
         // LLM 첫 조각 1,200ms + 문장 완성 20ms + 재생 10ms
         assertTrue(answerLine, answerLine.startsWith("latency answer=12"))
+    }
+
+    @Test fun noFillerOnceLlmTextHasStarted() = runTest {
+        // 첫 토큰 500ms, 첫 문장 완성 700ms: 600ms에 채움말을 내면 답이 채움말 뒤로 밀리므로 내지 않는다.
+        val (ins, meter) = instructor(FakeLlm(firstDelayMs = 500, pieceDelayMs = 200))
+        ins.onFinal("외기는 왜 바꿔?")
+        val out = mutableListOf<String>()
+        ins.answer("외기는 왜 바꿔?", parked = false, context = "").collect { out += it; meter.onTtsStart() }
+        assertEquals("외기로 바꾸면 습기가 빠져요.", out.first())
+        val line = logs.single { it.startsWith("latency total=") }
+        assertTrue(line, "first=answer" in line)
+        assertTrue(line, "request->firstToken=500ms" in line)
+        assertTrue(line, "firstToken->firstChunk=200ms" in line)
+    }
+
+    @Test fun speculativeRequestShowsNegativeFinalToRequest() = runTest {
+        val llm = FakeLlm(firstDelayMs = 600)
+        val (ins, meter) = instructor(llm)
+        ins.prepareQuestion(parked = false, context = "")
+        ins.onEpdEnd("외기는 왜 바꿔")
+        delay(400)
+        ins.onFinal("외기는 왜 바꿔?")
+        val out = mutableListOf<String>()
+        ins.answer("외기는 왜 바꿔?", parked = false, context = "").collect { out += it; meter.onTtsStart() }
+        val line = logs.single { it.startsWith("latency total=") }
+        assertTrue(line, "final->request=-400ms" in line)
+        assertTrue(line, "path=llm-speculative" in line)
+        // 말 끝(400ms) → 첫 문장(600+20ms): 추측 덕에 220ms
+        assertEquals(220L, meter.last.value)
     }
 
     @Test fun latencyMeterRecordsOnlyFirstTtsStartAfterSpeechEnd() = runTest {
