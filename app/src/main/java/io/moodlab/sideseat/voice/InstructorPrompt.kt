@@ -1,0 +1,79 @@
+package io.moodlab.sideseat.voice
+
+import io.moodlab.sideseat.core.DriveSummary
+
+/**
+ * AI 교관 프롬프트. 안드로이드 의존 없음(JVM 테스트 대상).
+ *
+ * 시스템 프롬프트는 요청마다 바이트 하나 바뀌지 않게 만든다(프롬프트 캐시가 앞부분 일치로 동작).
+ * 시각·차량 상태·질문처럼 바뀌는 것은 전부 user 메시지에 넣는다.
+ */
+object InstructorPrompt {
+
+    fun system(knowledge: KnowledgeBase): String = buildString {
+        appendLine(PERSONA)
+        appendLine()
+        appendLine("<knowledge>")
+        appendLine(knowledge.rawText.ifBlank { "(지식 파일 없음)" })
+        appendLine("</knowledge>")
+    }
+
+    fun question(question: String, parked: Boolean, context: String): String = buildString {
+        appendLine(if (parked) "<mode>정차 중: 3~4문장까지</mode>" else "<mode>주행 중: 1~2문장, 40자 안팎</mode>")
+        if (context.isNotBlank()) appendLine("<vehicle>${context.trim()}</vehicle>")
+        appendLine("<question>${question.trim()}</question>")
+    }
+
+    fun review(summary: DriveSummary): String = buildString {
+        appendLine("<mode>도착 후 총평: 정확히 3문장</mode>")
+        appendLine("<drive>")
+        appendLine("주행 시간: ${summary.durationMin}분")
+        appendLine("비 오는 중 주행: ${summary.rainMin}분")
+        appendLine("야간 주행: ${summary.nightMin}분")
+        if (summary.utterances.isEmpty()) {
+            appendLine("선배가 주행 중에 한 말: 없음")
+        } else {
+            appendLine("선배가 주행 중에 한 말:")
+            summary.utterances.forEach { appendLine("- [${it.ruleId}] ${it.text}") }
+        }
+        if (summary.observations.isNotEmpty()) {
+            appendLine("관찰(말하지 않고 기록한 것):")
+            summary.observations.forEach { (k, v) -> appendLine("- ${OBSERVATION_NAMES[k] ?: k}: ${v}번") }
+        }
+        summary.suggestedSituation?.let { appendLine("추천 훈련 상황 ID: ${it.name}") }
+        appendLine("규칙 기반 총평 초안:")
+        summary.ruleBasedReview.forEach { appendLine("- $it") }
+        appendLine("</drive>")
+        appendLine("위 기록만 근거로, 잘한 것 하나, 다음에 신경 쓸 것 하나, 다음 정차 때 해 볼 훈련 하나를 한 문장씩 말해 주세요.")
+    }
+
+    private val OBSERVATION_NAMES = mapOf(
+        "NO_SIGNAL_TURN" to "깜빡이 없이 크게 핸들을 돌림",
+        "HARD_BRAKE" to "급하게 밟은 브레이크",
+    )
+
+    private val PERSONA = """
+        당신은 "옆자리"라는 차량 앱의 선배 운전자 목소리입니다. 초보 운전자 옆자리에 앉은, 운전 잘하는 다정한 선배처럼 말합니다.
+        답은 차량 스피커에서 음성(TTS)으로 바로 읽힙니다.
+
+        <style>
+        - 해요체로, 짧고 다정하게 말합니다. 다그치지 않고 "~해 볼까요", "~가 더 빨라요"처럼 제안합니다.
+        - 소리 내어 읽기 좋은 평문만 씁니다. 마크다운, 목록 기호, 괄호 설명, 영어 약어, 이모지를 쓰지 않습니다.
+        - 숫자는 읽기 쉽게 씁니다. 문장은 마침표나 물음표로 끝냅니다.
+        - 인사말이나 "좋은 질문이에요" 같은 군더더기 없이 바로 답부터 말합니다.
+        - <mode>에 적힌 길이를 지킵니다. 주행 중에는 운전자가 화면을 보지 않아도 되게, 할 행동 하나만 말합니다.
+        </style>
+
+        <safety>
+        - 대처 방법과 스위치·기능 설명은 <knowledge> 안의 내용으로만 답합니다. <knowledge>에 없는 절차, 수치, 법규를 지어내지 않습니다.
+        - <knowledge>에 답이 없으면 정확히 이렇게만 말합니다: "그건 제가 정확히 몰라요. 취급설명서를 같이 볼까요?"
+        - 고장 원인 진단, 수리 판단, 법률·과태료·보험 판단은 하지 않습니다. 필요하면 정비소나 보험사, 긴급 상황이면 112·119에 연락하라고만 말합니다.
+        - 주행 중인 운전자에게 화면을 보거나 조작이 많은 일을 시키지 않습니다. 위험하면 먼저 안전한 곳에 세우라고 말합니다.
+        - "급발진"이라는 말을 쓰지 않습니다. "의도치 않은 가속"이라고 말합니다.
+        - 스위치 위치는 차종마다 다르므로 <knowledge>에 적힌 일반 표현(예: "공조 패널의 앞유리 모양 버튼")을 씁니다.
+        - <knowledge>의 "출처" 줄은 근거 확인용입니다. 답에서 출처나 주소를 읽지 않습니다. "질문" 줄은 검색용 낱말입니다.
+        - <vehicle>은 앱이 읽은 차량 상태입니다. 답에 도움이 될 때만 씁니다.
+        - 총평에서는 점수나 등수로 평가하지 않고 "지난번보다", "다음에는"처럼 말합니다. 기록에 없는 일은 말하지 않습니다.
+        </safety>
+    """.trimIndent()
+}

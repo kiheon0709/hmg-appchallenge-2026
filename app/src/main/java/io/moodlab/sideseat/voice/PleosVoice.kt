@@ -1,0 +1,208 @@
+package io.moodlab.sideseat.voice
+
+import ai.pleos.playground.stt.SpeechToText
+import ai.pleos.playground.stt.constant.ErrorType
+import ai.pleos.playground.stt.constant.Mode
+import ai.pleos.playground.stt.listener.OnInitializeListener
+import ai.pleos.playground.stt.listener.ResultListener
+import android.content.Context
+import android.os.SystemClock
+import android.util.Log
+import io.moodlab.sideseat.core.ReplyKind
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import java.util.Locale
+
+/**
+ * [Voice] 구현. 말하기는 [TtsSpeaker](Pleos TTS), 듣기는 Pleos SpeechToText ON_DEVICE.
+ *
+ * 차량 마이크 음성은 Pleos Speech Service 안에서 텍스트가 되고, 앱은 텍스트만 받는다. 음성 데이터를 밖으로 보내지 않는다.
+ * 안드로이드 기본 SpeechRecognizer는 이 이미지에 엔진이 없어 쓰지 않는다.
+ *
+ * 듣기 흐름: 리스너는 초기화 때 미리 등록(request 전에) → request() → 중간 결과(onUpdated completed=false)는 onPartial로
+ * → EPD가 말 끝을 알리면 Instructor에게 추측 요청 신호 → 최종 결과(completed=true) 또는 시간 초과 시 마지막 중간 결과.
+ */
+internal class PleosVoice(
+    context: Context,
+    private val scope: CoroutineScope,
+    private val speaker: TtsSpeaker,
+    private val meter: LatencyMeter,
+    private val hooks: ListenHooks,
+    /** TTS가 말하는 중에도 마이크를 열지. 실측 전에는 false(말이 끝난 뒤 연다). */
+    private val bargeIn: Boolean = false,
+) : Voice {
+
+    private sealed interface SttEvent {
+        object Ready : SttEvent
+        object Started : SttEvent
+        object Ended : SttEvent
+        data class Updated(val text: String, val completed: Boolean) : SttEvent
+        data class Epd(val on: Long, val off: Long) : SttEvent
+        data class Error(val type: ErrorType) : SttEvent
+    }
+
+    private val stt = SpeechToText(context.applicationContext, Mode.ON_DEVICE)
+    private val events = Channel<SttEvent>(Channel.UNLIMITED)
+    private val sttReady = CompletableDeferred<Boolean>()
+    private val listenLock = Mutex()
+    private var initAttempts = 0
+
+    private val _listening = MutableStateFlow(false)
+    override val listening: StateFlow<Boolean> = _listening.asStateFlow()
+    override val speaking: StateFlow<Boolean> get() = speaker.speaking
+
+    private val resultListener = object : ResultListener {
+        override fun onReady() { events.trySend(SttEvent.Ready) }
+        override fun onStartedRecognition() { events.trySend(SttEvent.Started) }
+        override fun onUpdated(stt: String, completed: Boolean) { events.trySend(SttEvent.Updated(stt, completed)) }
+        override fun onUpdatedEpdData(on: Long, off: Long) { events.trySend(SttEvent.Epd(on, off)) }
+        override fun onUpdatedRms(rms: Double) = Unit
+        override fun onEndedRecognition() { events.trySend(SttEvent.Ended) }
+        override fun onError(errorType: ErrorType) { events.trySend(SttEvent.Error(errorType)) }
+    }
+
+    init {
+        // 이벤트를 놓치지 않게 request()보다 먼저, 초기화와 함께 등록한다.
+        stt.addListener(resultListener)
+        initialize()
+    }
+
+    private fun initialize() {
+        initAttempts++
+        stt.initialize(object : OnInitializeListener {
+            override fun onSuccess() {
+                Log.i(MEASURE_TAG, "stt initialized attempt=$initAttempts")
+                stt.setLocale(Locale.KOREA)
+                sttReady.complete(true)
+            }
+
+            override fun onFailure(errorType: ErrorType) {
+                Log.w(MEASURE_TAG, "stt init failed=$errorType attempt=$initAttempts")
+                if (initAttempts < 3) scope.launch { delay(2_000); initialize() } else sttReady.complete(false)
+            }
+        })
+    }
+
+    // ---------- 말하기 ----------
+
+    override fun say(text: String, urgent: Boolean) = speaker.say(text, urgent)
+    override fun sayStreaming(sentences: Flow<String>) = speaker.sayStreaming(sentences)
+    override fun stopSpeaking() = speaker.stopSpeaking()
+
+    // ---------- 듣기 ----------
+
+    override suspend fun listen(kind: ReplyKind, onPartial: (String) -> Unit): String? = withContext(Dispatchers.Main) {
+        listenLock.withLock { listenOnce(kind, onPartial) }
+    }
+
+    private suspend fun listenOnce(kind: ReplyKind, onPartial: (String) -> Unit): String? {
+        if (withTimeoutOrNull(5_000) { sttReady.await() } != true) {
+            Log.w(MEASURE_TAG, "stt not ready")
+            return null
+        }
+        if (!bargeIn) speaker.awaitIdle(20_000)
+        val limits = Limits.of(kind)
+        hooks.onListenStart()
+        while (events.tryReceive().isSuccess) Unit // 지난 듣기의 늦은 이벤트를 버린다
+        _listening.value = true
+        val t0 = SystemClock.elapsedRealtime()
+        var lastPartial = ""
+        var final: String? = null
+        var speechSeen = false
+        var epdAt: Long? = null
+        var ended = false
+        var firstPartialAt: Long? = null
+        try {
+            stt.request()
+            Log.i(MEASURE_TAG, "stt request kind=$kind speaking=${speaker.speaking.value}")
+            loop@ while (true) {
+                val now = SystemClock.elapsedRealtime()
+                val elapsed = now - t0
+                val deadline = listOfNotNull(
+                    if (!speechSeen) limits.noSpeechMs - elapsed else null,
+                    limits.maxMs - elapsed,
+                    epdAt?.let { limits.finalAfterEpdMs - (now - it) },
+                ).min()
+                if (deadline <= 0) {
+                    Log.i(MEASURE_TAG, "stt timeout speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
+                    break@loop
+                }
+                val e = withTimeoutOrNull(deadline) { events.receive() } ?: continue@loop
+                when (e) {
+                    SttEvent.Ready -> Unit
+                    SttEvent.Started -> Log.i(MEASURE_TAG, "stt started at=${SystemClock.elapsedRealtime() - t0}ms")
+                    is SttEvent.Updated -> {
+                        val text = e.text.trim()
+                        if (e.completed) {
+                            final = text
+                            Log.i(MEASURE_TAG, "stt final chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms epd->final=${epdAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms")
+                            break@loop
+                        }
+                        if (text.isNotEmpty()) {
+                            if (firstPartialAt == null) {
+                                firstPartialAt = SystemClock.elapsedRealtime()
+                                Log.i(MEASURE_TAG, "stt first partial at=${firstPartialAt!! - t0}ms")
+                            }
+                            speechSeen = true
+                            lastPartial = text
+                            onPartial(text)
+                            hooks.onPartial(text)
+                        }
+                    }
+                    is SttEvent.Epd -> {
+                        Log.i(MEASURE_TAG, "stt epd on=${e.on} off=${e.off} at=${SystemClock.elapsedRealtime() - t0}ms")
+                        if (e.on > 0) speechSeen = true
+                        if (e.off > 0 && epdAt == null) {
+                            epdAt = SystemClock.elapsedRealtime()
+                            hooks.onEpdEnd(lastPartial)
+                        }
+                    }
+                    SttEvent.Ended -> {
+                        ended = true
+                        Log.i(MEASURE_TAG, "stt ended at=${SystemClock.elapsedRealtime() - t0}ms")
+                        break@loop
+                    }
+                    is SttEvent.Error -> {
+                        Log.w(MEASURE_TAG, "stt error=${e.type}")
+                        break@loop
+                    }
+                }
+            }
+        } finally {
+            if (!ended) runCatching { stt.stop() }.onFailure { Log.w(MEASURE_TAG, "stt stop failed: $it") }
+            _listening.value = false
+        }
+        val result = (final ?: lastPartial).trim().ifEmpty { null }
+        if (result != null) hooks.onFinal(result) else meter.cancel()
+        Log.i(MEASURE_TAG, "stt result=${if (result == null) "none" else "chars=${result.length}"} source=${if (final != null) "final" else "partial"}")
+        return result
+    }
+
+    private data class Limits(val noSpeechMs: Long, val maxMs: Long, val finalAfterEpdMs: Long) {
+        companion object {
+            fun of(kind: ReplyKind) = when (kind) {
+                ReplyKind.YES_NO -> Limits(noSpeechMs = 5_000, maxMs = 7_000, finalAfterEpdMs = 900)
+                ReplyKind.CHOICE -> Limits(noSpeechMs = 6_000, maxMs = 9_000, finalAfterEpdMs = 1_000)
+                ReplyKind.FREE -> Limits(noSpeechMs = 7_000, maxMs = 14_000, finalAfterEpdMs = 1_200)
+            }
+        }
+    }
+
+    fun release() {
+        runCatching { stt.stop() }
+        stt.removeListener(resultListener)
+        stt.release()
+    }
+}
