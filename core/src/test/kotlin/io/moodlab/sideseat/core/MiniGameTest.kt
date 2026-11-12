@@ -263,7 +263,7 @@ class MiniGameTest {
         b.windows = b.windows + (Seat.REAR_LEFT to 8)
         b.tick()
         assertEquals(Seat.REAR_LEFT, b.view.buzzedSeat)
-        b.game.answer("2번", b.now)
+        b.game.answer("1번", b.now) // 정답은 2번(절반으로)
         b.tick()
         assertEquals(false, b.view.lastCorrect)
     }

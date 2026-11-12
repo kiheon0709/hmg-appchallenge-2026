@@ -31,8 +31,6 @@ data class TrainingConfig(
     val brakeHoldMs: Long = 3_000,
     /** S05 감속 기준: 가상 속도를 평소의 이 비율 이하로(시행규칙 제19조 50% 감속). */
     val fogSlowFraction: Float = 0.5f,
-    /** S10 브레이크를 이만큼 뗐다 밟으면 감점. */
-    val brakePumpReleases: Int = 2,
     /** S12 급브레이크: 상황 뒤 이 시간 안에 밟아 이만큼 유지. */
     val hardBrakeWindowMs: Long = 1_000,
     val hardBrakeHoldMs: Long = 1_000,

@@ -175,18 +175,16 @@ class DriveCoachTest {
     }
 
     @Test
-    fun `K10 new warning light by color, once each, not ones already on`() {
-        val d = drive(day.copy(activeTelltales = mapOf("LOW_FUEL" to TelltaleColor.YELLOW)), allRules)
+    fun `K10 names only the tire pressure light, once each, not ones already on`() {
+        val d = drive(day.copy(activeTelltales = mapOf("ABS" to TelltaleColor.YELLOW)), allRules)
         d.run(10_000)
         assertTrue(d.said.isEmpty(), "출발 때 이미 켜진 경고등은 말하지 않는다")
         d.set { it.copy(activeTelltales = it.activeTelltales + ("TPMS" to TelltaleColor.YELLOW)) }
         d.run(1_000)
-        assertEquals("타이어 공기압 경고등이 켜졌어요. 급하진 않아요. 도착해서 같이 볼게요.", d.said.last().text)
-        assertFalse(d.said.last().urgent)
+        assertEquals("타이어 공기압 경고등이 켜졌어요. 속도를 줄이고 가까운 곳에서 공기압을 확인해 주세요.", d.said.last().text)
         d.set { it.copy(activeTelltales = it.activeTelltales + ("ENGINE_OIL_PRESSURE" to TelltaleColor.RED)) }
         d.run(1_000)
-        assertEquals("엔진 오일 압력 경고등이 켜졌어요. 지금 안전한 곳에 세워야 해요.", d.said.last().text)
-        assertTrue(d.said.last().urgent)
+        assertEquals("경고등이 켜졌어요. 안전한 곳에 세우고 취급설명서를 같이 볼게요.", d.said.last().text)
         // 꺼졌다 다시 켜져도 같은 주행에서는 한 번
         d.set { it.copy(activeTelltales = emptyMap()) }
         d.run(1_000)

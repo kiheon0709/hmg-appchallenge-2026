@@ -137,7 +137,7 @@ data class WindowBuzzerConfig(
     val questions: List<ChoiceDef> = DEFAULT_QUESTIONS,
 ) {
     companion object {
-        /** 훈련 내용에서 낸 문제. 대처법은 훈련 상황과 같은 출처 안에서만. */
+        /** 훈련 내용에서 낸 문제. 대처법은 docs/plan/safety-sources.md의 출처 안에서만. */
         val DEFAULT_QUESTIONS = listOf(
             ChoiceDef(
                 "앞유리 안쪽에 김이 서리면 먼저 누를 버튼은?",
@@ -149,13 +149,13 @@ data class WindowBuzzerConfig(
                 correct = 1, wrongLine = "안쪽 김은 성에 제거 버튼이에요.",
             ),
             ChoiceDef(
-                "안개가 짙을 때 오히려 앞이 더 안 보이게 하는 등은?",
+                "안개로 100미터 앞이 안 보이면 속도를 얼마나 줄일까요?",
                 listOf(
-                    ChoiceOption("상향등", listOf("상향")),
-                    ChoiceOption("안개등", listOf("안개")),
-                    ChoiceOption("하향등", listOf("하향")),
+                    ChoiceOption("조금만", listOf("조금")),
+                    ChoiceOption("절반으로", listOf("절반", "반")),
+                    ChoiceOption("그대로", listOf("그대로")),
                 ),
-                correct = 0, wrongLine = "상향등은 안개에 빛이 흩어져 하얗게 번져요.",
+                correct = 1, wrongLine = "최고속도의 절반으로 줄여야 해요.",
             ),
             ChoiceDef(
                 "고속도로에서 차가 멈추면 사람은 어디로 갈까요?",
@@ -167,13 +167,13 @@ data class WindowBuzzerConfig(
                 correct = 2, wrongLine = "가드레일 밖이 안전해요.",
             ),
             ChoiceDef(
-                "말발굽 모양 안에 느낌표가 있는 노란 경고등은?",
+                "타이어 공기압 경고등이 켜지면 먼저 할 일은?",
                 listOf(
-                    ChoiceOption("엔진 오일", listOf("엔진", "오일")),
-                    ChoiceOption("타이어 공기압", listOf("타이어", "공기압")),
-                    ChoiceOption("배터리", listOf("배터리")),
+                    ChoiceOption("경적 울리기", listOf("경적", "빵")),
+                    ChoiceOption("바로 속도 줄이기", listOf("속도", "줄이")),
+                    ChoiceOption("창문 열기", listOf("창문")),
                 ),
-                correct = 1, wrongLine = "타이어 공기압 경고예요.",
+                correct = 1, wrongLine = "바로 속도를 줄이고 점검받아요.",
             ),
             ChoiceDef(
                 "맞은편에서 차가 오면 먼저 할 일은?",

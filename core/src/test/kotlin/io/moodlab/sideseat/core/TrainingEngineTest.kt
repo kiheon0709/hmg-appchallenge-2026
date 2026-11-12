@@ -293,14 +293,17 @@ class TrainingEngineTest {
     }
 
     @Test
-    fun `high beam in tunnel is a penalty`() {
+    fun `tunnel and fog have no penalty for high beam`() {
         val d = driver()
         d.engine.inject(SituationId.TUNNEL, d.now)
         d.untilActive(SituationId.TUNNEL)
         assertTrue(d.view.scene.tunnel)
         d.set { it.copy(highBeamOn = true) }
         d.set { it.copy(lowBeamOn = true) }
-        assertEquals(1, d.view.lastResult?.stars)
+        assertEquals(3, d.view.lastResult?.stars)
+        assertTrue(d.view.lastResult!!.penalties.isEmpty())
+        val penaltyFree = listOf(SituationId.TUNNEL, SituationId.DENSE_FOG, SituationId.UNINTENDED_ACCEL, SituationId.BEFORE_EXIT)
+        assertTrue(SituationCatalog.all().filter { it.id in penaltyFree }.all { it.penalties.isEmpty() })
     }
 
     // ---------- 장면이 신호에 반응 ----------
@@ -451,21 +454,21 @@ class TrainingEngineTest {
     }
 
     @Test
-    fun `pumping the brake is a penalty`() {
+    fun `releasing the brake restarts the three seconds without penalty`() {
         val d = driver()
         d.engine.inject(SituationId.UNINTENDED_ACCEL, d.now)
         d.untilActive(SituationId.UNINTENDED_ACCEL)
-        repeat(2) {
-            d.set { it.copy(brakePressed = true) }
-            d.advance(300)
-            d.set { it.copy(brakePressed = false) }
-            d.advance(300)
-        }
-        assertTrue(d.says().any { it.startsWith("브레이크를 떼었다 밟으면") })
+        assertTrue(d.events.contains(CoachEvent.Sfx("engine_rise")))
         d.set { it.copy(brakePressed = true) }
-        d.advance(3_100)
-        assertEquals(listOf("BRAKE_PUMP"), d.view.lastResult?.penalties)
-        assertEquals(1, d.view.lastResult?.stars)
+        d.advance(2_000)
+        d.set { it.copy(brakePressed = false) }
+        d.advance(500)
+        d.set { it.copy(brakePressed = true) }
+        d.advance(2_000)
+        assertTrue(d.view.phase != TrainingPhase.SUCCESS, "다시 밟은 뒤 아직 3초가 안 됨")
+        d.advance(1_100)
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        assertTrue(d.view.lastResult!!.penalties.isEmpty())
     }
 
     // ---------- 모드 ----------

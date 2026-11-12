@@ -98,15 +98,12 @@ object SituationCatalog {
         available = { it.lowBeamOn != null }, done = { it.lowBeamOn == true },
     )
 
-    private fun highBeamPenalty(line: String) = PenaltyDef("HIGH_BEAM", line) { _ ->
-        PenaltyDetector { s, _, _, _ -> s.highBeamOn == true }
-    }
-
     fun all(config: TrainingConfig = TrainingConfig()): List<SituationDef> = listOf(
         SituationDef(
             id = SituationId.HEAVY_RAIN, title = "폭우",
             intro = "비가 쏟아져요. 앞이 안 보여요!",
-            lesson = "폭우엔 와이퍼를 가장 빠르게, 전조등도 같이 켜요.",
+            // 출처: 도로교통법 제37조(비 올 때 등화), 시행규칙 제19조(가시거리 100m 이내 50% 감속).
+            lesson = "폭우엔 전조등을 켜고 와이퍼를 가장 빠르게, 속도는 절반으로 줄여요.",
             steps = listOf(
                 StepDef(
                     id = "wiper_fast", label = "와이퍼 빠르게", essential = true,
@@ -164,8 +161,8 @@ object SituationCatalog {
             id = SituationId.TUNNEL, title = "터널 진입",
             intro = "터널이에요. 어두워져요.",
             lesson = "터널 들어가기 전에 전조등부터 켜요.",
+            // 출처: 도로교통법 제37조(터널 안 등화). 감점 조작 없음(명세 5.2).
             steps = listOf(lowBeamOn.copyEssential()),
-            penalties = listOf(highBeamPenalty("터널 안에선 상향등 말고 하향등이에요.")),
         ),
         SituationDef(
             id = SituationId.DENSE_FOG, title = "짙은 안개",
@@ -181,7 +178,7 @@ object SituationCatalog {
                     doneWithSpeed = { _, v -> v <= config.cruiseSpeedKmh * config.fogSlowFraction },
                 ),
             ),
-            penalties = listOf(highBeamPenalty("안개에선 상향등 말고 하향등이에요.")),
+            // 상향등 감점 없음: 근거 원문 미확인(명세 5.2).
         ),
         SituationDef(
             id = SituationId.ONCOMING_GLARE, title = "맞은편 차",
@@ -247,11 +244,12 @@ object SituationCatalog {
         ),
         SituationDef(
             id = SituationId.WARNING_LIGHT, title = "타이어 공기압 경고등",
-            intro = "계기판에 노란 경고등이 떴어요.",
-            lesson = "노란 경고등은 급하진 않지만 미루면 안 돼요.",
+            // 출처: 현대자동차 취급설명서(저압 타이어 경고등). 경고등 색깔 일반 규칙은 근거가 없어 쓰지 않는다.
+            intro = "계기판에 타이어 공기압 경고등이 떴어요.",
+            lesson = "타이어 공기압 경고등이 켜지면 바로 속도를 줄이고 점검받아요. 추운 날엔 공기압이 괜찮아도 켜질 수 있어요.",
             steps = listOf(
                 StepDef(
-                    id = "meaning", label = "경고등 뜻 맞히기", hint = "말발굽 모양 안에 느낌표는 타이어 공기압 경고예요.", essential = true,
+                    id = "meaning", label = "경고등 뜻 맞히기", hint = "타이어 공기압이 낮다는 경고예요.", essential = true,
                     choice = ChoiceDef(
                         question = "이 경고등은 무슨 뜻일까요?",
                         options = listOf(
@@ -260,20 +258,20 @@ object SituationCatalog {
                             ChoiceOption("브레이크가 고장 났어요", listOf("브레이크")),
                         ),
                         correct = 0,
-                        wrongLine = "말발굽 모양 안에 느낌표, 타이어 공기압 경고예요.",
+                        wrongLine = "이건 타이어 공기압이 낮다는 경고예요.",
                     ),
                 ),
                 StepDef(
-                    id = "action", label = "맞는 조치 고르기", hint = "속도를 줄이고 안전한 곳에 세워 타이어를 봐요.",
+                    id = "action", label = "맞는 조치 고르기", hint = "바로 속도를 줄이고 점검받아요.",
                     choice = ChoiceDef(
                         question = "그럼 어떻게 할까요?",
                         options = listOf(
-                            ChoiceOption("속도를 줄이고 안전한 곳에 세워 타이어를 봐요", listOf("줄이", "세워", "세우", "정차", "확인", "안전한")),
+                            ChoiceOption("바로 속도를 줄이고 급커브를 피해 점검받아요", listOf("줄이", "속도", "점검", "커브", "확인")),
                             ChoiceOption("그냥 목적지까지 달려요", listOf("그냥", "달려", "목적지")),
                             ChoiceOption("경고등이 꺼질 때까지 기다려요", listOf("꺼질", "기다")),
                         ),
                         correct = 0,
-                        wrongLine = "공기압이 낮은 채로 달리면 타이어가 상할 수 있어요. 속도를 줄이고 세워서 봐요.",
+                        wrongLine = "경고등이 켜지면 바로 속도를 줄여요. 계기판에서 어느 타이어인지 보고 점검받아요.",
                     ),
                 ),
             ),
@@ -295,7 +293,7 @@ object SituationCatalog {
                     available = { it.driverWindowOpenPct != null }, done = { (it.driverWindowOpenPct ?: 0) > 0 },
                 ),
             ),
-            loopSfx = listOf("yawn"),
+            onceSfx = listOf("yawn"),
         ),
         SituationDef(
             // 출처: 한국교통안전공단 보도자료 2023-12-08. 브레이크·EPB 유지·중립 세 동작, 순서는 정하지 않음.
@@ -310,15 +308,14 @@ object SituationCatalog {
                     available = { it.brakePressed != null }, done = { it.brakePressed == true },
                 ),
             ),
-            penalties = listOf(
-                PenaltyDef("BRAKE_PUMP", "브레이크를 떼었다 밟으면 힘이 약해질 수 있어요. 계속 밟아요.") { c -> BrakePumpDetector(c.brakePumpReleases) },
-            ),
-            loopSfx = listOf("engine"),
+            // 감점 조작 없음(명세 5.2). 떼면 3초를 처음부터 다시 센다.
+            loopSfx = listOf("engine"), onceSfx = listOf("engine_rise"),
         ),
         SituationDef(
             id = SituationId.BEFORE_EXIT, title = "내리기 전",
             intro = "다 왔어요. 내리기 전에 세 가지만 볼까요?",
-            lesson = "전조등, 창문, 주차 브레이크. 내리기 전 세 가지예요.",
+            // 출처: 도로교통법(주차제동장치). 전조등·창문은 근거 없는 확인 습관이라 채점하지 않는다(모두 감점 없음).
+            lesson = "주차 브레이크는 꼭 채워요. 전조등과 창문도 한 번 더 보는 습관이에요.",
             steps = listOf(
                 StepDef(
                     id = "lights_off", label = "전조등 끄기", hint = "전조등 스위치를 꺼요.", setup = "전조등을 켜 두세요", essential = true,
@@ -406,20 +403,6 @@ internal class WiperOnlyDetector : PenaltyDetector {
         val w = state.wiper ?: return false
         val base = baseline ?: w.also { baseline = it }
         return w.ordinal > base.ordinal && "defrost_on" !in doneSteps
-    }
-}
-
-/** 브레이크를 밟은 뒤 [releases]번 이상 뗐다 밟으면 감점. */
-internal class BrakePumpDetector(private val releases: Int) : PenaltyDetector {
-    private var pressedOnce = false
-    private var prev = false
-    private var count = 0
-    override fun update(state: VehicleState, nowMs: Long, sinceActiveMs: Long, doneSteps: Set<String>): Boolean {
-        val p = state.brakePressed ?: return false
-        if (p) pressedOnce = true
-        if (pressedOnce && prev && !p) count++
-        prev = p
-        return count >= releases
     }
 }
 

@@ -18,16 +18,8 @@ data class CoachConfig(
     val k06TurnSignalMs: Long = 60_000,
     val k07FogMs: Long = 10 * MIN,
     val k08DrivingMs: Long = 110 * MIN,
-    /** K10이 보는 경고등(SDK TelltaleType 이름). */
-    val k10Telltales: Map<String, String> = mapOf(
-        "TPMS" to "타이어 공기압",
-        "ENGINE_TEMPERATURE" to "엔진 온도",
-        "ENGINE_OIL_PRESSURE" to "엔진 오일 압력",
-        "LOW_VOLT_BATTERY" to "배터리",
-        "ABS" to "ABS",
-        "MASTER_WARNING" to "주의",
-        "LOW_FUEL" to "연료",
-    ),
+    /** K10이 보는 경고등(SDK TelltaleType 이름). TPMS만 구체적으로 말하고 나머지는 일반 문장(명세 6.2). */
+    val k10Telltales: Set<String> = setOf("TPMS", "ENGINE_TEMPERATURE", "ENGINE_OIL_PRESSURE", "LOW_VOLT_BATTERY", "ABS", "MASTER_WARNING"),
     /** O1: 깜빡이 없이 이 각도 이상 조향. */
     val o1SteerDeg: Float = 90f,
     val o1SignalLookbackMs: Long = 3_000,
@@ -227,16 +219,15 @@ class DefaultDriveCoach(
             "K06" -> "깜빡이가 계속 켜져 있어요."
             "K07" -> "안개등이 켜져 있어요. 맑으면 꺼 주세요."
             "K08" -> "두 시간 가까이 달렸어요. 다음 휴게소에서 쉬어 갈까요?"
-            "K10" -> {
-                val (type, color) = newTelltale!!
-                val name = config.k10Telltales[type] ?: "경고"
-                if (color == TelltaleColor.RED) "$name 경고등이 켜졌어요. 지금 안전한 곳에 세워야 해요."
-                else "$name 경고등이 켜졌어요. 급하진 않아요. 도착해서 같이 볼게요."
+            // 경고등 색깔 일반 규칙은 공식 근거가 없어 쓰지 않는다(safety-sources.md 8절).
+            "K10" -> if (newTelltale?.first == "TPMS") {
+                "타이어 공기압 경고등이 켜졌어요. 속도를 줄이고 가까운 곳에서 공기압을 확인해 주세요."
+            } else {
+                "경고등이 켜졌어요. 안전한 곳에 세우고 취급설명서를 같이 볼게요."
             }
             else -> ""
         }
-        // K10은 빨간 경고등만 앞의 말을 끊는다.
-        val urgent = if (rule.id == "K10") newTelltale?.second == TelltaleColor.RED else rule.urgent
+        val urgent = rule.urgent
         return CoachUtterance(
             ruleId = rule.id,
             text = text,
