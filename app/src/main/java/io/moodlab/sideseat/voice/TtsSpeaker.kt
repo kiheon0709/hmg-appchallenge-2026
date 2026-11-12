@@ -88,8 +88,10 @@ internal class TtsSpeaker(
     }
 
     init {
-        tts.addEventListener(listener)
+        // 순서 주의: initialize()가 SDK 내부 서비스 관리자를 만든다. 그 전에 addEventListener를 부르면
+        // UninitializedPropertyAccessException(lateinit tts)로 앱이 죽는다(에뮬레이터 실측). 문서 4.3절 순서와 같다.
         initialize()
+        tts.addEventListener(listener)
     }
 
     private fun initialize() {
@@ -351,8 +353,8 @@ internal class TtsSpeaker(
         worker?.cancel()
         runCatching { tts.stop() }
         focus.release()
-        tts.removeEventListener(listener)
-        tts.release()
+        runCatching { tts.removeEventListener(listener) }
+        runCatching { tts.release() }
     }
 
     companion object {

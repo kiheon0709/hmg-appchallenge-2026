@@ -75,9 +75,10 @@ internal class PleosVoice(
     }
 
     init {
-        // 이벤트를 놓치지 않게 request()보다 먼저, 초기화와 함께 등록한다.
-        stt.addListener(resultListener)
+        // 순서 주의: initialize() 다음에 addListener(TTS와 같은 이유, 실측에서 이 순서로 성공).
+        // 리스너는 request()·sendAudio()보다 먼저 등록되므로 이벤트를 놓치지 않는다.
         initialize()
+        stt.addListener(resultListener)
     }
 
     private fun initialize() {
@@ -232,7 +233,7 @@ internal class PleosVoice(
 
     fun release() {
         runCatching { stt.stop() }
-        stt.removeListener(resultListener)
-        stt.release()
+        runCatching { stt.removeListener(resultListener) }
+        runCatching { stt.release() }
     }
 }
