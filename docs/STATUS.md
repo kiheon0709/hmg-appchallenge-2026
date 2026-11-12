@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 08:02, dev-integration)**: 소스 기준 `90f23d7`(voice 지연 꼬리 줄이기·연결 재사용, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 67개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 08:02 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 7.9초에 열림. 디버그 빌드 Claude 질문 15초 간격 12회×2: 실제 답 시작 중앙값 0.77초·0.87초, 1초 초과 1/24, 연결 24/24 재사용, 추측 요청은 100% 버려짐. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
+> **최종 빌드 (2026-11-13 08:13, dev-integration)**: 소스 기준 `4e8a888`(voice 추측 요청 정규화·지연 꼬리·연결 재사용, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 71개 통과. `apk/MoodLab_SideSeat_release.apk` 22,855,739바이트(22.9 MB), 08:13 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 7.9초에 열림. 디버그 빌드 Claude 질문 15초 간격 12회: 실제 답 시작 중앙값 0.44초(0.27~0.54), 1초 초과 0/12, 추측 요청 12/12 적중(버림 0%), 연결 12/12 재사용. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -67,6 +67,37 @@
 **테스트**: `./gradlew :core:test` 77개 통과, `./gradlew :app:testDebugUnitTest` 57개 통과.
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
+
+### 음성 지연 재측정 — voice 4e8a888 추측 요청 비교 정규화 뒤 (2026-11-13 08:20)
+
+같은 방법(LLM 질문 PCM 12회, 15초 간격, 앱을 새로 시작, 에뮬레이터 Wi-Fi `AndroidWifi`). 원본: `docs/screens/sim/logs/voice_latency_4e8a888_gap15s_speculative.log`. 연결 12/12 reused, `Socket closed` 0회.
+
+| 회 | 답 시작 | 요청을 보낸 시점(최종 결과 기준) | 서버 첫 토큰(요청 뒤) | 첫 토큰→첫 조각 | TTS 시작 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 432 ms | -387 ms | 602 | 214 | 3 |
+| 2 | 323 | -379 | 505 | 193 | 4 |
+| 3 | 269 | -385 | 476 | 156 | 22 |
+| 4 | 291 | -385 | 501 | 173 | 2 |
+| 5 | 442 | -389 | 654 | 174 | 3 |
+| 6 | 429 | -380 | 656 | 150 | 3 |
+| 7 | 467 | -382 | 679 | 167 | 3 |
+| 8 | 484 | -387 | 660 | 193 | 18 |
+| 9 | 427 | -389 | 731 | 83 | 2 |
+| 10 | 505 | -383 | 655 | 231 | 2 |
+| 11 | 484 | -386 | 680 | 177 | 13 |
+| 12 | 536 | -388 | 722 | 187 | 15 |
+
+| 지표 | 중앙값(범위) |
+| --- | --- |
+| **실제 답 시작(STT 최종 결과 → 첫 음성, = 첫 소리)** | **0.44초**(0.27~0.54) |
+| 1초 넘은 회 | **0 / 12** |
+| 추측 요청 | `started=12 hit=12 miss=0 replaced=0 unused=0 discarded=0%`. 매번 `match=ending-only (final adds a sentence ending)`: 중간 결과 10자로 보낸 요청이 최종 결과(끝 어미·물음표만 더 붙음)와 같은 질문으로 인정됨 |
+| 요청을 앞당긴 시간 | 385 ms(379~389) — 최종 결과보다 먼저 보냄 |
+| 서버 첫 토큰 | 656 ms(476~731) |
+| 첫 토큰 → 첫 조각 | 176 ms(83~231) |
+| 첫 조각 → TTS 시작 | 3 ms(2~22) |
+
+**판단: 추측 요청은 기본으로 켜 둔다.** 이번 측정에서 버려진 요청이 0%라 Claude 호출이 늘지 않았고, 답 시작이 이전 세트(0.77·0.87초)보다 약 0.35~0.4초 빨라졌다. 버려지는 비율이 높아지면 끌 수 있는 설정이 voice에 있다. 주의: PCM 경로는 같은 질문 하나만 반복했고 EPD가 없다. 실제 마이크·다양한 질문에서의 적중률은 확인하지 못했다. 말 끝 기준으로는 STT 최종 결과까지 약 0.4초를 더하지만, 추측 요청은 그 0.4초 안에 이미 나간다.
 
 ### 음성 지연 재측정 — voice 90f23d7 지연 꼬리 줄이기 뒤 (2026-11-13 08:05)
 
