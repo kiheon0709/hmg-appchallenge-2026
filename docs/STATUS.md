@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 06:57, dev-integration)**: 소스 기준 `e10f0d1`(ui a7d894b 질문하기 버튼 수정 포함, vehicle 6b80523·voice 5f76c80). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 57개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 06:57 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 2.6초). 06:22 빌드(5f76c80)에서는 급정거 ★1·금고 다이얼 8.1초까지 확인(`v3_*.jpg`). 디버그 빌드로 Claude 질문 3회: 채움말 0.61~0.64초, 실제 답 시작 1.31 / 1.34 / 1.72초. 폼 팩터 12.9″ 세로·14.6″ 가로 확인(`ff_*.jpg`). 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
+> **최종 빌드 (2026-11-13 06:57, dev-integration, APK 커밋 `7d5e8f7`)**: 소스 기준 `e10f0d1`(ui a7d894b 질문하기 버튼 수정 포함, vehicle 6b80523·voice 5f76c80). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 57개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 06:57 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 2.6초). 06:22 빌드(5f76c80)에서는 급정거 ★1·금고 다이얼 8.1초까지 확인(`v3_*.jpg`). 디버그 빌드로 Claude 질문 3회: 채움말 0.61~0.64초, 실제 답 시작 1.31 / 1.34 / 1.72초. 폼 팩터 12.9″ 세로·14.6″ 가로 확인(`ff_*.jpg`). 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -77,7 +77,7 @@
 | Connect-S 12.9″ · 160 DPI · Portrait → 628×855 px | 628×855, 160 dpi | `adb emu multidisplay add 2 628 855 160 0` |
 | Connect-S 14.6″ · 200 DPI · Landscape → 1700×1185 px(1360×948 dp) | 1700×1185, 200 dpi | `adb emu multidisplay add 2 1700 1185 200 0` |
 
-앱은 `adb shell am start --display <id>`로 띄우고(14.6″은 디스플레이 id 3), 화면은 `adb emu screenrecord screenshot <폴더> --display 2`로 캡처했다. 홈·훈련(폭우 발생·성공)·코치·코치 K01·리뷰를 두 크기 모두 확인: `ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`. 잘림 1건: 두 크기 모두 리뷰 화면 TalkButton 글자("말하는 중 · 눌러서 멈추기")가 잘림 → dev-sim-ui에 넘김. 나머지 화면은 잘림·겹침 없음. **수정 확인(ui a7d894b)**: 같은 두 크기에서 홈·코치·리뷰의 말하는 중 상태를 다시 찍어 "눌러서 멈추기"가 잘리지 않음을 확인(`ff_12.9_portrait_{home,coach,review}_speaking.jpg`, `ff_14.6_landscape_{home,coach,review}_speaking.jpg`).
+앱은 `adb shell am start --display <id>`로 띄우고(14.6″은 디스플레이 id 3), 화면은 `adb emu screenrecord screenshot <폴더> --display 2`로 캡처했다. 홈·훈련(폭우 발생·성공)·코치·코치 K01·리뷰를 두 크기 모두 확인: `ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`. 잘림 1건: 두 크기 모두 리뷰 화면 TalkButton 글자("말하는 중 · 눌러서 멈추기")가 잘림 → dev-sim-ui에 넘김. 나머지 화면은 잘림·겹침 없음. **수정 확인(ui a7d894b)**: 같은 두 크기에서 홈·코치·리뷰의 말하는 중 상태를 다시 찍어 "눌러서 멈추기"가 잘리지 않음을 확인(`ff_12.9_portrait_{home,coach,review}_speaking.jpg`, `ff_14.6_landscape_{home,coach,review}_speaking.jpg`). `ff_12.9_portrait_review.jpg`·`ff_14.6_landscape_review.jpg`도 수정 뒤 캡처로 교체.
 
 **차량 마이크 STT `request()`: 불가(사람 목소리 필요), 원인은 확인.**
 

@@ -36,7 +36,11 @@
 
 ### APK로 바로
 
-1. Pleos Connect Emulator 2.1.0을 cold boot로 켜요.
+1. Pleos Connect Emulator 2.1.0을 cold boot로, 호스트 마이크 소리를 받도록 켜요(옵션이 없으면 에뮬레이터가 마이크 입력을 0으로 만들어요):
+   ```bash
+   emulator -avd Pleos_Connect_v2.1 -no-snapshot-load -allow-host-audio
+   ```
+   그다음 `adb emu avd hostmicon`으로 호스트 마이크를 켜요(Extended Controls → Microphone의 "Virtual microphone uses host audio input"과 같아요).
 2. `adb install -g apk/MoodLab_SideSeat_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
 3. 앱 목록에서 **옆자리**를 실행해요.
 
