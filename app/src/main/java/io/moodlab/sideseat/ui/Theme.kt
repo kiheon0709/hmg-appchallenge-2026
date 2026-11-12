@@ -65,7 +65,9 @@ fun SideSeatFrame(modifier: Modifier = Modifier, content: @Composable BoxWithCon
         BoxWithConstraints(modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight * 1.08f
             val short = if (maxWidth < maxHeight) maxWidth else maxHeight
-            val sz = Sz((short / 900.dp).coerceIn(0.5f, 1.5f), wide, maxWidth, maxHeight)
+            // 세로(창 1칸)는 폭이 좁아도 글자가 가로 화면과 비슷한 크기가 되게 폭 640dp를 기준으로 잡는다
+            val raw = if (wide) short / 900.dp else minOf(maxWidth / 640.dp, maxHeight / 900.dp)
+            val sz = Sz(raw.coerceIn(0.5f, 1.5f), wide, maxWidth, maxHeight)
             CompositionLocalProvider(LocalSz provides sz) { content(sz) }
         }
     }

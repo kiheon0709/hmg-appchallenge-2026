@@ -204,7 +204,7 @@ internal class WorldLayer {
         ensure(size)
         playerX = sim.playerX
         // 흔들림: 속도에 비례한 아주 작은 떨림
-        val shake = sin(sim.t * 31f) * sim.speed * 0.012f
+        val shake = sin(sim.t * 31f) * sim.speed * 0.012f + sin(sim.t * 47f) * sim.urgency * h * 0.004f
         horizon = h * SceneSim.VANISH_Y + shake
         computeRoad(sim)
 
@@ -312,7 +312,7 @@ internal class WorldLayer {
         drawPath(path, roadSheen!!, alpha = night * (0.5f + 0.5f * sim.rain) * (1f - sim.fogOut))
 
         // 가장자리 실선 (왼쪽 노랑, 오른쪽 흰색)
-        val base = ambient * 0.55f
+        val base = ambient * 0.8f
         val low = sim.lowBeam * 0.75f
         val high = sim.highBeam * 0.5f
         strip(path, EDGE - 0.09f, 0f, EDGE + 0.09f, 0f)
@@ -333,7 +333,7 @@ internal class WorldLayer {
             val z1 = z0 + 8f
             if (z1 <= Z0 + 0.2f) continue
             val za = maxOf(z0, Z0)
-            val a = (ambient * 0.5f + sim.lowBeam * 0.8f * smooth(95f, 10f, za) + sim.highBeam * 0.55f * smooth(190f, 20f, za)) * (1f - za / 270f)
+            val a = (ambient * 0.8f + sim.lowBeam * 0.8f * smooth(95f, 10f, za) + sim.highBeam * 0.55f * smooth(190f, 20f, za)) * (1f - za / 270f)
             if (a <= 0.01f) continue
             for (side in -1..1 step 2) {
                 val lx = side * 1.8f
@@ -529,7 +529,15 @@ internal class WorldLayer {
         if (sim.leadA < 0.02f) return
         val z = sim.leadZ.coerceIn(3.2f, 330f)
         project(z, 0f)
+        sim.leadSx = px; sim.leadSy = py; sim.leadK = pk
         drawCar(px, py, pk, sim.leadBrake, sim.leadA, wetRef, Color(0xFF1A2130))
+        // 바짝 붙으면 브레이크등 빛이 화면을 물들인다
+        if (sim.urgency > 0.01f) {
+            val u = sim.urgency * (0.5f + 0.5f * sim.leadBrake)
+            glow(red, px, py - 0.7f * pk, 3.4f * pk, 2.2f * pk, alpha = 0.36f * u)
+            glow(red, px, py + 1.2f * pk, 2.6f * pk, 3.2f * pk, alpha = 0.35f * u * wetRef)
+            drawRect(Color(0xFFFF2038), alpha = 0.1f * u)
+        }
     }
 
     private fun DrawScope.drawTunnel(sim: SceneSim) {

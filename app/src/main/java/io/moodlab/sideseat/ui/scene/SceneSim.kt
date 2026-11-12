@@ -11,6 +11,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.hypot
+import kotlin.math.pow
 import kotlin.math.sin
 
 /** 화면이 받은 최신 값. 재구성 때마다 덮어쓰고, 프레임 루프가 읽는다. */
@@ -83,7 +84,13 @@ internal class SceneSim {
     var wsFogGrowing = true
     var tunnelP = 0f
     var tunnelEntering = false
-    var leadZ = 60f
+    var leadZ = 40f
+    /** 앞차가 바짝 붙은 정도(0~1). 화면이 긴박해진다. */
+    var urgency = 0f
+    // 앞차의 화면 위치(물막 너머로 번진 후미등을 그릴 때 쓴다)
+    var leadSx = 0f
+    var leadSy = 0f
+    var leadK = 0f
     var leadA = 0f
     var leadBrake = 0f
     var glare = 0f
@@ -152,8 +159,8 @@ internal class SceneSim {
         for (i in 0 until MAX_STREAKS) { streakX[i] = rnd(); streakY[i] = rnd(); streakV[i] = 0.7f + rnd() * 0.6f }
         for (i in 0 until AMBIENT_CARS) {
             carLane[i] = if (i % 2 == 0) 1 else -1
-            carZ[i] = 40f + i * 70f
-            carV[i] = if (carLane[i] < 0) 31f + rnd() * 3f else 21f + rnd() * 3f
+            carZ[i] = 18f + i * 38f
+            carV[i] = if (carLane[i] < 0) 29.5f + rnd() * 2f else 23.5f + rnd() * 2f
         }
     }
 
@@ -166,8 +173,8 @@ internal class SceneSim {
         if (width == w && height == h) return
         w = width; h = height
         dashY = height * DASH_Y
-        bladeL = minOf(width * 0.38f, dashY * 0.9f)
-        pivAx = width * 0.42f
+        bladeL = minOf(width * 0.35f, dashY * 0.86f)
+        pivAx = width * 0.4f
         pivBx = pivAx + bladeL
         pivY = dashY + height * 0.004f
         for (i in 0 until MAX_DROPS) dropBorn[i] = -100f
@@ -204,14 +211,12 @@ internal class SceneSim {
         tunnelP = (tunnelP + (if (i.tunnel) dt else -dt) / 1.6f).coerceIn(0f, 1f)
 
         // 앞차
-        if (i.leadDistance >= 0f) {
-            val target = 5.5f + i.leadDistance * 85f
-            leadZ = if (leadA < 0.02f) target else ease(leadZ, target, 6f, dt)
-            leadA = ease(leadA, 1f, 3f, dt)
-        } else {
-            leadA = ease(leadA, 0f, 2f, dt)
-            leadZ += 12f * dt
-        }
+        // 평소에도 같은 차로 앞쪽에 차가 한 대 달린다. 상황이 거리를 주면 그 거리로 다가온다
+        val d = i.leadDistance
+        val target = if (d >= 0f) 4.6f + d.pow(1.6f) * 60f else 40f + 5f * sin(t * 0.35f)
+        leadZ = if (leadA < 0.02f) target else ease(leadZ, target, if (d >= 0f) 7f else 0.8f, dt)
+        leadA = ease(leadA, if (i.parkingLot) 0f else 1f, 3f, dt)
+        urgency = ease(urgency, if (d in 0f..0.35f) ((0.35f - d) / 0.22f).coerceAtMost(1f) else 0f, 8f, dt)
         leadBrake = ease(leadBrake, if (i.leadBraking) 1f else 0f, 14f, dt)
 
         stepWiper(dt, i.wiper)
@@ -255,7 +260,7 @@ internal class SceneSim {
     }
 
     private fun stepWater(dt: Float) {
-        val grow = rain * dt * 1.5f
+        val grow = rain * dt * 0.8f
         for (k in 0 until WIPE_BINS) {
             wet[k] = if (rain > 0.03f) minOf(rain.coerceAtLeast(0.25f), wet[k] + grow) else maxOf(0f, wet[k] - dt * 0.25f)
         }
@@ -329,8 +334,8 @@ internal class SceneSim {
     private fun stepTraffic(dt: Float) {
         for (k in 0 until AMBIENT_CARS) {
             carZ[k] += (carV[k] - speed) * dt
-            if (carZ[k] > 420f) { carZ[k] = if (carV[k] > speed) -8f - rnd() * 60f else 420f }
-            if (carZ[k] < -80f) { carZ[k] = if (carV[k] > speed) -80f else 320f + rnd() * 100f }
+            if (carZ[k] > 190f) { carZ[k] = if (carV[k] > speed) -6f - rnd() * 30f else 190f }
+            if (carZ[k] < -40f) { carZ[k] = if (carV[k] > speed) -40f else 150f + rnd() * 40f }
         }
         onWait -= dt
         for (k in 0 until ONCOMING) {

@@ -93,7 +93,7 @@ internal class GlassLayer {
     private fun DrawScope.drawWater(sim: SceneSim) {
         if (sim.ambientWet < 0.01f && sim.rain < 0.01f) return
         val film = mix(Color(0xFF8B98A8), Color(0xFF1B2634), sim.night)
-        val maxA = 0.8f
+        val maxA = 0.64f
         val un = sim.ambientWet
         if (un > 0.01f) drawPath(unswept, film, alpha = filmAlpha(un) * maxA)
         for (k in 0 until SceneSim.WIPE_BINS) {
@@ -101,6 +101,14 @@ internal class GlassLayer {
             if (a < 0.012f) continue
             drawPath(wedgeA[k], film, alpha = a)
             drawPath(wedgeB[k], film, alpha = a)
+        }
+        // 물막 너머로 번진 앞차 후미등
+        if (sim.leadA > 0.05f && sim.ambientWet > 0.05f && sim.parking < 0.5f) {
+            val k = maxOf(sim.leadK, h * 0.012f)
+            val a = sim.ambientWet * sim.leadA * (0.45f + 0.55f * sim.leadBrake)
+            glow(bokehRed, sim.leadSx - 0.8f * k, sim.leadSy - 0.7f * k, 1.6f * k + h * 0.02f, alpha = a * 0.7f)
+            glow(bokehRed, sim.leadSx + 0.8f * k, sim.leadSy - 0.7f * k, 1.6f * k + h * 0.02f, alpha = a * 0.7f)
+            glow(bokehRed, sim.leadSx, sim.leadSy + 1.5f * k, 1.2f * k + h * 0.01f, 3f * k + h * 0.03f, alpha = a * 0.35f)
         }
         // 물막 너머로 번진 불빛
         var avg = 0f
@@ -216,13 +224,18 @@ internal class GlassLayer {
         for (k in 0..1) {
             val px = if (k == 0) sim.pivAx else sim.pivBx
             val py = sim.pivY
-            // 팔
-            drawLine(Color(0xFF0A0C10), Offset(px, py), Offset(px + dx * l * 0.62f, py + dy * l * 0.62f), h * 0.011f, cap = StrokeCap.Round)
-            // 날
+            // 암: 뿌리가 굵고 끝으로 갈수록 가늘다
+            val ex = px + dx * l * 0.6f; val ey = py + dy * l * 0.6f
+            drawLine(Color(0xFF0B0E13), Offset(px, py), Offset(px + dx * l * 0.3f, py + dy * l * 0.3f), h * 0.016f, cap = StrokeCap.Round)
+            drawLine(Color(0xFF0B0E13), Offset(px, py), Offset(ex, ey), h * 0.009f, cap = StrokeCap.Round)
+            drawLine(Color(0xFF465263), Offset(px, py), Offset(ex, ey), h * 0.0018f, alpha = 0.7f)
+            drawCircle(Color(0xFF151A22), h * 0.012f, Offset(px, py))
+            // 블레이드: 고무 날과 그 위의 얇은 뼈대
             val x0 = px + dx * l * SceneSim.BLADE_INNER; val y0 = py + dy * l * SceneSim.BLADE_INNER
             val x1 = px + dx * l; val y1 = py + dy * l
-            drawLine(Color(0xFF040507), Offset(x0, y0), Offset(x1, y1), h * 0.009f, cap = StrokeCap.Round)
-            drawLine(Color(0xFF3A4350), Offset(x0, y0), Offset(x1, y1), h * 0.002f, alpha = 0.8f)
+            drawLine(Color(0xFF05070A), Offset(x0, y0), Offset(x1, y1), h * 0.0075f, cap = StrokeCap.Round)
+            drawLine(Color(0xFF2B3440), Offset(x0, y0), Offset(x1, y1), h * 0.0022f, cap = StrokeCap.Round)
+            drawCircle(Color(0xFF1B222C), h * 0.006f, Offset(ex, ey))
         }
     }
 

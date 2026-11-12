@@ -93,19 +93,20 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
             }
         } else {
             Column(Modifier.fillMaxSize()) {
-                Box(Modifier.fillMaxWidth().weight(0.5f)) {
+                Box(Modifier.fillMaxWidth().weight(0.55f)) {
                     DriveScene(view, vehicle, Modifier.fillMaxSize())
-                    SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.gap).widthIn(max = sz.width * 0.8f))
+                    SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.gap).widthIn(max = sz.width * 0.68f))
                     CenterOverlays(view, onAction)
+                    // 세로에서는 아래 판이 길어져도 항상 보이게 주행 화면 위에 둔다
+                    BigButton("그만하기", Modifier.align(Alignment.TopEnd).padding(sz.gap)) { onAction(UiAction.AbortTraining) }
                 }
-                Box(Modifier.fillMaxWidth().weight(0.5f)) {
+                Box(Modifier.fillMaxWidth().weight(0.45f)) {
                     Column(
-                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.pad),
-                        verticalArrangement = Arrangement.spacedBy(sz.gap),
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.gap),
+                        verticalArrangement = Arrangement.spacedBy(sz.dp(10f)),
                     ) {
                         SidePanel(view, onAction, Modifier.fillMaxWidth())
                         HintBanner(view, Modifier.fillMaxWidth())
-                        BigButton("그만하기", Modifier.fillMaxWidth()) { onAction(UiAction.AbortTraining) }
                     }
                 }
             }
@@ -121,8 +122,8 @@ private fun SituationCard(view: TrainingView, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
         Row(horizontalArrangement = Arrangement.spacedBy(sz.dp(8f)), verticalAlignment = Alignment.CenterVertically) {
             val chapter = SituationTexts.chapterTitle(view.chapterId)
-            if (chapter.isNotEmpty()) Chip(chapter, color = Sc.accent)
-            if (view.chapterId == ChapterCatalog.SURPRISE) Chip("${view.surviveCount}개 버팀", color = Sc.star)
+            if (chapter.isNotEmpty()) Chip(chapter, color = Sc.accent, size = sz.label)
+            if (view.chapterId == ChapterCatalog.SURPRISE) Chip("${view.surviveCount}개 버팀", color = Sc.star, size = sz.label)
             Chip(
                 when (view.phase) {
                     TrainingPhase.IDLE -> "준비"
@@ -134,7 +135,7 @@ private fun SituationCard(view: TrainingView, modifier: Modifier) {
                     TrainingPhase.FAIL -> "다시"
                     TrainingPhase.CHAPTER_DONE -> "끝"
                 },
-                color = if (live) Sc.onAccent else Sc.text, bg = if (live) Sc.danger else Sc.scrim,
+                color = if (live) Sc.onAccent else Sc.text, bg = if (live) Sc.danger else Sc.scrim, size = sz.label,
             )
         }
         AnimatedVisibility(view.situation != null && view.phase != TrainingPhase.CRUISE, enter = fadeIn() + slideInVertically { -it / 2 }, exit = fadeOut()) {

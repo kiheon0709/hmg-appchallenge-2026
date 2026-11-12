@@ -49,7 +49,7 @@ fun HomeScreen(state: HomeUi, onAction: (UiAction) -> Unit) {
             }
         } else {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
-                Hero(state, onAction, Modifier.fillMaxWidth().height(sz.height * 0.36f))
+                Hero(state, onAction, Modifier.fillMaxWidth().height(sz.height * 0.46f))
                 TalkArea(state, onAction)
                 Catalog(state, onAction)
             }
