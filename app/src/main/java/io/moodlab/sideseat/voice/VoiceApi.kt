@@ -25,7 +25,7 @@ interface Voice {
 }
 
 /**
- * 효과음. 이름: rain·wind·engine·hazard·breath·yawn(항상 반복), thunder, tire, alarm, click, tick, chime,
+ * 효과음. 이름: rain·wind·engine·hazard·breath(항상 반복), yawn(하품 한 번+숨, 7초), thunder, tire, alarm, click, tick, chime,
  * wiper, engine_rise, unlock, buzzer, success, fail. 모르는 이름은 무시하고 로그만 남긴다.
  */
 interface Sfx {

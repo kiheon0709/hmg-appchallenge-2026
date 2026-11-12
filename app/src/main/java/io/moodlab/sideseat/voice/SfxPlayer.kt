@@ -204,7 +204,7 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
         private const val SYSTEM_DUCK = 0.4f
 
         /** 늘 반복으로 트는 소리. play(loop=false)로 불러도 반복한다. */
-        val LOOPS = setOf("rain", "wind", "engine", "hazard", "breath", "yawn")
+        val LOOPS = setOf("rain", "wind", "engine", "hazard", "breath")
 
         /**
          * 소리별 기본 크기. 파일 자체는 합성 단계에서 크기를 맞춰 두었고, 여기서는 장면 속 역할로 균형을 잡는다.
