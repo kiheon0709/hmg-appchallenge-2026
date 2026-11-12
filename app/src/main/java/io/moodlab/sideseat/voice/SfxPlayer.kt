@@ -209,10 +209,11 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
         /**
          * 소리별 기본 크기. 파일 자체는 합성 단계에서 크기를 맞춰 두었고, 여기서는 장면 속 역할로 균형을 잡는다.
          * 배경(빗소리·바람)은 낮게, 위기 신호(경고음·타이어)는 또렷하게, 피드백(딸깍·성공)은 그 사이.
+         * 수치(앱 음량 LUFS)는 tools/sfx/analyze.py → tools/sfx/REPORT.md.
          */
         val GAIN = mapOf(
             "rain" to 0.55f,
-            "wind" to 0.45f,
+            "wind" to 0.6f,
             "engine" to 0.6f,
             "engine_rise" to 0.75f,
             "thunder" to 0.9f,
@@ -225,7 +226,7 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
             "hazard" to 0.9f,
             "breath" to 0.6f,
             "yawn" to 0.6f,
-            "unlock" to 0.75f,
+            "unlock" to 1.0f,
             "buzzer" to 0.6f,
             "success" to 0.7f,
             "fail" to 0.6f,

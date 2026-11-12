@@ -432,7 +432,7 @@ def hazard():
         x += place(relay(2900, 1.0), n, k * period + 0.004)    # 켜짐(첫 표본에서 바로 튀지 않게 4ms 뒤)
         x += place(relay(2100, 0.6) * 0.75, n, k * period + period / 2 + 0.004)  # 꺼짐
     x = reverb(x, 0.25, 0.06, 6000, 0.003)[:n]  # 대시보드 안쪽의 작은 공간
-    return norm_peak(x, -6)
+    return norm_peak(x, -2)  # 딸깍 소리라 평균 음량이 낮다. 피크를 올려 위기 신호로 들리게(REPORT.md 기준)
 
 
 def breath():
