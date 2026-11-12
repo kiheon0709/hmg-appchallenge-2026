@@ -1,42 +1,108 @@
-# MooDrive (무드라이브)
+# 옆자리 (SideSeat)
 
-와이퍼·조명·주행모드 등 차량 신호로 음악과 앰비언트 라이트를 자동으로 맞춰주는 인카 무드 DJ 앱.
-현대자동차그룹 차량용 앱 개발 공모전(Pleos Connect) 출품작 · 팀 기어르(MoodLab)
+**처음 타는 차, 혼자 하는 운전. 옆자리에 운전 잘하는 선배가 앉아요.**
+
+세워 둔 진짜 차에서 진짜 스위치로 돌발 상황을 미리 겪어 보고(훈련), 달릴 때는 같은 선배가 차가 아는 것을 한 문장으로 말해 주고(코치), 도착하면 오늘 운전을 같이 돌아봐요(리뷰).
+
+현대자동차그룹 차량용 앱 개발 공모전(Pleos Connect) 출품작 · 팀 MoodLab(개발사명 기어르)
+
+## 무엇을 하나
+
+| 차 상태 | 화면 | 하는 일 |
+| --- | --- | --- |
+| P단(정차) | 홈 → 훈련 → 결과 | 폭우·김서림·앞차 급정거·터널·안개·맞은편 상향등·졸음·의도치 않은 가속·내리기 전 등 위기 상황을 가짜 3D 주행 화면으로 연출하고, 와이퍼 레버·성에 제거·브레이크 같은 **실제 차량 스위치**로 대처하게 해요. 반응 시간과 별로 채점하고, 상황에 맞춰 실내 앰비언트 조명·효과음·음성이 바뀌어요 |
+| P단(정차) | 미니게임 | 핸들로 여는 금고 다이얼, 깜빡이 모스, 창문 버저 퀴즈 |
+| P를 벗어남 | 코치 | 훈련은 바로 닫혀요. 여러 신호를 엮어야 알 수 있는 것만 한 문장으로 말해요(예: 와이퍼는 켰는데 전조등이 꺼져 있음). 30분에 최대 3번. 화면은 한 줄과 "질문하기" 버튼뿐이에요 |
+| 다시 P | 리뷰 | 주행 시간·비/야간 주행·선배가 한 말을 보여 주고, 음성으로 총평해요(LLM이 없으면 규칙 기반 3문장). 놓친 것은 "1분 연습"으로 이어져요 |
+
+쓰는 Pleos SDK: Vehicle 2.3.2(신호 읽기, 정차 중 앰비언트 제어), NaviHelper 3.0.5(휴게소 경유지·도착), TextToSpeech 3.3.1, SpeechToText 3.3.1(ON_DEVICE), FusedLocation 1.1.3. 기어·차속·주행 규제는 AAOS 표준 Car API(`CarUxRestrictionsManager`, `PERF_VEHICLE_SPEED`)로 읽어요.
+
+## APK
+
+- **`apk/MoodLab_SideSeat_release.apk`** (release 빌드, R8 적용, 약 22 MB)
+- 이 APK에는 LLM API 키가 들어 있지 않아요. 키가 없으면 AI 교관은 미리 쓴 문장과 규칙 기반 총평으로 동작해요(모든 기능이 키 없이 돌아요).
+
+## 테스트 환경
+
+| 항목 | 값 |
+| --- | --- |
+| 에뮬레이터 | **Pleos Connect Emulator v2.1.0** (Android API 34, Automotive), AVD `Pleos_Connect_v2.1` |
+| AVD 설정 | Default boot = **Cold**(quick boot면 VHAL 사용 불가), RAM 4 GB |
+| 화면 규격 | 디스플레이 **2560×1440, 160 dpi**. 앱 창(가로, 기본) **약 1682×1210 px**. 세로 창 835×1210 px에서도 확인 |
+| 차량 신호 | Pleos Connect Virtual Console(아래) |
+| 개발 도구 | Android Studio, JDK 17, Gradle(래퍼 포함), Kotlin 2.0.21, Compose |
+
+## 실행 방법
+
+### APK로 바로
+
+1. Pleos Connect Emulator 2.1.0을 cold boot로 켜요.
+2. `adb install -g apk/MoodLab_SideSeat_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
+3. 앱 목록에서 **옆자리**를 실행해요.
+
+### 소스로 빌드
+
+```bash
+./gradlew :core:test            # 훈련 판정·점수·코치 규칙·미니게임 테스트 (Android SDK 없이도 됨)
+./gradlew :app:installDebug     # 디버그 빌드 설치
+./gradlew :app:assembleRelease  # release APK (서명 정보는 local.properties)
+```
+
+`local.properties`(커밋하지 않음):
+
+```properties
+sdk.dir=/Users/<you>/Library/Android/sdk
+# 선택: AI 교관(Claude API). 비워 두면 키 없이 동작
+LLM_PROVIDER=anthropic
+LLM_API_KEY=
+LLM_MODEL_FAST=      # 비우면 claude-haiku-5-5 (주행 중 질문)
+LLM_MODEL_REVIEW=    # 비우면 claude-opus-5-5 (리뷰 총평)
+# 선택: release 서명
+release.storeFile=
+release.storePassword=
+release.keyAlias=
+release.keyPassword=
+```
+
+- 디버그 빌드는 `LLM_API_KEY`를 넣으면 바로 LLM을 써요. release 빌드는 키를 넣지 않는 게 기본이고, 로컬 시연용으로만 `./gradlew :app:assembleRelease -PembedLlmKey=true`로 넣을 수 있어요.
+- 에뮬레이터가 인터넷에 연결돼 있지 않으면(차량 설정 → 연결 → Wi-Fi에서 `AndroidWifi` 연결) LLM 대신 미리 쓴 문장으로 답해요.
+
+### Virtual Console로 시험하기
+
+```bash
+adb forward tcp:8088 tcp:8088   # 그다음 브라우저에서 http://127.0.0.1:8088/
+```
+
+| 해 볼 것 | Virtual Console 조작 |
+| --- | --- |
+| 훈련 시작 | Gear **P**에서 홈의 "오늘의 추천" 또는 챕터 카드를 눌러요 |
+| 폭우(C1) | Front Wiper **High** + Exterior Lights **Low beam** |
+| 앞유리 김서림(C1) | Climate **Defroster Front On** + **A/C** + Air **Fresh** |
+| 앞차 급정거(C1) | **BRAKE** 누르기(반응 시간 측정) |
+| 터널·안개(C2) | Exterior Lights Low beam(안개는 브레이크로 감속까지) |
+| 맞은편 차(C2) | High Beam Off |
+| 졸음(C2) | Air Fresh + Window **Front left** 열기 |
+| 의도치 않은 가속(C3) | BRAKE 3초 이상 누르고 있기 |
+| 내리기 전(C4) | Low beam 끄기 + 창문 닫기, 주차 브레이크는 화면 선택지로 답 |
+| 금고 다이얼 | Steering 오른쪽 90° → 왼쪽 45° → 오른쪽 120°에서 잠깐 멈추기 |
+| 코치 모드 | Gear **D**. 와이퍼 Low + 전조등 Off 20초 → "비가 와요. 전조등을 켜 주세요." |
+| 리뷰 | 다시 Gear **P** |
+
+앰비언트 조명은 Virtual Console 화면의 빛 색으로도 보여요. 화면별 캡처는 `docs/screens/sim/`에 있어요.
 
 ## 구조
 
-| 모듈 | 내용 | 빌드 |
-|---|---|---|
-| `core/` | 순수 Kotlin. 컨텍스트 엔진(F1), 선곡·취향(F2), 앰비언트 계획(F3), 도착 피날레(F4), 시나리오 플레이어 | 어디서나 `./gradlew :core:test` |
-| `app/` | Android Automotive 앱(Compose). 화면, 실내 조명 시각화, 디버그 패널, Pleos SDK 어댑터 | Android SDK가 있을 때만 포함됨 |
+| 모듈·패키지 | 내용 |
+| --- | --- |
+| `core/` (`io.moodlab.sideseat.core`) | 순수 Kotlin. 훈련 엔진(상황 판정·별·챕터·돌발·교관 대결·이 차 면허), 주행 코치 규칙(K01~K10, 말수 제한), 리뷰 요약, 미니게임. 테스트 포함 |
+| `app/.../vehicle` | Pleos Vehicle SDK·AAOS Car API → `VehicleState`, 정차 판정, 앰비언트·경유지 |
+| `app/.../voice` | Pleos TTS·STT, 효과음, AI 교관(빠른 길: 지식 파일 즉답 / 느린 길: Claude API 스트리밍) |
+| `app/.../ui` | Compose 화면. 가짜 3D 주행 화면(도로 투영·비·안개·앞유리·운전석 틀), 가로·세로 대응 |
+| `app/.../app` | 모드 상태 기계, 이벤트 연결, 코치 포그라운드 서비스, 진행 기록 저장 |
 
-```
-VehicleSignalSource(Pleos / 시나리오 / 수동) ─▶ MooDriveSession ─▶ Action
-                                               ├ ContextEngine  → Scene + Mood
-                                               ├ Curator/Taste  → Play
-                                               ├ AmbientPlanner → SetAmbient (주행 중 보류 정책)
-                                               └ DJ 멘트         → Speak (일반 멘트 5분 간격, 안전 멘트는 예외)
-```
+## 문서
 
-## 실행 (맥)
+- 제품 명세: `docs/plan/product-spec.md` · 대처 절차 공식 출처: `docs/plan/safety-sources.md`
+- 에뮬레이터 실측·검증 기록: `docs/STATUS.md` · 결정 기록: `docs/plan/decisions.md`
 
-1. Android Studio에서 저장소 열기 (`local.properties`의 `sdk.dir`이 잡히면 `app` 모듈이 자동 포함)
-2. Pleos Connect Emulator 2.1.0 (API 34, Automotive) 실행 → `docs/notion/02_개발 환경·SDK 구현 가능성.md` 설치 순서 참고
-3. `./gradlew :app:installDebug` 또는 Run
-4. 첫 실행 시 장르 3개 선택 → 주행 화면 왼쪽 위 기어 칩(P)을 **길게 눌러** 데모 패널을 열고 **▶ 비 오는 퇴근길**로 시나리오 재생 (약 3분: 노을 → 비 → 폭우 → 터널 → 정체 → 도착 피날레 → 주차)
-
-## APK와 테스트 환경
-
-- APK: `apk/MoodLab_MooDrive_release.apk`
-- 테스트 환경: Pleos Connect Emulator 2.1.0 (API 34, Automotive), Vehicle SDK 2.3.2, NaviHelper 3.0.5, TextToSpeech 3.3.1
-- 차량 신호 조작: `adb forward tcp:8088 tcp:8088` 후 http://127.0.0.1:8088/ (Pleos Connect Virtual Console). Gear D에서 Windshield Wiper Switch를 Low·High로 바꾸면 장면·곡·DJ 멘트가 바뀐다
-- 실측 결과: `docs/STATUS.md`의 "맥 검증 결과"
-- 시연 음원은 `tools/demo-music/generate.py`로 합성한 것이다
-
-## 남은 작업
-
-- [ ] Pleos STT 음성 명령
-- [ ] FusedLocation 일몰·터널 GPS, 휴게소 경유지 추가
-- [ ] 실제 음원 교체 (`docs/music-tagging.md`)
-
-Playground 프로젝트 Key, release 서명 키와 비밀번호는 `local.properties`와 로컬 파일에만 두고 커밋하지 않는다.
+Playground 프로젝트 Key, LLM API 키, release 서명 키와 비밀번호는 `local.properties`와 로컬 파일에만 두고 커밋하지 않아요.

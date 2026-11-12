@@ -53,7 +53,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8로 줄인다(디버그 dex 40MB). Pleos SDK·직렬화 규칙은 proguard-rules.pro
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release")
             // 저장소에 올리는 release APK에는 키를 넣지 않는다. 로컬 시연용으로만 -PembedLlmKey=true
             if (!embedLlmKey) buildConfigField("String", "LLM_API_KEY", "\"\"")
@@ -89,7 +92,4 @@ dependencies {
     implementation("ai.pleos.playground:TextToSpeech:3.3.1")
     implementation("ai.pleos.playground:SpeechToText:3.3.1")
     implementation("ai.pleos.playground:FusedLocation:1.1.3")
-
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-session:1.4.1")
 }

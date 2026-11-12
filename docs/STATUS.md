@@ -53,6 +53,13 @@ latency total=939ms path=llm final->answer=6ms answer->firstSentence=603ms first
 latency total=8ms path=fast-knowledge final->answer=5ms answer->firstSentence=0ms firstSentence->ttsStart=3ms
 ```
 
+### release APK
+
+- `apk/MoodLab_SideSeat_release.apk` 22.8 MB (디버그 60 MB → R8·리소스 축소). 서명은 기존 로컬 키(인증서 CN=MooDrive). LLM 키는 넣지 않음(`llmEnabled=false` 확인).
+- R8 주의(실측): Pleos SDK가 Gson `TypeToken`으로 capability 응답을 풀어서, 제네릭 시그니처를 지우면 모든 `check…Capabilities`가 `TypeToken must be created with a type argument`로 실패했다 → `app/proguard-rules.pro`에 `-keepattributes Signature`와 Gson·`ai.pleos.**` keep 규칙을 넣어 해결.
+- release 스모크(에뮬레이터): 설치 → C1 폭우·김서림 판정 → D단 코치 K01 → P단 규칙 기반 리뷰까지 크래시 없이 확인.
+- 기존 MooDrive 코드·음원 66곡(22 MB)·이전 APK·전용 도구(`tools/demo-music`, `tools/app-compile-check`)는 삭제했다. `design/`(MooDrive 프로토타입)은 문서 성격이라 남겨 둠.
+
 ### 디버그 빌드 도구 (실측·시연 녹화용)
 
 - `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd <cmd> --es arg <arg>`: `chapter C1`, `answer <선택지>`, `action OpenSafeDial|ShowResult|GoHome|ToggleDebugPanel…`, `ask_pcm <files 안 PCM>`, `frames on|off`, `vehicle debug|pleos`
