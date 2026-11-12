@@ -1,4 +1,72 @@
-# 진행 상황 (2026-11-07 갱신)
+# 진행 상황
+
+## 옆자리(SideSeat) 에뮬레이터 실측 (2026-11-13 새벽, dev-integration)
+
+환경: Pleos Connect Emulator 2.1.0 (`Pleos_Connect_v2.1`, cold boot, API 34), Vehicle SDK 2.3.2, TTS·STT 3.3.1, FusedLocation 1.1.3.
+방법: 디버그 빌드의 실측 도구(`app/.../app/measure/SignalProbe.kt`)가 모든 신호를 구독해 로그 태그 `SideSeatMeasure`로 남긴다. Virtual Console의 HTTP API(아래 "Virtual Console 자동 조작")로 값을 바꾸고, 요청 시각(호스트)과 로그 시각(`logcat -v epoch`, 기기-호스트 시계 차 0.14초 보정)의 차이를 지연으로 쟀다. ±10 ms는 시계 보정 오차.
+
+### 신호 읽기
+
+| 신호 | SDK 경로 | 결과 | 지연 | 비고 |
+| --- | --- | --- | --- | --- |
+| 브레이크 페달 | `Brake.registerBrakePedalStatus` | 읽힘 (true/false) | 10 ms 미만 | 세기는 없음. VC 브레이크 1% 이상이면 true |
+| 조향각 | `SteeringWheel.registerSteeringWheelAngle` | 읽힘 | 90~160 ms | **부호가 VC와 반대**(VC +45 → SDK -45.0). 범위 -470~500. 값이 같아도 약 3초마다 재전송 |
+| 방향지시등 | `TurnSignal.registerTurnSignalState` | 읽힘 (OFF/LEFT/RIGHT) | 10 ms 미만 | `TurnSignalValue`에 비상등 값이 없음 |
+| 비상등 | – | **읽을 수 없음** | – | VC Hazard를 켜도 TurnSignal 변화 없음. Telltale은 권한 불가(아래). AAOS `HAZARD_LIGHTS_STATE`는 `CAR_EXTERIOR_LIGHTS`가 부여되지 않아 구독 실패 |
+| 하향등 | `Light.registerLowBeamLightState` | 읽힘 | 10 ms 미만 | VC Exterior Lights Mode = Low beam |
+| 상향등 | `Light.registerHighBeamLightState` | 읽힘 | 10 ms 미만 | 부팅 직후 기본값이 ON이었음 |
+| 안개등(앞·뒤) | `Light.*FogLight*` | **미지원** | – | capability가 `ERROR_NOT_SUPPORTED_PROPERTY`. VC에도 안개등 카드 없음 |
+| 앞유리 성에 제거 | `HVAC.registerHvacDefrosterState(FRONT_WINDSHIELD)` | 읽힘 | 10 ms 미만 | 영역 [FRONT_WINDSHIELD], [REAR_WINDSHIELD]. Max Defrost capability도 READ_WRITE |
+| 에어컨 | `HVAC.registerHvacAcState` | 읽힘 | 10 ms 미만 | 영역은 ROW_1~2 전체 한 그룹 |
+| 내기순환 | `HVAC.registerHvacRecirculationState` | 읽힘 | 10 ms 미만 | 리스너 메서드 이름이 `onHvacAutoRecirculationStateUpdated` |
+| 창문 위치 | `Window.registerWindowPosition` | 읽힘 | 첫 변화 10 ms 미만 | **SDK 값 0~10 = VC 0~100%**(10배 차이). 창문은 서서히 움직여 값이 여러 번 온다 |
+| 와이퍼 켜짐/꺼짐 | `Wiper.registerWiperState` | 읽힘 | 10 ms 미만 | 켜질 때 스위치를 한 번 읽으면 단계도 앎 |
+| 와이퍼 단계 변화 | `Wiper.getCurrentWiperSwitch` 조회 | 조회로만 | 200 ms 주기에서 30~160 ms | 켜진 채 단계만 바뀌면 알림 없음(11-07과 같음). 조회 1회 1~3 ms. VC Low=`CONTINUOUS_LEVEL_1`, High=`CONTINUOUS_LEVEL_3`, Auto=`AUTO` |
+| 착좌 | `Seat.registerSeatOccupancy` | 읽힘, **반대로 옴** | 10 ms 미만 | VC Occupied → SDK false, Empty → true (4개 좌석 모두). 에뮬레이터 특성으로 보이며 실차 의미는 문서대로(true=착좌) |
+| 경고등(Telltale) | `Safety.registerTelltales`·`getTelltalesInfo`·`checkTelltalesCapabilities` | **권한 불가** | – | `SecurityException: registerTelltales need Permission`. API Reference 상세에 `PRIVATE_CAR_SAFETY`(signature\|privileged)로 표기. 일반 앱은 못 씀 |
+| 기어 | AAOS `GEAR_SELECTION` (`CAR_POWERTRAIN`) | 읽힘 | 10 ms 미만 | P=4, R=2, N=1, D=8 |
+| 주차 브레이크 | AAOS `PARKING_BRAKE_ON` | 값은 오지만 **바뀌지 않음** | – | VC에는 주차 브레이크 Telltale만 있고, 켜도 `PARKING_BRAKE_ON`은 false 유지 |
+| 차속 | AAOS `PERF_VEHICLE_SPEED` (`CAR_SPEED`) | 읽힘 (**m/s**) | 약 100~200 ms 주기 | VC 페이지의 가속 페달 물리로 움직임(D + ACCEL). Pleos FAQ가 안내하는 방법 |
+| 주행 규제 | `CarUxRestrictionsManager` | 읽힘 | 기어 변화 뒤 1~3 ms | **P = `requiresDO=false`, R·N·D = `requiresDO=true active=0x50`**(속도 0이어도). N에서는 이벤트가 없을 때가 있었음(직전 상태 유지) |
+| 공조 자동 등 | – | 미시험 | – | 필요 없음 |
+
+정차 판정 결론: **CarUxRestrictions(`isRequiresDistractionOptimization == false`)로 정차를 판정할 수 있다.** 기어 신호와 같은 시점에 바뀐다. 주차 브레이크 Telltale은 권한 때문에, AAOS `PARKING_BRAKE_ON`은 에뮬레이터에서 바뀌지 않아 쓸 수 없다. 기어(AAOS)는 보조로 남긴다.
+
+### 제어(set) — P단·D단
+
+| 호출 | P단 | D단 | 비고 |
+| --- | --- | --- | --- |
+| 앰비언트 색 `setAmbientLightBrightnessColor(지원 영역 그룹, ffff0000)` | 성공 | 성공 | VC 상태 `ambient_light.color`가 `#ff0000`으로 바뀜 → **VC 화면의 앰비언트 빛으로 보인다** |
+| 앞유리 성에 제거 `setHvacDefroster(FRONT_WINDSHIELD, on/off)` | 성공 | 성공 | 리스너로도 같은 값이 돌아옴 |
+| 에어컨 `setHvacAc` | 성공 | 성공 | |
+| 내기순환 `setHvacRecirculation` | 성공 | 성공 | |
+| 운전석 창문 `setWindowPosition(ROW_1_LEFT, 10)` | 성공 | 성공 | 값 범위 0~10. 20을 넣으면 `IllegalArgumentException`(최대값 초과) |
+
+해석 주의: 에뮬레이터에서 D단 set이 성공했다고 실차에서 허용된다는 뜻은 아니다. 제품은 주행 중 제어를 하지 않는다(decisions.md).
+
+### 음성 (Pleos TTS·STT, ON_DEVICE)
+
+| 항목 | 결과 |
+| --- | --- |
+| TTS 초기화 | 성공. `speak` → `onStart` 8~9 ms, 14자 문장 `onDone`까지 2.9초 |
+| STT 초기화 | 성공 (`SpeechToText(context, Mode.ON_DEVICE)`, 앱 등록 불필요) |
+| STT `sendAudio`(16 kHz 16-bit mono PCM, macOS 합성 음성) | **동작**. "안개등 어떻게 켜" → `안개등 어떻게 켜?`, "응" → `응`. "앞유리가 뿌예" → `아기 우리가 학부의`(오인식). 중간 결과(`completed=false`)가 약 400 ms마다 옴 |
+| STT 말 끝 → 최종 결과 | 음성이 끝난 뒤 약 0.4초에 `onEndedRecognition`과 `completed=true`가 함께 옴 |
+| STT `request()`(차량 마이크) | `onReady` 70~100 ms, 마이크가 열림(`AudioRecorderImpl createAudioRecord ns:false, aec:false`). **호스트 마이크로 말한 소리는 인식되지 않음**(미확인: 맥 마이크 권한·스피커→마이크 경로). 소리가 없으면 9초 넘게 끝나지 않음 → 앱이 시간 제한 뒤 `stop()` 해야 함 |
+| TTS 말하는 중 STT `request()` | 거부되지 않음(`onReady` 361 ms). 에코 제거(aec:false)가 없어 TTS 소리가 섞일 수 있음 → 실제 끼어들기 인식은 미확인 |
+
+### Virtual Console 자동 조작
+
+- VC는 브라우저 세션 heartbeat(`POST /browser/session?client=…`, 1초마다)가 있어야 주행 입력(브레이크·조향·기어·차속)을 받는다. 없으면 `503 {"error":"emulator_inactive"}`.
+- 값 바꾸기: `PUT /vehicle/<endpoint>?<field>=<value>`. 목록은 `GET /vehicle/catalog`, 현재 값은 `GET /vehicle/state`.
+  - 기어 `/vehicle/gear?gear=Park|Drive|Neutral|Reverse`, 브레이크 `/vehicle/controls?brake=0~100`, 조향 `/vehicle/controls?steering=-470~500`
+  - 와이퍼 `/vehicle/body?front_wiper=Off|Auto|Low|High`, 창문 `/vehicle/body?window_fl=0~100`
+  - 등화 `/vehicle/lights?feature=headlamp_mode&value=Off|Auto|Position|LowBeam`, `feature=high_beam|hazard&value=true|false`, 방향지시등 `/vehicle/turn-signal?mode=Off|BlinkLeft|BlinkRight`
+  - 공조 `/vehicle/hvac?front_defroster=true|false`, `ac=`, `recirc=`
+  - 착좌 `/vehicle/seat?kind=occupied&area=driver|passenger|rear_left|rear_right&value=true|false`
+- 차속은 VC 페이지의 물리 루프가 만든다(D + ACCEL 버튼 누르고 있기). curl로 `speed=`를 보내도 반영되지 않음.
+
+## 이전 기획 MooDrive 기록 (2026-11-07 갱신)
 
 노션 메인 페이지가 원본이고, `docs/notion/`은 11-04 백업이다. 목표와 통과 기준은 `docs/GOALS.md`.
 
