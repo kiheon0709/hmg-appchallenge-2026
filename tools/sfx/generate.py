@@ -18,7 +18,7 @@
 - wiper       단발  와이퍼가 한 번 쓸고 가는 소리
 - hazard      반복  비상등(S07·S12) 릴레이 '딸깍-딱' 소리, 분당 약 90회
 - breath      반복  김서림(S02) 정적 속 숨소리. 느린 들숨·날숨
-- yawn        단발  졸음(S09) 하품. 성대음을 모음 '아' 공명으로 걸러 내려가는 음높이
+- yawn        반복  졸음(S09). 하품 한 번(성대음을 모음 '아' 공명으로 거른 소리) 뒤 느린 숨, 7초마다 되풀이
 - unlock      단발  금고 번호 하나를 맞춤(M1). 묵직한 걸쇠 '철컥' + 짧은 금속 울림
 - buzzer      단발  퀴즈 미니게임 먼저 누르기. 밝고 경쾌한 '삐빅'
 - success     단발  해결. 밝은 종소리 아르페지오
@@ -473,7 +473,7 @@ def formant(x, freqs_bw_gain):
     return y
 
 
-def yawn():
+def yawn_once():
     sec = 2.4
     n = int(SR * sec)
     t = t_axis(sec)
@@ -498,7 +498,26 @@ def yawn():
     x = (vowel * (1 - breathiness * 0.6) + air * breathiness * 0.5) * env
     x = lp(x, 6000, 2)
     x = reverb(x, 0.7, 0.12)[:n]
-    return norm_peak(fade(x, 0.02, 0.3), -6)
+    return fade(x, 0.02, 0.3)
+
+
+def yawn():
+    # core가 반복으로 틀어 S09 내내 이어진다: 0.4초 쉼 → 하품 2.4초 → 느린 숨 두 번 → 7초마다 되풀이
+    n = int(SR * 7.5)
+    yw = yawn_once()
+    yw /= np.max(np.abs(yw)) + 1e-9
+    x = place(yw, n, 0.4)
+    for at in (3.4, 5.3):
+        m = int(1.5 * SR)
+        tt = t_axis(1.5)
+        b = bp(pink(m), 250, 2200, 2)
+        b /= np.std(b) + 1e-9
+        x += place(b * np.sin(np.pi * tt / 1.5) ** 1.5 * 0.05, n, at)
+    room = lp(brown(n), 300, 2)
+    room /= np.std(room) + 1e-9
+    x += room * 0.004
+    x = make_loop(x, 0.5)
+    return norm_peak(x, -6)
 
 
 def unlock():
