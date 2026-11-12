@@ -12,6 +12,7 @@ import io.moodlab.sideseat.core.ReplyKind
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -104,10 +105,18 @@ internal class PleosVoice(
     // ---------- 듣기 ----------
 
     override suspend fun listen(kind: ReplyKind, onPartial: (String) -> Unit): String? = withContext(Dispatchers.Main) {
-        listenLock.withLock { listenOnce(kind, onPartial) }
+        listenLock.withLock { listenOnce(kind, onPartial, pcm = null) }
     }
 
-    private suspend fun listenOnce(kind: ReplyKind, onPartial: (String) -> Unit): String? {
+    /**
+     * 실측·시연용: 차량 마이크 대신 16kHz 16bit mono PCM을 실시간 속도로 넣어 같은 경로(중간 결과·EPD·추측 요청·지연 측정)로 듣는다.
+     * SpeechToText.sendAudio는 ON_DEVICE 모드에서만 된다(문서). 에뮬레이터는 호스트 마이크 소리가 인식되지 않아 이 길로 잰다.
+     */
+    suspend fun listenFromPcm(pcm: ByteArray, kind: ReplyKind, onPartial: (String) -> Unit = {}): String? = withContext(Dispatchers.Main) {
+        listenLock.withLock { listenOnce(kind, onPartial, pcm) }
+    }
+
+    private suspend fun listenOnce(kind: ReplyKind, onPartial: (String) -> Unit, pcm: ByteArray?): String? {
         if (withTimeoutOrNull(5_000) { sttReady.await() } != true) {
             Log.w(MEASURE_TAG, "stt not ready")
             return null
@@ -124,9 +133,24 @@ internal class PleosVoice(
         var epdAt: Long? = null
         var ended = false
         var firstPartialAt: Long? = null
+        var sender: Job? = null
         try {
-            stt.request()
-            Log.i(MEASURE_TAG, "stt request kind=$kind speaking=${speaker.speaking.value}")
+            if (pcm == null) {
+                stt.request()
+            } else {
+                sender = scope.launch(Dispatchers.IO) {
+                    var off = 0
+                    while (off < pcm.size) {
+                        val end = minOf(off + PCM_BYTES_PER_100_MS, pcm.size)
+                        stt.sendAudio(pcm.copyOfRange(off, end))
+                        off = end
+                        delay(100)
+                    }
+                    stt.completeAudioSend()
+                    Log.i(MEASURE_TAG, "stt pcm sent bytes=${pcm.size} at=${SystemClock.elapsedRealtime() - t0}ms")
+                }
+            }
+            Log.i(MEASURE_TAG, "stt request kind=$kind source=${if (pcm == null) "mic" else "pcm"} speaking=${speaker.speaking.value}")
             loop@ while (true) {
                 val now = SystemClock.elapsedRealtime()
                 val elapsed = now - t0
@@ -181,6 +205,7 @@ internal class PleosVoice(
                 }
             }
         } finally {
+            sender?.cancel()
             if (!ended) runCatching { stt.stop() }.onFailure { Log.w(MEASURE_TAG, "stt stop failed: $it") }
             _listening.value = false
         }
@@ -188,6 +213,11 @@ internal class PleosVoice(
         if (result != null) hooks.onFinal(result) else meter.cancel()
         Log.i(MEASURE_TAG, "stt result=${if (result == null) "none" else "chars=${result.length}"} source=${if (final != null) "final" else "partial"}")
         return result
+    }
+
+    private companion object {
+        /** 16kHz·16bit·mono 100ms = 3,200바이트(SpeechToText sending-audio-data 문서). */
+        const val PCM_BYTES_PER_100_MS = 3_200
     }
 
     private data class Limits(val noSpeechMs: Long, val maxMs: Long, val finalAfterEpdMs: Long) {

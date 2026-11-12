@@ -25,8 +25,8 @@ interface Voice {
 }
 
 /**
- * 효과음. 이름: rain(반복), wind(반복), engine(반복), thunder, tire, alarm, click, tick, chime,
- * wiper, engine_rise, unlock, buzzer, success, fail. 모르는 이름은 무시하고 로그만 남긴다.
+ * 효과음. 이름: rain·wind·engine·hazard·breath(항상 반복), thunder, tire, alarm, click, tick, chime,
+ * wiper, engine_rise, yawn, unlock, buzzer, success, fail. 모르는 이름은 무시하고 로그만 남긴다.
  */
 interface Sfx {
     fun play(name: String, loop: Boolean = false)

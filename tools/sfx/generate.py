@@ -16,17 +16,21 @@
 - click       단발  금고 다이얼 딸깍(M1). 기계식 짧은 딸깍
 - tick        단발  초시계 째깍
 - wiper       단발  와이퍼가 한 번 쓸고 가는 소리
+- hazard      반복  비상등(S07·S12) 릴레이 '딸깍-딱' 소리, 분당 약 90회
+- breath      반복  김서림(S02) 정적 속 숨소리. 느린 들숨·날숨
+- yawn        단발  졸음(S09) 하품. 성대음을 모음 '아' 공명으로 걸러 내려가는 음높이
 - unlock      단발  금고 번호 하나를 맞춤(M1). 묵직한 걸쇠 '철컥' + 짧은 금속 울림
 - buzzer      단발  퀴즈 미니게임 먼저 누르기. 밝고 경쾌한 '삐빅'
 - success     단발  해결. 밝은 종소리 아르페지오
 - fail        단발  실패. 부드럽게 내려가는 두 음(다그치지 않는 느낌)
 
 크기 기준: 반복음은 RMS로, 단발음은 피크로 맞춘다. 장면 속 균형은 앱의 SfxPlayer.GAIN에서 다시 잡는다.
-같은 시드로 만들어 매번 같은 파일이 나온다.
+소리마다 이름으로 정한 시드를 써서 매번 같은 파일이 나온다.
 """
 import os
 import sys
 import wave
+import zlib
 
 import numpy as np
 from scipy import signal
@@ -410,6 +414,93 @@ def wiper():
     return norm_peak(fade(x, 0.01, 0.03), -4)
 
 
+def hazard():
+    # 방향지시 릴레이: 켜짐 '딸깍'(높게)과 꺼짐 '딱'(낮게)이 번갈아. 주기 0.667초(분당 90회) × 2 = 반복 단위
+    period = 0.667
+    n = int(SR * period * 2)
+    x = np.zeros(n)
+
+    def relay(freq, bright):
+        m = int(0.06 * SR)
+        tt = t_axis(0.06)
+        tick = hp(white(m), 2000, 2) * exp_decay(m, 0.0009) * bright
+        body = np.sin(2 * np.pi * freq * tt) * exp_decay(m, 0.007) * 0.6
+        thump = np.sin(2 * np.pi * 220 * tt) * exp_decay(m, 0.01) * 0.25
+        return tick + body + thump
+
+    for k in range(2):
+        x += place(relay(2900, 1.0), n, k * period + 0.004)    # 켜짐(첫 표본에서 바로 튀지 않게 4ms 뒤)
+        x += place(relay(2100, 0.6) * 0.75, n, k * period + period / 2 + 0.004)  # 꺼짐
+    x = reverb(x, 0.25, 0.06, 6000, 0.003)[:n]  # 대시보드 안쪽의 작은 공간
+    return norm_peak(x, -6)
+
+
+def breath():
+    # 느린 호흡 2회(들숨 1.6초, 날숨 2.0초, 쉼 0.4초) → 8초 반복
+    cycle = [("in", 1.6), ("out", 2.0), ("rest", 0.4)]
+    parts = []
+    for _ in range(2):
+        for kind, ln in cycle:
+            m = int(SR * ln)
+            if kind == "rest":
+                parts.append(np.zeros(m))
+                continue
+            tt = t_axis(ln)
+            noise = pink(m)
+            if kind == "in":   # 들숨: 좁고 높은 '스-'
+                y = bp(noise, 900, 5200, 2)
+                y = peak_eq(y, 2600, 1.2, 5)
+                e = np.sin(np.pi * tt / ln) ** 1.6
+            else:              # 날숨: 넓고 낮은 '하-'
+                y = bp(noise, 250, 2600, 2)
+                y = peak_eq(y, 800, 0.9, 4)
+                e = np.sin(np.pi * np.minimum(1, tt / (ln * 0.85))) ** 1.2 * np.exp(-tt / 2.5)
+            y /= np.std(y) + 1e-9
+            parts.append(y * e)
+    x = np.concatenate(parts)
+    room = lp(brown(len(x)), 300, 2)  # 차 안의 낮은 정적
+    room /= np.std(room) + 1e-9
+    x = x + room * 0.05
+    x = np.concatenate([x, x[: int(1.0 * SR)]])  # 크로스페이드 여유
+    x = make_loop(x, 1.0)
+    return norm_rms(x, -30, -8)
+
+
+def formant(x, freqs_bw_gain):
+    y = np.zeros_like(x)
+    for f, bw, g in freqs_bw_gain:
+        y += bp(x, max(f - bw / 2, 30), f + bw / 2, 2) * g
+    return y
+
+
+def yawn():
+    sec = 2.4
+    n = int(SR * sec)
+    t = t_axis(sec)
+    # 성대음: 음높이가 올라갔다가(하-) 길게 내려온다(아-암)
+    f0 = 165 + 70 * np.exp(-((t - 0.45) / 0.35) ** 2) - 55 * np.clip((t - 0.6) / 1.6, 0, 1)
+    f0 *= 1 + 0.012 * np.sin(2 * np.pi * 5.2 * t)
+    ph = 2 * np.pi * np.cumsum(f0) / SR
+    voiced = np.zeros(n)
+    for k in range(1, 30):
+        voiced += np.sin(k * ph) / k ** 1.15
+    # 모음 '아'(입이 크게 벌어짐) → 끝에서 '음'으로 닫히는 느낌: 포먼트를 두 구간으로 섞는다
+    a = formant(voiced, [(820, 160, 1.0), (1250, 180, 0.6), (2600, 300, 0.25)])
+    m = formant(voiced, [(300, 120, 1.0), (1000, 200, 0.2), (2400, 300, 0.08)])
+    close = np.clip((t - 1.7) / 0.5, 0, 1)
+    vowel = a * (1 - close) + m * close
+    # 숨이 섞인 소리
+    air = formant(pink(n), [(900, 600, 1.0), (2500, 900, 0.5)])
+    air /= np.std(air) + 1e-9
+    vowel /= np.std(vowel) + 1e-9
+    breathiness = 0.5 + 0.4 * np.exp(-t / 0.4)
+    env = env_adsr(n, 0.35, 0.3, 0.0, 1.1, 0.8)
+    x = (vowel * (1 - breathiness * 0.6) + air * breathiness * 0.5) * env
+    x = lp(x, 6000, 2)
+    x = reverb(x, 0.7, 0.12)[:n]
+    return norm_peak(fade(x, 0.02, 0.3), -6)
+
+
 def unlock():
     sec = 0.6
     n = int(SR * sec)
@@ -478,11 +569,13 @@ def fail():
 SOUNDS = {
     "rain": rain, "wind": wind, "engine": engine, "engine_rise": engine_rise, "thunder": thunder,
     "tire": tire, "alarm": alarm, "chime": chime, "click": click, "tick": tick, "wiper": wiper,
-    "unlock": unlock, "buzzer": buzzer, "success": success, "fail": fail,
+    "hazard": hazard, "breath": breath, "yawn": yawn, "unlock": unlock, "buzzer": buzzer, "success": success, "fail": fail,
 }
 
 if __name__ == "__main__":
     only = set(sys.argv[1:])
     for name, fn in SOUNDS.items():
         if not only or name in only:
+            # 소리마다 이름으로 시드를 정해, 소리를 더하거나 하나만 다시 만들어도 다른 파일이 바뀌지 않게 한다.
+            rng = np.random.default_rng(20261113 + zlib.crc32(name.encode()))
             write(name, fn())

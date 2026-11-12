@@ -3,6 +3,7 @@ package io.moodlab.sideseat.voice
 import android.content.Context
 import android.os.SystemClock
 import android.util.Log
+import io.moodlab.sideseat.core.ReplyKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -74,6 +75,13 @@ object VoiceModule {
         parts = Parts(voice, speaker, sfx, instructor)
         return Triple(voice, sfx, instructor)
     }
+
+    /**
+     * 실측·시연용: PCM(16kHz 16bit mono, 헤더 없는 raw)을 마이크 대신 넣어 [Voice.listen]과 같은 경로로 듣는다.
+     * 결과를 instructor.answer에 넘기면 "말 끝 → 첫 음성" 지연이 SideSeatMeasure에 남는다. create 전이면 null.
+     */
+    suspend fun debugListenFromPcm(pcm: ByteArray, kind: ReplyKind, onPartial: (String) -> Unit = {}): String? =
+        parts?.voice?.listenFromPcm(pcm, kind, onPartial)
 
     @Synchronized
     fun release() {
