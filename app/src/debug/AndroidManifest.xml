@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 디버그 빌드에만: 실측 도구(SignalProbe)가 공조·창문 set을 P단·D단에서 시험한다. 앱 기능은 쓰지 않는다. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_CLIMATE" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_WINDOWS" />
+</manifest>

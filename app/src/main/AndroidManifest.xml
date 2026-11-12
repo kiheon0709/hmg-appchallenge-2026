@@ -15,9 +15,6 @@
     <uses-permission android:name="pleos.car.permission.CAR_INFO" />      <!-- 차종(이 차 면허) -->
     <!-- Pleos Vehicle 제어: 정차 중 앰비언트 조명 연출 -->
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_LIGHTS" />
-    <!-- 실측용: 공조·창문 set이 P단·D단에서 되는지 (앱 기능에서는 쓰지 않음, 실측 뒤 정리) -->
-    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_CLIMATE" />
-    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_WINDOWS" />
     <!-- NaviHelper: 남은 시간·도착·휴게소 경유지 -->
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
