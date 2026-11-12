@@ -7,14 +7,14 @@
 아래가 전부 참이고, 각 항목의 증거 파일이 있어야 끝이다.
 
 **기획**
-- [ ] `docs/plan/product-spec.md`: 한 문장 정의, 타깃과 불편(근거는 `docs/research/` 파일·절 표기), 모드별 사용 흐름(정차 훈련 / 주행 코치 / 도착 요약 / 보너스 미니게임), 훈련 상황 목록(상황마다 판정 신호·성공 조건·점수·대사), 코치 규칙 목록(조건·문장·말하는 횟수 상한), 화면 구성(가로·세로), Gleo·순정 경고와의 차이, 사업성, 위험.
-- [ ] 훈련 상황의 대처 절차마다 공식 출처(도로교통공단, 차량 취급설명서 등) 링크. 출처를 못 찾은 상황은 앱에서 뺀다.
-- [ ] `docs/plan/application-draft.md`: 공모전 접수양식 항목 순서대로 쓴 기획서 초안(`docs/pleos-docs/contest/guide_submission.md` 기준).
+- [x] `docs/plan/product-spec.md`: 한 문장 정의, 타깃과 불편(근거는 `docs/research/` 파일·절 표기), 모드별 사용 흐름(정차 훈련 / 주행 코치 / 도착 요약 / 보너스 미니게임), 훈련 상황 목록(상황마다 판정 신호·성공 조건·점수·대사), 코치 규칙 목록(조건·문장·말하는 횟수 상한), 화면 구성(가로·세로), Gleo·순정 경고와의 차이, 사업성, 위험.
+- [x] 훈련 상황의 대처 절차마다 공식 출처(도로교통공단, 차량 취급설명서 등) 링크. 출처를 못 찾은 상황은 앱에서 뺀다.
+- [x] `docs/plan/application-draft.md`: 공모전 접수양식 항목 순서대로 쓴 기획서 초안(`docs/pleos-docs/contest/guide_submission.md` 기준).
 
 **앱**
-- [ ] `./gradlew :core:test` 통과. 상황 판정·점수·코치 규칙은 `core`에 있고 테스트가 있다.
-- [ ] `./gradlew :app:assembleRelease` 성공, `apk/`에 release APK.
-- [ ] Pleos Connect Emulator 2.1.0에 설치해 아래를 Virtual Console 조작으로 확인하고, 화면 캡처를 `docs/screens/sim/`에, 로그 발췌를 `docs/STATUS.md`에 남긴다.
+- [x] `./gradlew :core:test` 통과. 상황 판정·점수·코치 규칙은 `core`에 있고 테스트가 있다.
+- [x] `./gradlew :app:assembleRelease` 성공, `apk/`에 release APK.
+- [x] Pleos Connect Emulator 2.1.0에 설치해 아래를 Virtual Console 조작으로 확인하고, 화면 캡처를 `docs/screens/sim/`에, 로그 발췌를 `docs/STATUS.md`에 남긴다.
   - P단에서 훈련 시작 → 가짜 3D 주행 화면이 움직인다.
   - 훈련 상황 5개 이상이 실제 신호로 판정된다(예: 와이퍼 스위치 → 화면 속 비가 닦임, 성에 제거 → 김서림 걷힘, 브레이크 → 급정거 반응 시간).
   - 상황 중 앰비언트 조명 set 호출과 효과음·TTS 대사가 나온다.
@@ -23,9 +23,9 @@
   - P단으로 돌아오면 요약 화면과 음성 총평이 나온다.
   - 미니게임 1개 이상(핸들 금고 다이얼)이 조향각으로 동작한다.
   - 가로·세로 창 모두에서 레이아웃이 깨지지 않는다.
-- [ ] 음성 대화는 스트리밍 파이프라인으로 만든다: STT 중간 결과(`onUpdated`)가 오는 동안 답 준비를 시작하고, LLM 응답을 스트리밍으로 받아 문장 단위로 끊어 TTS `speak(text, isFinal=false)`로 이어 보낸다. 짧은 명령·정해진 대답은 LLM 없이 앱 규칙으로 즉시 처리한다. 말 끝 → 첫 음성까지의 시간을 에뮬레이터에서 재서 `docs/STATUS.md`에 적는다(목표 1초 이내, 못 미치면 원인과 측정값을 적는다). TTS 재생 중 STT를 열 수 있는지(끼어들기)도 실측해 기록한다.
-- [ ] 실측 기록: 차량 신호 지연, 화면 프레임 속도, P단·D단에서의 제어 성공 여부를 `docs/STATUS.md`에 표로.
-- [ ] `docs/plan/demo-script.md`: 1분 소개 영상과 PT 시연의 장면 순서(Virtual Console에서 누를 것 포함).
+- [x] 음성 대화는 스트리밍 파이프라인으로 만든다: STT 중간 결과(`onUpdated`)가 오는 동안 답 준비를 시작하고, LLM 응답을 스트리밍으로 받아 문장 단위로 끊어 TTS `speak(text, isFinal=false)`로 이어 보낸다. 짧은 명령·정해진 대답은 LLM 없이 앱 규칙으로 즉시 처리한다. 말 끝 → 첫 음성까지의 시간을 에뮬레이터에서 재서 `docs/STATUS.md`에 적는다(목표 1초 이내, 못 미치면 원인과 측정값을 적는다). TTS 재생 중 STT를 열 수 있는지(끼어들기)도 실측해 기록한다.
+- [x] 실측 기록: 차량 신호 지연, 화면 프레임 속도, P단·D단에서의 제어 성공 여부를 `docs/STATUS.md`에 표로.
+- [x] `docs/plan/demo-script.md`: 1분 소개 영상과 PT 시연의 장면 순서(Virtual Console에서 누를 것 포함).
 
 ## 2. 제약
 
@@ -53,3 +53,26 @@
 - 실측으로 안 되는 기능은 빼거나 대체하고 "미확인"·"불가"로 기록한다. 된다고 쓰지 않는다.
 - 사용자만 할 수 있는 일(API 키, 계정, 소리 직접 듣기, 규정 문의)은 `docs/plan/needs-user.md`에 모아 두고 나머지를 계속한다.
 - 같은 문제로 세 번 실패하면 접근을 바꾼다.
+
+## 5. 점검 결과 (2026-11-13 06:30, 상위 세션)
+
+최종 소스 `5f76c80`, 최종 빌드 커밋 `3f797d8`. 푸시하지 않았다.
+
+| 완료 조건 | 증거 |
+| --- | --- |
+| 제품 명세 | `docs/plan/product-spec.md` |
+| 상황별 공식 출처 | `docs/plan/safety-sources.md`, 명세 5.2.1 표. 출처 없는 S12는 제외 |
+| 기획서 초안 | `docs/plan/application-draft.md` (접수양식 1~8번 순서) |
+| core 테스트 | `./gradlew :core:test` 77개 통과 (app 음성 로직 57개 통과) |
+| release APK | `apk/MoodLab_SideSeat_release.apk` 22.8MB, release 스모크 크래시 0 |
+| 에뮬레이터 8개 장면 | `docs/STATUS.md` "완료 조건 8개 장면" 표, `docs/screens/sim/` 캡처 67장 |
+| 음성 스트리밍과 지연 | `docs/STATUS.md` 통합 뒤 실측 ②. 빠른 길 약 10ms, Claude 답 시작 1.31~1.72초(목표 1초에 못 미침: 모델 첫 토큰 시간이 대부분. 0.6초에 채움말 "음."을 먼저 냄). 말하는 중 마이크 열기는 가능, 끼어들기 인식은 미확인 |
+| 실측 표 | `docs/STATUS.md` 실측 표(신호 지연, 58~60fps, P·D단 제어, CPU·메모리) |
+| 시연 대본 | `docs/plan/demo-script.md` |
+
+충족하지 못했거나 사용자가 확인할 것
+- 차량 마이크로 직접 말하는 음성 인식은 에뮬레이터에서 확인하지 못했다(맥 마이크 권한 필요). 오디오를 직접 넣는 방식으로 검증했다. 절차는 `docs/plan/needs-user.md`.
+- 폼 팩터 콘솔(12.9·14.6인치)은 확인하지 못했다. 창 크기 변경으로 가로·세로만 확인했다.
+- 경고등·비상등·안개등은 공개 권한으로 읽을 수 없어 말·선택으로 대체했다(`docs/plan/decisions.md`).
+- 소리(효과음·TTS 음질·볼륨)는 사람이 들어 봐야 한다.
+- release APK에는 LLM 키가 없다(규칙 기반으로 동작). AI 교관을 켜려면 `local.properties`에 키를 둔 채 디버그 빌드를 쓴다.

@@ -38,3 +38,4 @@
 - 11-13 dev-integration: 에뮬레이터는 처음에 인터넷이 없음. 차량 설정 Wi-Fi에서 AndroidWifi 연결 후 LLM 동작.
 - 11-14 dev-voice-ai: 실측 반영. Pleos TTS는 speak(isFinal=false) 조각을 다음 speak가 올 때까지 재생하지 않아(채움말이 LLM 첫 문장을 266~1377ms 기다림) TTS 기본을 문장별 순차 재생(isFinal=true, onDone 뒤 다음)으로 바꿈. onStart가 speak 뒤 약 10ms라 문장 사이 공백도 작음.
 - 11-14 dev-voice-ai: STT는 onEndedRecognition이 최종 결과(completed=true)보다 먼저 와서, 종료 뒤 최대 0.6초 최종 결과를 기다리게 고침(짧은 "응"이 빈 결과로 끝나던 문제). EPD 이벤트가 오지 않아 RMS(말하는 동안 최대값의 18% 아래가 0.35초)로 말 끝을 잡아 추측 요청 신호로 씀.
+- 11-14 dev-voice-ai: 채움말을 "음, 잠깐만요."(약 1.3초)에서 "음."으로 줄임. 순차 재생에서는 채움말이 끝나야 답이 나와, LLM 첫 문장이 0.7~1.6초에 와도 답이 약 2.0초에 들렸음(실측). 채움말을 중간에 끊는 방식은 말이 잘려 들려 택하지 않음.
