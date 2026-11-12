@@ -73,7 +73,7 @@
 | 앱 3-6 | P 복귀 → 요약·음성 총평 | 충족 | 로그 `app mode COACH -> REVIEW`, `review first sentence`. 캡처 `review_after_park_*.jpg` |
 | 앱 3-7 | 금고 다이얼(조향각) | 충족 | 로그 `app safedial solved=3/3`. 캡처 `m1_safe_dial_*.jpg` |
 | 앱 3-8 | 가로·세로 창 | 충족 (창 크기 변경으로 확인) | 가로 1682×1210, 세로 835×1210. 캡처 `portrait_*`, `v2_portrait_*`. 폼 팩터 콘솔(12.9·14.6인치) 확인은 아래 "추가 확인" 참조 |
-| 앱 4 | 음성 스트리밍과 지연 측정 | 충족 (목표 1초 이내 달성) | 코드 `app/src/main/java/io/moodlab/sideseat/voice/`: `TtsSpeaker.kt`(문장을 `speak(s, false)`로 이어 보냄), `SeniorInstructor.kt`(STT 중간 결과로 빠른 길 판단·예열, Claude 스트리밍), `FastPath.kt`, `SentenceChunker.kt`. 실측 `docs/STATUS.md`: 빠른 길 중앙값 약 20ms. Claude 답 시작 중앙값 0.75초(15초 간격 12회)·0.76초(60초 간격 12회), 24회 모두 연결 재사용. 처음에는 1.3~1.7초였고, 원인(답을 자를 때 소켓을 끊어 매번 새 연결)을 찾아 고쳤다(voice `76e8f7a`). 음성 인식이 말 끝 뒤 약 0.4초에 결과를 주므로 실제 말 끝 기준으로는 약 1.2초. 말하는 중 `request()`는 열림, 끼어들기 인식은 미확인으로 기록 |
+| 앱 4 | 음성 스트리밍과 지연 측정 | 충족 (중앙값 0.75초로 목표 1초 이내) | 코드 `app/src/main/java/io/moodlab/sideseat/voice/`: `TtsSpeaker.kt`(문장을 `speak(s, false)`로 이어 보냄), `SeniorInstructor.kt`(STT 중간 결과로 빠른 길 판단·예열, Claude 스트리밍), `FastPath.kt`, `SentenceChunker.kt`. 실측 `docs/STATUS.md`: 빠른 길 중앙값 약 20ms. Claude 답 시작 중앙값 0.75초(15초 간격 12회, 범위 0.65~1.25)·0.76초(60초 간격 12회, 범위 0.61~1.33), 24회 모두 연결 재사용. 중앙값은 목표 안이고 일부 시행은 1초를 넘는다. 처음에는 1.3~1.7초였고, 원인(답을 자를 때 소켓을 끊어 매번 새 연결)을 찾아 고쳤다(voice `76e8f7a`). 음성 인식이 말 끝 뒤 약 0.4초에 결과를 주므로 실제 말 끝 기준으로는 약 1.2초. 말하는 중 `request()`는 열림, 끼어들기 인식은 미확인으로 기록 |
 | 앱 5 | 실측 표 | 충족 | `docs/STATUS.md` 실측 표(신호 지연, 프레임, P·D단 제어)와 ③ CPU·메모리(4코어 기준 10~15%, PSS 114MB) |
 | 앱 6 | 시연 대본 | 충족 | `docs/plan/demo-script.md`(1분 영상 표, PT 순서, Virtual Console 실제 카드 이름) |
 
