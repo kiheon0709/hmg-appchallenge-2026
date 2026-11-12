@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
 
     private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         android.util.Log.i("SideSeatMeasure", "app permissions $result")
+        if (result["pleos.car.permission.FUSED_LOCATION"] == true) AppGraph.restartVehicle()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

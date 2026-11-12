@@ -103,8 +103,14 @@ private class SttListener(private val log: (String) -> Unit, private val askedAt
     override fun onStartedRecognition() = log("stt onStarted after=${since()}ms")
     override fun onUpdated(stt: String, completed: Boolean) = log("stt onUpdated completed=$completed after=${since()}ms text='$stt'")
     override fun onUpdatedEpdData(on: Long, off: Long) = log("stt epd on=$on off=$off")
-    override fun onUpdatedRms(rms: Double) = Unit
-    override fun onEndedRecognition() = log("stt onEnded after=${since()}ms")
+    private var maxRms = 0.0
+    private var rmsCount = 0
+    override fun onUpdatedRms(rms: Double) {
+        rmsCount++
+        if (rms > maxRms) maxRms = rms
+        if (rmsCount % 20 == 0) log("stt rms count=$rmsCount max=$maxRms last=$rms")
+    }
+    override fun onEndedRecognition() = log("stt onEnded after=${since()}ms rmsCount=$rmsCount maxRms=$maxRms")
     override fun onError(errorType: ai.pleos.playground.stt.constant.ErrorType) = log("stt onError=$errorType after=${since()}ms")
 }
 

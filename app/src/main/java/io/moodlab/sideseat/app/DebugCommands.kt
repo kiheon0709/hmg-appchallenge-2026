@@ -8,6 +8,7 @@ import android.util.Log
 import io.moodlab.sideseat.ui.SideSeatUiDebug
 import io.moodlab.sideseat.ui.UiAction
 import java.io.File
+import kotlinx.coroutines.launch
 
 /**
  * 디버그 빌드 전용 adb 명령. 에뮬레이터 실측·시연 녹화에서 화면을 건드리지 않고 같은 경로를 탄다.
@@ -19,6 +20,7 @@ import java.io.File
  * - `answer <문장>`: 선택지 답(화면 터치·말 대신)
  * - `chapter <id>`: 챕터 시작, `inject <SituationId>`: 교관 대결로 상황 던지기
  * - `vehicle debug|pleos`: 차량 신호 출처 전환
+ * - `ambient CALM|ALERT|SUCCESS|OFF`, `reststop`: 게이트웨이 제어를 바로 시험
  */
 class DebugCommands(private val context: Context, private val controller: SideSeatController) : BroadcastReceiver() {
     fun register() {
@@ -41,6 +43,19 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "inject" -> runCatching { io.moodlab.sideseat.core.SituationId.valueOf(arg) }
                 .onSuccess { controller.onAction(UiAction.Inject(it)) }
             "vehicle" -> AppGraph.useDebugVehicle(arg == "debug")
+            "ambient" -> runCatching { io.moodlab.sideseat.core.AmbientMood.valueOf(arg) }.onSuccess { mood ->
+                gatewayCall("ambient $mood") { it.setAmbient(mood) }
+            }
+            "reststop" -> gatewayCall("rest stop") { it.addRestStopWaypoint() }
+        }
+    }
+
+    private fun gatewayCall(what: String, f: suspend (io.moodlab.sideseat.vehicle.VehicleGateway) -> Boolean) {
+        val g = AppGraph.currentGateway?.value ?: return
+        kotlinx.coroutines.MainScope().launch {
+            val t0 = android.os.SystemClock.elapsedRealtime()
+            val ok = f(g)
+            Log.i("SideSeatMeasure", "app debug $what ok=$ok took=${android.os.SystemClock.elapsedRealtime() - t0}ms")
         }
     }
 

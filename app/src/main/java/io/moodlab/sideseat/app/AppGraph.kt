@@ -58,6 +58,16 @@ object AppGraph {
 
     val currentGateway: StateFlow<VehicleGateway>? get() = gatewayFlowRef
 
+    /** 첫 실행 권한 창에서 위치를 허용하면 게이트웨이를 다시 시작해 FusedLocation 구독을 연다. */
+    @Synchronized
+    fun restartVehicle() {
+        val flow = gatewayFlowRef ?: return
+        if (flow.value !== pleos) return
+        pleos.stop()
+        pleos.start()
+        Log.i("SideSeatMeasure", "app vehicle restarted after permission grant")
+    }
+
     @Synchronized
     fun useDebugVehicle(on: Boolean) {
         val flow = gatewayFlowRef ?: return

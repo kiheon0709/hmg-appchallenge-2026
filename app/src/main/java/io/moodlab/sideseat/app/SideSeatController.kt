@@ -201,6 +201,10 @@ class SideSeatController(
         val state = _ui.value.vehicle
         val (view, events) = engine.tick(state, now())
         val prev = _ui.value.training
+        if (prev != null && prev.situation == view.situation) {
+            view.steps.filter { s -> s.done && prev.steps.firstOrNull { it.id == s.id }?.done == false }
+                .forEach { Log.i(TAG, "app step done ${view.situation} ${it.id}") }
+        }
         if (prev?.phase != view.phase || prev.situation != view.situation) {
             Log.i(TAG, "app training ${view.chapterId} ${view.situation} ${view.phase} steps=${view.steps.joinToString { "${it.id}:${if (it.done) 1 else 0}" }} result=${view.lastResult?.let { "${it.id}★${it.stars} ${it.reactionMs}ms miss=${it.missedStepIds} pen=${it.penalties}" }}")
         }
@@ -294,11 +298,13 @@ class SideSeatController(
 
     private suspend fun listenOnce(kind: ReplyKind, pcm: ByteArray? = null): String? {
         updateTalk { it.copy(partialText = null) }
-        val onPartial: (String) -> Unit = { partial -> updateTalk { it.copy(partialText = partial) } }
+        // 대체 입력(녹음 PCM)일 때는 화면에 그렇게 보인다(시연에서 차량 마이크로 오해하지 않게)
+        val tag = if (pcm != null) "[녹음 입력] " else ""
+        val onPartial: (String) -> Unit = { partial -> updateTalk { it.copy(partialText = tag + partial) } }
         val pleos = voice as? PleosVoice
         val text = if (pcm != null && pleos != null) pleos.listenFromPcm(pcm, kind, onPartial) else voice.listen(kind, onPartial)
-        Log.i(TAG, "app heard kind=$kind '${text ?: ""}'")
-        updateTalk { it.copy(partialText = text) }
+        Log.i(TAG, "app heard kind=$kind source=${if (pcm != null) "pcm" else "mic"} '${text ?: ""}'")
+        updateTalk { it.copy(partialText = text?.let { tag + it }) }
         return text
     }
 
