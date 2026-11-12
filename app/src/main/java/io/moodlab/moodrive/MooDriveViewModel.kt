@@ -2,7 +2,6 @@ package io.moodlab.moodrive
 
 import android.app.Application
 import android.content.Context
-import android.speech.tts.TextToSpeech
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.moodlab.moodrive.core.Action
@@ -19,6 +18,8 @@ import io.moodlab.moodrive.core.Track
 import io.moodlab.moodrive.core.TripEvent
 import io.moodlab.moodrive.core.VehicleSnapshot
 import io.moodlab.moodrive.vehicle.ManualSignalSource
+import io.moodlab.moodrive.audio.DjVoice
+import io.moodlab.moodrive.audio.MusicPlayer
 import io.moodlab.moodrive.vehicle.PleosAmbientController
 import io.moodlab.moodrive.vehicle.PleosVehicleSignalSource
 import io.moodlab.moodrive.vehicle.scenarioFlow
@@ -32,7 +33,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 data class PlayedTrack(val track: Track, val scene: Scene, val color: AmbientCommand)
 data class Moment(val clock: String, val text: String)
@@ -91,7 +91,10 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     val ui: StateFlow<UiState> = _ui.asStateFlow()
 
     private var sourceJob: Job? = null
-    private var tts: TextToSpeech? = null
+    private val music = MusicPlayer(app)
+    private val dj: DjVoice? = runCatching {
+        DjVoice(app) { speaking -> viewModelScope.launch { music.setDucked(speaking) } }
+    }.onFailure { Log.w("MooDriveMeasure", "tts unavailable: $it") }.getOrNull()
     private var timeScale = 1
     private val played = mutableListOf<PlayedTrack>()
     private val moments = mutableListOf<Moment>()
@@ -102,10 +105,6 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
         if (saved != null && saved.size == Genres.PICK_COUNT) {
             session.taste.setPreferredGenres(saved)
             _ui.update { it.copy(onboarded = true) }
-        }
-        // TODO: Pleos TTS SDK(HYBRID)로 교체. 그전까진 안드로이드 기본 TTS
-        tts = TextToSpeech(app) { status ->
-            if (status == TextToSpeech.SUCCESS) tts?.language = Locale.KOREAN
         }
         startPlaybackTicker()
         useManual()
@@ -201,6 +200,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
         for (a in actions) when (a) {
             is Action.Play -> {
                 _ui.update { it.copy(track = a.track, positionSec = 0) }
+                music.play(a.track)
                 val color = screenPlanner.commandFor(session.targetMood(), night = _ui.value.snapshot?.isDaytime() == false)
                 if (played.lastOrNull()?.track?.id != a.track.id) played += PlayedTrack(a.track, a.scene, color)
             }
@@ -240,7 +240,7 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun speak(text: String) {
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "dj")
+        dj?.speak(text)
         val at = System.currentTimeMillis()
         _ui.update { it.copy(djLine = text, djAtMs = at) }
         viewModelScope.launch {
@@ -275,9 +275,9 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * 음원 번들 전까지는 시뮬레이션 재생: 1초마다 위치를 올리고, 곡 길이에 닿으면 다음 곡.
+     * 곡 진행 타이머: 1초마다 위치를 올리고, 곡 길이에 닿으면 다음 곡. 시연 음원은 짧아서 곡 길이까지 반복 재생한다.
      * 시나리오 재생 중에는 차량 시간 배율(timeScale)만큼 빠르게 진행.
-     * TODO: Media3 ExoPlayer로 교체 (assets 음원), 오디오 포커스·TTS 덕킹 처리
+     * 오디오 포커스를 잃어 소리가 안 나는 동안에는 진행하지 않는다.
      */
     private fun startPlaybackTicker() = viewModelScope.launch {
         while (isActive) {
@@ -288,8 +288,9 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
             if (_ui.value.vehicleConnected) pleosSource?.refreshWiper()
             _ui.update { it.copy(scene = session.currentScene, restStopPrompt = it.restStopPrompt && session.restStopPending) }
             val st = _ui.value
+            music.setActive(st.scene != null && st.scene != Scene.PARKED)
             val t = st.track ?: continue
-            if (st.scene == Scene.PARKED) continue
+            if (st.scene == Scene.PARKED || music.isSilenced) continue
             if (st.positionSec + timeScale >= t.durationSec) {
                 handle(session.onTrackEnded(completed = true, playedSec = st.positionSec))
             } else {
@@ -301,7 +302,8 @@ class MooDriveViewModel(app: Application) : AndroidViewModel(app) {
     private fun clock(s: VehicleSnapshot) = "%02d:%02d".format(s.minuteOfDay / 60, s.minuteOfDay % 60)
 
     override fun onCleared() {
-        tts?.shutdown()
+        dj?.release()
+        music.release()
         pleosSource?.stop()
         pleosAmbient.release()
         runCatching { vehicle?.release() }

@@ -1,3 +1,11 @@
+import java.util.Properties
+
+// 서명 정보는 커밋하지 않는 local.properties에 둔다
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -18,10 +26,21 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        localProps.getProperty("release.storeFile")?.let { path ->
+            create("release") {
+                storeFile = rootProject.file(path)
+                storePassword = localProps.getProperty("release.storePassword")
+                keyAlias = localProps.getProperty("release.keyAlias")
+                keyPassword = localProps.getProperty("release.keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // TODO: 제출용 서명 설정 (keystore는 커밋 금지)
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
@@ -50,4 +69,8 @@ dependencies {
 
     implementation("ai.pleos.playground:Vehicle:2.3.2")
     implementation("ai.pleos.playground:NaviHelper:3.0.5")
+    implementation("ai.pleos.playground:TextToSpeech:3.3.1")
+
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-session:1.4.1")
 }

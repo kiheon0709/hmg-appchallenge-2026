@@ -15,9 +15,9 @@
 | core 로직 | 자동 테스트 80개 통과 (`./gradlew :core:test`) |
 | 데모 시나리오 | 3분 동안 장면 전환 7회(정차 제외), 곡 10개, DJ 멘트 7회 (테스트로 고정) (`./gradlew :core:demoTrace`) |
 | 디자인 | 화면 3종. 자동 검사(조작 수·터치·글자·실측 대비) 1920×720, 1408×792 모두 통과. 토큰 동기화 검사 통과 |
-| app (Android) | Pleos Vehicle·NaviHelper SDK 연결, 에뮬레이터 실행 확인 (11/07). 음원 재생·오디오 포커스, Pleos TTS/STT, 휴게소 경유지는 아직 |
+| app (Android) | Pleos Vehicle·NaviHelper·TTS 연결, Media3 포그라운드 재생·오디오 포커스, release APK 에뮬레이터 실행 확인 (11/07). Pleos STT, 휴게소 경유지, FusedLocation은 아직 |
 | 기획서 | 독립 심사 점수: v0.2 2.8 → 1바퀴 2.9 (`plan-review-v3.md`) → 2바퀴 3.1 (`plan-review-r2.md`) → 3바퀴 3.3 (`plan-review-r3.md`) → 4바퀴 3.35 (`plan-review-r4.md`) → 5바퀴 3.50 (`plan-review-r5.md`) → 6바퀴 3.53 (`plan-review-r6.md`) → 7바퀴 **3.55** (`plan-review-r7.md`). 상승폭이 0.02까지 줄어 클라우드 루프 종료. 심사 판단: SDK·APK·영상 없이 도달 가능 3.7~3.8, 4.0+는 실측 1건 필요 |
-| 음원 | 자리표시 66곡(장르마다 차분한 곡·밝은 곡 포함). 실제 음원 태깅은 `docs/music-tagging.md` 기준으로 진행 예정 |
+| 음원 | 시연용 자체 합성 66곡 (`tools/demo-music/generate.py`, 저작권 문제 없음, 곡당 약 30~60초 반복). 음질은 사람이 들어 보고 판단 필요. 실제 음원 교체는 `docs/music-tagging.md` |
 
 ## 운영사무국 답변 (10-29 문의, 11-06 수신)
 
@@ -51,13 +51,17 @@
 
 발견한 문제와 남은 확인:
 - 표준 Car API로 기어를 읽는 방식이 App Market 심사를 통과하는지 미확인 (운영사무국 답변: 공개 문서 외 Pleos API는 없음)
-- 내비 앱이 앞으로 오면 앱 로그가 멈춤(백그라운드 프로세스 정지로 추정) → 음악 앱으로 쓰려면 Media3 포그라운드 서비스 필요
-- 음성 인식·TTS 에뮬레이터 동작, release APK는 아직
+- 내비 앱이 앞으로 오면 앱이 멈추던 문제 → Media3 포그라운드 서비스로 해결. 내비가 앞에 있어도 와이퍼 신호로 장면·곡·멘트 전환 확인
+- 안드로이드 기본 TTS는 Pleos 이미지에 엔진이 없어 실패(`not bound to TTS engine`) → Pleos TTS(ON_DEVICE)로 교체, `tts start/done` 확인
+- 안드로이드 기본 음성 인식도 같은 이유로 동작하지 않을 가능성이 높음 → Pleos STT로 교체 필요 (미구현)
+- 오디오 포커스: `requestAudioFocus` USAGE_MEDIA 획득, 재생 상태 PLAYING 확인. 내비 음성과 겹칠 때의 덕킹은 아직 실측 안 함
+- release APK 설치·실행 확인 (`apk/MoodLab_MooDrive_release.apk`, 70MB). 서명 키 `moodrive-release.jks`와 비밀번호는 커밋하지 않고 로컬에만 있음 → 분실하면 같은 서명으로 업데이트 불가, 백업 필요
+- 소리는 사람이 직접 들어 확인 필요 (로그·시스템 상태로만 확인함)
 
 ## 남은 일
 
 - 맥: `docs/MAC_HANDOFF.md` (빌드, Pleos SDK 연결, D단 앰비언트 시험, 음원, 시연 영상)
-- **다음 맥 작업**: Virtual Console과 앱 화면을 나란히 찍은 20~30초 영상, release APK(`apk/MoodLab_MooDrive_release.apk`), 로열티프리 음원 + Media3 포그라운드 재생 + 오디오 포커스
+- **다음 맥 작업**: Pleos STT 연결, FusedLocation(일몰·터널 GPS), 휴게소 경유지, 팀명 확정 후 APK 파일명 변경, 기획서 DOCX 옮기기
 - 7바퀴 심사 뒤 클라우드에서 추가 반영(재심사 안 함): 정체 중에도 피날레, 휴게소 응답 양방향 표현("집에 가자"·"휴게소 바로 가자"·"네 알겠어요"·"이거 별로야"), 시나리오 ③ 크루징 문장, 기술 스택 (예정) 표기
 - 클라우드에 남은 작은 일: 앱 시계 표시가 신호 사이에 멈추는 문제, 각주 순서
 - 제출 직전: 접수양식 DOCX에 옮기기, 전원 서명 동의서, 근거 원문 재확인, GitHub 심사 계정 초대

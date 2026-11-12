@@ -25,13 +25,18 @@ VehicleSignalSource(Pleos / 시나리오 / 수동) ─▶ MooDriveSession ─▶
 3. `./gradlew :app:installDebug` 또는 Run
 4. 첫 실행 시 장르 3개 선택 → 주행 화면 왼쪽 위 기어 칩(P)을 **길게 눌러** 데모 패널을 열고 **▶ 비 오는 퇴근길**로 시나리오 재생 (약 3분: 노을 → 비 → 폭우 → 터널 → 정체 → 도착 피날레 → 주차)
 
+## APK와 테스트 환경
+
+- APK: `apk/MoodLab_MooDrive_release.apk`
+- 테스트 환경: Pleos Connect Emulator 2.1.0 (API 34, Automotive), Vehicle SDK 2.3.2, NaviHelper 3.0.5, TextToSpeech 3.3.1
+- 차량 신호 조작: `adb forward tcp:8088 tcp:8088` 후 http://127.0.0.1:8088/ (Pleos Connect Virtual Console). Gear D에서 Windshield Wiper Switch를 Low·High로 바꾸면 장면·곡·DJ 멘트가 바뀐다
+- 실측 결과: `docs/STATUS.md`의 "맥 검증 결과"
+- 시연 음원은 `tools/demo-music/generate.py`로 합성한 것이다
+
 ## 남은 작업
 
-- [ ] Pleos SDK 의존성·저장소 추가 (`build.gradle.kts`, `app/build.gradle.kts`의 TODO)
-- [ ] `PleosVehicleSignalSource` / `PleosAmbientController` 구현 (파일 안 TODO 순서)
-- [ ] D단에서 앰비언트 set 호출이 막히는지 에뮬레이터로 시험 → `docs/STATUS.md` 기록
-- [ ] 로열티프리 음원 번들 + 무드 태깅, Media3 재생
-- [ ] Pleos TTS(HYBRID), STT 음성 명령
-- [ ] release APK → `apk/` (제출 파일명: MoodLab_MooDrive_release.apk)
+- [ ] Pleos STT 음성 명령
+- [ ] FusedLocation 일몰·터널 GPS, 휴게소 경유지 추가
+- [ ] 실제 음원 교체 (`docs/music-tagging.md`)
 
-Playground 프로젝트 Key 같은 비밀값은 `local.properties`에만 두고 커밋하지 않는다.
+Playground 프로젝트 Key, release 서명 키와 비밀번호는 `local.properties`와 로컬 파일에만 두고 커밋하지 않는다.

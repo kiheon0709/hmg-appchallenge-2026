@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "자리표시 카탈로그. docs/music-tagging.md 기준으로 실제 CC0/로열티프리 음원으로 교체",
+ "note": "곡 정보는 시연용. 음원은 tools/demo-music/generate.py로 합성. 실제 음원 교체는 docs/music-tagging.md",
  "tracks": [
   {
    "id": "cp1",
@@ -13,8 +13,8 @@
     "valence": 0.8
    },
    "bpm": 112,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cp2",
@@ -27,8 +27,8 @@
     "valence": 0.9
    },
    "bpm": 98,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cp3",
@@ -41,8 +41,8 @@
     "valence": 0.6
    },
    "bpm": 120,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cp4",
@@ -55,8 +55,8 @@
     "valence": 0.75
    },
    "bpm": 116,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac1",
@@ -69,8 +69,8 @@
     "valence": -0.2
    },
    "bpm": 72,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac2",
@@ -83,8 +83,8 @@
     "valence": 0.0
    },
    "bpm": 80,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac3",
@@ -97,8 +97,8 @@
     "valence": -0.5
    },
    "bpm": 66,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac4",
@@ -111,8 +111,8 @@
     "valence": 0.25
    },
    "bpm": 84,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf1",
@@ -125,8 +125,8 @@
     "valence": 0.2
    },
    "bpm": 78,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf2",
@@ -139,8 +139,8 @@
     "valence": 0.3
    },
    "bpm": 82,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf3",
@@ -153,8 +153,8 @@
     "valence": -0.15
    },
    "bpm": 74,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf4",
@@ -167,8 +167,8 @@
     "valence": -0.1
    },
    "bpm": 86,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am1",
@@ -181,8 +181,8 @@
     "valence": -0.6
    },
    "bpm": 90,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am2",
@@ -195,8 +195,8 @@
     "valence": -0.4
    },
    "bpm": 100,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am3",
@@ -209,8 +209,8 @@
     "valence": -0.6
    },
    "bpm": 60,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am4",
@@ -223,8 +223,8 @@
     "valence": -0.55
    },
    "bpm": 96,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "fk1",
@@ -237,8 +237,8 @@
     "valence": 0.5
    },
    "bpm": 108,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/fk1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "fk2",
@@ -251,8 +251,8 @@
     "valence": 0.4
    },
    "bpm": 104,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/fk2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "fk3",
@@ -265,8 +265,8 @@
     "valence": 0.35
    },
    "bpm": 110,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/fk3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed1",
@@ -279,8 +279,8 @@
     "valence": 0.5
    },
    "bpm": 128,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed2",
@@ -293,8 +293,8 @@
     "valence": 0.7
    },
    "bpm": 130,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed3",
@@ -307,8 +307,8 @@
     "valence": 0.1
    },
    "bpm": 126,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp1",
@@ -321,8 +321,8 @@
     "valence": 0.7
    },
    "bpm": 104,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp2",
@@ -335,8 +335,8 @@
     "valence": 0.75
    },
    "bpm": 92,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp3",
@@ -349,8 +349,8 @@
     "valence": 0.85
    },
    "bpm": 122,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp4",
@@ -363,8 +363,8 @@
     "valence": 0.65
    },
    "bpm": 100,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp5",
@@ -377,8 +377,8 @@
     "valence": 0.9
    },
    "bpm": 118,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp6",
@@ -391,8 +391,8 @@
     "valence": 0.6
    },
    "bpm": 88,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "jz1",
@@ -405,8 +405,8 @@
     "valence": -0.1
    },
    "bpm": 84,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/jz1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "jz2",
@@ -419,8 +419,8 @@
     "valence": 0.1
    },
    "bpm": 90,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/jz2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "jz3",
@@ -433,8 +433,8 @@
     "valence": 0.05
    },
    "bpm": 76,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/jz3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "rk1",
@@ -447,8 +447,8 @@
     "valence": 0.2
    },
    "bpm": 130,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/rk1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "rk2",
@@ -461,8 +461,8 @@
     "valence": 0.45
    },
    "bpm": 128,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/rk2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cl1",
@@ -475,8 +475,8 @@
     "valence": 0.3
    },
    "bpm": 62,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cl1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cl2",
@@ -489,8 +489,8 @@
     "valence": 0.45
    },
    "bpm": 94,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cl2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "hp1",
@@ -503,8 +503,8 @@
     "valence": 0.2
    },
    "bpm": 96,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/hp1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "hp2",
@@ -517,8 +517,8 @@
     "valence": -0.2
    },
    "bpm": 90,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/hp2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "in1",
@@ -531,8 +531,8 @@
     "valence": 0.55
    },
    "bpm": 110,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/in1.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "in2",
@@ -545,8 +545,8 @@
     "valence": 0.35
    },
    "bpm": 86,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/in2.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "in3",
@@ -559,8 +559,8 @@
     "valence": 0.8
    },
    "bpm": 120,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/in3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed4",
@@ -573,8 +573,8 @@
     "valence": -0.35
    },
    "bpm": 124,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "rk3",
@@ -587,8 +587,8 @@
     "valence": -0.3
    },
    "bpm": 138,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/rk3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "hp3",
@@ -601,8 +601,8 @@
     "valence": -0.45
    },
    "bpm": 92,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/hp3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am5",
@@ -615,8 +615,8 @@
     "valence": -0.2
    },
    "bpm": 102,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed5",
@@ -629,8 +629,8 @@
     "valence": -0.15
    },
    "bpm": 100,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ed6",
@@ -643,8 +643,8 @@
     "valence": 0.55
    },
    "bpm": 108,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ed6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "rk4",
@@ -657,8 +657,8 @@
     "valence": -0.2
    },
    "bpm": 84,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/rk4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "rk5",
@@ -671,8 +671,8 @@
     "valence": 0.55
    },
    "bpm": 108,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/rk5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "hp4",
@@ -685,8 +685,8 @@
     "valence": -0.1
    },
    "bpm": 82,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/hp4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "hp5",
@@ -699,8 +699,8 @@
     "valence": 0.6
    },
    "bpm": 96,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/hp5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "fk4",
@@ -713,8 +713,8 @@
     "valence": -0.05
    },
    "bpm": 90,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/fk4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cp5",
@@ -727,8 +727,8 @@
     "valence": -0.15
    },
    "bpm": 92,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cl3",
@@ -741,8 +741,8 @@
     "valence": -0.4
    },
    "bpm": 66,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cl3.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "in4",
@@ -755,8 +755,8 @@
     "valence": -0.25
    },
    "bpm": 84,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/in4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp7",
@@ -769,8 +769,8 @@
     "valence": -0.1
    },
    "bpm": 88,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp7.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "jz4",
@@ -783,8 +783,8 @@
     "valence": 0.65
    },
    "bpm": 104,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/jz4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "in5",
@@ -797,8 +797,8 @@
     "valence": 0.8
    },
    "bpm": 116,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/in5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "pp8",
@@ -811,8 +811,8 @@
     "valence": 0.75
    },
    "bpm": 112,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/pp8.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cp6",
@@ -825,8 +825,8 @@
     "valence": 0.7
    },
    "bpm": 118,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cp6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cl4",
@@ -839,8 +839,8 @@
     "valence": 0.6
    },
    "bpm": 108,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cl4.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac5",
@@ -853,8 +853,8 @@
     "valence": 0.6
    },
    "bpm": 104,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "am6",
@@ -867,8 +867,8 @@
     "valence": 0.5
    },
    "bpm": 100,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/am6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "cl5",
@@ -881,8 +881,8 @@
     "valence": 0.75
    },
    "bpm": 120,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/cl5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "ac6",
@@ -895,8 +895,8 @@
     "valence": 0.7
    },
    "bpm": 112,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/ac6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf5",
@@ -909,8 +909,8 @@
     "valence": 0.55
    },
    "bpm": 92,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf5.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   },
   {
    "id": "lf6",
@@ -923,8 +923,8 @@
     "valence": 0.6
    },
    "bpm": 96,
-   "source": "",
-   "license": "placeholder"
+   "source": "music/lf6.m4a",
+   "license": "자체 합성 시연 음원 (tools/demo-music)"
   }
  ]
 }

@@ -29,9 +29,11 @@ import io.moodlab.moodrive.core.DriveMode
 import io.moodlab.moodrive.core.Gear
 import io.moodlab.moodrive.core.VehicleSnapshot
 import io.moodlab.moodrive.core.WiperLevel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import java.util.Calendar
 
@@ -42,11 +44,15 @@ private const val TAG = "MooDriveMeasure"
  * Pleos Vehicle SDK / NaviHelper → [VehicleSnapshot] 어댑터.
  * 콜백은 바인더 스레드로 올 수 있어 MutableStateFlow.update로만 상태를 바꾼다.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class PleosVehicleSignalSource(private val context: Context, private val vehicle: Vehicle) : VehicleSignalSource {
     private val state = MutableStateFlow(
         VehicleSnapshot(timestampMs = System.currentTimeMillis(), minuteOfDay = nowMinute(), gear = Gear.D),
     )
-    override val snapshots: StateFlow<VehicleSnapshot> = state.asStateFlow()
+    private val gearKnown = MutableStateFlow(false)
+
+    /** 첫 기어 값을 받기 전에는 내보내지 않는다. P단에서 켰는데 잠깐 주행으로 판단하는 일을 막는다. */
+    override val snapshots: Flow<VehicleSnapshot> = gearKnown.filter { it }.flatMapLatest { state }
 
     private val wiper by lazy { vehicle.getWiper() }
     private val light by lazy { vehicle.getLight() }
@@ -87,6 +93,7 @@ class PleosVehicleSignalSource(private val context: Context, private val vehicle
         override fun onChangeEvent(value: CarPropertyValue<*>) {
             Log.i(TAG, "gear raw=${value.value}")
             (value.value as? Int)?.let { raw -> edit { it.copy(gear = raw.toGear()) } }
+            gearKnown.value = true
         }
         override fun onErrorEvent(propId: Int, zone: Int) = Log.w(TAG, "gear error prop=$propId zone=$zone").let { }
     }
@@ -159,7 +166,10 @@ class PleosVehicleSignalSource(private val context: Context, private val vehicle
         val pm = c.getCarManager(Car.PROPERTY_SERVICE) as CarPropertyManager
         pm.registerCallback(gearCallback, VehiclePropertyIds.GEAR_SELECTION, CarPropertyManager.SENSOR_RATE_ONCHANGE)
         Log.i(TAG, "gear subscribed")
-    }.onFailure { Log.w(TAG, "gear unavailable, assuming D: $it") }
+    }.onFailure {
+        Log.w(TAG, "gear unavailable, assuming D: $it")
+        gearKnown.value = true
+    }
 
     private fun startNavi() = runCatching {
         navi = NaviHelper(context).also {
