@@ -77,7 +77,7 @@
 | Connect-S 12.9″ · 160 DPI · Portrait → 628×855 px | 628×855, 160 dpi | `adb emu multidisplay add 2 628 855 160 0` |
 | Connect-S 14.6″ · 200 DPI · Landscape → 1700×1185 px(1360×948 dp) | 1700×1185, 200 dpi | `adb emu multidisplay add 2 1700 1185 200 0` |
 
-앱은 `adb shell am start --display <id>`로 띄우고(14.6″은 디스플레이 id 3), 화면은 `adb emu screenrecord screenshot <폴더> --display 2`로 캡처했다. 홈·훈련(폭우 발생·성공)·코치·코치 K01·리뷰를 두 크기 모두 확인: `ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`. 잘림 1건: 두 크기 모두 리뷰 화면 TalkButton 글자("말하는 중 · 눌러서 멈추기")가 잘림 → dev-sim-ui에 넘김. 나머지 화면은 잘림·겹침 없음.
+앱은 `adb shell am start --display <id>`로 띄우고(14.6″은 디스플레이 id 3), 화면은 `adb emu screenrecord screenshot <폴더> --display 2`로 캡처했다. 홈·훈련(폭우 발생·성공)·코치·코치 K01·리뷰를 두 크기 모두 확인: `ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`. 잘림 1건: 두 크기 모두 리뷰 화면 TalkButton 글자("말하는 중 · 눌러서 멈추기")가 잘림 → dev-sim-ui에 넘김. 나머지 화면은 잘림·겹침 없음. **수정 확인(ui a7d894b)**: 같은 두 크기에서 홈·코치·리뷰의 말하는 중 상태를 다시 찍어 "눌러서 멈추기"가 잘리지 않음을 확인(`ff_12.9_portrait_{home,coach,review}_speaking.jpg`, `ff_14.6_landscape_{home,coach,review}_speaking.jpg`).
 
 **차량 마이크 STT `request()`: 불가(사람 목소리 필요), 원인은 확인.**
 
