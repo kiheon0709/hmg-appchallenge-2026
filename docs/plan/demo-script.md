@@ -11,6 +11,24 @@
 - 소리가 영상에 들어가게 시스템 오디오를 같이 녹음한다.
 - 녹화: `adb exec-out screenrecord --output-format=h264 - > screen.h264` 또는 맥 화면 녹화.
 
+## Virtual Console 카드 이름 (실측)
+
+| 대본 표기 | Virtual Console 실제 위치 |
+| --- | --- |
+| Gear | SYSTEMS → GEAR (P/R/N/D) |
+| Wiper Switch | SYSTEMS → FRONT WIPER (Off / Auto / Low / High) |
+| Low Beam, High Beam | Emulation Controls → Exterior Lights Mode |
+| Defroster | CLIMATE → Front |
+| A/C, Recirculation | CLIMATE → A/C, 내기순환 아이콘 |
+| Brake | BRAKE 패드 |
+| Steering Angle | STEERING 슬라이더(deg). SDK에는 부호가 반대로 온다 |
+| Window | BODY → WINDOWS |
+| Ambient | SYSTEMS → AMBIENT. 앱이 색을 바꾸면 여기와 콘솔 화면 빛이 같이 바뀐다 |
+
+- 주행 입력(브레이크·조향·기어)은 Virtual Console 브라우저 창이 열려 있어야 받는다.
+- 자동 재현: 디버그 빌드에서 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd chapter --es arg C1` 같은 명령으로 장면을 바로 열 수 있다(`docs/STATUS.md`의 "디버그 빌드 도구").
+- 차량 마이크로 말하기는 맥의 마이크 권한을 에뮬레이터에 줘야 한다(`needs-user.md`). 안 되면 화면의 선택 버튼으로 답하고, 그렇게 했다고 밝힌다.
+
 ## A. 1분 소개 영상 (60초)
 
 | 시간 | 화면 | 자막·내레이션 | Virtual Console |

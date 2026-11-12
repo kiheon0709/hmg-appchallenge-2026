@@ -128,6 +128,25 @@
 - 와이퍼 스위치는 단계 변화 알림이 없어 주기적으로 조회한다(실측). 반응 지연이 화면에 보이면 조회 주기를 줄인다.
 - 실측에서 신호가 안 읽히는 상황은 빼고 `decisions.md`에 적는다. 최소 5개가 실제 신호로 판정돼야 한다.
 
+### 5.2.1 상황별 공식 출처
+
+상세 절차와 확인 수준은 `safety-sources.md`의 해당 절에 있다.
+
+| 상황 | 근거 | 출처 |
+| --- | --- | --- |
+| S01 폭우 | 비 올 때 등화 점등, 감속 | [도로교통법 제37조](https://www.law.go.kr/법령/도로교통법/제37조), [시행규칙 제19조](https://www.law.go.kr/법령/도로교통법시행규칙/제19조) · safety-sources 1·14절 |
+| S02 김서림 | 앞유리 서리 제거, 에어컨, 외기 | [현대차 취급설명서(NX4 2025)](https://ownersmanual.hyundai.com/full_webhelp/NX4/2025/ko_KR/convenience_device_windshield_defrosting_and_defogging.html) · 2절 |
+| S03 급정거 | 안전거리 확보, 제동 요령 | [도로교통법 제19조](https://www.law.go.kr/법령/도로교통법/제19조) · 3절 (반응 시간 별 기준은 게임 규칙) |
+| S04 터널 | 터널 안 등화 점등 | [도로교통법 제37조](https://www.law.go.kr/법령/도로교통법/제37조) · 4절 |
+| S05 안개 | 등화 점등, 50% 감속 | [시행규칙 제19조](https://www.law.go.kr/법령/도로교통법시행규칙/제19조) · 5절 |
+| S06 눈부심 | 마주 보고 지날 때 전조등 밝기 줄이기 | [도로교통법 제37조](https://www.law.go.kr/법령/도로교통법/제37조), [시행령 제20조](https://www.law.go.kr/법령/도로교통법시행령/제20조) · 6절 |
+| S07 고장 정차 | 비상등, 트렁크 개방, 도로 밖 대피, 신고 | [국토교통부 안내(정책브리핑)](https://www.korea.kr/news/cardnewsView.do?newsId=148877988) · 7절 |
+| S08 타이어 공기압 경고등 | 감속, 공기압 점검 | [현대차 취급설명서(NX4 2025)](https://ownersmanual.hyundai.com/full_webhelp/NX4/2025/ko_KR/id12e3e226789.html) · 8절 |
+| S09 졸음 | 환기, 졸음쉼터, 2시간마다 휴식 | [정책브리핑](https://www.korea.kr/news/policyNewsView.do?newsId=148920686) · 9절 |
+| S10 의도치 않은 가속 | 브레이크, 전자식 주차 브레이크 지속 작동, 기어 중립 | [한국교통안전공단 보도자료(2023-12-08)](https://main.kotsa.or.kr/portal/bbs/report_view.do?bbscCode=report&cateCode=&bbscSeqn=18206&pageNumb=1&sechCdtn=0&sechKywd=&menuCode=05010200) · 10절 |
+| S11 내리기 전 | 주차 브레이크(경사로 주차 조치) | [도로교통법 제34조의3](https://www.law.go.kr/법령/도로교통법/제34조의3), [시행령 제11조](https://www.law.go.kr/법령/도로교통법시행령/제11조) · 13절. 등화 끄기·창문 닫기는 안전 절차가 아니라 확인 습관으로 표시 |
+| (제외) S12 앞유리 이물질 | 공식 출처 없음 | 12절 |
+
 ### 5.3 챕터
 
 | 챕터 | 이야기 | 상황 순서 | 예상 시간 |

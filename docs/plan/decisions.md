@@ -36,3 +36,5 @@
 - 11-13 dev-integration: release에 R8을 켬(60→23 MB). Pleos SDK의 Gson TypeToken 때문에 Signature·Gson keep 규칙 필수.
 - 11-13 dev-integration: 세로 화면은 폼 팩터 콘솔(Go 브리지 필요) 대신 `am task resize`로 앱 창을 835×1210으로 좁혀 확인함. `wm size`로 디스플레이를 세로로 바꾸면 차량 런처가 따라오지 않아 시험에 쓸 수 없음.
 - 11-13 dev-integration: 에뮬레이터는 처음에 인터넷이 없음. 차량 설정 Wi-Fi에서 AndroidWifi 연결 후 LLM 동작.
+- 11-14 dev-voice-ai: 실측 반영. Pleos TTS는 speak(isFinal=false) 조각을 다음 speak가 올 때까지 재생하지 않아(채움말이 LLM 첫 문장을 266~1377ms 기다림) TTS 기본을 문장별 순차 재생(isFinal=true, onDone 뒤 다음)으로 바꿈. onStart가 speak 뒤 약 10ms라 문장 사이 공백도 작음.
+- 11-14 dev-voice-ai: STT는 onEndedRecognition이 최종 결과(completed=true)보다 먼저 와서, 종료 뒤 최대 0.6초 최종 결과를 기다리게 고침(짧은 "응"이 빈 결과로 끝나던 문제). EPD 이벤트가 오지 않아 RMS(말하는 동안 최대값의 18% 아래가 0.35초)로 말 끝을 잡아 추측 요청 신호로 씀.
