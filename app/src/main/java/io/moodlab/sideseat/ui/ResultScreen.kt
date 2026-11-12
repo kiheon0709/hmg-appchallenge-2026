@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import io.moodlab.sideseat.core.ChapterCatalog
 import io.moodlab.sideseat.core.ChapterResult
+import io.moodlab.sideseat.core.SituationId
 import io.moodlab.sideseat.core.SituationResult
 import io.moodlab.sideseat.core.TrainingProgress
 
@@ -34,10 +35,14 @@ fun ResultScreen(result: ChapterResult, progress: TrainingProgress, onAction: (U
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                 Chip("훈련 결과", color = Sc.accent, bg = Sc.surface)
                 Text(SituationTexts.chapterTitle(result.chapterId), color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black, maxLines = 2)
-                val max = result.results.size * 3
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text("${result.totalStars}", color = Sc.star, fontSize = sz.sp(110f), fontWeight = FontWeight.Black)
-                    Text(" / $max 별", color = Sc.textDim, fontSize = sz.h2, modifier = Modifier.padding(bottom = sz.dp(22f)))
+                val scored = result.results.filter { it.id != SituationId.BEFORE_EXIT }
+                if (scored.isEmpty()) {
+                    Text("확인 완료", color = Sc.ok, fontSize = sz.sp(84f), fontWeight = FontWeight.Black)
+                } else {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text("${scored.sumOf { it.stars }}", color = Sc.star, fontSize = sz.sp(110f), fontWeight = FontWeight.Black)
+                        Text(" / ${scored.size * 3} 별", color = Sc.textDim, fontSize = sz.h2, modifier = Modifier.padding(bottom = sz.dp(22f)))
+                    }
                 }
                 if (surprise) {
                     Text(
@@ -93,7 +98,11 @@ private fun SituationResultCard(index: Int, r: SituationResult, progress: Traini
                 }
                 Text(line, color = if (r.reactionMs != null) Sc.accent else Sc.warn, fontSize = sz.label, fontWeight = FontWeight.SemiBold)
             }
-            Stars(r.stars, size = sz.dp(46f), animateKey = index)
+            if (r.id == SituationId.BEFORE_EXIT) {
+                Chip("확인 완료", color = Sc.ok, bg = Sc.surfaceHi, size = sz.label)
+            } else {
+                Stars(r.stars, size = sz.dp(46f), animateKey = index)
+            }
         }
         if (r.missedStepIds.isNotEmpty()) {
             Spacer(Modifier.height(sz.dp(12f)))

@@ -20,7 +20,6 @@ import io.moodlab.sideseat.core.StepView
 import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingProgress
 import io.moodlab.sideseat.core.TrainingView
-import io.moodlab.sideseat.core.TurnSignal
 import io.moodlab.sideseat.core.VehicleLicense
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.core.WiperLevel
@@ -95,7 +94,7 @@ object UiSamples {
             }
             SituationId.BREAKDOWN -> {
                 speed = 100f * (1f - ramp(a, 2f))
-                car = car.copy(turnSignal = if (reacted) TurnSignal.HAZARD else TurnSignal.OFF)
+                car = car.copy(hazardOn = reacted)
                 if (reacted && live) choice = ChoiceView("비상등을 켰어요. 다음엔 어떻게 할까요?", listOf("트렁크를 열고 가드레일 밖으로 피해요", "차 안에서 기다려요", "차 뒤에 서서 손을 흔들어요"))
             }
             SituationId.UNINTENDED_ACCEL -> {
@@ -104,7 +103,7 @@ object UiSamples {
             }
             SituationId.WIPER_DEBRIS -> {
                 scene = scene.copy(debris = if (reacted) 1f - ramp(r - 0.5f, 0.8f) else ramp(a, 0.25f))
-                car = car.copy(turnSignal = if (a > 1.4f && live) TurnSignal.HAZARD else TurnSignal.OFF, wiper = if (reacted && live) WiperLevel.LOW else WiperLevel.OFF)
+                car = car.copy(hazardOn = a > 1.4f && live, wiper = if (reacted && live) WiperLevel.LOW else WiperLevel.OFF)
                 speed = 70f
             }
             SituationId.BEFORE_EXIT -> {

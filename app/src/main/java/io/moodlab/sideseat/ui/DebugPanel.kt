@@ -50,6 +50,7 @@ fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: 
             Key("깜빡이 ${turn.name}", turn != TurnSignal.OFF) {
                 onChange(state.copy(turnSignal = TurnSignal.entries[(turn.ordinal + 1) % TurnSignal.entries.size]))
             }
+            Key("비상등", state.hazardOn == true) { onChange(state.copy(hazardOn = state.hazardOn != true)) }
             Key("브레이크", state.brakePressed == true) { onChange(state.copy(brakePressed = state.brakePressed != true)) }
             Key("성에 제거", state.defrostFrontOn == true) { onChange(state.copy(defrostFrontOn = state.defrostFrontOn != true)) }
             Key("에어컨", state.acOn == true) { onChange(state.copy(acOn = state.acOn != true)) }

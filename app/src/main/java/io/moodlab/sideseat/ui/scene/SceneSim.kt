@@ -53,7 +53,8 @@ internal class SceneInput {
         parkingLot = s.parkingLot; drowsy = s.drowsyBlur; speedKmh = speed; success = successNow
         wiper = v.wiper ?: WiperLevel.OFF
         lowBeam = v.lowBeamOn == true; highBeam = v.highBeamOn == true; fogLamp = v.anyFogOn == true
-        turn = v.turnSignal ?: TurnSignal.OFF; brake = v.brakePressed == true
+        // 비상등은 따로 오는 신호(hazardOn)다. 방향지시등 값이 HAZARD로 와도 같게 그린다
+        turn = if (v.hazardOn == true) TurnSignal.HAZARD else v.turnSignal ?: TurnSignal.OFF; brake = v.brakePressed == true
         steerDeg = v.steeringAngleDeg ?: 0f; parkingBrake = v.parkingBrakeOn == true
         defrost = v.defrostFrontOn == true
         telltaleWarn = v.activeTelltales.keys.any { it.contains("TIRE") || it.contains("TPMS") }

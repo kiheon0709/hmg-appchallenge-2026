@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import io.moodlab.sideseat.core.ChapterCatalog
+import io.moodlab.sideseat.core.SituationId
 import io.moodlab.sideseat.core.StepView
 import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
@@ -267,13 +268,17 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     AnimatedVisibility(view.phase == TrainingPhase.SUCCESS && result != null, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         Panel(border = Sc.ok, padding = sz.dp(30f)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.widthIn(min = sz.dp(360f))) {
-                Stars(result?.stars ?: 0, size = sz.dp(76f), animateKey = result)
-                Spacer(Modifier.height(sz.dp(10f)))
+                // 내리기 전 확인은 점수를 매기지 않는다
+                val checkOnly = result?.id == SituationId.BEFORE_EXIT
+                if (!checkOnly) {
+                    Stars(result?.stars ?: 0, size = sz.dp(76f), animateKey = result)
+                    Spacer(Modifier.height(sz.dp(10f)))
+                }
                 Text(
-                    when (result?.stars) { 3 -> "완벽해요!"; 2 -> "좋아요!"; else -> "됐어요!" },
+                    if (checkOnly) "확인 완료" else when (result?.stars) { 3 -> "완벽해요!"; 2 -> "좋아요!"; else -> "됐어요!" },
                     color = Sc.ok, fontSize = sz.display, fontWeight = FontWeight.Black,
                 )
-                result?.reactionMs?.let {
+                result?.reactionMs?.takeIf { !checkOnly }?.let {
                     Text(SituationTexts.seconds(it) + " 걸렸어요", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
                 }
                 result?.penalties?.firstOrNull()?.let { p ->
@@ -308,7 +313,12 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                     color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black, textAlign = TextAlign.Center,
                 )
                 if (res != null) {
-                    Text("별 ${res.totalStars} / ${res.results.size * 3}", color = Sc.star, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                    val scored = res.results.filter { it.id != SituationId.BEFORE_EXIT }
+                    if (scored.isEmpty()) {
+                        Text("확인 완료", color = Sc.ok, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                    } else {
+                        Text("별 ${scored.sumOf { it.stars }} / ${scored.size * 3}", color = Sc.star, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                    }
                 }
                 Spacer(Modifier.height(sz.dp(18f)))
                 BigButton("결과 보기", Modifier.fillMaxWidth(), primary = true) { onAction(UiAction.ShowResult) }
