@@ -109,9 +109,9 @@ class SeniorInstructorTest {
     )
     private val logs = mutableListOf<String>()
 
-    private fun TestScope.instructor(llm: LlmClient?): Pair<SeniorInstructor, LatencyMeter> {
+    private fun TestScope.instructor(llm: LlmClient?, speculative: Boolean = true): Pair<SeniorInstructor, LatencyMeter> {
         val meter = LatencyMeter(now = { currentTime }, log = { logs += it })
-        return SeniorInstructor(kb, llm, meter, backgroundScope, { currentTime }, { logs += it }) to meter
+        return SeniorInstructor(kb, llm, meter, backgroundScope, { currentTime }, { logs += it }, speculative) to meter
     }
 
     private val summary = DriveSummary(
@@ -238,6 +238,43 @@ class SeniorInstructorTest {
         ins.onFinal("외기는 왜 바꿔?")
         ins.answer("외기는 왜 바꿔?", parked = false, context = "").toList()
         assertTrue(logs.toString(), logs.any { "stats started=2 hit=1 miss=0 replaced=1 unused=0 discarded=50%" in it })
+    }
+
+    @Test fun speculationHitsWhenFinalOnlyAddsEnding() = runTest {
+        val llm = FakeLlm(firstDelayMs = 600)
+        val (ins, meter) = instructor(llm)
+        ins.prepareQuestion(parked = false, context = "c")
+        ins.onEpdEnd("너의 의기로 바꿔야")
+        delay(390)
+        ins.onFinal("너의 의기로 바꿔야 해?")
+        val out = mutableListOf<String>()
+        ins.answer("너의 의기로 바꿔야 해?", parked = false, context = "c").collect { out += it; meter.onTtsStart() }
+        assertEquals(1, llm.calls.size)
+        assertTrue(logs.toString(), logs.any { "match=ending-only" in it })
+        assertTrue(logs.toString(), logs.any { "stats started=1 hit=1" in it && "discarded=0%" in it })
+        assertEquals(230L, meter.last.value) // 600+20(첫 문장) - 390(말 끝)
+    }
+
+    @Test fun missLogsReasonWithoutText() = runTest {
+        val (ins, _) = instructor(FakeLlm())
+        ins.prepareQuestion(parked = false, context = "c")
+        ins.onEpdEnd("외기는 왜")
+        delay(50)
+        ins.answer("외기는 왜 바꿔야 돼?", parked = false, context = "c").toList()
+        val line = logs.single { "speculative miss reason=" in it }
+        assertTrue(line, "reason=words partialChars=5 finalChars=12" in line)
+        assertTrue("질문 내용이 로그에 남으면 안 됨", "외기" !in line)
+    }
+
+    @Test fun speculationCanBeTurnedOff() = runTest {
+        val llm = FakeLlm()
+        val (ins, _) = instructor(llm, speculative = false)
+        ins.prepareQuestion(parked = false, context = "")
+        ins.onEpdEnd("외기는 왜 바꿔")
+        delay(100)
+        assertTrue(llm.calls.isEmpty())
+        ins.onListenStart()
+        assertEquals("연결 예열은 그대로", SeniorInstructor.PREWARM_CONNECTIONS, llm.prewarms.size)
     }
 
     @Test fun noSpeculationWithoutPrepare() = runTest {

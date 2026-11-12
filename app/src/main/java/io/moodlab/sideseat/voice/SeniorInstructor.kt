@@ -40,6 +40,8 @@ internal class SeniorInstructor(
     private val scope: CoroutineScope,
     private val now: () -> Long,
     private val log: (String) -> Unit,
+    /** false면 말 끝 추측 요청을 하지 않는다(연결 예열만). [VoiceConfig.speculativeRequests]. */
+    private val speculative: Boolean = true,
 ) : Instructor, ListenHooks {
 
     private val fastPath = FastPath(knowledge)
@@ -50,7 +52,10 @@ internal class SeniorInstructor(
 
     // ---------- 추측 요청 ----------
     private class Prepared(val parked: Boolean, val context: String)
-    private class Speculation(val key: String, val parked: Boolean, val context: String, val channel: Channel<String>, val job: Job, val startedAt: Long) {
+    private class Speculation(
+        val key: String, val text: String, val parked: Boolean, val context: String,
+        val channel: Channel<String>, val job: Job, val startedAt: Long,
+    ) {
         @Volatile var firstTokenAt: Long? = null
     }
 
@@ -86,6 +91,7 @@ internal class SeniorInstructor(
 
     override fun onEpdEnd(lastPartial: String) {
         meter.onEpdEnd()
+        if (!speculative) return
         val p = prepared ?: return
         val client = llm ?: return
         if (lastPartial.isBlank()) return
@@ -105,7 +111,7 @@ internal class SeniorInstructor(
                 ch.close(e)
             }
         }
-        spec = Speculation(key, p.parked, p.context, ch, job, startedAt)
+        spec = Speculation(key, lastPartial, p.parked, p.context, ch, job, startedAt)
         speculation = spec
         specStarted++
         lastPrewarmAt = startedAt // 연결을 방금 썼다
@@ -119,13 +125,22 @@ internal class SeniorInstructor(
     private fun takeSpeculation(question: String, parked: Boolean, context: String): Flow<String>? {
         val s = speculation ?: return null
         speculation = null
-        val hit = s.key == ReplyClassifier.normalize(question) && s.parked == parked && s.context == context
-        if (!hit) {
+        val match = ReplyClassifier.compare(s.text, question)
+        val reason = when {
+            s.parked != parked -> "parked"
+            s.context != context -> "context"
+            match == ReplyClassifier.Match.DIFFERENT -> "words"
+            else -> null
+        }
+        if (reason != null) {
             s.job.cancel()
             specMiss++
+            // 내용은 남기지 않고 왜 다른지만 남긴다(글자 수만).
+            log("llm speculative miss reason=$reason partialChars=${s.text.length} finalChars=${question.length}")
             logSpecStats("miss")
             return null
         }
+        if (match == ReplyClassifier.Match.ENDING_ONLY) log("llm speculative match=ending-only (final adds a sentence ending)")
         specHit++
         log("llm speculative hit lead=${now() - s.startedAt}ms")
         logSpecStats("hit")

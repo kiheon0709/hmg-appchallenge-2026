@@ -54,7 +54,7 @@ object VoiceModule {
         val knowledge = loadKnowledge(app)
         Log.i(MEASURE_TAG, "knowledge entries=${knowledge.entries.size} chars=${knowledge.rawText.length}")
         val llm: LlmClient? = if (cfg.llmEnabled) createLlmClient(cfg, log) else null
-        val instructor = SeniorInstructor(knowledge, llm, meter, s, SystemClock::elapsedRealtime, log)
+        val instructor = SeniorInstructor(knowledge, llm, meter, s, SystemClock::elapsedRealtime, log, speculative = cfg.speculativeRequests)
         val speaker = TtsSpeaker(app, s, meter, chunked = cfg.chunkedTts)
         val voice = PleosVoice(app, s, speaker, meter, hooks = instructor, bargeIn = cfg.bargeIn)
         val sfx = SfxPlayer(app, s)

@@ -50,6 +50,27 @@ object ReplyClassifier {
         return last in SENTENCE_ENDINGS
     }
 
+    /** 추측 요청에 쓴 중간 결과와 STT 최종 결과의 관계. */
+    enum class Match { SAME, ENDING_ONLY, DIFFERENT }
+
+    /**
+     * 문장부호·띄어쓰기를 빼고 비교한다. 최종 결과가 중간 결과 뒤에 끝 어미 한두 글자만 더 붙은 것이면 ENDING_ONLY
+     * (예: "너의 의기로 바꿔야" → "너의 의기로 바꿔야 해?", 실측 11-14 PCM 24회 모두 이 경우). 뜻이 같아 같은 답을 쓸 수 있다.
+     * "켜" → "켜지 마"처럼 뜻이 바뀌는 낱말이 붙으면 DIFFERENT.
+     */
+    fun compare(partial: String, final: String): Match {
+        val p = normalize(partial)
+        val f = normalize(final)
+        if (p == f) return Match.SAME
+        if (p.isEmpty() || !f.startsWith(p)) return Match.DIFFERENT
+        val extra = f.substring(p.length)
+        return if (extra.length <= MAX_EXTRA_ENDING && extra.all { it in PURE_ENDINGS }) Match.ENDING_ONLY else Match.DIFFERENT
+    }
+
+    private const val MAX_EXTRA_ENDING = 2
+    /** 뒤에 붙어도 질문의 뜻을 바꾸지 않는 끝 어미 글자. "마"(하지 마)·"안"·"못" 같은 글자는 넣지 않는다. */
+    private const val PURE_ENDINGS = "해요죠지니까야냐나돼어줘봐워래"
+
     /** 반말·해요체 질문과 서술의 끝 글자. */
     private const val SENTENCE_ENDINGS = "요까해어야지니나냐래데죠줘돼게다라봐워와랴쥬예얘려"
 

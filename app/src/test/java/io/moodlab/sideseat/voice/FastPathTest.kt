@@ -40,6 +40,19 @@ class ReplyClassifierTest {
         }
     }
 
+    @Test fun compareForSpeculation() {
+        val c = ReplyClassifier::compare
+        assertEquals(ReplyClassifier.Match.SAME, c("외기는 왜 바꿔", "외기는 왜 바꿔?"))
+        assertEquals(ReplyClassifier.Match.SAME, c("외기는왜 바꿔", "외기는 왜 바꿔."))
+        // 실측 PCM: 중간 결과 "너의 의기로 바꿔야" → 최종 "너의 의기로 바꿔야 해?"
+        assertEquals(ReplyClassifier.Match.ENDING_ONLY, c("너의 의기로 바꿔야", "너의 의기로 바꿔야 해?"))
+        assertEquals(ReplyClassifier.Match.ENDING_ONLY, c("안개등 어떻게 켜", "안개등 어떻게 켜요?"))
+        assertEquals(ReplyClassifier.Match.DIFFERENT, c("안개등 켜", "안개등 켜지 마"))      // 뜻이 바뀜
+        assertEquals(ReplyClassifier.Match.DIFFERENT, c("외기는 왜", "외기는 왜 바꿔야 돼?"))  // 낱말이 더 붙음
+        assertEquals(ReplyClassifier.Match.DIFFERENT, c("앞유리가 뿌예", "앞유리가 뿌옇게 됐어"))
+        assertEquals(ReplyClassifier.Match.DIFFERENT, c("", "응"))
+    }
+
     @Test fun questionsAreNotReplies() {
         listOf("안개등 어떻게 켜", "앞유리가 뿌예", "이 경고등 뭐야", "아니 근데 터널에서는 차로 바꿔도 돼?", "").forEach {
             assertEquals(it, Reply.UNKNOWN, c(it))

@@ -75,13 +75,18 @@ data class VoiceConfig(
      * 실측(11-14): Pleos TTS는 isFinal=false 조각을 다음 speak가 올 때까지 재생하지 않아, 채움말이 LLM 첫 문장을 기다렸다.
      */
     val chunkedTts: Boolean = false,
+    /**
+     * 말 끝 추측 요청: STT 최종 결과 전에 LLM 요청을 먼저 보내고, 최종 결과가 같으면(끝 어미만 더 붙은 것도 같다고 봄) 그 스트림을 쓴다.
+     * 끄면 연결 예열만 한다. 버려진 비율은 로그 `llm speculative … discarded=%`.
+     */
+    val speculativeRequests: Boolean = true,
 ) {
     val llmEnabled: Boolean
         get() = apiKey.isNotBlank() && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }
 
     /** 키가 로그에 찍히지 않게 한다. */
     override fun toString(): String =
-        "VoiceConfig(llmEnabled=$llmEnabled, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel, bargeIn=$bargeIn, chunkedTts=$chunkedTts)"
+        "VoiceConfig(llmEnabled=$llmEnabled, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel, bargeIn=$bargeIn, chunkedTts=$chunkedTts, speculative=$speculativeRequests)"
 
     companion object {
         /** 주행 중 질문: 첫 문장까지의 시간이 가장 중요하다. */
