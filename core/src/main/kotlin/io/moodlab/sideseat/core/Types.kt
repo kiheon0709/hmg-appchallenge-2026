@@ -1,0 +1,245 @@
+package io.moodlab.sideseat.core
+
+import kotlinx.serialization.Serializable
+
+// 공용 타입. 이름과 의미는 docs/plan/dev-contract.md 3절의 약속이다. 순수 Kotlin(JVM), 안드로이드 의존 없음.
+
+/** 에뮬레이터 Low=CONTINUOUS_LEVEL_1 → LOW, High=CONTINUOUS_LEVEL_3 → HIGH. */
+enum class WiperLevel { OFF, MIST, INTERMITTENT, LOW, HIGH }
+
+enum class TurnSignal { OFF, LEFT, RIGHT, HAZARD }
+
+enum class TelltaleColor { WHITE, GREEN, BLUE, YELLOW, RED, GRAY }
+
+enum class Seat { DRIVER, PASSENGER, REAR_LEFT, REAR_CENTER, REAR_RIGHT }
+
+/** 한 시점의 차량 상태. 모르는 값은 null. 판정·규칙은 null인 신호가 필요한 항목을 건너뛴다. */
+data class VehicleState(
+    val timestampMs: Long,
+    /** 정차(훈련 가능) 여부. */
+    val parked: Boolean,
+    val wiper: WiperLevel? = null,
+    val lowBeamOn: Boolean? = null,
+    val highBeamOn: Boolean? = null,
+    val frontFogOn: Boolean? = null,
+    val rearFogOn: Boolean? = null,
+    val turnSignal: TurnSignal? = null,
+    val brakePressed: Boolean? = null,
+    /** 오른쪽 +. */
+    val steeringAngleDeg: Float? = null,
+    /** 앞유리 성에 제거 또는 Max Defrost. */
+    val defrostFrontOn: Boolean? = null,
+    val acOn: Boolean? = null,
+    val recirculationOn: Boolean? = null,
+    /** 0 = 닫힘. */
+    val driverWindowOpenPct: Int? = null,
+    val windowOpenPct: Map<Seat, Int> = emptyMap(),
+    val occupied: Set<Seat> = emptySet(),
+    val parkingBrakeOn: Boolean? = null,
+    /** 키는 SDK TelltaleType 이름(예: "TIRE_PRESSURE", "PARKING_BRAKE"). */
+    val activeTelltales: Map<String, TelltaleColor> = emptyMap(),
+    /** FusedLocation 기반 추정. */
+    val speedKmhEstimate: Float? = null,
+    /** 현지 시각(0~1439분). */
+    val minuteOfDay: Int = 0,
+    val sunsetMinute: Int? = null,
+    val sunriseMinute: Int? = null,
+    /** "이 차 면허" 구분용. */
+    val vehicleModelKey: String? = null,
+) {
+    /** 앞 또는 뒤 안개등. 둘 다 모르면 null. */
+    val anyFogOn: Boolean?
+        get() = if (frontFogOn == null && rearFogOn == null) null else frontFogOn == true || rearFogOn == true
+}
+
+// ---------- 훈련 ----------
+
+enum class SituationId {
+    HEAVY_RAIN, FOGGED_WINDSHIELD, SUDDEN_STOP, TUNNEL, DENSE_FOG, ONCOMING_GLARE,
+    BREAKDOWN, WARNING_LIGHT, DROWSY, UNINTENDED_ACCEL, BEFORE_EXIT, WIPER_DEBRIS,
+}
+
+data class StepView(val id: String, val label: String, val done: Boolean)
+
+enum class TrainingPhase { IDLE, CRUISE, BRIEFING, ACTIVE, HINT, SUCCESS, FAIL, CHAPTER_DONE }
+
+/** 화면에 띄울 선택지(S07·S08). 말로 답해도 되고 눌러도 된다. */
+data class ChoiceView(val question: String, val options: List<String>)
+
+/** UI가 그대로 그리는 훈련 상태. */
+data class TrainingView(
+    val phase: TrainingPhase,
+    val chapterId: String?,
+    val situation: SituationId?,
+    /** 예: "폭우". */
+    val title: String,
+    val steps: List<StepView>,
+    val elapsedMs: Long,
+    val limitMs: Long,
+    val virtualSpeedKmh: Float,
+    val scene: SceneParams,
+    val lastResult: SituationResult?,
+    /** 지금 답해야 할 선택지. 없으면 null. */
+    val choice: ChoiceView? = null,
+    /** 챕터가 끝났을 때의 결과. */
+    val chapterResult: ChapterResult? = null,
+    /** 돌발 모드에서 버틴 개수. */
+    val surviveCount: Int = 0,
+)
+
+/** 주행 화면이 그릴 장면 값. 0f~1f는 강도. UI는 이것만 보고 그린다. */
+data class SceneParams(
+    val night: Boolean = true,
+    val rain: Float = 0f,
+    val fogOutside: Float = 0f,
+    /** 김서림 남은 양 (엔진이 성에 제거에 따라 줄인다). */
+    val windshieldFog: Float = 0f,
+    val tunnel: Boolean = false,
+    /** 0f(충돌)~1f(멀리), null이면 앞차 없음. */
+    val leadCarDistance: Float? = null,
+    val leadCarBraking: Boolean = false,
+    val oncomingGlare: Float = 0f,
+    val debris: Float = 0f,
+    /** 위기 강도 → 화면 가장자리 빛 띠와 앰비언트 색. */
+    val alert: Float = 0f,
+    /** 화면에 띄울 경고등 키(S08). 없으면 null. */
+    val warningLight: String? = null,
+    /** 주차장 장면(S11). */
+    val parkingLot: Boolean = false,
+    /** 졸음 흐림(S09). */
+    val drowsyBlur: Float = 0f,
+)
+
+data class SituationResult(
+    val id: SituationId,
+    val stars: Int,
+    val reactionMs: Long?,
+    val missedStepIds: List<String>,
+    val penalties: List<String>,
+)
+
+data class ChapterResult(val chapterId: String, val results: List<SituationResult>, val totalStars: Int)
+
+/** 훈련 엔진이 밖으로 내는 일회성 신호. 음성·효과음·조명이 이것을 듣는다. */
+sealed interface CoachEvent {
+    data class Say(val text: String, val priority: Int = 0, val expectReply: ReplyKind? = null) : CoachEvent
+
+    /** "rain", "thunder", "tire", "alarm", "click", "success", "fail" 등. */
+    data class Sfx(val name: String, val loop: Boolean = false) : CoachEvent
+    data class StopSfx(val name: String) : CoachEvent
+    data class Ambient(val mood: AmbientMood) : CoachEvent
+}
+
+enum class AmbientMood { CALM, ALERT, SUCCESS, OFF }
+
+enum class ReplyKind { YES_NO, CHOICE, FREE }
+
+interface TrainingEngine {
+    fun chapters(): List<ChapterInfo>
+    fun start(chapterId: String, nowMs: Long)
+
+    /** 돌발 모드. */
+    fun startSurprise(nowMs: Long)
+
+    /** 교관 대결. */
+    fun inject(situation: SituationId, nowMs: Long)
+
+    /** 프레임마다 또는 신호가 바뀔 때 호출. 뷰와 그 사이 생긴 이벤트를 돌려준다. */
+    fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>>
+
+    /** S07·S08의 말·선택 답. */
+    fun answer(choiceOrText: String, nowMs: Long)
+
+    /** P를 벗어남. */
+    fun abort(nowMs: Long)
+
+    /** 별, 최고 기록, 이 차 면허. */
+    fun progress(): TrainingProgress
+
+    /** 저장해 둔 기록을 불러온다. 앱 시작 때 한 번. */
+    fun restore(progress: TrainingProgress)
+}
+
+data class ChapterInfo(
+    val id: String,
+    val title: String,
+    val story: String,
+    val situations: List<SituationId>,
+    val estMinutes: Int,
+    val locked: Boolean,
+)
+
+/** 차종별 "이 차 면허" 진행. 직렬화해 통합 세션이 파일로 저장한다. */
+@Serializable
+data class VehicleLicense(
+    /** ★2 이상으로 깬 챕터 id. */
+    val clearedChapters: Set<String> = emptySet(),
+    val licensed: Boolean = false,
+)
+
+@Serializable
+data class TrainingProgress(
+    /** SituationId 이름 → 최고 별. */
+    val bestStars: Map<String, Int> = emptyMap(),
+    /** SituationId 이름 → 최고(가장 짧은) 반응 시간. */
+    val bestReactionMs: Map<String, Long> = emptyMap(),
+    /** 챕터 id → 최고 합계 별. */
+    val chapterBestStars: Map<String, Int> = emptyMap(),
+    /** 차종 키 → 면허 진행. 차종을 모르면 "unknown". */
+    val licenses: Map<String, VehicleLicense> = emptyMap(),
+    /** 돌발 모드 최고 기록(버틴 개수). */
+    val surpriseBest: Int = 0,
+    /** 누적 별(모든 시도 합). */
+    val totalStarsEarned: Int = 0,
+) {
+    fun licenseFor(vehicleModelKey: String?): VehicleLicense = licenses[vehicleModelKey ?: UNKNOWN_VEHICLE] ?: VehicleLicense()
+
+    companion object {
+        const val UNKNOWN_VEHICLE = "unknown"
+    }
+}
+
+// ---------- 주행 코치 ----------
+
+data class CoachUtterance(val ruleId: String, val text: String, val urgent: Boolean, val expectReply: ReplyKind? = null)
+
+interface DriveCoach {
+    fun onDriveStart(nowMs: Long)
+
+    /** 말할 것이 있으면 하나. */
+    fun tick(state: VehicleState, nowMs: Long): CoachUtterance?
+    fun onReply(ruleId: String, reply: String, nowMs: Long): CoachAction?
+    fun onDriveEnd(nowMs: Long): DriveSummary
+}
+
+sealed interface CoachAction {
+    data class AddRestStopWaypoint(val reason: String) : CoachAction
+}
+
+data class DriveSummary(
+    val durationMin: Int,
+    val rainMin: Int,
+    val nightMin: Int,
+    val utterances: List<CoachUtterance>,
+    /** "NO_SIGNAL_TURN" to 1 ... */
+    val observations: Map<String, Int>,
+    val suggestedSituation: SituationId?,
+    /** LLM 없이도 읽을 3문장. */
+    val ruleBasedReview: List<String>,
+)
+
+// ---------- 미니게임 ----------
+
+/** M1 금고 다이얼. */
+interface SafeDialGame {
+    fun start(nowMs: Long)
+    fun tick(steeringAngleDeg: Float?, nowMs: Long): Pair<SafeDialView, List<CoachEvent>>
+}
+
+data class SafeDialView(
+    val targetsDeg: List<Int>,
+    val solved: Int,
+    val currentDeg: Float,
+    val closeness: Float,
+    val done: Boolean,
+)
