@@ -8,3 +8,7 @@ build/
 *.iml
 tools/app-compile-check/build/
 tools/app-compile-check/.gradle/
+
+# Pleos 공식 문서 원문 (저작권 문제로 공개 저장소에서 제외, 로컬 전용)
+docs/pleos-docs/raw/
+docs/pleos-docs/reference/
