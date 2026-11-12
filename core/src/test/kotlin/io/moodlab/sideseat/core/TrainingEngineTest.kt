@@ -86,6 +86,23 @@ class TrainingEngineTest {
     }
 
     @Test
+    fun `without hazard and fog signals breakdown is a choice and fog is headlights only`() {
+        val emu = baseState.copy(hazardOn = null, frontFogOn = null, rearFogOn = null)
+        val d = driver(state = emu)
+        d.engine.inject(SituationId.BREAKDOWN, d.now)
+        d.untilActive(SituationId.BREAKDOWN)
+        assertEquals(listOf("evacuate"), d.view.steps.map { it.id })
+        assertNotNull(d.view.choice)
+
+        val f = driver(state = emu)
+        f.engine.inject(SituationId.DENSE_FOG, f.now)
+        f.untilActive(SituationId.DENSE_FOG)
+        assertEquals(listOf("low_beam_on"), f.view.steps.map { it.id })
+        f.set { it.copy(lowBeamOn = true) }
+        assertEquals(3, f.view.lastResult?.stars)
+    }
+
+    @Test
     fun `chapter is locked when no situation is playable`() {
         val e = DefaultTrainingEngine()
         e.tick(baseState.copy(lowBeamOn = null, driverWindowOpenPct = null, parkingBrakeOn = null), 0)
@@ -332,7 +349,7 @@ class TrainingEngineTest {
         d.engine.inject(SituationId.BREAKDOWN, d.now)
         d.untilActive(SituationId.BREAKDOWN)
         assertNull(d.view.choice)
-        d.set { it.copy(turnSignal = TurnSignal.HAZARD) }
+        d.set { it.copy(hazardOn = true) }
         val choice = assertNotNull(d.view.choice)
         assertEquals("비상등 다음엔 뭘 할까요?", choice.question)
         val ask = d.events.filterIsInstance<CoachEvent.Say>().last()
@@ -580,10 +597,10 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.TUNNEL -> s.copy(lowBeamOn = true)
     SituationId.DENSE_FOG -> s.copy(lowBeamOn = true, frontFogOn = true)
     SituationId.ONCOMING_GLARE -> s.copy(highBeamOn = false)
-    SituationId.BREAKDOWN -> s.copy(turnSignal = TurnSignal.HAZARD)
+    SituationId.BREAKDOWN -> s.copy(hazardOn = true)
     SituationId.WARNING_LIGHT -> s
     SituationId.DROWSY -> s.copy(recirculationOn = false, driverWindowOpenPct = 20)
     SituationId.UNINTENDED_ACCEL -> s.copy(brakePressed = true, parkingBrakeOn = true)
     SituationId.BEFORE_EXIT -> s.copy(lowBeamOn = false, driverWindowOpenPct = 0, parkingBrakeOn = true)
-    SituationId.WIPER_DEBRIS -> s.copy(turnSignal = TurnSignal.HAZARD, wiper = WiperLevel.LOW)
+    SituationId.WIPER_DEBRIS -> s.copy(hazardOn = true, wiper = WiperLevel.LOW)
 }

@@ -12,6 +12,7 @@ val baseState = VehicleState(
     frontFogOn = false,
     rearFogOn = false,
     turnSignal = TurnSignal.OFF,
+    hazardOn = false,
     brakePressed = false,
     steeringAngleDeg = 0f,
     defrostFrontOn = false,

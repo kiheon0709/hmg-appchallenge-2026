@@ -24,6 +24,8 @@ data class VehicleState(
     val frontFogOn: Boolean? = null,
     val rearFogOn: Boolean? = null,
     val turnSignal: TurnSignal? = null,
+    /** 비상등. Pleos TurnSignal API에는 값이 없고 경고등은 권한이 막혀 있어 모르면 null(실측 11-13). */
+    val hazardOn: Boolean? = null,
     val brakePressed: Boolean? = null,
     /** 오른쪽 +. */
     val steeringAngleDeg: Float? = null,

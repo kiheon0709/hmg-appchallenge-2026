@@ -166,9 +166,10 @@ object SituationCatalog {
             intro = "안개가 짙어요. 앞이 하얘요.",
             lesson = "안개엔 하향등과 안개등이에요. 상향등은 오히려 하얗게 번져요.",
             steps = listOf(
-                lowBeamOn,
+                // 안개등이 없는 차(에뮬레이터 미지원)는 하향등과 상향등 감점만으로 한다.
+                lowBeamOn.copyEssential(),
                 StepDef(
-                    id = "fog_on", label = "안개등 켜기", essential = true,
+                    id = "fog_on", label = "안개등 켜기",
                     hint = "안개등은 왼쪽 레버의 가운데 링을 돌려요.", setup = "안개등을 꺼 두세요",
                     available = { it.anyFogOn != null }, done = { it.anyFogOn == true },
                 ),
@@ -193,11 +194,12 @@ object SituationCatalog {
             lesson = "비상등 켜고, 트렁크 열고, 가드레일 밖으로. 그다음 신고예요.",
             steps = listOf(
                 StepDef(
-                    id = "hazard_on", label = "비상등 켜기", essential = true, hint = HAZARD_HINT, setup = "비상등을 꺼 두세요",
-                    available = { it.turnSignal != null }, done = { it.turnSignal == TurnSignal.HAZARD },
+                    id = "hazard_on", label = "비상등 켜기", hint = HAZARD_HINT, setup = "비상등을 꺼 두세요",
+                    available = { it.hazardOn != null || it.turnSignal == TurnSignal.HAZARD }, done = { it.hazardOn == true || it.turnSignal == TurnSignal.HAZARD },
                 ),
                 StepDef(
-                    id = "evacuate", label = "다음 행동 고르기", hint = "트렁크를 열고 가드레일 밖으로 피해요.",
+                    // 비상등을 못 읽는 차(에뮬레이터 실측)에서도 대피 판단은 연습한다.
+                    id = "evacuate", label = "다음 행동 고르기", hint = "트렁크를 열고 가드레일 밖으로 피해요.", essential = true,
                     choice = ChoiceDef(
                         question = "비상등 다음엔 뭘 할까요?",
                         options = listOf(
@@ -312,7 +314,7 @@ object SituationCatalog {
             steps = listOf(
                 StepDef(
                     id = "hazard_on", label = "비상등 켜기", hint = HAZARD_HINT, setup = "비상등을 꺼 두세요",
-                    available = { it.turnSignal != null }, done = { it.turnSignal == TurnSignal.HAZARD },
+                    available = { it.hazardOn != null || it.turnSignal == TurnSignal.HAZARD }, done = { it.hazardOn == true || it.turnSignal == TurnSignal.HAZARD },
                 ),
                 StepDef(
                     id = "wiper_on", label = "와이퍼로 떼기", essential = true, hint = "와이퍼를 켜서 떼어 내요.", setup = "와이퍼를 꺼 두세요",
