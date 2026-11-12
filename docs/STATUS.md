@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 07:24, dev-integration)**: 소스 기준 `e9cb7f0`(voice 9afc46a 지연 개선·e9cb7f0 효과음 조정, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 63개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 07:24 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 7.7초에 열림. 디버그 빌드 Claude 질문 12회: 첫 소리 중앙값 0.61초, 실제 답 시작 중앙값 1.49초(연결 재사용 시 0.70~0.75초). 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력은 기기 기준 확인(아래 절). 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
+> **최종 빌드 (2026-11-13 07:48, dev-integration)**: 소스 기준 `76e8f7a`(voice 연결 재사용 수정, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 65개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 07:48 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 8.0초에 열림. 디버그 빌드 Claude 질문 12회×2: 실제 답 시작 중앙값 0.75초(15초 간격)·0.76초(60초 간격), 연결 24/24 재사용. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -67,6 +67,37 @@
 **테스트**: `./gradlew :core:test` 77개 통과, `./gradlew :app:testDebugUnitTest` 57개 통과.
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
+
+### 음성 지연 재측정 — voice 76e8f7a 연결 재사용 수정 뒤 (2026-11-13 07:50)
+
+같은 방법(LLM 질문 PCM 12회, 앱을 새로 시작한 뒤, 에뮬레이터 Wi-Fi `AndroidWifi`). 간격 15초와 60초를 따로 쟀다. 원본: `docs/screens/sim/logs/voice_latency_76e8f7a_gap15s.log`, `…_gap60s.log`. 두 측정 모두 `Socket closed` 0회.
+
+| 회 | 15초: conn | 15초: 첫 소리 / 답 시작 | 60초: conn | 60초: 첫 소리 / 답 시작 |
+| --- | --- | --- | --- | --- |
+| 1 | reused | 618 채움말 / 1247 ms | reused | 768 / 768 ms |
+| 2 | reused | 790 / 790 | reused | 609 / 609 |
+| 3 | reused | 805 / 805 | reused | 761 / 761 |
+| 4 | reused | 698 / 698 | reused | 754 / 754 |
+| 5 | reused | 772 / 772 | reused | 606 채움말 / 1301 |
+| 6 | reused | 645 / 645 | reused | 666 / 666 |
+| 7 | reused | 718 / 718 | reused | 605 채움말 / 1302 |
+| 8 | reused | 608 채움말 / 1233 | reused | 605 채움말 / 1331 |
+| 9 | reused | 678 / 678 | reused | 759 / 759 |
+| 10 | reused | 730 / 730 | reused | 606 채움말 / 1314 |
+| 11 | reused | 863 / 863 | reused | 683 / 683 |
+| 12 | reused | 655 / 655 | reused | 689 / 689 |
+
+| 지표 | 15초 간격 중앙값(범위) | 60초 간격 중앙값(범위) |
+| --- | --- | --- |
+| **실제 답 시작** | **0.75초**(0.65~1.25) | **0.76초**(0.61~1.33) |
+| 첫 소리 | 0.71초(0.61~0.86) | 0.67초(0.61~0.77) |
+| 연결 | 12/12 reused(connect 1~2 ms) | 12/12 reused(connect 1~2 ms) |
+| 최종 결과 → 요청 | 3 ms(2~8) | 3 ms(2~12) |
+| 요청 → 서버 첫 토큰 | 526 ms(497~654) | 568 ms(484~653) |
+| 첫 토큰 → 첫 조각 | 160 ms(25~266) | 174 ms(114~234) |
+| 첫 조각 → TTS 시작 | 15 ms(2~563) | 3 ms(2~586) |
+
+결론: **목표(15초 간격 12회 중앙값 1초 미만) 충족.** 1초를 넘은 회(15초 2회, 60초 4회)는 모두 서버 첫 토큰이 0.6초를 넘어 채움말 "음."이 먼저 시작된 경우로, 답이 채움말이 끝나기를 0.43~0.59초 기다렸다(첫 조각 → TTS 시작 구간). 말 끝 기준으로는 STT 최종 결과까지 약 0.4초를 더한다.
 
 ### 음성 지연 재측정 — voice 9afc46a·e9cb7f0 (2026-11-13 07:25)
 

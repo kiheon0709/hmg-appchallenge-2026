@@ -1,0 +1,483 @@
+--------- beginning of main
+11-12 14:35:12.629 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:35:12.647 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:35:12.649 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:35:12.649 31335 31403 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:35:12.650 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:35:13.205 31335 31403 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=557ms
+11-12 14:35:13.283 31335 31335 I SideSeatMeasure: stt started at=633ms
+11-12 14:35:13.289 31335 31335 I SideSeatMeasure: stt first partial at=640ms
+11-12 14:35:14.705 31335 31335 I SideSeatMeasure: stt ended at=2055ms
+11-12 14:35:14.708 31335 31335 I SideSeatMeasure: stt final chars=13 at=2059ms end->final=4ms silence->final=-ms
+11-12 14:35:14.711 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:35:14.711 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:35:14.711 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:35:14.718 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:35:14.721 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:35:14.725 31335 31404 I SideSeatMeasure: llm#1 route=FAST conn=reused connect=2ms
+11-12 14:35:14.734 31335 31404 I SideSeatMeasure: llm#1 sent at=11ms
+11-12 14:35:15.204 31335 31404 I SideSeatMeasure: llm#1 headers route=FAST model=claude-haiku-5-5 at=482ms
+11-12 14:35:15.205 31335 31404 I SideSeatMeasure: llm#1 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=483ms
+11-12 14:35:15.206 31335 31404 I SideSeatMeasure: llm#1 first text route=FAST at=483ms
+11-12 14:35:15.450 31335 31335 I SideSeatMeasure: tts speak(seq) chars=26
+11-12 14:35:15.479 31335 31335 I SideSeatMeasure: tts start
+11-12 14:35:15.479 31335 31335 I SideSeatMeasure: latency total=768ms first=answer path=llm guessEnd->final=-ms final->answer=9ms answer->firstSentence=728ms firstSentence->ttsStart=31ms stages final->request=12ms request->firstToken=491ms firstToken->firstChunk=234ms firstChunk->ttsStart=31ms
+11-12 14:35:15.975 31335 31404 I SideSeatMeasure: llm#1 consumer stopped, draining at=1252ms
+11-12 14:35:16.285 31335 31404 I SideSeatMeasure: llm#1 stop=end_turn out=211 at=1562ms
+11-12 14:35:16.285 31335 31404 I SideSeatMeasure: llm#1 drained in 310ms, connection kept
+11-12 14:35:18.487 31335 31335 I SideSeatMeasure: tts done
+11-12 14:35:18.488 31335 31335 I SideSeatMeasure: tts speak(seq) chars=38
+11-12 14:35:18.490 31335 31335 I SideSeatMeasure: tts start
+11-12 14:35:22.992 31335 31335 I SideSeatMeasure: tts done
+11-12 14:35:22.993 31335 31335 I SideSeatMeasure: tts speak(seq) chars=44
+11-12 14:35:23.034 31335 31335 I SideSeatMeasure: tts start
+11-12 14:35:28.112 31335 31335 I SideSeatMeasure: tts done
+11-12 14:35:28.113 31335 31335 I SideSeatMeasure: tts speak(seq) chars=15
+11-12 14:35:28.140 31335 31335 I SideSeatMeasure: tts start
+11-12 14:35:30.151 31335 31335 I SideSeatMeasure: tts done
+11-12 14:35:30.152 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:35:30.152 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:36:12.683 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:36:12.683 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:36:12.684 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:36:12.684 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:36:12.686 31335 31404 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:36:13.312 31335 31335 I SideSeatMeasure: stt started at=628ms
+11-12 14:36:13.312 31335 31335 I SideSeatMeasure: stt first partial at=628ms
+11-12 14:36:13.337 31335 31404 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=653ms
+11-12 14:36:14.730 31335 31335 I SideSeatMeasure: stt ended at=2046ms
+11-12 14:36:14.730 31335 31335 I SideSeatMeasure: stt final chars=13 at=2046ms end->final=0ms silence->final=-ms
+11-12 14:36:14.731 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:36:14.731 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:36:14.731 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:36:14.733 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:36:14.734 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:36:14.736 31335 31403 I SideSeatMeasure: llm#2 route=FAST conn=reused connect=2ms
+11-12 14:36:14.745 31335 31403 I SideSeatMeasure: llm#2 sent at=10ms
+11-12 14:36:15.221 31335 31403 I SideSeatMeasure: llm#2 headers route=FAST model=claude-haiku-5-5 at=487ms
+11-12 14:36:15.222 31335 31403 I SideSeatMeasure: llm#2 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=487ms
+11-12 14:36:15.222 31335 31403 I SideSeatMeasure: llm#2 first text route=FAST at=487ms
+11-12 14:36:15.337 31335 31335 I SideSeatMeasure: tts speak(seq) chars=18
+11-12 14:36:15.339 31335 31335 I SideSeatMeasure: tts start
+11-12 14:36:15.339 31335 31335 I SideSeatMeasure: latency total=609ms first=answer path=llm guessEnd->final=-ms final->answer=3ms answer->firstSentence=603ms firstSentence->ttsStart=3ms stages final->request=3ms request->firstToken=489ms firstToken->firstChunk=114ms firstChunk->ttsStart=3ms
+11-12 14:36:15.972 31335 31403 I SideSeatMeasure: llm#2 consumer stopped, draining at=1238ms
+11-12 14:36:15.974 31335 31403 I SideSeatMeasure: llm#2 stop=end_turn out=157 at=1240ms
+11-12 14:36:15.975 31335 31403 I SideSeatMeasure: llm#2 drained in 2ms, connection kept
+11-12 14:36:17.426 31335 31335 I SideSeatMeasure: tts done
+11-12 14:36:17.427 31335 31335 I SideSeatMeasure: tts speak(seq) chars=20
+11-12 14:36:17.455 31335 31335 I SideSeatMeasure: tts start
+11-12 14:36:19.651 31335 31335 I SideSeatMeasure: tts done
+11-12 14:36:19.651 31335 31335 I SideSeatMeasure: tts speak(seq) chars=33
+11-12 14:36:19.654 31335 31335 I SideSeatMeasure: tts start
+11-12 14:36:23.556 31335 31335 I SideSeatMeasure: tts done
+11-12 14:36:23.557 31335 31335 I SideSeatMeasure: tts speak(seq) chars=27
+11-12 14:36:23.558 31335 31335 I SideSeatMeasure: tts start
+11-12 14:36:26.906 31335 31335 I SideSeatMeasure: tts done
+11-12 14:36:26.906 31335 31335 I SideSeatMeasure: tts speak(seq) chars=41
+11-12 14:36:26.908 31335 31335 I SideSeatMeasure: tts start
+11-12 14:36:31.599 31335 31335 I SideSeatMeasure: tts done
+11-12 14:36:31.600 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:36:31.600 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:37:12.731 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:37:12.732 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:37:12.733 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:37:12.733 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:37:12.734 31335 31403 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:37:13.366 31335 31335 I SideSeatMeasure: stt started at=632ms
+11-12 14:37:13.366 31335 31335 I SideSeatMeasure: stt first partial at=633ms
+11-12 14:37:13.389 31335 31403 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=656ms
+11-12 14:37:14.775 31335 31335 I SideSeatMeasure: stt ended at=2041ms
+11-12 14:37:14.775 31335 31335 I SideSeatMeasure: stt final chars=13 at=2042ms end->final=1ms silence->final=-ms
+11-12 14:37:14.776 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:37:14.776 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:37:14.776 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:37:14.778 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:37:14.779 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:37:14.781 31335 31404 I SideSeatMeasure: llm#3 route=FAST conn=reused connect=2ms
+11-12 14:37:14.787 31335 31404 I SideSeatMeasure: llm#3 sent at=7ms
+11-12 14:37:15.339 31335 31404 I SideSeatMeasure: llm#3 headers route=FAST model=claude-haiku-5-5 at=560ms
+11-12 14:37:15.340 31335 31404 I SideSeatMeasure: llm#3 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=560ms
+11-12 14:37:15.340 31335 31404 I SideSeatMeasure: llm#3 first text route=FAST at=560ms
+11-12 14:37:15.535 31335 31335 I SideSeatMeasure: tts speak(seq) chars=26
+11-12 14:37:15.537 31335 31335 I SideSeatMeasure: tts start
+11-12 14:37:15.537 31335 31335 I SideSeatMeasure: latency total=761ms first=answer path=llm guessEnd->final=-ms final->answer=3ms answer->firstSentence=756ms firstSentence->ttsStart=2ms stages final->request=3ms request->firstToken=562ms firstToken->firstChunk=194ms firstChunk->ttsStart=2ms
+11-12 14:37:16.012 31335 31404 I SideSeatMeasure: llm#3 consumer stopped, draining at=1232ms
+11-12 14:37:16.251 31335 31404 I SideSeatMeasure: llm#3 stop=end_turn out=196 at=1471ms
+11-12 14:37:16.251 31335 31404 I SideSeatMeasure: llm#3 drained in 239ms, connection kept
+11-12 14:37:18.513 31335 31335 I SideSeatMeasure: tts done
+11-12 14:37:18.513 31335 31335 I SideSeatMeasure: tts speak(seq) chars=20
+11-12 14:37:18.515 31335 31335 I SideSeatMeasure: tts start
+11-12 14:37:21.063 31335 31335 I SideSeatMeasure: tts done
+11-12 14:37:21.063 31335 31335 I SideSeatMeasure: tts speak(seq) chars=29
+11-12 14:37:21.068 31335 31335 I SideSeatMeasure: tts start
+11-12 14:37:24.705 31335 31335 I SideSeatMeasure: tts done
+11-12 14:37:24.706 31335 31335 I SideSeatMeasure: tts speak(seq) chars=47
+11-12 14:37:24.707 31335 31335 I SideSeatMeasure: tts start
+11-12 14:37:30.182 31335 31335 I SideSeatMeasure: tts done
+11-12 14:37:30.182 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:37:30.182 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:38:12.796 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:38:12.796 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:38:12.798 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:38:12.798 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:38:12.799 31335 31404 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=2ms
+11-12 14:38:13.424 31335 31335 I SideSeatMeasure: stt started at=626ms
+11-12 14:38:13.425 31335 31335 I SideSeatMeasure: stt first partial at=626ms
+11-12 14:38:13.497 31335 31404 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=700ms
+11-12 14:38:14.835 31335 31335 I SideSeatMeasure: stt ended at=2036ms
+11-12 14:38:14.836 31335 31335 I SideSeatMeasure: stt final chars=13 at=2037ms end->final=1ms silence->final=-ms
+11-12 14:38:14.836 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:38:14.836 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:38:14.836 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:38:14.838 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:38:14.839 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:38:14.841 31335 31623 I SideSeatMeasure: llm#4 route=FAST conn=reused connect=1ms
+11-12 14:38:14.848 31335 31623 I SideSeatMeasure: llm#4 sent at=8ms
+11-12 14:38:15.431 31335 31623 I SideSeatMeasure: llm#4 headers route=FAST model=claude-haiku-5-5 at=591ms
+11-12 14:38:15.432 31335 31623 I SideSeatMeasure: llm#4 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=592ms
+11-12 14:38:15.432 31335 31623 I SideSeatMeasure: llm#4 first text route=FAST at=592ms
+11-12 14:38:15.588 31335 31335 I SideSeatMeasure: tts speak(seq) chars=26
+11-12 14:38:15.590 31335 31335 I SideSeatMeasure: tts start
+11-12 14:38:15.590 31335 31335 I SideSeatMeasure: latency total=754ms first=answer path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=749ms firstSentence->ttsStart=3ms stages final->request=3ms request->firstToken=593ms firstToken->firstChunk=155ms firstChunk->ttsStart=3ms
+11-12 14:38:16.201 31335 31623 I SideSeatMeasure: llm#4 consumer stopped, draining at=1361ms
+11-12 14:38:16.349 31335 31623 I SideSeatMeasure: llm#4 stop=end_turn out=206 at=1509ms
+11-12 14:38:16.349 31335 31623 I SideSeatMeasure: llm#4 drained in 148ms, connection kept
+11-12 14:38:18.163 31335 31335 I SideSeatMeasure: tts done
+11-12 14:38:18.164 31335 31335 I SideSeatMeasure: tts speak(seq) chars=27
+11-12 14:38:18.167 31335 31335 I SideSeatMeasure: tts start
+11-12 14:38:21.371 31335 31335 I SideSeatMeasure: tts done
+11-12 14:38:21.371 31335 31335 I SideSeatMeasure: tts speak(seq) chars=35
+11-12 14:38:21.374 31335 31335 I SideSeatMeasure: tts start
+11-12 14:38:25.245 31335 31335 I SideSeatMeasure: tts done
+11-12 14:38:25.246 31335 31335 I SideSeatMeasure: tts speak(seq) chars=49
+11-12 14:38:25.248 31335 31335 I SideSeatMeasure: tts start
+11-12 14:38:30.986 31335 31335 I SideSeatMeasure: tts done
+11-12 14:38:30.987 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:38:30.987 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:39:12.849 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:39:12.850 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:39:12.851 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:39:12.851 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:39:12.852 31335 31623 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:39:13.479 31335 31335 I SideSeatMeasure: stt started at=628ms
+11-12 14:39:13.479 31335 31335 I SideSeatMeasure: stt first partial at=628ms
+11-12 14:39:13.512 31335 31623 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=661ms
+11-12 14:39:14.896 31335 31335 I SideSeatMeasure: stt ended at=2044ms
+11-12 14:39:14.896 31335 31335 I SideSeatMeasure: stt final chars=13 at=2045ms end->final=1ms silence->final=-ms
+11-12 14:39:14.897 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:39:14.897 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:39:14.897 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:39:14.899 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:39:14.900 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:39:14.903 31335 31622 I SideSeatMeasure: llm#5 route=FAST conn=reused connect=2ms
+11-12 14:39:14.908 31335 31622 I SideSeatMeasure: llm#5 sent at=7ms
+11-12 14:39:15.501 31335 31335 I SideSeatMeasure: filler spoken
+11-12 14:39:15.501 31335 31335 I SideSeatMeasure: tts speak(seq) chars=2
+11-12 14:39:15.504 31335 31335 I SideSeatMeasure: tts start
+11-12 14:39:15.504 31335 31335 I SideSeatMeasure: latency total=606ms first=filler path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=601ms firstSentence->ttsStart=3ms stages final->request=3ms request->firstToken=-ms firstToken->firstChunk=-ms firstChunk->ttsStart=-ms
+11-12 14:39:15.553 31335 31622 I SideSeatMeasure: llm#5 headers route=FAST model=claude-haiku-5-5 at=652ms
+11-12 14:39:15.553 31335 31622 I SideSeatMeasure: llm#5 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=652ms
+11-12 14:39:15.553 31335 31622 I SideSeatMeasure: llm#5 first text route=FAST at=652ms
+11-12 14:39:16.195 31335 31335 I SideSeatMeasure: tts done
+11-12 14:39:16.196 31335 31335 I SideSeatMeasure: tts speak(seq) chars=27
+11-12 14:39:16.199 31335 31335 I SideSeatMeasure: tts start
+11-12 14:39:16.199 31335 31335 I SideSeatMeasure: latency answer=1301ms path=llm afterFiller=yes final->llmFirstSentence=868ms firstSentence->ttsStart=431ms stages final->request=3ms request->firstToken=653ms firstToken->firstChunk=214ms firstChunk->ttsStart=431ms
+11-12 14:39:16.341 31335 31622 I SideSeatMeasure: llm#5 consumer stopped, draining at=1440ms
+11-12 14:39:16.485 31335 31622 I SideSeatMeasure: llm#5 stop=end_turn out=202 at=1584ms
+11-12 14:39:16.485 31335 31622 I SideSeatMeasure: llm#5 drained in 143ms, connection kept
+11-12 14:39:19.390 31335 31335 I SideSeatMeasure: tts done
+11-12 14:39:19.391 31335 31335 I SideSeatMeasure: tts speak(seq) chars=31
+11-12 14:39:19.413 31335 31335 I SideSeatMeasure: tts start
+11-12 14:39:23.347 31335 31335 I SideSeatMeasure: tts done
+11-12 14:39:23.348 31335 31335 I SideSeatMeasure: tts speak(seq) chars=34
+11-12 14:39:23.349 31335 31335 I SideSeatMeasure: tts start
+11-12 14:39:27.363 31335 31335 I SideSeatMeasure: tts done
+11-12 14:39:27.363 31335 31335 I SideSeatMeasure: tts speak(seq) chars=53
+11-12 14:39:27.368 31335 31335 I SideSeatMeasure: tts start
+11-12 14:39:33.446 31335 31335 I SideSeatMeasure: tts done
+11-12 14:39:33.446 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:39:33.447 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:40:12.902 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:40:12.903 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:40:12.903 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:40:12.903 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:40:12.909 31335 31622 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=5ms
+11-12 14:40:13.529 31335 31335 I SideSeatMeasure: stt started at=626ms
+11-12 14:40:13.529 31335 31335 I SideSeatMeasure: stt first partial at=626ms
+11-12 14:40:13.554 31335 31622 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=650ms
+11-12 14:40:14.940 31335 31335 I SideSeatMeasure: stt ended at=2037ms
+11-12 14:40:14.942 31335 31335 I SideSeatMeasure: stt final chars=13 at=2038ms end->final=1ms silence->final=-ms
+11-12 14:40:14.942 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:40:14.942 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:40:14.942 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:40:14.944 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:40:14.945 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:40:14.948 31335 31622 I SideSeatMeasure: llm#6 route=FAST conn=reused connect=2ms
+11-12 14:40:14.955 31335 31622 I SideSeatMeasure: llm#6 sent at=9ms
+11-12 14:40:15.429 31335 31622 I SideSeatMeasure: llm#6 headers route=FAST model=claude-haiku-5-5 at=483ms
+11-12 14:40:15.429 31335 31622 I SideSeatMeasure: llm#6 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=483ms
+11-12 14:40:15.430 31335 31622 I SideSeatMeasure: llm#6 first text route=FAST at=484ms
+11-12 14:40:15.607 31335 31335 I SideSeatMeasure: tts speak(seq) chars=27
+11-12 14:40:15.608 31335 31335 I SideSeatMeasure: tts start
+11-12 14:40:15.608 31335 31335 I SideSeatMeasure: latency total=666ms first=answer path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=662ms firstSentence->ttsStart=2ms stages final->request=3ms request->firstToken=484ms firstToken->firstChunk=177ms firstChunk->ttsStart=2ms
+11-12 14:40:16.058 31335 31622 I SideSeatMeasure: llm#6 consumer stopped, draining at=1112ms
+11-12 14:40:16.222 31335 31622 I SideSeatMeasure: llm#6 stop=end_turn out=167 at=1276ms
+11-12 14:40:16.223 31335 31622 I SideSeatMeasure: llm#6 drained in 164ms, connection kept
+11-12 14:40:18.278 31335 31335 I SideSeatMeasure: tts done
+11-12 14:40:18.279 31335 31335 I SideSeatMeasure: tts speak(seq) chars=13
+11-12 14:40:18.293 31335 31335 I SideSeatMeasure: tts start
+11-12 14:40:20.063 31335 31335 I SideSeatMeasure: tts done
+11-12 14:40:20.063 31335 31335 I SideSeatMeasure: tts speak(seq) chars=36
+11-12 14:40:20.069 31335 31335 I SideSeatMeasure: tts start
+11-12 14:40:24.367 31335 31335 I SideSeatMeasure: tts done
+11-12 14:40:24.367 31335 31335 I SideSeatMeasure: tts speak(seq) chars=34
+11-12 14:40:24.369 31335 31335 I SideSeatMeasure: tts start
+11-12 14:40:28.247 31335 31335 I SideSeatMeasure: tts done
+11-12 14:40:28.247 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:40:28.247 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:41:12.954 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:41:12.955 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:41:12.956 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:41:12.956 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:41:12.957 31335 31622 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:41:13.536 31335 31622 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=581ms
+11-12 14:41:13.584 31335 31335 I SideSeatMeasure: stt started at=627ms
+11-12 14:41:13.584 31335 31335 I SideSeatMeasure: stt first partial at=628ms
+11-12 14:41:14.997 31335 31335 I SideSeatMeasure: stt ended at=2040ms
+11-12 14:41:14.997 31335 31335 I SideSeatMeasure: stt final chars=13 at=2040ms end->final=0ms silence->final=-ms
+11-12 14:41:14.997 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:41:14.997 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:41:14.998 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:41:14.999 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:41:15.000 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:41:15.002 31335 32341 I SideSeatMeasure: llm#7 route=FAST conn=reused connect=1ms
+11-12 14:41:15.007 31335 32341 I SideSeatMeasure: llm#7 sent at=7ms
+11-12 14:41:15.600 31335 31335 I SideSeatMeasure: filler spoken
+11-12 14:41:15.601 31335 31335 I SideSeatMeasure: tts speak(seq) chars=2
+11-12 14:41:15.603 31335 31335 I SideSeatMeasure: tts start
+11-12 14:41:15.603 31335 31335 I SideSeatMeasure: latency total=605ms first=filler path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=601ms firstSentence->ttsStart=2ms stages final->request=2ms request->firstToken=-ms firstToken->firstChunk=-ms firstChunk->ttsStart=-ms
+11-12 14:41:15.605 31335 32341 I SideSeatMeasure: llm#7 headers route=FAST model=claude-haiku-5-5 at=605ms
+11-12 14:41:15.606 31335 32341 I SideSeatMeasure: llm#7 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=605ms
+11-12 14:41:15.606 31335 32341 I SideSeatMeasure: llm#7 first text route=FAST at=605ms
+11-12 14:41:16.222 31335 32341 I SideSeatMeasure: llm#7 consumer stopped, draining at=1221ms
+11-12 14:41:16.222 31335 32341 I SideSeatMeasure: llm#7 stop=end_turn out=128 at=1222ms
+11-12 14:41:16.223 31335 32341 I SideSeatMeasure: llm#7 drained in 1ms, connection kept
+11-12 14:41:16.296 31335 31335 I SideSeatMeasure: tts done
+11-12 14:41:16.296 31335 31335 I SideSeatMeasure: tts speak(seq) chars=22
+11-12 14:41:16.299 31335 31335 I SideSeatMeasure: tts start
+11-12 14:41:16.299 31335 31335 I SideSeatMeasure: latency answer=1302ms path=llm afterFiller=yes final->llmFirstSentence=749ms firstSentence->ttsStart=551ms stages final->request=2ms request->firstToken=607ms firstToken->firstChunk=142ms firstChunk->ttsStart=551ms
+11-12 14:41:18.426 31335 31335 I SideSeatMeasure: tts done
+11-12 14:41:18.426 31335 31335 I SideSeatMeasure: tts speak(seq) chars=29
+11-12 14:41:18.439 31335 31335 I SideSeatMeasure: tts start
+11-12 14:41:22.025 31335 31335 I SideSeatMeasure: tts done
+11-12 14:41:22.026 31335 31335 I SideSeatMeasure: tts speak(seq) chars=32
+11-12 14:41:22.039 31335 31335 I SideSeatMeasure: tts start
+11-12 14:41:25.710 31335 31335 I SideSeatMeasure: tts done
+11-12 14:41:25.710 31335 31335 I SideSeatMeasure: tts speak(seq) chars=31
+11-12 14:41:25.723 31335 31335 I SideSeatMeasure: tts start
+11-12 14:41:29.573 31335 31335 I SideSeatMeasure: tts done
+11-12 14:41:29.573 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:41:29.573 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:42:13.002 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:42:13.003 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:42:13.003 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:42:13.004 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:42:13.007 31335 31404 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=3ms
+11-12 14:42:13.602 31335 31404 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=598ms
+11-12 14:42:13.635 31335 31335 I SideSeatMeasure: stt started at=632ms
+11-12 14:42:13.636 31335 31335 I SideSeatMeasure: stt first partial at=632ms
+11-12 14:42:15.051 31335 31335 I SideSeatMeasure: stt ended at=2047ms
+11-12 14:42:15.052 31335 31335 I SideSeatMeasure: stt final chars=13 at=2048ms end->final=1ms silence->final=-ms
+11-12 14:42:15.052 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:42:15.052 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:42:15.052 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:42:15.054 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:42:15.055 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:42:15.057 31335 31622 I SideSeatMeasure: llm#8 route=FAST conn=reused connect=1ms
+11-12 14:42:15.062 31335 31622 I SideSeatMeasure: llm#8 sent at=6ms
+11-12 14:42:15.655 31335 31335 I SideSeatMeasure: filler spoken
+11-12 14:42:15.656 31335 31335 I SideSeatMeasure: tts speak(seq) chars=2
+11-12 14:42:15.658 31335 31335 I SideSeatMeasure: tts start
+11-12 14:42:15.658 31335 31335 I SideSeatMeasure: latency total=605ms first=filler path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=601ms firstSentence->ttsStart=2ms stages final->request=2ms request->firstToken=-ms firstToken->firstChunk=-ms firstChunk->ttsStart=-ms
+11-12 14:42:15.679 31335 31622 I SideSeatMeasure: llm#8 headers route=FAST model=claude-haiku-5-5 at=624ms
+11-12 14:42:15.680 31335 31622 I SideSeatMeasure: llm#8 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=624ms
+11-12 14:42:15.680 31335 31622 I SideSeatMeasure: llm#8 first text route=FAST at=624ms
+11-12 14:42:16.269 31335 31622 I SideSeatMeasure: llm#8 consumer stopped, draining at=1213ms
+11-12 14:42:16.270 31335 31622 I SideSeatMeasure: llm#8 stop=end_turn out=133 at=1215ms
+11-12 14:42:16.270 31335 31622 I SideSeatMeasure: llm#8 drained in 1ms, connection kept
+11-12 14:42:16.375 31335 31335 I SideSeatMeasure: tts done
+11-12 14:42:16.375 31335 31335 I SideSeatMeasure: tts speak(seq) chars=19
+11-12 14:42:16.384 31335 31335 I SideSeatMeasure: tts start
+11-12 14:42:16.384 31335 31335 I SideSeatMeasure: latency answer=1331ms path=llm afterFiller=yes final->llmFirstSentence=743ms firstSentence->ttsStart=586ms stages final->request=2ms request->firstToken=626ms firstToken->firstChunk=117ms firstChunk->ttsStart=586ms
+11-12 14:42:18.256 31335 31335 I SideSeatMeasure: tts done
+11-12 14:42:18.256 31335 31335 I SideSeatMeasure: tts speak(seq) chars=23
+11-12 14:42:18.258 31335 31335 I SideSeatMeasure: tts start
+11-12 14:42:21.129 31335 31335 I SideSeatMeasure: tts done
+11-12 14:42:21.129 31335 31335 I SideSeatMeasure: tts speak(seq) chars=36
+11-12 14:42:21.131 31335 31335 I SideSeatMeasure: tts start
+11-12 14:42:25.279 31335 31335 I SideSeatMeasure: tts done
+11-12 14:42:25.280 31335 31335 I SideSeatMeasure: tts speak(seq) chars=39
+11-12 14:42:25.281 31335 31335 I SideSeatMeasure: tts start
+11-12 14:42:29.749 31335 31335 I SideSeatMeasure: tts done
+11-12 14:42:29.750 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:42:29.750 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:43:13.053 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:43:13.053 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:43:13.054 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:43:13.055 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:43:13.055 31335 31622 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:43:13.658 31335 31622 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=604ms
+11-12 14:43:13.682 31335 31335 I SideSeatMeasure: stt started at=628ms
+11-12 14:43:13.682 31335 31335 I SideSeatMeasure: stt first partial at=628ms
+11-12 14:43:15.093 31335 31335 I SideSeatMeasure: stt ended at=2039ms
+11-12 14:43:15.096 31335 31335 I SideSeatMeasure: stt final chars=13 at=2041ms end->final=2ms silence->final=-ms
+11-12 14:43:15.096 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:43:15.096 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:43:15.096 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:43:15.101 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:43:15.102 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:43:15.105 31335 31403 I SideSeatMeasure: llm#9 route=FAST conn=reused connect=2ms
+11-12 14:43:15.110 31335 31403 I SideSeatMeasure: llm#9 sent at=7ms
+11-12 14:43:15.675 31335 31403 I SideSeatMeasure: llm#9 headers route=FAST model=claude-haiku-5-5 at=573ms
+11-12 14:43:15.676 31335 31403 I SideSeatMeasure: llm#9 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=573ms
+11-12 14:43:15.676 31335 31403 I SideSeatMeasure: llm#9 first text route=FAST at=573ms
+11-12 14:43:15.853 31335 31335 I SideSeatMeasure: tts speak(seq) chars=26
+11-12 14:43:15.855 31335 31335 I SideSeatMeasure: tts start
+11-12 14:43:15.856 31335 31335 I SideSeatMeasure: latency total=759ms first=answer path=llm guessEnd->final=-ms final->answer=5ms answer->firstSentence=751ms firstSentence->ttsStart=3ms stages final->request=6ms request->firstToken=574ms firstToken->firstChunk=176ms firstChunk->ttsStart=3ms
+11-12 14:43:16.325 31335 31403 I SideSeatMeasure: llm#9 consumer stopped, draining at=1223ms
+11-12 14:43:16.326 31335 31403 I SideSeatMeasure: llm#9 stop=end_turn out=141 at=1223ms
+11-12 14:43:16.326 31335 31403 I SideSeatMeasure: llm#9 drained in 0ms, connection kept
+11-12 14:43:18.618 31335 31335 I SideSeatMeasure: tts done
+11-12 14:43:18.619 31335 31335 I SideSeatMeasure: tts speak(seq) chars=28
+11-12 14:43:18.621 31335 31335 I SideSeatMeasure: tts start
+11-12 14:43:22.135 31335 31335 I SideSeatMeasure: tts done
+11-12 14:43:22.135 31335 31335 I SideSeatMeasure: tts speak(seq) chars=35
+11-12 14:43:22.138 31335 31335 I SideSeatMeasure: tts start
+11-12 14:43:26.022 31335 31335 I SideSeatMeasure: tts done
+11-12 14:43:26.022 31335 31335 I SideSeatMeasure: tts speak(seq) chars=35
+11-12 14:43:26.024 31335 31335 I SideSeatMeasure: tts start
+11-12 14:43:30.406 31335 31335 I SideSeatMeasure: tts done
+11-12 14:43:30.406 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:43:30.406 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:44:13.092 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:44:13.093 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:44:13.094 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:44:13.094 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:44:13.095 31335 31403 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=2ms
+11-12 14:44:13.705 31335 31403 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=611ms
+11-12 14:44:13.720 31335 31335 I SideSeatMeasure: stt started at=626ms
+11-12 14:44:13.721 31335 31335 I SideSeatMeasure: stt first partial at=626ms
+11-12 14:44:15.134 31335 31335 I SideSeatMeasure: stt ended at=2039ms
+11-12 14:44:15.135 31335 31335 I SideSeatMeasure: stt final chars=13 at=2041ms end->final=2ms silence->final=-ms
+11-12 14:44:15.135 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:44:15.135 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:44:15.135 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:44:15.137 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:44:15.138 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:44:15.141 31335 31404 I SideSeatMeasure: llm#10 route=FAST conn=reused connect=2ms
+11-12 14:44:15.148 31335 31404 I SideSeatMeasure: llm#10 sent at=9ms
+11-12 14:44:15.739 31335 31335 I SideSeatMeasure: filler spoken
+11-12 14:44:15.740 31335 31335 I SideSeatMeasure: tts speak(seq) chars=2
+11-12 14:44:15.742 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:15.742 31335 31335 I SideSeatMeasure: latency total=606ms first=filler path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=602ms firstSentence->ttsStart=2ms stages final->request=3ms request->firstToken=-ms firstToken->firstChunk=-ms firstChunk->ttsStart=-ms
+11-12 14:44:15.788 31335 31404 I SideSeatMeasure: llm#10 headers route=FAST model=claude-haiku-5-5 at=649ms
+11-12 14:44:15.789 31335 31404 I SideSeatMeasure: llm#10 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=650ms
+11-12 14:44:15.789 31335 31404 I SideSeatMeasure: llm#10 first text route=FAST at=650ms
+11-12 14:44:16.447 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:16.448 31335 31335 I SideSeatMeasure: tts speak(seq) chars=14
+11-12 14:44:16.450 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:16.450 31335 31335 I SideSeatMeasure: latency answer=1314ms path=llm afterFiller=yes final->llmFirstSentence=825ms firstSentence->ttsStart=487ms stages final->request=3ms request->firstToken=651ms firstToken->firstChunk=173ms firstChunk->ttsStart=487ms
+11-12 14:44:16.495 31335 31404 I SideSeatMeasure: llm#10 consumer stopped, draining at=1356ms
+11-12 14:44:16.866 31335 31404 I SideSeatMeasure: llm#10 stop=end_turn out=215 at=1727ms
+11-12 14:44:16.866 31335 31404 I SideSeatMeasure: llm#10 drained in 370ms, connection kept
+11-12 14:44:17.921 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:17.921 31335 31335 I SideSeatMeasure: tts speak(seq) chars=23
+11-12 14:44:17.923 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:20.491 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:20.491 31335 31335 I SideSeatMeasure: tts speak(seq) chars=14
+11-12 14:44:20.498 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:22.238 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:22.239 31335 31335 I SideSeatMeasure: tts speak(seq) chars=39
+11-12 14:44:22.241 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:26.904 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:26.904 31335 31335 I SideSeatMeasure: tts speak(seq) chars=34
+11-12 14:44:26.907 31335 31335 I SideSeatMeasure: tts start
+11-12 14:44:30.818 31335 31335 I SideSeatMeasure: tts done
+11-12 14:44:30.819 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:44:30.819 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:45:13.148 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:45:13.149 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:45:13.149 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:45:13.149 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:45:13.152 31335 31404 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=2ms
+11-12 14:45:13.777 31335 31335 I SideSeatMeasure: stt started at=627ms
+11-12 14:45:13.777 31335 31335 I SideSeatMeasure: stt first partial at=627ms
+11-12 14:45:13.793 31335 31404 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=644ms
+11-12 14:45:15.188 31335 31335 I SideSeatMeasure: stt ended at=2039ms
+11-12 14:45:15.190 31335 31335 I SideSeatMeasure: stt final chars=13 at=2040ms end->final=1ms silence->final=-ms
+11-12 14:45:15.190 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:45:15.190 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:45:15.190 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:45:15.191 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:45:15.192 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:45:15.195 31335 31404 I SideSeatMeasure: llm#11 route=FAST conn=reused connect=2ms
+11-12 14:45:15.202 31335 31404 I SideSeatMeasure: llm#11 sent at=9ms
+11-12 14:45:15.729 31335 31404 I SideSeatMeasure: llm#11 headers route=FAST model=claude-haiku-5-5 at=536ms
+11-12 14:45:15.730 31335 31404 I SideSeatMeasure: llm#11 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=537ms
+11-12 14:45:15.730 31335 31404 I SideSeatMeasure: llm#11 first text route=FAST at=537ms
+11-12 14:45:15.872 31335 31335 I SideSeatMeasure: tts speak(seq) chars=17
+11-12 14:45:15.873 31335 31335 I SideSeatMeasure: tts start
+11-12 14:45:15.873 31335 31335 I SideSeatMeasure: latency total=683ms first=answer path=llm guessEnd->final=-ms final->answer=1ms answer->firstSentence=680ms firstSentence->ttsStart=2ms stages final->request=2ms request->firstToken=538ms firstToken->firstChunk=141ms firstChunk->ttsStart=2ms
+11-12 14:45:16.262 31335 31404 I SideSeatMeasure: llm#11 consumer stopped, draining at=1069ms
+11-12 14:45:16.797 31335 31404 I SideSeatMeasure: llm#11 stop=end_turn out=219 at=1605ms
+11-12 14:45:16.798 31335 31404 I SideSeatMeasure: llm#11 drained in 535ms, connection kept
+11-12 14:45:17.638 31335 31335 I SideSeatMeasure: tts done
+11-12 14:45:17.639 31335 31335 I SideSeatMeasure: tts speak(seq) chars=16
+11-12 14:45:17.640 31335 31335 I SideSeatMeasure: tts start
+11-12 14:45:19.784 31335 31335 I SideSeatMeasure: tts done
+11-12 14:45:19.784 31335 31335 I SideSeatMeasure: tts speak(seq) chars=26
+11-12 14:45:19.790 31335 31335 I SideSeatMeasure: tts start
+11-12 14:45:23.048 31335 31335 I SideSeatMeasure: tts done
+11-12 14:45:23.049 31335 31335 I SideSeatMeasure: tts speak(seq) chars=36
+11-12 14:45:23.051 31335 31335 I SideSeatMeasure: tts start
+11-12 14:45:27.213 31335 31335 I SideSeatMeasure: tts done
+11-12 14:45:27.213 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:45:27.214 31335 31335 I SideSeatMeasure: focus[tts] abandon
+11-12 14:46:13.200 31335 31335 I SideSeatMeasure: app debug cmd=ask_pcm arg=q4.pcm
+11-12 14:46:13.201 31335 31335 I SideSeatMeasure: llm prewarm route=FAST
+11-12 14:46:13.202 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:46:13.203 31335 31335 I SideSeatMeasure: stt request kind=FREE source=pcm speaking=false
+11-12 14:46:13.203 31335 31404 I SideSeatMeasure: llm prewarm route=FAST conn=reused connect=1ms
+11-12 14:46:13.776 31335 31404 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=8688 cacheWrite=0 input=9 at=573ms
+11-12 14:46:13.829 31335 31335 I SideSeatMeasure: stt started at=627ms
+11-12 14:46:13.829 31335 31335 I SideSeatMeasure: stt first partial at=627ms
+11-12 14:46:15.243 31335 31335 I SideSeatMeasure: stt ended at=2040ms
+11-12 14:46:15.247 31335 31335 I SideSeatMeasure: stt final chars=13 at=2044ms end->final=4ms silence->final=-ms
+11-12 14:46:15.247 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:46:15.247 31335 31335 I SideSeatMeasure: stt result=chars=13 source=final
+11-12 14:46:15.247 31335 31335 I SideSeatMeasure: app heard kind=FREE source=pcm '너의 의기로 바꿔야 해?'
+11-12 14:46:15.249 31335 31335 I SideSeatMeasure: focus[tts] request result=GRANTED
+11-12 14:46:15.250 31335 31335 I SideSeatMeasure: sfx duck=0.32
+11-12 14:46:15.252 31335 31403 I SideSeatMeasure: llm#12 route=FAST conn=reused connect=1ms
+11-12 14:46:15.257 31335 31403 I SideSeatMeasure: llm#12 sent at=6ms
+11-12 14:46:15.758 31335 31403 I SideSeatMeasure: llm#12 headers route=FAST model=claude-haiku-5-5 at=508ms
+11-12 14:46:15.759 31335 31403 I SideSeatMeasure: llm#12 start route=FAST served=claude-haiku-5-5 input=127 cacheRead=8688 cacheWrite=0 at=508ms
+11-12 14:46:15.759 31335 31403 I SideSeatMeasure: llm#12 first text route=FAST at=509ms
+11-12 14:46:15.933 31335 31335 I SideSeatMeasure: tts speak(seq) chars=32
+11-12 14:46:15.936 31335 31335 I SideSeatMeasure: tts start
+11-12 14:46:15.936 31335 31335 I SideSeatMeasure: latency total=689ms first=answer path=llm guessEnd->final=-ms final->answer=2ms answer->firstSentence=684ms firstSentence->ttsStart=3ms stages final->request=2ms request->firstToken=510ms firstToken->firstChunk=174ms firstChunk->ttsStart=3ms
+11-12 14:46:16.402 31335 31403 I SideSeatMeasure: llm#12 consumer stopped, draining at=1152ms
+11-12 14:46:16.752 31335 31403 I SideSeatMeasure: llm#12 stop=end_turn out=219 at=1501ms
+11-12 14:46:16.752 31335 31403 I SideSeatMeasure: llm#12 drained in 349ms, connection kept
+11-12 14:46:19.479 31335 31335 I SideSeatMeasure: tts done
+11-12 14:46:19.479 31335 31335 I SideSeatMeasure: tts speak(seq) chars=15
+11-12 14:46:19.481 31335 31335 I SideSeatMeasure: tts start
+11-12 14:46:21.515 31335 31335 I SideSeatMeasure: tts done
+11-12 14:46:21.516 31335 31335 I SideSeatMeasure: tts speak(seq) chars=38
+11-12 14:46:21.518 31335 31335 I SideSeatMeasure: tts start
+11-12 14:46:26.067 31335 31335 I SideSeatMeasure: tts done
+11-12 14:46:26.067 31335 31335 I SideSeatMeasure: tts speak(seq) chars=35
+11-12 14:46:26.069 31335 31335 I SideSeatMeasure: tts start
+11-12 14:46:30.146 31335 31335 I SideSeatMeasure: tts done
+11-12 14:46:30.147 31335 31335 I SideSeatMeasure: sfx duck=1.0
+11-12 14:46:30.147 31335 31335 I SideSeatMeasure: focus[tts] abandon
