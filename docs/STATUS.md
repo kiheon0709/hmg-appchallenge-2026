@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 07:48, dev-integration)**: 소스 기준 `76e8f7a`(voice 연결 재사용 수정, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 65개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 07:48 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 8.0초에 열림. 디버그 빌드 Claude 질문 12회×2: 실제 답 시작 중앙값 0.75초(15초 간격)·0.76초(60초 간격), 연결 24/24 재사용. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
+> **최종 빌드 (2026-11-13 08:02, dev-integration)**: 소스 기준 `90f23d7`(voice 지연 꼬리 줄이기·연결 재사용, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 67개 통과. `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(22.8 MB), 08:02 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.5초) → 홈 → 금고 다이얼 7.9초에 열림. 디버그 빌드 Claude 질문 15초 간격 12회×2: 실제 답 시작 중앙값 0.77초·0.87초, 1초 초과 1/24, 연결 24/24 재사용, 추측 요청은 100% 버려짐. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -67,6 +67,38 @@
 **테스트**: `./gradlew :core:test` 77개 통과, `./gradlew :app:testDebugUnitTest` 57개 통과.
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
+
+### 음성 지연 재측정 — voice 90f23d7 지연 꼬리 줄이기 뒤 (2026-11-13 08:05)
+
+같은 방법(LLM 질문 PCM, 15초 간격 12회 × 2세트, 세트마다 앱을 새로 시작, 에뮬레이터 Wi-Fi `AndroidWifi`). 원본: `docs/screens/sim/logs/voice_latency_90f23d7_gap15s_setA.log`, `…_setB.log`. 두 세트 모두 연결 12/12 reused, `Socket closed` 0회, 시작 때 `llm prewarm route=FAST` http 200.
+
+| 회 | 세트 A 답 시작 | 세트 A 서버 첫 토큰 | 세트 B 답 시작 | 세트 B 서버 첫 토큰 |
+| --- | --- | --- | --- | --- |
+| 1 | 752 ms | 544 | 867 ms | 646 |
+| 2 | 715 | 522 | 940 | 677 |
+| 3 | 689 | 551 | **1027** | 824 |
+| 4 | 699 | 498 | 648 | 517 |
+| 5 | 665 | 503 | 883 | 745 |
+| 6 | 647 | 508 | 737 | 501 |
+| 7 | 780 | 491 | 691 | 554 |
+| 8 | 824 | 698 | 768 | 554 |
+| 9 | 862 | 700 | 932 | 761 |
+| 10 | 795 | 591 | 837 | 657 |
+| 11 | 874 | 673 | 864 | 682 |
+| 12 | 828 | 654 | 941 | 731 |
+
+| 지표 | 세트 A 중앙값(범위) | 세트 B 중앙값(범위) |
+| --- | --- | --- |
+| **실제 답 시작(= 첫 소리)** | **0.77초**(0.65~0.87) | **0.87초**(0.65~1.03) |
+| 1초 넘은 회 | **0 / 12** | **1 / 12**(서버 첫 토큰 824 ms) |
+| 채움말 | 0회(모두 0.9초 전에 답) | 0회 |
+| 최종 결과 → 요청 | 3.5 ms(3~7) | 3 ms(2~7) |
+| 요청 → 서버 첫 토큰 | 548 ms(491~700) | 667 ms(501~824) |
+| 첫 토큰 → 첫 조각 | 173 ms(118~282) | 175 ms(125~257) |
+| 첫 조각 → TTS 시작 | 3 ms(2~21) | 3 ms(2~39) |
+| 추측 요청 | started 12, hit 0, miss 12, **discarded 100%** | 같음 |
+
+해석: 채움말을 0.9초로 늦춘 뒤 채움말 때문에 기다리는 꼬리가 사라져, 1초를 넘은 것은 24회 중 1회(서버 첫 토큰이 0.82초로 느렸던 회)뿐이다. 남은 시간은 대부분 서버 첫 토큰(0.5~0.8초)이다. 추측 요청은 PCM 경로에서 매번 빗나갔다: 중간 결과 10자("너의 의기로 바꿔야 해")에서 요청을 보냈는데 최종 결과는 13자(문장 끝·물음표가 붙음)라 버려졌고, 그만큼 Claude 호출이 2배가 된다(비용). 실제 마이크에서는 EPD가 있어 다를 수 있음. dev-voice-ai에 알릴 내용.
 
 ### 음성 지연 재측정 — voice 76e8f7a 연결 재사용 수정 뒤 (2026-11-13 07:50)
 
