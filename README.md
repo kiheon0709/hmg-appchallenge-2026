@@ -15,11 +15,11 @@
 | P를 벗어남 | 코치 | 훈련은 바로 닫혀요. 여러 신호를 엮어야 알 수 있는 것만 한 문장으로 말해요(예: 와이퍼는 켰는데 전조등이 꺼져 있음). 30분에 최대 3번. 화면은 한 줄과 "질문하기" 버튼뿐이에요 |
 | 다시 P | 리뷰 | 주행 시간·비/야간 주행·선배가 한 말을 보여 주고, 음성으로 총평해요(LLM이 없으면 규칙 기반 3문장). 놓친 것은 "1분 연습"으로 이어져요 |
 
-쓰는 Pleos SDK: Vehicle 2.3.2(신호 읽기, 정차 중 앰비언트 제어), NaviHelper 3.0.5(휴게소 경유지·도착), TextToSpeech 3.3.1, SpeechToText 3.3.1(ON_DEVICE), FusedLocation 1.1.3. 기어·차속·주행 규제는 AAOS 표준 Car API(`CarUxRestrictionsManager`, `PERF_VEHICLE_SPEED`)로 읽어요.
+쓰는 Pleos SDK: Vehicle 2.3.2(신호 읽기, 정차 중 앰비언트 제어), NaviHelper 3.0.5(휴게소 검색·도착), TextToSpeech 3.3.1, SpeechToText 3.3.1(ON_DEVICE), FusedLocation 1.1.3(일몰·일출). 정차 판정은 **표준 주행 규제 API만 사용**해요(AAOS `CarUxRestrictionsManager`, Pleos 주행 규제 가이드가 안내하는 방식). 기어·차속 같은 비공개 경로는 쓰지 않아요.
 
 ## APK
 
-- **`apk/MoodLab_SideSeat_release.apk`** (release 빌드, R8 적용, 약 22 MB)
+- **`apk/MoodLab_SideSeat_release.apk`** (release 빌드, R8 적용, 약 23 MB)
 - 이 APK에는 LLM API 키가 들어 있지 않아요. 키가 없으면 AI 교관은 미리 쓴 문장과 규칙 기반 총평으로 동작해요(모든 기능이 키 없이 돌아요).
 
 ## 테스트 환경
@@ -39,6 +39,9 @@
 1. Pleos Connect Emulator 2.1.0을 cold boot로 켜요.
 2. `adb install -g apk/MoodLab_SideSeat_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
 3. 앱 목록에서 **옆자리**를 실행해요.
+
+- 위치를 쓰려면 앱 첫 실행 때 위치 권한을 허용해요(일몰 시각 계산). 거부해도 나머지는 동작해요.
+- 차량 마이크 음성 인식은 에뮬레이터에서 맥의 마이크 권한이 필요해요(시스템 설정 → 개인정보 보호 및 보안 → 마이크에서 에뮬레이터 허용, Extended Controls → Microphone → "Virtual microphone uses host audio input"). 마이크 없이도 정차 중 선택지는 화면 버튼으로 답할 수 있어요.
 
 ### 소스로 빌드
 
