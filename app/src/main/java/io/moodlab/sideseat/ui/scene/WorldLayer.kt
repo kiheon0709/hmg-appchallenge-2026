@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.scale
 import kotlin.math.PI
@@ -418,10 +418,12 @@ internal class WorldLayer {
             drawLine(Color(0xFF232B38), Offset(bx, by), Offset(bx, topY), sw)
             drawLine(Color(0xFF232B38), Offset(bx, topY), Offset(hx, hy), sw)
             // 노면에 떨어진 빛과 젖은 반사
-            project(z, side * 3f)
-            glow(warm, px, py, 7.5f * k, maxOf(2f, 46f * k / (z + 8f)), alpha = night * 0.22f * far)
-            project(z, side * 4.6f)
-            glow(warm, px, py + 3f * k, maxOf(1.5f, 0.55f * k), 4.5f * k, alpha = night * 0.4f * wetRef * far)
+            if (!sim.lowDetail) {
+                project(z, side * 3f)
+                glow(warm, px, py, 7.5f * k, maxOf(2f, 46f * k / (z + 8f)), alpha = night * 0.22f * far)
+                project(z, side * 4.6f)
+                glow(warm, px, py + 3f * k, maxOf(1.5f, 0.55f * k), 4.5f * k, alpha = night * 0.4f * wetRef * far)
+            }
             glow(warm, hx, hy, maxOf(5f, 2.6f * k) * (1f + sim.fogOut * 1.5f), alpha = night * (0.6f + 0.4f * far))
             drawCircle(Color(0xFFFFE9C4), maxOf(1.2f, 0.18f * k), Offset(hx, hy), alpha = night)
         }
@@ -550,17 +552,29 @@ internal class WorldLayer {
             path.cubicTo(mid - 36f * k, gy - 3f * k, mid - 24f * k, gy - 25f * k, mid, gy - 25f * k)
             path.cubicTo(mid + 24f * k, gy - 25f * k, mid + 36f * k, gy - 3f * k, mid + 75f * k, gy + 1f)
             path.close()
-            val rr = androidx.compose.ui.geometry.CornerRadius(0.9f * k, 0.9f * k)
+            val rr = androidx.compose.ui.geometry.CornerRadius(2.6f * k, 2.6f * k)
             path.addRoundRect(androidx.compose.ui.geometry.RoundRect(lx, topY, rx, gy + 2f, rr))
             drawPath(path, mix(Color(0xFF090B15), Color(0xFF4A6355), 1f - sim.night))
             path.fillType = PathFillType.NonZero
-            // 콘크리트 입구 테두리
-            drawRoundRect(
-                mix(Color(0xFF2C3440), Color(0xFFA3ABB5), 1f - sim.night), Offset(lx - 0.6f * k, topY - 0.6f * k),
-                Size(rx - lx + 1.2f * k, gy - topY + 0.6f * k), rr, style = Stroke(1.3f * k),
+            // 콘크리트 입구 면: 네모난 벽에 아치 구멍
+            path.rewind()
+            path.fillType = PathFillType.EvenOdd
+            path.addRect(androidx.compose.ui.geometry.Rect(lx - 2.6f * k, topY - 2.4f * k, rx + 2.6f * k, gy + 1f))
+            path.addRoundRect(androidx.compose.ui.geometry.RoundRect(lx, topY, rx, gy + 2f, rr))
+            drawPath(path, mix(Color(0xFF232A35), Color(0xFF9AA3AE), 1f - sim.night))
+            path.fillType = PathFillType.NonZero
+            drawRect(
+                mix(Color(0xFF39424F), Color(0xFFC3CAD2), 1f - sim.night), Offset(lx - 3f * k, topY - 2.9f * k),
+                Size(rx - lx + 6f * k, 0.6f * k),
             )
+            // 입구 위 초록 안내판
+            drawRect(Color(0xFF0C5B3C), Offset(mid - 2.6f * k, topY - 1.9f * k), Size(5.2f * k, 1.2f * k))
+            drawRect(Color.White, Offset(mid - 2.6f * k, topY - 1.9f * k), Size(5.2f * k, 1.2f * k), style = Stroke(maxOf(1f, 0.08f * k)), alpha = 0.9f)
+            drawRect(Color.White, Offset(mid - 1.8f * k, topY - 1.45f * k), Size(3.6f * k, 0.3f * k), alpha = 0.9f)
             drawRoundRect(Color(0xFFFFB866), Offset(lx, topY), Size(rx - lx, gy - topY), rr, style = Stroke(maxOf(1.5f, 0.14f * k)), alpha = 0.7f)
-            clipRect(lx, topY, rx, gy + 2f) { drawTube(sim, zNear, zFar, lit, true) }
+            path2.rewind()
+            path2.addRoundRect(androidx.compose.ui.geometry.RoundRect(lx, topY, rx, gy + 2f, rr))
+            clipPath(path2) { drawTube(sim, zNear, zFar, lit, true) }
         } else {
             drawTube(sim, zNear, zFar, lit, entering)
         }
@@ -681,7 +695,7 @@ internal class WorldLayer {
     private fun DrawScope.drawStreaks(sim: SceneSim) {
         val rain = sim.rain
         if (rain < 0.03f || sim.parking > 0.5f) return
-        val n = (SceneSim.MAX_STREAKS * (0.25f + 0.75f * rain)).toInt()
+        val n = (SceneSim.MAX_STREAKS * (0.25f + 0.75f * rain) * (if (sim.lowDetail) 0.5f else 1f)).toInt()
         val rush = (sim.speed / 30f).coerceIn(0f, 1.3f)
         val a = (0.16f + 0.3f * rain) * (1f - 0.7f * sim.tunnelP)
         val sw = maxOf(1f, h * 0.0016f)

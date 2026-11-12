@@ -65,6 +65,8 @@ internal class SceneInput {
  * 매 프레임 할당이 없도록 입자는 전부 고정 길이 배열이다.
  */
 internal class SceneSim {
+    /** 효과를 줄여 그린다(물방울·빗줄기 절반, 번진 불빛·노면 반사 생략). */
+    var lowDetail = false
     var t = 0f
     var camS = 0f
     var speed = 0f // m/s

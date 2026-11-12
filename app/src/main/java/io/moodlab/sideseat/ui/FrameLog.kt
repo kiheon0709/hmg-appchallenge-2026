@@ -9,6 +9,9 @@ object SideSeatUiDebug {
 
     /** 마지막으로 잰 초당 프레임 수(디버그 패널 표시용). */
     @Volatile var lastFps: Float = 0f
+
+    /** true면 주행 화면이 효과를 줄여 그린다. 프레임이 26fps 아래로 떨어지면 주행 화면이 스스로 켠다. */
+    @Volatile var lowDetail: Boolean = false
 }
 
 /** 프레임 간격과 그리기 기록 시간을 모아 주기적으로 로그로 남긴다. 할당 없음. */
@@ -32,8 +35,12 @@ internal class FrameMeter(private val name: String) {
         if (ns > drawMaxNs) drawMaxNs = ns
     }
 
+    /** 최근 구간의 초당 프레임 수. 아직 못 쟀으면 0. */
+    var fps = 0f
+        private set
+
     private fun flush() {
-        val fps = frames * 1e9f / sumNs
+        fps = frames * 1e9f / sumNs
         SideSeatUiDebug.lastFps = fps
         if (SideSeatUiDebug.logFrames) {
             Log.i(

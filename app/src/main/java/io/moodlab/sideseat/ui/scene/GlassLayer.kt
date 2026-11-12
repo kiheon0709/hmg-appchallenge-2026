@@ -106,7 +106,7 @@ internal class GlassLayer {
         var avg = 0f
         for (k in 0 until SceneSim.WIPE_BINS) avg += sim.wet[k]
         avg /= SceneSim.WIPE_BINS
-        if (avg > 0.05f && sim.night > 0.3f) {
+        if (avg > 0.05f && sim.night > 0.3f && !sim.lowDetail) {
             for (k in 0 until BOKEH) {
                 val g = when (k % 3) { 0 -> bokehWarm; 1 -> bokehRed; else -> bokehCool }
                 val wob = sin(sim.t * 0.7f + k) * h * 0.01f
@@ -117,7 +117,8 @@ internal class GlassLayer {
         val hi = Color.White
         val lo = Color(0xFF03060A)
         val up = sim.speed * 0.0025f * h
-        for (n in 0 until SceneSim.MAX_DROPS) {
+        val stepN = if (sim.lowDetail) 2 else 1
+        for (n in 0 until SceneSim.MAX_DROPS step stepN) {
             val a = sim.dropAlpha(n)
             if (a <= 0.02f) continue
             val r = sim.dropR[n]

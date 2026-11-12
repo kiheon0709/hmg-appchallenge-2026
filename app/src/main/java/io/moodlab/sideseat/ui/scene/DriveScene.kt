@@ -15,6 +15,7 @@ import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.FrameMeter
+import io.moodlab.sideseat.ui.SideSeatUiDebug
 
 /**
  * 운전석 시점의 가짜 3D 주행 화면. 옛 레이싱 게임처럼 도로를 거리별로 투영해 2D로 그린다.
@@ -50,6 +51,12 @@ fun DriveScene(
                 if (last != 0L) {
                     sim.step((now - last) / 1e9f, input)
                     meter.frame(now - last)
+                    // 프레임이 모자라면 효과를 줄인다(한번 줄이면 그 화면에서는 유지)
+                    if (!sim.lowDetail && (SideSeatUiDebug.lowDetail || (meter.fps > 0f && meter.fps < 26f))) {
+                        sim.lowDetail = true
+                        SideSeatUiDebug.lowDetail = true
+                        if (SideSeatUiDebug.logFrames) android.util.Log.i("SideSeatMeasure", "frame scene lowDetail=on fps=%.1f".format(meter.fps))
+                    }
                 }
                 last = now
                 frame = now
