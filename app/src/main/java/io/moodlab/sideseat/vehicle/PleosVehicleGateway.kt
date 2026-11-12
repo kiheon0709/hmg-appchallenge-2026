@@ -36,12 +36,8 @@ import ai.pleos.playground.vehicle.listener.TurnSignalStateListener
 import ai.pleos.playground.vehicle.listener.WindowPositionListener
 import ai.pleos.playground.vehicle.listener.WiperStateListener
 import android.car.Car
-import android.car.VehicleGear
-import android.car.VehiclePropertyIds
 import android.car.drivingstate.CarUxRestrictions
 import android.car.drivingstate.CarUxRestrictionsManager
-import android.car.hardware.CarPropertyValue
-import android.car.hardware.property.CarPropertyManager
 import android.content.Context
 import android.os.Build
 import android.os.SystemClock
@@ -83,6 +79,7 @@ import kotlin.coroutines.resume
 /**
  * 실차·에뮬레이터 신호. 값은 [GatewayConfig]의 실측 보정을 거친다.
  * 에뮬레이터 실측(docs/STATUS.md 11-13): 조향 부호 반대, 착좌 반대, 창문 0~10, 안개등 미지원, 비상등·경고등 읽기 불가.
+ * 정차 판정은 주행 규제(CarUxRestrictions)로 한다. AAOS 기어·차속은 쓰지 않는다.
  */
 data class GatewayConfig(
     /** 와이퍼가 켜져 있는 동안 스위치 조회 주기. 단계만 바뀌면 알림이 없다(실측). 200ms 조회에서 지연 30~160ms. */
@@ -91,12 +88,8 @@ data class GatewayConfig(
     val invertSteering: Boolean = true,
     /** 에뮬레이터는 착좌가 반대로 온다(Occupied → false). */
     val invertOccupancy: Boolean = isEmulator(),
-    /** AAOS PARKING_BRAKE_ON. 에뮬레이터에서는 VC로 바꿀 수 없어 늘 false라 쓰지 않는다(모름 = null). */
-    val useAaosParkingBrake: Boolean = !isEmulator(),
-    /** 정차 판정 순서. 실측: 주행 규제가 P=해제, R·N·D=규제(속도 0이어도). */
-    val parkedOrder: List<ParkedSource> = listOf(ParkedSource.UX_RESTRICTIONS, ParkedSource.AAOS_GEAR),
-    /** 위치 기반 속도는 AAOS 차속이 없을 때만 쓴다. */
-    val useLocationSpeedFallback: Boolean = true,
+    /** 정차 판정 순서. 주행 규제만 쓴다(주차 브레이크 경고등은 권한이 있는 차에서만 보조로). */
+    val parkedOrder: List<ParkedSource> = listOf(ParkedSource.UX_RESTRICTIONS, ParkedSource.PARKING_BRAKE),
 ) {
     companion object {
         fun isEmulator(): Boolean =
@@ -133,9 +126,6 @@ class PleosVehicleGateway(
         val telltales: Map<String, Pair<Boolean, TelltaleColor>> = emptyMap(),
         val telltalesKnown: Boolean = false,
         val uxRestricted: Boolean? = null,
-        val aaosGearPark: Boolean? = null,
-        val aaosParkingBrake: Boolean? = null,
-        val aaosSpeedKmh: Float? = null,
         val locationSpeedKmh: Float? = null,
         val sunrise: Int? = null,
         val sunset: Int? = null,
@@ -465,46 +455,21 @@ class PleosVehicleGateway(
         }, { fail("cap vin", it) })
     }
 
-    // ---------- AAOS: 주행 규제(정차 판정), 기어, 차속, 주차 브레이크 ----------
+    // ---------- 주행 규제(정차 판정) ----------
 
-    private val carPropertyCallback = object : CarPropertyManager.CarPropertyEventCallback {
-        override fun onChangeEvent(value: CarPropertyValue<*>) {
-            when (value.propertyId) {
-                VehiclePropertyIds.GEAR_SELECTION -> (value.value as? Int)?.let { g ->
-                    edit("car.gear", g) { it.copy(aaosGearPark = g == VehicleGear.GEAR_PARK) }
-                }
-                VehiclePropertyIds.PERF_VEHICLE_SPEED -> (value.value as? Float)?.let { mps ->
-                    val kmh = kotlin.math.abs(mps) * 3.6f
-                    // 100~200ms마다 온다(실측) → 1km/h 넘게 바뀔 때만 기록
-                    val prev = raw.aaosSpeedKmh
-                    if (prev == null || kotlin.math.abs(prev - kmh) >= 1f) edit("car.speed", kmh) { it.copy(aaosSpeedKmh = kmh) }
-                    else synchronized(lock) { raw = raw.copy(aaosSpeedKmh = kmh) }
-                }
-                VehiclePropertyIds.PARKING_BRAKE_ON -> (value.value as? Boolean)?.let { on ->
-                    if (config.useAaosParkingBrake) edit("car.parkingBrake", on) { it.copy(aaosParkingBrake = on) }
-                }
-            }
-        }
-        override fun onErrorEvent(propId: Int, zone: Int) = log("FAIL car prop ${VehiclePropertyIds.toString(propId)} zone=$zone")
-    }
-
+    /**
+     * 정차 판정은 주행 규제(CarUxRestrictions)만 쓴다. Pleos 가이드가 안내하는 표준 방식이고,
+     * 실측에서 P = requiresDO false, R·N·D = true(속도 0이어도)로 기어와 같은 시점에 바뀌었다.
+     * AAOS 기어·차속은 공모전 허용 범위를 지키려고 쓰지 않는다(decisions.md 11-14).
+     */
     private fun startCarApi() {
         val c = Car.createCar(context) ?: return log("FAIL car service unavailable")
         car = c
-        val pm = c.getCarManager(Car.PROPERTY_SERVICE) as CarPropertyManager
-        listOf(VehiclePropertyIds.GEAR_SELECTION, VehiclePropertyIds.PERF_VEHICLE_SPEED, VehiclePropertyIds.PARKING_BRAKE_ON).forEach { id ->
-            val ok = runCatching { pm.registerCallback(carPropertyCallback, id, CarPropertyManager.SENSOR_RATE_ONCHANGE) }
-                .onFailure { log("FAIL car subscribe ${VehiclePropertyIds.toString(id)} $it") }.getOrDefault(false)
-            log("car subscribe ${VehiclePropertyIds.toString(id)} -> $ok")
-        }
-        unregister += { pm.unregisterCallback(carPropertyCallback) }
-        runCatching {
-            val ux = c.getCarManager(Car.CAR_UX_RESTRICTION_SERVICE) as CarUxRestrictionsManager
-            val l = CarUxRestrictionsManager.OnUxRestrictionsChangedListener { r -> onUx(r) }
-            ux.registerListener(l)
-            unregister += { ux.unregisterListener() }
-            ux.currentCarUxRestrictions?.let { onUx(it) }
-        }.onFailure { log("FAIL ux restrictions $it") }
+        val ux = c.getCarManager(Car.CAR_UX_RESTRICTION_SERVICE) as CarUxRestrictionsManager
+        val l = CarUxRestrictionsManager.OnUxRestrictionsChangedListener { r -> onUx(r) }
+        ux.registerListener(l)
+        unregister += { ux.unregisterListener() }
+        ux.currentCarUxRestrictions?.let { onUx(it) }
     }
 
     private fun onUx(r: CarUxRestrictions) {
@@ -557,7 +522,7 @@ class PleosVehicleGateway(
             .isSuccess
     }
 
-    // ---------- 위치: 일몰 계산, 차속이 없을 때 속도 추정 ----------
+    // ---------- 위치: 일몰 계산, 속도 추정(O2 급감속 관찰) ----------
 
     private fun startLocation() {
         val f = FusedLocation(context)
@@ -662,8 +627,7 @@ class PleosVehicleGateway(
         val r = synchronized(lock) { raw }
         val inputs = ParkedInputs(
             uxRestricted = r.uxRestricted,
-            aaosGearPark = r.aaosGearPark,
-            parkingBrakeOn = r.aaosParkingBrake ?: r.telltaleOn("PARKING_BRAKE", "ELECTRONIC_PARKING_BRAKE"),
+            parkingBrakeOn = r.telltaleOn("PARKING_BRAKE", "ELECTRONIC_PARKING_BRAKE"),
         )
         val (parked, source) = inputs.resolve(config.parkedOrder)
         val diag = ParkedDiagnostics(inputs, parked, source)
@@ -695,7 +659,7 @@ class PleosVehicleGateway(
             occupied = r.occupied.filterValues { it }.keys,
             parkingBrakeOn = inputs.parkingBrakeOn,
             activeTelltales = r.telltales.filterValues { it.first }.mapValues { it.value.second },
-            speedKmhEstimate = r.aaosSpeedKmh ?: r.locationSpeedKmh.takeIf { config.useLocationSpeedFallback },
+            speedKmhEstimate = r.locationSpeedKmh,
             minuteOfDay = nowMinute(),
             sunsetMinute = r.sunset,
             sunriseMinute = r.sunrise,

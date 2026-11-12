@@ -9,6 +9,8 @@ import kotlin.test.assertTrue
 class DriveCoachTest {
     private val day = baseState.copy(parked = false, minuteOfDay = 13 * 60, recirculationOn = false)
     private val min = 60_000L
+    /** K07·K10까지 켠 설정(실차에서 신호가 읽히는 경우). */
+    private val allRules = CoachConfig(disabledRules = emptySet())
 
     /** 1초 간격으로 [state]를 [ms] 동안 흘려 넣고 나온 말을 모은다. */
     private class Drive(val coach: DriveCoach, var state: VehicleState) {
@@ -53,6 +55,7 @@ class DriveCoachTest {
         assertEquals(60_000, c.k06TurnSignalMs)
         assertEquals(10 * min, c.k07FogMs)
         assertEquals(110 * min, c.k08DrivingMs)
+        assertEquals(setOf("K07", "K10"), c.disabledRules)
         assertEquals(90f, c.o1SteerDeg)
         assertEquals(3_000, c.o1SignalLookbackMs)
     }
@@ -142,10 +145,11 @@ class DriveCoachTest {
 
     @Test
     fun `K07 fog lights on a clear road for 10 minutes`() {
-        val d = drive(day.copy(frontFogOn = true))
+        val d = drive(day.copy(frontFogOn = true), allRules)
         d.run(10 * min)
         assertEquals(listOf("K07"), d.ids())
-        val rainy = drive(day.copy(frontFogOn = true, wiper = WiperLevel.LOW, lowBeamOn = true))
+        assertTrue(drive(day.copy(frontFogOn = true)).also { it.run(15 * min) }.said.isEmpty(), "기본값은 K07 꺼짐")
+        val rainy = drive(day.copy(frontFogOn = true, wiper = WiperLevel.LOW, lowBeamOn = true), allRules)
         rainy.run(15 * min)
         assertTrue(rainy.said.isEmpty())
     }
@@ -172,7 +176,7 @@ class DriveCoachTest {
 
     @Test
     fun `K10 new warning light by color, once each, not ones already on`() {
-        val d = drive(day.copy(activeTelltales = mapOf("LOW_FUEL" to TelltaleColor.YELLOW)))
+        val d = drive(day.copy(activeTelltales = mapOf("LOW_FUEL" to TelltaleColor.YELLOW)), allRules)
         d.run(10_000)
         assertTrue(d.said.isEmpty(), "출발 때 이미 켜진 경고등은 말하지 않는다")
         d.set { it.copy(activeTelltales = it.activeTelltales + ("TPMS" to TelltaleColor.YELLOW)) }
@@ -198,7 +202,7 @@ class DriveCoachTest {
             highBeamOn = true, turnSignal = TurnSignal.LEFT, frontFogOn = true,
             recirculationOn = true, occupied = setOf(Seat.DRIVER, Seat.PASSENGER),
         )
-        val d = drive(s)
+        val d = drive(s, allRules)
         d.run(30 * min)
         assertEquals(listOf("K06", "K05", "K07"), d.ids())
         // 창이 지나면 다음 말(K04, 안전 반복 K06 등)이 가능해진다
@@ -217,7 +221,7 @@ class DriveCoachTest {
         d.run(60 * min)
         assertEquals(2, d.said.size)
 
-        val fog = drive(day.copy(frontFogOn = true))
+        val fog = drive(day.copy(frontFogOn = true), allRules)
         fog.run(60 * min)
         assertEquals(listOf("K07"), fog.ids())
     }
@@ -227,7 +231,7 @@ class DriveCoachTest {
         val s = day.copy(
             highBeamOn = true, turnSignal = TurnSignal.LEFT, frontFogOn = true, wiper = WiperLevel.OFF,
         )
-        val d = drive(s)
+        val d = drive(s, allRules)
         d.run(11 * min)
         assertEquals(3, d.said.size)
         d.set { it.copy(wiper = WiperLevel.LOW, frontFogOn = false) }

@@ -42,6 +42,8 @@ data class CoachConfig(
     val defaultSunriseMinute: Int = 6 * 60 + 30,
     /** 두 신호 사이 시간이 이보다 길면 끊긴 것으로 보고 누적하지 않는다. */
     val maxTickGapMs: Long = 5_000,
+    /** 끈 규칙. 안개등·경고등은 일반 앱이 읽을 수 없어 기본으로 끈다(명세 6.2 실측 반영). */
+    val disabledRules: Set<String> = setOf("K07", "K10"),
 ) {
     companion object {
         const val MIN = 60_000L
@@ -122,7 +124,9 @@ class DefaultDriveCoach(
 
         val newTelltale = newWarningTelltale(state)
         updateTimers(state, nowMs)
-        val candidates = rules.filter { condition(it.id, state, nowMs, newTelltale) && canSpeak(it, nowMs) }
+        val candidates = rules.filter {
+            it.id !in config.disabledRules && condition(it.id, state, nowMs, newTelltale) && canSpeak(it, nowMs)
+        }
         val rule = candidates.firstOrNull() ?: return null
         val u = utter(rule, state, newTelltale)
         if (rule.id == "K10" && newTelltale != null) announcedTelltales += newTelltale.first

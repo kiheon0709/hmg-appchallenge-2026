@@ -148,8 +148,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                 r.currentChoice()?.let { askChoice(r, it) }
             }
             else -> {
-                r.penalties.add("WRONG_${step.id}")
-                say(choice.wrongLine, priority = 1)
+                if (!choice.penaltyFree) r.penalties.add("WRONG_${step.id}")
+                say(choice.wrongLine, priority = 1, expectReply = choice.replyKind.takeIf { choice.penaltyFree })
             }
         }
     }
@@ -291,7 +291,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val sinceActive = nowMs - r.activeStartMs
         for (step in r.signalSteps) {
             if (step.id in r.doneAt) continue
-            if (step.done(state)) {
+            val ok = step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
+            if (ok) {
                 val since = r.holdSince.getOrPut(step.id) { nowMs }
                 if (nowMs - since >= step.holdMs) {
                     r.doneAt[step.id] = since
@@ -325,6 +326,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private fun askChoice(r: Run, step: StepDef) {
         val c = step.choice ?: return
         r.choiceAsked = step.id
+        if (c.replyKind == ReplyKind.YES_NO) {
+            say(c.question, priority = 1, expectReply = ReplyKind.YES_NO)
+            return
+        }
         val options = c.options.mapIndexed { i, o -> "${i + 1}번, ${o.text}." }.joinToString(" ")
         say("${c.question} $options", priority = 1, expectReply = ReplyKind.CHOICE)
     }
@@ -363,6 +368,14 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                 else -> 0
             }
             return if (penalized) minOf(base, 1) else base
+        }
+        // 말로만 답하는 상황(S07·S08)은 시간 대신 틀린 횟수로.
+        if (r.steps.all { it.choice != null }) {
+            return when (r.penalties.count { it.startsWith("WRONG_") }) {
+                0 -> 3
+                1 -> 2
+                else -> 1
+            }
         }
         if (penalized) return 1
         if (r.limitMs <= 0) return 3

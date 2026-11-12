@@ -27,8 +27,10 @@ data class TrainingConfig(
     val suddenStopStarsMs: List<Long> = listOf(700, 1_000, 1_500),
     val steerJerkDeg: Float = 45f,
     val steerJerkWindowMs: Long = 500,
-    /** S10 브레이크 유지 시간. */
-    val brakeHoldMs: Long = 1_500,
+    /** S10 브레이크 유지 시간(명세 5.2 실측 반영: 3초 이상). */
+    val brakeHoldMs: Long = 3_000,
+    /** S05 감속 기준: 가상 속도를 평소의 이 비율 이하로(시행규칙 제19조 50% 감속). */
+    val fogSlowFraction: Float = 0.5f,
     /** S10 브레이크를 이만큼 뗐다 밟으면 감점. */
     val brakePumpReleases: Int = 2,
     /** S12 급브레이크: 상황 뒤 이 시간 안에 밟아 이만큼 유지. */
@@ -61,9 +63,9 @@ data class TrainingConfig(
             SituationId.TUNNEL to 6_000,
             SituationId.DENSE_FOG to 10_000,
             SituationId.ONCOMING_GLARE to 5_000,
-            // 명세는 8초지만 말로 고르는 단계(STT 왕복)가 있어 15초로 둔다(decisions.md).
-            SituationId.BREAKDOWN to 15_000,
-            SituationId.WARNING_LIGHT to 15_000,
+            // 말로 답하는 상황은 시간 대신 틀린 횟수로 별을 준다(decisions.md).
+            SituationId.BREAKDOWN to 0,
+            SituationId.WARNING_LIGHT to 0,
             SituationId.DROWSY to 10_000,
             SituationId.UNINTENDED_ACCEL to 8_000,
             SituationId.BEFORE_EXIT to 0, // 시간 제한 없음

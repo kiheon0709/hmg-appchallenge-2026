@@ -38,6 +38,8 @@ class StepDef(
     val available: (VehicleState) -> Boolean = { true },
     val done: (VehicleState) -> Boolean = { false },
     val choice: ChoiceDef? = null,
+    /** 화면 속 가상 속도(km/h)까지 보고 판정할 때(S05 감속). 있으면 [done] 대신 쓴다. */
+    val doneWithSpeed: ((VehicleState, Float) -> Boolean)? = null,
 )
 
 class ChoiceDef(
@@ -46,6 +48,10 @@ class ChoiceDef(
     val correct: Int,
     /** 틀렸을 때 바로잡는 말. */
     val wrongLine: String,
+    /** YES_NO면 보기를 읽지 않고 질문만 한다. */
+    val replyKind: ReplyKind = ReplyKind.CHOICE,
+    /** "아직이요" 같은 답을 감점하지 않는다(S11 확인 질문). */
+    val penaltyFree: Boolean = false,
 )
 
 class ChoiceOption(val text: String, val keywords: List<String>)
@@ -164,17 +170,18 @@ object SituationCatalog {
         SituationDef(
             id = SituationId.DENSE_FOG, title = "짙은 안개",
             intro = "안개가 짙어요. 앞이 하얘요.",
-            lesson = "안개엔 하향등과 안개등이에요. 상향등은 오히려 하얗게 번져요.",
+            // 출처: 도로교통법 제37조(등화), 시행규칙 제19조(가시거리 100m 이내 50% 감속). 안개등은 신호를 못 읽어 말로만 안내(실측).
+            lesson = "안개엔 전조등을 켜고 속도를 절반으로 줄여요. 안개등이 있으면 같이 켜요.",
             steps = listOf(
-                // 안개등이 없는 차(에뮬레이터 미지원)는 하향등과 상향등 감점만으로 한다.
                 lowBeamOn.copyEssential(),
                 StepDef(
-                    id = "fog_on", label = "안개등 켜기",
-                    hint = "안개등은 왼쪽 레버의 가운데 링을 돌려요.", setup = "안개등을 꺼 두세요",
-                    available = { it.anyFogOn != null }, done = { it.anyFogOn == true },
+                    id = "slow_down", label = "속도 절반으로 줄이기",
+                    hint = "브레이크를 밟아 속도를 절반으로 줄여요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= config.cruiseSpeedKmh * config.fogSlowFraction },
                 ),
             ),
-            penalties = listOf(highBeamPenalty("안개에선 상향등이 빛을 흩뿌려요. 하향등이 나아요.")),
+            penalties = listOf(highBeamPenalty("안개에선 상향등 말고 하향등이에요.")),
         ),
         SituationDef(
             id = SituationId.ONCOMING_GLARE, title = "맞은편 차",
@@ -189,27 +196,51 @@ object SituationCatalog {
             ),
         ),
         SituationDef(
+            // 비상등은 일반 앱이 읽을 수 없어(실측) 스위치 판정 없이 순서 퀴즈로 한다.
+            // 출처: 국토교통부 2020-09-21 카드뉴스, 한국도로공사 "비트박스"(정책브리핑 2024-07-31).
             id = SituationId.BREAKDOWN, title = "고속도로 고장",
             intro = "차가 멈췄어요. 여기는 고속도로예요!",
-            lesson = "비상등 켜고, 트렁크 열고, 가드레일 밖으로. 그다음 신고예요.",
+            lesson = "비상등, 트렁크, 밖으로 대피, 스마트폰 신고. '비트박스'로 기억해요.",
             steps = listOf(
-                StepDef(
-                    id = "hazard_on", label = "비상등 켜기", hint = HAZARD_HINT, setup = "비상등을 꺼 두세요",
-                    available = { it.hazardOn != null || it.turnSignal == TurnSignal.HAZARD }, done = { it.hazardOn == true || it.turnSignal == TurnSignal.HAZARD },
-                ),
-                StepDef(
-                    // 비상등을 못 읽는 차(에뮬레이터 실측)에서도 대피 판단은 연습한다.
-                    id = "evacuate", label = "다음 행동 고르기", hint = "트렁크를 열고 가드레일 밖으로 피해요.", essential = true,
-                    choice = ChoiceDef(
-                        question = "비상등 다음엔 뭘 할까요?",
-                        options = listOf(
-                            ChoiceOption("트렁크를 열고 가드레일 밖으로 피해요", listOf("트렁크", "가드레일", "밖으로", "대피", "피해")),
-                            ChoiceOption("차 안에서 안전벨트 매고 기다려요", listOf("차 안", "안에서", "기다", "벨트")),
-                            ChoiceOption("차 뒤에 서서 손을 흔들어요", listOf("뒤에", "손", "흔들")),
-                        ),
-                        correct = 0,
-                        wrongLine = "차 안이나 차 뒤는 뒤차에 부딪힐 수 있어요. 가드레일 밖이 안전해요.",
+                quizStep(
+                    "first", "먼저 할 일", essential = true,
+                    question = "가장 먼저 할 일은 뭘까요?",
+                    options = listOf(
+                        ChoiceOption("비상등 켜기", listOf("비상등", "비상")),
+                        ChoiceOption("차에서 내려 차 상태 보기", listOf("내려", "상태", "살펴")),
+                        ChoiceOption("보험사에 전화하기", listOf("보험", "전화")),
                     ),
+                    wrongLine = "먼저 비상등이에요. 뒤차에 알려야 해요.",
+                ),
+                quizStep(
+                    "trunk", "그다음",
+                    question = "그다음엔요?",
+                    options = listOf(
+                        ChoiceOption("트렁크 열기", listOf("트렁크")),
+                        ChoiceOption("차 안에서 기다리기", listOf("안에서", "기다")),
+                        ChoiceOption("차 뒤에서 손 흔들기", listOf("뒤에서", "손", "흔들")),
+                    ),
+                    wrongLine = "트렁크를 열어 고장 난 차라는 걸 알려요.",
+                ),
+                quizStep(
+                    "evacuate", "대피",
+                    question = "사람은 어디로 갈까요?",
+                    options = listOf(
+                        ChoiceOption("가드레일 밖 안전한 곳", listOf("가드레일", "밖", "안전")),
+                        ChoiceOption("차 바로 앞", listOf("앞")),
+                        ChoiceOption("갓길에 세운 차 옆", listOf("옆", "갓길")),
+                    ),
+                    wrongLine = "차 근처는 위험해요. 가드레일 밖으로 먼저 피해요. 차 확인보다 대피가 먼저예요.",
+                ),
+                quizStep(
+                    "report", "신고",
+                    question = "마지막으로 할 일은요?",
+                    options = listOf(
+                        ChoiceOption("112나 한국도로공사 콜센터에 신고", listOf("112", "119", "신고", "도로공사", "콜센터")),
+                        ChoiceOption("차 사진 찍어 올리기", listOf("사진", "올리")),
+                        ChoiceOption("견인차가 올 때까지 그냥 기다리기", listOf("견인", "그냥")),
+                    ),
+                    wrongLine = "안전한 곳에서 스마트폰으로 112나 한국도로공사 콜센터에 신고해요.",
                 ),
             ),
             loopSfx = listOf("hazard"), onceSfx = listOf("alarm"),
@@ -267,19 +298,16 @@ object SituationCatalog {
             loopSfx = listOf("yawn"),
         ),
         SituationDef(
+            // 출처: 한국교통안전공단 보도자료 2023-12-08. 브레이크·EPB 유지·중립 세 동작, 순서는 정하지 않음.
+            // EPB 신호는 읽을 수 없어(실측) 브레이크 유지만 채점하고 나머지는 말로 안내한다.
             id = SituationId.UNINTENDED_ACCEL, title = "의도치 않은 가속",
-            intro = "차가 계속 빨라져요! 브레이크예요!",
-            lesson = "브레이크는 떼지 말고 끝까지, 주차 브레이크는 계속 당겨요.",
+            intro = "차가 계속 빨라져요! 브레이크를 꾹 밟아요!",
+            lesson = "브레이크는 떼지 말고 계속 밟아요. 전자식 주차 브레이크는 멈출 때까지 당기고, 기어는 중립으로요. 시동 끄기는 권하지 않아요.",
             steps = listOf(
                 StepDef(
-                    id = "brake_hold", label = "브레이크 밟고 유지", essential = true, holdMs = config.brakeHoldMs,
+                    id = "brake_hold", label = "브레이크 3초 이상 밟기", essential = true, holdMs = config.brakeHoldMs,
                     hint = "브레이크를 끝까지 밟고 떼지 마세요.", setup = "브레이크에서 발을 떼 주세요",
                     available = { it.brakePressed != null }, done = { it.brakePressed == true },
-                ),
-                StepDef(
-                    id = "epb_pull", label = "주차 브레이크 당기기",
-                    hint = "전자식 주차 브레이크는 기어 근처 P 스위치예요. 계속 당겨요.", setup = "주차 브레이크를 풀어 두세요",
-                    available = { it.parkingBrakeOn != null }, done = { it.epbOn() },
                 ),
             ),
             penalties = listOf(
@@ -301,9 +329,20 @@ object SituationCatalog {
                     available = { it.driverWindowOpenPct != null },
                     done = { (it.driverWindowOpenPct ?: 0) == 0 && it.windowOpenPct.values.all { p -> p == 0 } },
                 ),
+                // 주차 브레이크 신호는 읽을 수 없어(실측) 선배가 묻고 말로 답한다.
                 StepDef(
-                    id = "parking_brake", label = "주차 브레이크", hint = "주차 브레이크를 걸어요.", setup = "주차 브레이크를 풀어 두세요",
-                    available = { it.parkingBrakeOn != null }, done = { it.epbOn() },
+                    id = "parking_brake", label = "주차 브레이크 확인", hint = "주차 브레이크를 채워요.",
+                    choice = ChoiceDef(
+                        question = "주차 브레이크 채웠나요?",
+                        options = listOf(
+                            ChoiceOption("네, 채웠어요", listOf("네", "응", "예", "채웠", "그래")),
+                            ChoiceOption("아직이요", listOf("아직", "아니", "안 했", "안했")),
+                        ),
+                        correct = 0,
+                        wrongLine = "그럼 지금 채워 볼까요? 다 되면 '응'이라고 해 주세요.",
+                        replyKind = ReplyKind.YES_NO,
+                        penaltyFree = true,
+                    ),
                 ),
             ),
         ),
@@ -329,7 +368,19 @@ object SituationCatalog {
 
     fun title(id: SituationId): String = all().first { it.id == id }.title
 
-    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice)
+    private fun quizStep(
+        id: String,
+        label: String,
+        question: String,
+        options: List<ChoiceOption>,
+        wrongLine: String,
+        essential: Boolean = false,
+    ) = StepDef(
+        id = id, label = label, hint = options.first().text, essential = essential,
+        choice = ChoiceDef(question, options, correct = 0, wrongLine = wrongLine),
+    )
+
+    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice, doneWithSpeed)
 }
 
 /** 주차 브레이크(일반·전자식) 경고등 또는 주차 브레이크 신호. */
