@@ -68,13 +68,17 @@ data class VoiceConfig(
     val reviewModel: String = DEFAULT_REVIEW_MODEL,
     /** BuildConfig.LLM_PROVIDER. 비어 있거나 anthropic·claude일 때만 LLM을 켠다(다른 회사 키를 Claude API로 보내지 않게). */
     val provider: String = "",
+    /** 실측용: TTS가 말하는 중에도 마이크를 열지(끼어들기). 기본은 말이 끝난 뒤 연다. */
+    val bargeIn: Boolean = false,
+    /** 실측용: 문장 흐름을 speak(isFinal=false)로 이어 보낼지. false면 문장마다 따로 말한다. */
+    val chunkedTts: Boolean = true,
 ) {
     val llmEnabled: Boolean
         get() = apiKey.isNotBlank() && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }
 
     /** 키가 로그에 찍히지 않게 한다. */
     override fun toString(): String =
-        "VoiceConfig(llmEnabled=$llmEnabled, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel)"
+        "VoiceConfig(llmEnabled=$llmEnabled, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel, bargeIn=$bargeIn, chunkedTts=$chunkedTts)"
 
     companion object {
         /** 주행 중 질문: 첫 문장까지의 시간이 가장 중요하다. */

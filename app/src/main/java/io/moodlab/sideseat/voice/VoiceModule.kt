@@ -54,8 +54,8 @@ object VoiceModule {
         Log.i(MEASURE_TAG, "knowledge entries=${knowledge.entries.size} chars=${knowledge.rawText.length}")
         val llm: LlmClient? = if (cfg.llmEnabled) createLlmClient(cfg, log) else null
         val instructor = SeniorInstructor(knowledge, llm, meter, s, SystemClock::elapsedRealtime, log)
-        val speaker = TtsSpeaker(app, s, meter)
-        val voice = PleosVoice(app, s, speaker, meter, hooks = instructor)
+        val speaker = TtsSpeaker(app, s, meter, chunked = cfg.chunkedTts)
+        val voice = PleosVoice(app, s, speaker, meter, hooks = instructor, bargeIn = cfg.bargeIn)
         val sfx = SfxPlayer(app, s)
 
         // 선배가 말하거나 듣는 동안 효과음을 줄인다.
