@@ -1,5 +1,63 @@
 # 진행 상황
 
+## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
+
+빌드: 디버그 APK(공유 폴더를 복사한 격리 빌드), Pleos Connect Emulator 2.1.0. 조작은 모두 Virtual Console HTTP API(아래 실측 절)로 했고, 시나리오 실행기가 앱 로그(`SideSeatMeasure`)를 보며 다음 조작과 캡처를 했다. 캡처는 `docs/screens/sim/`(파일 이름이 장면 이름).
+
+### 완료 조건 8개 장면
+
+| # | 완료 조건 | 결과 | 증거(캡처) |
+| --- | --- | --- | --- |
+| 1 | P단에서 훈련 시작 → 가짜 3D 주행 화면이 움직인다 | **확인**. 주행 화면 60 fps(아래 표) | `c1_s01_heavy_rain_active_landscape.jpg`, `c2_s04_tunnel_dark.jpg` |
+| 2 | 훈련 상황 5개 이상이 실제 신호로 판정 | **확인: 9개**. S01 와이퍼 High+하향등, S02 성에 제거+에어컨+외기, S03 브레이크 반응, S04 하향등, S05 하향등+브레이크 감속, S06 상향등 끄기, S09 외기+운전석 창문, S10 브레이크 3초 유지, S11 하향등 끄기+창문 닫기. (S07·S08·S11 주차 브레이크는 선택지 답) | `c1_*`, `c2_*`, `c3_s10_*`, `c4_*` |
+| 3 | 상황 중 앰비언트 set, 효과음·TTS 대사 | **확인**. 상황마다 `ambient CALM→ALERT→SUCCESS→CALM` set 성공(6~55 ms), VC 화면이 빨갛게 바뀜. TTS 대사 `tts start/done`, 효과음 rain·tire 등 재생 로그. 소리는 사람이 들어 확인 필요 | `virtual_console_ambient_alert_red.jpg`, `c1_s01_app_same_moment_ambient_alert.jpg` |
+| 4 | D로 바꾸면 훈련 화면이 닫히고 코치 모드 | **확인**. `app mode TRAINING -> COACH`, 훈련 중단·저장, 효과음 정지 | `c2_s04_tunnel_active_before_gear_d.jpg` → `coach_after_leaving_p_training_closed.jpg` |
+| 5 | 코치 규칙 3개 이상이 신호 조합으로 발화 | **확인: K01·K06·K05** (+K09 접두어). 실제 임계값 그대로(20초·60초·3분) | `coach_k01_wiper_on_headlamp_off.jpg`, `coach_k06_turn_signal_left_60s.jpg`, `coach_k05_high_beam_3min.jpg` |
+| 6 | P로 돌아오면 요약 화면과 음성 총평 | **확인**. `app mode COACH -> REVIEW`, LLM 총평 첫 문장 0.7초(두 번째 시행 2.8초) | `review_after_park_voice_summary.jpg`, `review_after_park_done.jpg` |
+| 7 | 미니게임(핸들 금고 다이얼)이 조향각으로 동작 | **확인**. 90° → -45° → 120°, 8.9초에 열림 | `m1_safe_dial_start.jpg`, `m1_safe_dial_turning_right_90.jpg`, `m1_safe_dial_opened.jpg` |
+| 8 | 가로·세로 창에서 레이아웃이 깨지지 않음 | **확인**. 가로 1682×1210(기본 앱 창), 세로 835×1210(`am task resize`로 창을 좁힘). 홈·훈련·코치·리뷰 모두 세로로 쌓임. 폼 팩터 콘솔(12.9·14.6인치)은 Go 브리지가 필요해 미확인 | `home_landscape_first_run.jpg`, `portrait_home.jpg`, `portrait_training_s01_heavy_rain.jpg`, `portrait_coach_k01.jpg`, `portrait_review.jpg` |
+
+챕터 결과(한 번 시행): C1 ★6/9(폭우 ★3 4.0초, 김서림 ★2 6.3초, 급정거 ★1 — 캡처 시간 때문에 반응 1.0초), C2 ★12/12, C3 ★9/9, C4 ★3/3.
+
+### 실측 표
+
+| 항목 | 값 | 방법 |
+| --- | --- | --- |
+| 차량 신호 지연(VC → 앱 리스너) | 브레이크·방향지시등·등화·공조·창문·와이퍼 ON/OFF·기어·정차 판정 10 ms 미만, 조향각 90~160 ms, 와이퍼 단계(200 ms 조회) 30~160 ms | 아래 "에뮬레이터 실측" 절 |
+| 주행 화면 프레임 | **60 fps**(평균 16.7 ms, 33 ms 넘는 프레임 0/121, 그리기 기록 평균 0.6~0.9 ms) | C1 30초 `frame scene` 로그 14구간 |
+| 음성 지연(말 끝 → 첫 음성) | 빠른 길(지식 파일 즉답): STT 최종 결과 → TTS 시작 **6~8 ms**. LLM 길(claude-haiku-5-5): **939 ms**(첫 문장 603 ms + TTS 시작 330 ms). STT는 음성이 끝난 뒤 약 0.4초에 최종 결과를 주므로 실제 말 끝 기준은 빠른 길 약 0.4초, LLM 길 약 1.3초 | PCM 질문 4개를 `listenFromPcm`으로 넣음(디버그 명령 `ask_pcm`) |
+| 리뷰 총평 첫 문장 | 0.7초 / 2.8초(claude-opus-5-5, 2회) | `app review first sentence` 로그 |
+| 앰비언트 set | P단 6~55 ms 성공. 주행 중에는 앱이 부르지 않음(명세 6.1) | `app ambient … ok=true took=` |
+| P단·D단 제어 | 앰비언트·성에 제거·에어컨·내기순환·창문 set 모두 P·D 성공(에뮬레이터) | 아래 실측 절 |
+| 에뮬레이터 인터넷 | 처음에는 연결 없음(`Active default network: none`) → 차량 설정 Wi-Fi에서 `AndroidWifi`에 연결해 해결 | LLM 예열 HTTP 200 확인 |
+
+### 로그 발췌
+
+```
+app mode HOME -> TRAINING
+app say p=2 '비가 쏟아져요. 앞이 안 보여요!'
+app ambient ALERT ok=true took=37ms
+app training C1 HEAVY_RAIN SUCCESS steps=wiper_fast:1, low_beam_on:1 result=HEAVY_RAIN★3 3991ms
+app training C1 FOGGED_WINDSHIELD SUCCESS steps=defrost_on:1, ac_on:1, fresh_air:1 result=FOGGED_WINDSHIELD★2 6321ms
+app training C2 DROWSY SUCCESS steps=fresh_air:1, window_open:1 result=DROWSY★3 2889ms
+app training C3 UNINTENDED_ACCEL SUCCESS steps=brake_hold:1 result=UNINTENDED_ACCEL★3 1949ms
+app mode TRAINING -> COACH
+app coach say rule=K01 urgent=true '연습했던 거예요. 비가 와요. 전조등을 켜 주세요.'
+app coach say rule=K06 urgent=false '깜빡이가 계속 켜져 있어요.'
+app coach say rule=K05 urgent=false '상향등이 계속 켜져 있어요.'
+app mode COACH -> REVIEW
+app review first sentence after=706ms
+app safedial solved=3/3 targets=[90, -45, 120] deg=120.0 done=true t=8887ms
+frame scene fps=60.0 avgMs=16.7 maxMs=16.7 over33ms=0/121 drawRecordAvgMs=0.91
+latency total=939ms path=llm final->answer=6ms answer->firstSentence=603ms firstSentence->ttsStart=330ms
+latency total=8ms path=fast-knowledge final->answer=5ms answer->firstSentence=0ms firstSentence->ttsStart=3ms
+```
+
+### 디버그 빌드 도구 (실측·시연 녹화용)
+
+- `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd <cmd> --es arg <arg>`: `chapter C1`, `answer <선택지>`, `action OpenSafeDial|ShowResult|GoHome|ToggleDebugPanel…`, `ask_pcm <files 안 PCM>`, `frames on|off`, `vehicle debug|pleos`
+- 실측 도구(신호 전체 로그·set 시험): 앱을 `--ez probe true`로 실행
+
 ## 옆자리(SideSeat) 에뮬레이터 실측 (2026-11-13 새벽, dev-integration)
 
 환경: Pleos Connect Emulator 2.1.0 (`Pleos_Connect_v2.1`, cold boot, API 34), Vehicle SDK 2.3.2, TTS·STT 3.3.1, FusedLocation 1.1.3.

@@ -45,6 +45,7 @@ object AppGraph {
         val c = SideSeatController(scope, flow, voice, sfx, instructor, ProgressStore(app))
         gatewayFlowRef = flow
         c.start()
+        if (BuildConfig.DEBUG) DebugCommands(app, c).register()
         controller = c
         Log.i("SideSeatMeasure", "app graph ready debug=${BuildConfig.DEBUG} llm=${BuildConfig.LLM_API_KEY.isNotBlank()}")
         return c

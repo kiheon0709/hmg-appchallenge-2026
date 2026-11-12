@@ -25,6 +25,7 @@ import io.moodlab.sideseat.ui.TalkUi
 import io.moodlab.sideseat.ui.UiAction
 import io.moodlab.sideseat.vehicle.VehicleGateway
 import io.moodlab.sideseat.voice.Instructor
+import io.moodlab.sideseat.voice.PleosVoice
 import io.moodlab.sideseat.voice.Sfx
 import io.moodlab.sideseat.voice.Voice
 import kotlinx.coroutines.CoroutineScope
@@ -151,7 +152,7 @@ class SideSeatController(
         val state = _ui.value.vehicle
         val u = coach.tick(state, now()) ?: return
         Log.i(TAG, "app coach say rule=${u.ruleId} urgent=${u.urgent} '${u.text}'")
-        _ui.update { it.copy(coach = it.coach.copy(lastLine = u.text, urgent = u.urgent)) }
+        _ui.update { it.copy(coach = it.coach.copy(lastLine = coachLine(u.text), urgent = u.urgent)) }
         voice.say(u.text, urgent = u.urgent)
         val kind = u.expectReply ?: return
         talkJob?.cancel()
@@ -239,7 +240,11 @@ class SideSeatController(
             val s = _ui.value.vehicle
             val n = now()
             when (kind) {
-                MiniGameKind.SAFE_DIAL -> safeDial.tick(s.steeringAngleDeg, n).let { (v, e) -> _ui.update { it.copy(safeDial = v) }; dispatch(e) }
+                MiniGameKind.SAFE_DIAL -> safeDial.tick(s.steeringAngleDeg, n).let { (v, e) ->
+                    val old = _ui.value.safeDial
+                    if (old?.solved != v.solved || old.done != v.done) Log.i(TAG, "app safedial solved=${v.solved}/${v.targetsDeg.size} targets=${v.targetsDeg} deg=${v.currentDeg} done=${v.done} t=${v.elapsedMs}ms")
+                    _ui.update { it.copy(safeDial = v) }; dispatch(e)
+                }
                 MiniGameKind.TURN_SIGNAL -> turnGame.tick(s.turnSignal, n).let { (v, e) -> _ui.update { it.copy(turnGame = v) }; dispatch(e) }
                 MiniGameKind.WINDOW_BUZZER -> windowGame.tick(s.windowOpenPct, n).let { (v, e) -> _ui.update { it.copy(windowGame = v) }; dispatch(e) }
             }
@@ -286,29 +291,31 @@ class SideSeatController(
 
     // ---------- 말하기·듣기 ----------
 
-    private suspend fun listenOnce(kind: ReplyKind): String? {
+    private suspend fun listenOnce(kind: ReplyKind, pcm: ByteArray? = null): String? {
         updateTalk { it.copy(partialText = null) }
-        val text = voice.listen(kind) { partial -> updateTalk { it.copy(partialText = partial) } }
+        val onPartial: (String) -> Unit = { partial -> updateTalk { it.copy(partialText = partial) } }
+        val pleos = voice as? PleosVoice
+        val text = if (pcm != null && pleos != null) pleos.listenFromPcm(pcm, kind, onPartial) else voice.listen(kind, onPartial)
         Log.i(TAG, "app heard kind=$kind '${text ?: ""}'")
         updateTalk { it.copy(partialText = text) }
         return text
     }
 
-    private fun askQuestion() {
+    /** @param pcm 실측·시연용: 마이크 대신 넣을 16kHz 16bit mono PCM(디버그 명령에서만). */
+    fun askQuestion(pcm: ByteArray? = null) {
         talkJob?.cancel()
         voice.stopSpeaking()
         val parked = _ui.value.vehicle.parked
         val context = questionContext()
         talkJob = scope.launch {
             instructor.prepareQuestion(parked, context)
-            val q = listenOnce(ReplyKind.FREE) ?: return@launch
+            val q = listenOnce(ReplyKind.FREE, pcm) ?: return@launch
             updateTalk { it.copy(thinking = true, answerText = null) }
             voice.sayStreaming(instructor.answer(q, parked, context).onEach { line ->
                 updateTalk { it.copy(thinking = false, answerText = listOfNotNull(it.answerText, line).joinToString(" ")) }
-                if (_ui.value.mode == AppMode.COACH) _ui.update { s -> s.copy(coach = s.coach.copy(lastLine = line)) }
+                if (_ui.value.mode == AppMode.COACH) _ui.update { s -> s.copy(coach = s.coach.copy(lastLine = coachLine(line))) }
             })
             updateTalk { it.copy(thinking = false) }
-            Log.i(TAG, "app answer latency=${instructor.lastLatencyMs.value}ms")
         }
     }
 
@@ -449,6 +456,20 @@ class SideSeatController(
         loopJob?.cancel()
         loopJob = null
     }
+}
+
+/**
+ * 주행 화면의 한 줄은 한글 24자 이내(명세 9장). 넘치면 앞 문장(예: K09의 "연습했던 거예요.")부터 덜어 내고,
+ * 그래도 길면 마지막 문장만 남긴다. 말은 원문 그대로 한다.
+ */
+fun coachLine(text: String, max: Int = 24): String {
+    if (text.length <= max) return text
+    val sentences = text.split(Regex("(?<=[.?!])\\s+")).filter { it.isNotBlank() }
+    for (i in sentences.indices) {
+        val rest = sentences.drop(i).joinToString(" ")
+        if (rest.length <= max) return rest
+    }
+    return sentences.last()
 }
 
 /** 화면·로그에 쓰는 상황 이름. */
