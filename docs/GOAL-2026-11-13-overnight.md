@@ -56,7 +56,7 @@
 
 ## 5. 점검 결과 (2026-11-13, 상위 세션이 저장소 파일과 직접 대조)
 
-최종 소스 `5f76c80`, 최종 빌드 커밋 `3f797d8`. 푸시하지 않았다. 1절의 `[x]`는 아래 표의 대조를 마친 항목이다.
+최종 소스 `e10f0d1`, 최종 빌드 커밋 `7d5e8f7`(06:57 빌드, release 스모크 크래시 0). 푸시하지 않았다. 1절의 `[x]`는 아래 표의 대조를 마친 항목이다.
 
 | # | 완료 조건 | 판정 | 대조한 증거 |
 | --- | --- | --- | --- |
@@ -64,7 +64,7 @@
 | 기획 2 | 상황별 공식 출처, 없는 것은 제외 | 충족 | `docs/plan/safety-sources.md`(15개 상황, 출처 URL과 확인 수준), 명세 5.2.1 표(S01~S11 링크). 출처 없는 S12는 챕터에서 제외(core 커밋 `4bf8a16`) |
 | 기획 3 | 접수양식 순서의 기획서 초안 | 충족 | `docs/plan/application-draft.md` 1~8번 절(기존 접수양식 초안 `기획서_초안.md`와 같은 항목 순서) |
 | 앱 1 | core 테스트 통과, 판정·점수·코치가 core에 | 충족 | 상위 세션이 `./gradlew :core:test` 직접 실행: 77개 통과, 실패 0. `core/src/main/kotlin/io/moodlab/sideseat/core/`의 `DefaultTrainingEngine.kt`·`DefaultDriveCoach.kt`·`TrainingConfig.kt`, 테스트 `TrainingEngineTest.kt`·`DriveCoachTest.kt`·`MiniGameTest.kt` 등 |
-| 앱 2 | assembleRelease, apk/ | 충족 | `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(06:22). `docs/STATUS.md` "최종 빌드"와 "release APK" 절(release 스모크 크래시 0) |
+| 앱 2 | assembleRelease, apk/ | 충족 | `apk/MoodLab_SideSeat_release.apk` 22,839,355바이트(06:57). `docs/STATUS.md` "최종 빌드"와 "release APK" 절(release 스모크 크래시 0) |
 | 앱 3-1 | P단 훈련 → 주행 화면이 움직임 | 충족 | `docs/STATUS.md` 장면 표 1번, 프레임 표(58~60fps). 캡처 `c1_s01_heavy_rain_active_landscape.jpg`, `v2_calm_cruise_traffic_wiper_off.jpg`(상위 세션이 캡처를 직접 확인) |
 | 앱 3-2 | 실제 신호 판정 5개 이상 | 충족 (9개) | 장면 표 2번과 로그 발췌(`training … SUCCESS steps=…`). 캡처 `c1_*`, `c2_*`, `c3_s10_*`, `c4_*` |
 | 앱 3-3 | 앰비언트 set, 효과음·TTS | 충족 (소리는 로그 기준) | 로그 `app ambient ALERT ok=true`, `app say …`. 캡처 `11-virtual-console.png`, `virtual_console_ambient_alert_red.jpg`. 소리를 사람이 듣는 확인은 하지 않음 |
@@ -81,7 +81,7 @@
 
 | 항목 | 결과 | 증거 |
 | --- | --- | --- |
-| 폼 팩터 12.9인치 세로(628×855)·14.6인치 가로(1700×1185) | **확인됨.** 홈·훈련·코치·리뷰가 두 크기에서 정상. 결함 1건(리뷰 화면 말하기 버튼 글자 잘림)은 화면 세션이 수정 중 | `docs/screens/sim/ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`(12장, 상위 세션이 직접 확인). 공식 문서의 브리지 도구는 내려받지 않고, 같은 일을 에뮬레이터 콘솔 명령(`adb emu multidisplay add`)으로 했다. 크기는 FormFactorConsole 프리셋 값 |
+| 폼 팩터 12.9인치 세로(628×855)·14.6인치 가로(1700×1185) | **확인됨.** 홈·훈련·코치·리뷰가 두 크기에서 정상. 결함 1건(말하기 버튼 글자 잘림)은 고쳐서 두 크기에서 다시 확인(ui `a7d894b`, 통합 `e10f0d1`) | `docs/screens/sim/ff_12.9_portrait_*.jpg`, `ff_14.6_landscape_*.jpg`(12장, 상위 세션이 직접 확인). 공식 문서의 브리지 도구는 내려받지 않고, 같은 일을 에뮬레이터 콘솔 명령(`adb emu multidisplay add`)으로 했다. 크기는 FormFactorConsole 프리셋 값 |
 | 차량 마이크(`request()`) 음성 인식 | **사람 목소리가 있어야 끝낼 수 있음.** 무음의 원인은 찾아서 해결했다: 에뮬레이터를 `-allow-host-audio` 없이 켜면 마이크 입력이 0으로 채워진다. 이 옵션으로 켜니 호스트 마이크 소리가 STT 입력으로 들어온다(입력 RMS: 마이크 켬 25~44, 끔 0.1~0.7). 남은 것은 사람이 맥 마이크에 말하는 것뿐 | `docs/STATUS.md` 차량 마이크 STT 항목, `docs/plan/needs-user.md`의 절차. 자동으로 못 한 이유: 가상 마이크에 녹음을 넣는 방법은 에뮬레이터가 두 번 죽었고(에뮬레이터 버그), 맥 스피커는 음소거 상태라 사용자 설정을 바꾸지 않았다. 오디오를 직접 넣는 방식(`sendAudio`)으로는 인식을 확인했다 |
 
 ### 사용자만 할 수 있는 것
