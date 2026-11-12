@@ -199,14 +199,15 @@ internal class SeniorInstructor(
         const val REVIEW_FILLER = "오늘 운전, 같이 돌아볼게요."
         const val REVIEW_FILLER_AFTER_MS = 700L
         const val REVIEW_FIRST_TIMEOUT_MS = 6_000L
-        const val ANSWER_MAX_TOKENS_DRIVING = 400L
-        const val ANSWER_MAX_TOKENS_PARKED = 800L
+        /** 답은 문장 수로 자르고, 남은 응답은 연결 재사용을 위해 끝까지 읽어 버리므로 작게 둔다(한국어 2문장 ≈ 100토큰). */
+        const val ANSWER_MAX_TOKENS_DRIVING = 200L
+        const val ANSWER_MAX_TOKENS_PARKED = 400L
         /** 총평 모델은 생각(thinking)을 끌 수 없어 그 몫까지 둔다. */
         const val REVIEW_MAX_TOKENS = 4_000L
         /**
-         * 연결·캐시를 다시 데우는 간격. 듣기 시작할 때 마지막 사용에서 이만큼 지났으면 max_tokens 0 요청을 보낸다.
-         * 캐시(5분)보다 짧게 잡은 이유는 놀고 있는 TLS 연결이 닫히기 전에 다시 쓰기 위해서다(질문마다 핸드셰이크를 피함).
+         * 마이크를 열 때마다 연결·캐시를 데운다(max_tokens 0 요청). 풀에 살아 있는 연결이 있으면 그것을 다시 쓰고,
+         * 없으면 사용자가 말하는 동안(1초 이상) TLS를 새로 맺어 둔다. 바로 앞(3초 안)에 연결을 썼으면 건너뛴다.
          */
-        const val PREWARM_INTERVAL_MS = 45_000L
+        const val PREWARM_INTERVAL_MS = 3_000L
     }
 }
