@@ -34,6 +34,7 @@ internal class CockpitLayer {
     private val red = GlowBrush(Color(0xFFFF2A3C))
     private val green = GlowBrush(Color(0xFF3DF08A))
     private val calm = GlowBrush(Color(0xFFBFD4FF))
+    private val amberGlow = GlowBrush(Color(0xFFFFB02E), core = 0.02f)
 
     private fun ensure(size: Size) {
         if (size.width == w && size.height == h) return
@@ -101,6 +102,28 @@ internal class CockpitLayer {
 
         drawCluster(sim, input, cx)
         drawWheel(sim, cx)
+
+        // 경고등이 뜨면 앞유리에 크게 비춰 보여 준다
+        if (sim.warn > 0.02f) {
+            val s = h * 0.085f
+            val wy = h * 0.3f
+            val blink = 0.6f + 0.4f * sin(sim.t * 6f)
+            drawCircle(Color(0xFF0A0D14), s * 1.9f, Offset(cx, wy), alpha = 0.78f * sim.warn)
+            drawCircle(Color(0xFFFFC21A), s * 1.9f, Offset(cx, wy), alpha = sim.warn * blink, style = Stroke(s * 0.1f))
+            glow(amberGlow, cx, wy, s * 4.2f, alpha = 0.4f * sim.warn * blink)
+            val key = input.warningLight
+            if (key == null || key.contains("TPMS") || key.contains("TIRE")) {
+                tpmsIcon(cx, wy - s * 0.1f, s, Color(0xFFFFC21A))
+            } else {
+                // 그 밖의 경고등: 느낌표 삼각형
+                val st = s * 0.2f
+                drawLine(Color(0xFFFFC21A), Offset(cx, wy - s), Offset(cx - s * 1.05f, wy + s * 0.8f), st, cap = StrokeCap.Round)
+                drawLine(Color(0xFFFFC21A), Offset(cx, wy - s), Offset(cx + s * 1.05f, wy + s * 0.8f), st, cap = StrokeCap.Round)
+                drawLine(Color(0xFFFFC21A), Offset(cx - s * 1.05f, wy + s * 0.8f), Offset(cx + s * 1.05f, wy + s * 0.8f), st, cap = StrokeCap.Round)
+                drawLine(Color(0xFFFFC21A), Offset(cx, wy - s * 0.35f), Offset(cx, wy + s * 0.2f), st, cap = StrokeCap.Round)
+                drawCircle(Color(0xFFFFC21A), st * 0.6f, Offset(cx, wy + s * 0.5f))
+            }
+        }
 
         // 졸음: 눈꺼풀이 내려온다
         if (sim.drowsy > 0.01f) {
