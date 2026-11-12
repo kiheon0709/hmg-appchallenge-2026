@@ -19,3 +19,20 @@
 - 11-13 dev-voice-ai: 끼어들기(TTS 중 STT)는 실측 전까지 끔. listen()은 말이 끝난 뒤 마이크를 연다.
 - 11-13 dev-voice-ai: 지식 파일(assets/knowledge)은 safety-sources.md의 [원문] 확인분만. 검색 발췌 수치(차간거리 1.5배, 안개 상향등 산란 이유, 반응시간 0.7~1초)와 앞유리 이물질은 넣지 않음. 스위치 위치(switches.md)는 공식 출처가 아닌 "앱 기본 안내(차종마다 다름)"로 표시.
 - 11-14 상위: 에뮬레이터 실측 반영. Telltale·비상등·안개등은 읽을 수 없어 S05·S07·S10·S11 판정 변경, K07·K10 제외. 정차 판정은 CarUxRestrictions만 쓰고 AAOS 기어·차속은 쓰지 않음(허용 범위 준수).
+- 11-14 dev-vehicle-core: 위 "S07 15초" 결정을 바꿈. S07·S08처럼 말로만 답하는 상황은 시간 제한 없이 틀린 횟수로 별(0번 ★3, 1번 ★2, 2번 이상 ★1). TTS가 보기를 읽는 시간 때문에 시간 채점이 불공정해서.
+- 11-14 dev-vehicle-core: S05 감속 판정은 화면 속 가상 속도가 평소(80km/h)의 50% 이하가 되면 완료(`TrainingConfig.fogSlowFraction`). 브레이크를 밟으면 초당 25km/h 줄어 약 1.6초.
+- 11-14 dev-vehicle-core: S11 주차 브레이크 질문의 "아직이요"는 감점하지 않고 다시 물음(YES_NO). S11은 별 3개로 기록하고 UI가 "확인 완료"로 보여 줌.
+- 11-14 dev-vehicle-core: 휴게소 경유지는 NaviHelper에 장소 검색 API가 없고 addWaypoint는 좌표가 필요해서, `requestNavigationScreen(SearchPlace("휴게소"))`로 내비 검색 화면을 연다(운전자·동승자가 골라 경유지로 넣음). `NAVI_CUSTOM_MAP` 퍼미션 필요.
+- 11-14 dev-vehicle-core: 차종 키는 VIN 앞 8자리(제조사·차종)만 쓴다. 일련번호를 포함한 VIN 전체는 저장·기록하지 않는다.
+- 11-14 dev-vehicle-core: 게이트웨이 보정값 — 조향 부호 반전(SDK가 VC와 반대), 에뮬레이터에서 착좌 반전(Build 지문으로 판별), 창문은 capability 범위(0~10)를 %로 환산, 와이퍼 스위치 200ms 조회(켜져 있을 때만). `GatewayConfig`로 바꿀 수 있음.
+- 11-14 dev-sim-ui: `DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier, onClose)`로 정함. 화면이 게이트웨이를 직접 만지지 않게 상태를 받아 바뀐 상태만 돌려줌.
+- 11-14 dev-sim-ui: 음성 대화 상태는 `TalkUi` 하나로 묶어 홈·코치·리뷰가 같이 씀. 스위치 위치 안내 문장은 화면에서 새로 쓰지 않고 core `SituationCatalog`의 `hint`만 보여 줌(출처 확인된 문장만 쓰기 위해).
+- 11-14 dev-sim-ui: 화면 검수는 저장소 밖 임시 Compose Desktop 프로젝트로 같은 소스를 렌더링해 스크린샷으로 함(에뮬레이터는 통합 세션만 쓰므로). 실기 프레임 속도는 미확인 → `SideSeatUiDebug.logFrames = true`로 `SideSeatMeasure` 로그를 남겨 통합 세션이 잼.
+- 11-14 dev-sim-ui: 미니게임 화면은 M1에 더해 M2(깜빡이 모스)·M3(창문 버저)도 만듦(core에 엔진이 이미 있어서).
+- 11-14 dev-vehicle-core: 명세 5.2 표(S11 "주차 브레이크만 채점")와 아래 "실측 반영" 목록(S11 전조등·창문은 신호, 주차 브레이크는 말)이 다를 때 나중에 쓴 실측 반영을 따름. 셋 다 확인은 하고 감점은 없음.
+- 11-14 dev-vehicle-core: 출처 반영으로 감점 조작을 S02(와이퍼만)·S03(핸들 급조작)에만 남김. S10은 브레이크를 떼면 3초를 처음부터 다시 셈(감점 없음). 미니게임 M3 퀴즈의 안개 상향등·경고등 모양 문제는 출처가 있는 50% 감속·TPMS 조치 문제로 바꿈.
+- 11-13 dev-integration: 정차 판정은 CarUxRestrictions(P만 비규제)로 함. 실측에서 기어와 같은 시점에 바뀌고 권한이 필요 없음. Telltale(PRIVATE 권한)·AAOS 주차 브레이크(에뮬레이터에서 안 바뀜)는 못 씀.
+- 11-13 dev-integration: 저장소에 올리는 release APK에는 LLM 키를 넣지 않음(APK에서 키를 꺼낼 수 있음). 로컬 시연용만 `-PembedLlmKey=true`.
+- 11-13 dev-integration: release에 R8을 켬(60→23 MB). Pleos SDK의 Gson TypeToken 때문에 Signature·Gson keep 규칙 필수.
+- 11-13 dev-integration: 세로 화면은 폼 팩터 콘솔(Go 브리지 필요) 대신 `am task resize`로 앱 창을 835×1210으로 좁혀 확인함. `wm size`로 디스플레이를 세로로 바꾸면 차량 런처가 따라오지 않아 시험에 쓸 수 없음.
+- 11-13 dev-integration: 에뮬레이터는 처음에 인터넷이 없음. 차량 설정 Wi-Fi에서 AndroidWifi 연결 후 LLM 동작.
