@@ -7,7 +7,7 @@
 - Pleos Connect Emulator 2.1.0(`Pleos_Connect_v2.1`, cold boot), Virtual Console 연결(`adb forward tcp:8088 tcp:8088`).
 - 화면 배치: 왼쪽에 에뮬레이터(앱), 오른쪽에 Virtual Console. **카드를 누르는 손과 앱의 반응이 한 화면에 보여야 한다.**
 - 시작 상태: Gear P, 와이퍼 Off, 등화 Off, 공조 내기순환 On·에어컨 Off, 창문 닫힘.
-- 에뮬레이터는 실내 조명 변화를 보여 주지 않는다. 앱 화면 가장자리의 빛 띠가 같은 색으로 바뀌는 것을 보여 주고, 조명 set 성공 로그를 자막으로 넣는다.
+- 앰비언트 조명 색은 Virtual Console 화면에 보인다(실측). 앱 화면 가장자리의 빛 띠와 Virtual Console의 조명 색이 같이 바뀌는 것을 한 화면에 담는다.
 - 소리가 영상에 들어가게 시스템 오디오를 같이 녹음한다.
 - 녹화: `adb exec-out screenrecord --output-format=h264 - > screen.h264` 또는 맥 화면 녹화.
 
