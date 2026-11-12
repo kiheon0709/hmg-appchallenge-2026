@@ -227,6 +227,24 @@ class SeniorInstructorTest {
         assertTrue(llm.calls.isEmpty())
     }
 
+    @Test fun latencyIsSplitIntoFillerAndRealAnswer() = runTest {
+        val (ins, meter) = instructor(FakeLlm(firstDelayMs = 1_200))
+        ins.onFinal("외기는 왜 바꿔?")
+        val out = mutableListOf<String>()
+        ins.answer("외기는 왜 바꿔?", parked = false, context = "").collect { s ->
+            out += s
+            delay(10)
+            meter.onTtsStart() // 순차 재생: 문장마다 onStart
+        }
+        assertEquals(SeniorInstructor.FILLER, out.first())
+        assertEquals(610L, meter.last.value) // 첫 음성 = 채움말
+        val firstLine = logs.single { it.startsWith("latency total=") }
+        assertTrue(firstLine, "first=filler" in firstLine)
+        val answerLine = logs.single { it.startsWith("latency answer=") }
+        // LLM 첫 조각 1,200ms + 문장 완성 20ms + 재생 10ms
+        assertTrue(answerLine, answerLine.startsWith("latency answer=12"))
+    }
+
     @Test fun latencyMeterRecordsOnlyFirstTtsStartAfterSpeechEnd() = runTest {
         val (ins, meter) = instructor(FakeLlm())
         ins.onFinal("응")

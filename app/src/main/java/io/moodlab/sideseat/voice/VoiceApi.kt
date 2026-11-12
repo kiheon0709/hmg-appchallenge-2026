@@ -70,8 +70,11 @@ data class VoiceConfig(
     val provider: String = "",
     /** 실측용: TTS가 말하는 중에도 마이크를 열지(끼어들기). 기본은 말이 끝난 뒤 연다. */
     val bargeIn: Boolean = false,
-    /** 실측용: 문장 흐름을 speak(isFinal=false)로 이어 보낼지. false면 문장마다 따로 말한다. */
-    val chunkedTts: Boolean = true,
+    /**
+     * 문장 흐름을 speak(isFinal=false)로 이어 보낼지. 기본 false(문장마다 speak(isFinal=true) 후 onDone을 기다림).
+     * 실측(11-14): Pleos TTS는 isFinal=false 조각을 다음 speak가 올 때까지 재생하지 않아, 채움말이 LLM 첫 문장을 기다렸다.
+     */
+    val chunkedTts: Boolean = false,
 ) {
     val llmEnabled: Boolean
         get() = apiKey.isNotBlank() && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }

@@ -39,7 +39,7 @@ internal class TtsSpeaker(
     context: Context,
     private val scope: CoroutineScope,
     private val meter: LatencyMeter,
-    private val chunked: Boolean = true,
+    private val chunked: Boolean = false,
 ) {
     private sealed interface Item {
         val urgent: Boolean

@@ -21,6 +21,8 @@ class LatencyMeter(
     private var epdEndAt: Long? = null
     private var answerAt: Long? = null
     private var firstSentenceAt: Long? = null
+    private var fillerAt: Long? = null
+    private var firstVoiceAt: Long? = null
     private var path: String = "?"
 
     @Synchronized fun onEpdEnd() { if (speechEndAt == null) epdEndAt = now() }
@@ -29,7 +31,14 @@ class LatencyMeter(
         speechEndAt = now()
         answerAt = null
         firstSentenceAt = null
+        fillerAt = null
+        firstVoiceAt = null
         path = "?"
+    }
+
+    /** 채움말("음, 잠깐만요.")을 내보냄. 채움말은 첫 문장으로 세지 않는다. */
+    @Synchronized fun onFiller() {
+        if (speechEndAt != null && fillerAt == null) fillerAt = now()
     }
 
     @Synchronized fun onAnswerRequested(path: String) {
@@ -43,24 +52,41 @@ class LatencyMeter(
         if (speechEndAt != null && firstSentenceAt == null) firstSentenceAt = now()
     }
 
-    /** TTS onStart마다 부른다. 말 끝 이후 첫 onStart만 기록한다. */
+    /**
+     * TTS onStart마다 부른다. 말 끝 이후 첫 onStart = 첫 음성(total, [last]).
+     * 채움말을 먼저 말했다면 실제 답의 첫 문장이 소리 나기 시작한 onStart를 한 번 더 기록한다(answer).
+     */
     @Synchronized fun onTtsStart() {
         val end = speechEndAt ?: return
         val t = now()
-        val total = t - end
-        _last.value = total
         val epd = epdEndAt?.let { end - it }
         val req = answerAt?.let { it - end }
-        val first = firstSentenceAt?.let { f -> answerAt?.let { f - it } }
-        val tts = firstSentenceAt?.let { t - it }
-        log("latency total=${total}ms path=$path epd->final=${epd ?: "-"}ms final->answer=${req ?: "-"}ms answer->firstSentence=${first ?: "-"}ms firstSentence->ttsStart=${tts ?: "-"}ms")
+        if (firstVoiceAt == null) {
+            firstVoiceAt = t
+            val total = t - end
+            _last.value = total
+            val filler = fillerAt != null && (firstSentenceAt == null || fillerAt!! <= firstSentenceAt!!)
+            val ready = (if (filler) fillerAt else firstSentenceAt)
+            val first = ready?.let { f -> answerAt?.let { f - it } }
+            val tts = ready?.let { t - it }
+            log("latency total=${total}ms first=${if (filler) "filler" else "answer"} path=$path speechEnd->final=${epd ?: "-"}ms final->answer=${req ?: "-"}ms answer->firstSentence=${first ?: "-"}ms firstSentence->ttsStart=${tts ?: "-"}ms")
+            if (!filler) clear()
+            return
+        }
+        // 채움말 뒤: 실제 답의 첫 문장이 준비된 뒤의 첫 onStart
+        val real = firstSentenceAt ?: return
+        if (t < real) return
+        log("latency answer=${t - end}ms path=$path afterFiller=yes final->llmFirstSentence=${answerAt?.let { real - it } ?: "-"}ms firstSentence->ttsStart=${t - real}ms")
+        clear()
+    }
+
+    private fun clear() {
         speechEndAt = null
         epdEndAt = null
+        fillerAt = null
+        firstVoiceAt = null
     }
 
     /** 듣기가 아무 결과 없이 끝나면 재던 것을 버린다. */
-    @Synchronized fun cancel() {
-        speechEndAt = null
-        epdEndAt = null
-    }
+    @Synchronized fun cancel() = clear()
 }

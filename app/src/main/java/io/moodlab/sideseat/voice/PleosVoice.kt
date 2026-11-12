@@ -51,6 +51,7 @@ internal class PleosVoice(
         object Ended : SttEvent
         data class Updated(val text: String, val completed: Boolean) : SttEvent
         data class Epd(val on: Long, val off: Long) : SttEvent
+        data class Rms(val value: Double) : SttEvent
         data class Error(val type: ErrorType) : SttEvent
     }
 
@@ -69,7 +70,7 @@ internal class PleosVoice(
         override fun onStartedRecognition() { events.trySend(SttEvent.Started) }
         override fun onUpdated(stt: String, completed: Boolean) { events.trySend(SttEvent.Updated(stt, completed)) }
         override fun onUpdatedEpdData(on: Long, off: Long) { events.trySend(SttEvent.Epd(on, off)) }
-        override fun onUpdatedRms(rms: Double) = Unit
+        override fun onUpdatedRms(rms: Double) { events.trySend(SttEvent.Rms(rms)) }
         override fun onEndedRecognition() { events.trySend(SttEvent.Ended) }
         override fun onError(errorType: ErrorType) { events.trySend(SttEvent.Error(errorType)) }
     }
@@ -133,6 +134,18 @@ internal class PleosVoice(
         var speechSeen = false
         var epdAt: Long? = null
         var ended = false
+        var endedAt: Long? = null
+        var startedLogged = 0
+        var rmsCount = 0
+        var rmsMax = 0.0
+        var rmsMin = -1.0
+        var quietSince: Long? = null
+        fun markSpeechEnd(source: String) {
+            if (epdAt != null) return
+            epdAt = SystemClock.elapsedRealtime()
+            Log.i(MEASURE_TAG, "stt speech end ($source) at=${epdAt!! - t0}ms")
+            hooks.onEpdEnd(lastPartial)
+        }
         var firstPartialAt: Long? = null
         var sender: Job? = null
         try {
@@ -156,23 +169,26 @@ internal class PleosVoice(
                 val now = SystemClock.elapsedRealtime()
                 val elapsed = now - t0
                 val deadline = listOfNotNull(
-                    if (!speechSeen) limits.noSpeechMs - elapsed else null,
+                    if (!speechSeen && endedAt == null) limits.noSpeechMs - elapsed else null,
                     limits.maxMs - elapsed,
                     epdAt?.let { limits.finalAfterEpdMs - (now - it) },
+                    // 실측: onEndedRecognition이 먼저 오고 최종 결과(completed=true)가 바로 뒤에 온다. 조금 더 기다린다.
+                    endedAt?.let { FINAL_AFTER_END_MS - (now - it) },
                 ).min()
                 if (deadline <= 0) {
-                    Log.i(MEASURE_TAG, "stt timeout speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
+                    Log.i(MEASURE_TAG, "stt ${if (endedAt != null) "no final after end" else "timeout"} speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
                     break@loop
                 }
                 val e = withTimeoutOrNull(deadline) { events.receive() } ?: continue@loop
                 when (e) {
                     SttEvent.Ready -> Unit
-                    SttEvent.Started -> Log.i(MEASURE_TAG, "stt started at=${SystemClock.elapsedRealtime() - t0}ms")
+                    SttEvent.Started -> if (startedLogged++ == 0) Log.i(MEASURE_TAG, "stt started at=${SystemClock.elapsedRealtime() - t0}ms")
                     is SttEvent.Updated -> {
                         val text = e.text.trim()
                         if (e.completed) {
-                            final = text
-                            Log.i(MEASURE_TAG, "stt final chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms epd->final=${epdAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms")
+                            if (text.isNotEmpty()) final = text
+                            Log.i(MEASURE_TAG, "stt final chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms " +
+                                "end->final=${endedAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms silence->final=${epdAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms")
                             break@loop
                         }
                         if (text.isNotEmpty()) {
@@ -189,15 +205,25 @@ internal class PleosVoice(
                     is SttEvent.Epd -> {
                         Log.i(MEASURE_TAG, "stt epd on=${e.on} off=${e.off} at=${SystemClock.elapsedRealtime() - t0}ms")
                         if (e.on > 0) speechSeen = true
-                        if (e.off > 0 && epdAt == null) {
-                            epdAt = SystemClock.elapsedRealtime()
-                            hooks.onEpdEnd(lastPartial)
-                        }
+                        if (e.off > 0) markSpeechEnd("epd")
+                    }
+                    is SttEvent.Rms -> {
+                        rmsCount++
+                        if (e.value > rmsMax) rmsMax = e.value
+                        if (rmsMin < 0 || e.value < rmsMin) rmsMin = e.value
+                        // EPD 이벤트가 오지 않는 환경(실측) 대비: 말소리가 있다가 크게 줄어든 채로 잠시 이어지면 말 끝으로 본다.
+                        val quiet = rmsMax > 0 && e.value < rmsMax * SILENCE_RATIO
+                        val t = SystemClock.elapsedRealtime()
+                        if (!quiet || !speechSeen) quietSince = null
+                        else if (quietSince == null) quietSince = t
+                        else if (epdAt == null && t - quietSince!! >= SILENCE_HOLD_MS) markSpeechEnd("rms")
                     }
                     SttEvent.Ended -> {
-                        ended = true
-                        Log.i(MEASURE_TAG, "stt ended at=${SystemClock.elapsedRealtime() - t0}ms")
-                        break@loop
+                        if (endedAt == null) {
+                            endedAt = SystemClock.elapsedRealtime()
+                            ended = true
+                            Log.i(MEASURE_TAG, "stt ended at=${endedAt!! - t0}ms")
+                        }
                     }
                     is SttEvent.Error -> {
                         Log.w(MEASURE_TAG, "stt error=${e.type}")
@@ -205,6 +231,7 @@ internal class PleosVoice(
                     }
                 }
             }
+            if (rmsCount > 0) Log.i(MEASURE_TAG, "stt rms n=$rmsCount max=${"%.4f".format(rmsMax)} min=${"%.4f".format(rmsMin)}")
         } finally {
             sender?.cancel()
             if (!ended) runCatching { stt.stop() }.onFailure { Log.w(MEASURE_TAG, "stt stop failed: $it") }
@@ -219,6 +246,11 @@ internal class PleosVoice(
     private companion object {
         /** 16kHz·16bit·mono 100ms = 3,200바이트(SpeechToText sending-audio-data 문서). */
         const val PCM_BYTES_PER_100_MS = 3_200
+        /** 인식 종료 뒤 최종 결과를 기다리는 시간. 실측에서는 종료와 거의 동시에 온다. */
+        const val FINAL_AFTER_END_MS = 600L
+        /** 말하는 동안의 최대 RMS 대비 이 비율 아래로 [SILENCE_HOLD_MS] 이어지면 말 끝으로 본다(추측 요청 신호). */
+        const val SILENCE_RATIO = 0.18
+        const val SILENCE_HOLD_MS = 350L
     }
 
     private data class Limits(val noSpeechMs: Long, val maxMs: Long, val finalAfterEpdMs: Long) {

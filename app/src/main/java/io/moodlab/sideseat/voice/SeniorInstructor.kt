@@ -137,15 +137,18 @@ internal class SeniorInstructor(
         meter.onAnswerRequested(if (spec != null) "llm-speculative" else "llm")
         val source = spec ?: client.stream(LlmClient.Route.FAST, system, InstructorPrompt.question(q, parked, context), maxTokens(parked))
         val maxSentences = if (parked) 4 else 2
+        var fillerPending = false // withFiller의 잠금 안에서 쓰고, 순서상 그 뒤에 읽는다
         val sentences = source.toSentences()
             .take(maxSentences)
             .withFallback(FIRST_SENTENCE_TIMEOUT_MS, onFailure = { log("llm answer fallback cause=${it?.javaClass?.simpleName}: ${it?.message?.take(120)}") }) {
                 fastPath.fallback(q, parked)
             }
-            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken") })
+            .withFiller(FILLER_AFTER_MS, FILLER, onFiller = { log("filler spoken"); meter.onFiller(); fillerPending = true })
         var first = true
         sentences.collect {
-            if (first) { first = false; meter.onFirstSentence() }
+            // 채움말은 첫 문장으로 세지 않는다(지연을 채움말 기준과 실제 답 기준으로 나눠 잰다).
+            if (fillerPending && it == FILLER) fillerPending = false
+            else if (first) { first = false; meter.onFirstSentence() }
             emit(it)
         }
     }
