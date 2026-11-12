@@ -213,10 +213,11 @@ internal class SceneSim {
         // 앞차
         // 평소에도 같은 차로 앞쪽에 차가 한 대 달린다. 상황이 거리를 주면 그 거리로 다가온다
         val d = i.leadDistance
-        val target = if (d >= 0f) 4.6f + d.pow(1.6f) * 60f else 40f + 5f * sin(t * 0.35f)
+        // 엔진은 0.75에서 시작해 1.5초에 0까지 좁힌다. 0.75가 약 26m, 0.4가 약 14m, 0.2가 약 9m로 보이게 잡는다
+        val target = if (d >= 0f) 4.5f + d.pow(1.2f) * 30f else 40f + 5f * sin(t * 0.35f)
         leadZ = if (leadA < 0.02f) target else ease(leadZ, target, if (d >= 0f) 7f else 0.8f, dt)
         leadA = ease(leadA, if (i.parkingLot) 0f else 1f, 3f, dt)
-        urgency = ease(urgency, if (d in 0f..0.35f) ((0.35f - d) / 0.22f).coerceAtMost(1f) else 0f, 8f, dt)
+        urgency = ease(urgency, if (d in 0f..0.55f) ((0.55f - d) / 0.35f).coerceAtMost(1f) else 0f, 8f, dt)
         leadBrake = ease(leadBrake, if (i.leadBraking) 1f else 0f, 14f, dt)
 
         stepWiper(dt, i.wiper)
