@@ -68,6 +68,35 @@
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
 
+### 소리 출력 확인(기기 기준) (2026-11-13 07:00)
+
+사람 귀를 대신하지는 못하지만, 소리가 출력 경로로 실제 나갔는지를 세 가지로 확인했다. 장면: 교관 대결로 S01 폭우를 넣고(천둥 1회 + 빗소리 반복 + TTS 대사 2번) 14초 뒤 D단으로 전환. 맥 음소거 등 사용자 설정은 바꾸지 않았다.
+
+**① 오디오 시스템 상태(`dumpsys audio`의 재생 중 플레이어 + `dumpsys media.audio_flinger`의 활성 믹서 트랙 이득, 0.5초마다)** — 원본: `docs/screens/sim/audio/audio_tracks_timeline_s01.txt`
+
+| 시각(상황 기준) | 앱 효과음 트랙(AudioOut_D) | 음성 서비스 TTS 플레이어 | 앱 로그 |
+| --- | --- | --- | --- |
+| +0.3초 | 빗소리 -31→-15 dB, 천둥 -2→-11 dB | `AudioTrack` USAGE_ASSISTANT **started** | `sfx play rain loop=true`, `tts start`, `sfx duck=0.32` |
+| TTS 중(+0.8~2.3초) | 빗소리 **-15 dB**, 천둥 -11 dB | started | — |
+| TTS 끝(+2.8초) | 빗소리 **-5.2 dB**, 천둥 -0.92 dB | 없음 | `tts done`, `sfx duck=1.0` |
+| 힌트 TTS(+4.3~8.4초) | 빗소리 -15 dB(다시 줄어듦) | started | `sfx duck=0.32` |
+| 힌트 끝 | 빗소리 -5.2 dB | 없음 | `sfx duck=1.0` |
+| D단 전환(+12.5초) | -13 dB 뒤 **1초 안에 트랙 없음** | 없음 | `app mode TRAINING -> COACH`, `focus[sfx] abandon` |
+
+→ 빗소리 반복과 TTS가 **동시에 활성**이고, TTS 중 효과음은 약 **10 dB 줄었다가(덕킹 0.32배) 끝나면 돌아오며**, 주행 전환 때 효과음이 **멈춘다**. 오디오 포커스는 효과음·TTS 모두 `GRANTED`.
+
+**② 에뮬레이터 스피커 출력을 호스트에서 녹음(gRPC `streamAudio`, 16 kHz mono)** — 녹음 파일: `docs/screens/sim/audio/emulator_output_s01_rain_tts_then_gear_d.wav`(17초, 들어 볼 수 있음)
+
+| 구간 | 0.5초 RMS(16비트) |
+| --- | --- |
+| 무음(상황 전) | 0 |
+| 폭우 시작 뒤(천둥·빗소리·TTS) | 334~813 |
+| D단 전환 뒤 1.1초부터 | 0~1 |
+
+→ 효과음과 TTS가 에뮬레이터의 실제 오디오 출력까지 나간다. 소리의 음질·크기 균형은 여전히 사람이 들어 봐야 한다(`needs-user.md`).
+
+**③ 참고**: 같은 방식의 gRPC `injectAudio`(입력)는 에뮬레이터를 죽였지만 `streamAudio`(출력)는 안정적이었다.
+
 ### 폼 팩터·차량 마이크 시도 (2026-11-13 06:30~06:55)
 
 **폼 팩터: 확인됨.** 문서 절차의 Host Display Bridge는 `host-display-bridge.zip`(문서 사이트에서 내려받기)과 Go 1.22가 필요한데 둘 다 이 맥에 없고, 내려받기는 사용자 승인 없이 하지 않았다. 대신 브리지가 하는 일(에뮬레이터에 DISPLAY2 만들기)을 에뮬레이터 콘솔 명령으로 직접 했다. 크기는 기기 안 FormFactorConsole이 보여 주는 프리셋 값을 그대로 썼다.
