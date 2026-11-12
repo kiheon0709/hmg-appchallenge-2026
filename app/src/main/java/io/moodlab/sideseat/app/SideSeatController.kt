@@ -257,7 +257,8 @@ class SideSeatController(
         for (e in events) when (e) {
             is CoachEvent.Say -> {
                 Log.i(TAG, "app say p=${e.priority} '${e.text}'")
-                voice.say(e.text, urgent = e.priority > 0)
+                // 2 = 상황이 터지는 첫 마디만 앞 말을 끊는다. 1·0은 순서대로(voice 계약)
+                voice.say(e.text, urgent = e.priority >= 2)
                 _ui.update { it.copy(home = it.home.copy(talk = it.home.talk.copy(answerText = e.text))) }
                 e.expectReply?.let { kind ->
                     talkJob?.cancel()

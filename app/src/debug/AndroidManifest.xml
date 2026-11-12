@@ -3,4 +3,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_CLIMATE" />
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_WINDOWS" />
+    <!-- 실측 도구가 기어·차속을 AAOS로 함께 기록해 정차 판정과 비교한다. 앱 기능은 쓰지 않는다 -->
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
 </manifest>

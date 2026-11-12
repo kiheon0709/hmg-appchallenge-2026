@@ -23,7 +23,7 @@ plugins {
 android {
     namespace = "io.moodlab.sideseat"
     compileSdk = 34
-    // 공개 Pleos SDK에 기어 API가 없어 AAOS 표준 Car API로 읽는다
+    // 정차 판정: AAOS 표준 주행 규제 API(CarUxRestrictionsManager). Pleos 주행 규제 가이드가 안내하는 방식
     useLibrary("android.car")
 
     defaultConfig {
@@ -92,4 +92,8 @@ dependencies {
     implementation("ai.pleos.playground:TextToSpeech:3.3.1")
     implementation("ai.pleos.playground:SpeechToText:3.3.1")
     implementation("ai.pleos.playground:FusedLocation:1.1.3")
+
+    // voice 단위 테스트(app/src/test)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
