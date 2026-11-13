@@ -252,7 +252,7 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
     }
 }
 
-/** 선배 얼굴 대신 쓰는 표식: 옆자리 좌석 모양의 둥근 아이콘. */
+/** 캐릭터 그림 자리. 지금은 옆자리 좌석 모양의 둥근 아이콘. 그림이 정해지면 여기만 바꾼다(홈·리뷰가 같이 쓴다). */
 @Composable
 fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f), speaking: Boolean = false) {
     Canvas(modifier.size(size).graphicsLayer { }) {

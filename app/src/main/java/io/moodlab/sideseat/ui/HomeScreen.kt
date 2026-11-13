@@ -31,6 +31,7 @@ import io.moodlab.sideseat.core.ChapterInfo
 import io.moodlab.sideseat.core.SceneParams
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.scene.DriveScene
+import io.moodlab.sideseat.voice.Persona
 
 /** 홈(정차). 가로: 왼쪽 선배 인사와 추천 훈련, 오른쪽 챕터·면허·미니게임. 세로: 위아래로 쌓는다. */
 @Composable
@@ -74,7 +75,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
                 Text("옆자리", color = HeroText, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
-                Text(state.vehicleName ?: "운전 잘하는 선배가 앉아요", color = HeroDim, fontSize = sz.caption)
+                Text(state.vehicleName ?: "옆자리에 ${Persona.NAME}가 앉아요", color = HeroDim, fontSize = sz.caption)
             }
         }
         Column(Modifier.align(Alignment.BottomStart).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {

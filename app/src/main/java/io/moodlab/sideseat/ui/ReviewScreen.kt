@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import io.moodlab.sideseat.core.DriveSummary
+import io.moodlab.sideseat.voice.Persona
 
 private val observationLabels = mapOf(
     "NO_SIGNAL_TURN" to "깜빡이 없이 크게 돌린 핸들",
@@ -78,7 +79,7 @@ private fun Today(state: ReviewUi) {
     Text("오늘 운전", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
         StatTile("${s.durationMin}분", "주행 시간", Modifier.weight(1f), delta(s.durationMin, p?.durationMin, "분"))
-        StatTile("${s.utterances.size}번", "선배가 말한 횟수", Modifier.weight(1f), delta(s.utterances.size, p?.utterances?.size, "번"))
+        StatTile("${s.utterances.size}번", "${Persona.NAME}가 말한 횟수", Modifier.weight(1f), delta(s.utterances.size, p?.utterances?.size, "번"))
     }
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
         StatTile("${s.rainMin}분", "비 오는 길", Modifier.weight(1f), delta(s.rainMin, p?.rainMin, "분"))
@@ -86,7 +87,7 @@ private fun Today(state: ReviewUi) {
     }
     val keys = (observationLabels.keys + s.observations.keys).distinct()
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f)), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
-        Text("선배가 본 것", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+        Text("${Persona.NAME}가 본 것", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
         keys.forEach { k ->
             val n = s.observations[k] ?: 0
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -152,7 +153,7 @@ private fun Senior(state: ReviewUi, onAction: (UiAction) -> Unit, modifier: Modi
             SeniorBadge(speaking = state.talk.speaking)
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
-                Text("선배 한마디", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Medium)
+                Text("${Persona.NAME} 한마디", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Medium)
                 Text(if (state.reviewStreaming) "말하는 중…" else "점수는 없어요. 지난번과 견줘 볼게요.", color = Sc.textDim, fontSize = sz.caption)
             }
         }

@@ -55,6 +55,7 @@ import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.scene.DriveScene
+import io.moodlab.sideseat.voice.Persona
 
 /**
  * 훈련 화면(정차 중). 가로는 주행 화면이 전체를 채우고 그 위에 상황 카드·체크리스트·초시계가 얹힌다.
@@ -309,7 +310,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     AnimatedVisibility(view.phase == TrainingPhase.BRIEFING && view.situation == null, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         Panel(padding = sz.dp(30f)) {
             Text(view.title, color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
-            Text("선배 말을 듣고, 진짜 스위치로 대처해요", color = Sc.textDim, fontSize = sz.label)
+            Text("${Persona.NAME} 말을 듣고, 진짜 스위치로 대처해요", color = Sc.textDim, fontSize = sz.label)
         }
     }
     AnimatedVisibility(view.phase == TrainingPhase.CHAPTER_DONE, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
