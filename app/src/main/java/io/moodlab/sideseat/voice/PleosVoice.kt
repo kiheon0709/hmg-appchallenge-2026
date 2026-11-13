@@ -177,10 +177,12 @@ internal class PleosVoice(
         var guesses = 0
         /** 말이 끝났다고 "추측"되면 Instructor가 LLM 요청을 먼저 보낸다. 듣기는 계속한다. 같은 글에는 한 번만. */
         fun guessEnd(source: String) {
-            if (quiet) return
             val norm = ReplyClassifier.normalize(lastPartial)
-            if (norm.isEmpty() || norm == guessedNorm || guesses >= MAX_GUESSES) return
+            if (norm.isEmpty() || norm == guessedNorm) return
+            // 통합 세션 수정(11-13): 이 글은 판단을 마쳤다고 먼저 적는다. 전에는 quiet(연속 청취)·추측 횟수 초과일 때
+            // 적지 않고 돌아가 아래 루프가 events.receive() 없이 마감까지 헛돌았다(Main 스레드 약 17초, 최종 결과를 놓치고 중간 결과로 답함).
             guessedNorm = norm
+            if (quiet || guesses >= MAX_GUESSES) return
             guesses++
             vlog("stt guess end ($source) #$guesses chars=${lastPartial.length} at=${SystemClock.elapsedRealtime() - t0}ms")
             hooks.onEpdEnd(lastPartial)
