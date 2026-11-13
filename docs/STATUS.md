@@ -1,6 +1,11 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 17:20, dev-integration)**: 소스 기준 `437a100`(vehicle 위치 속도 구간 중앙값·과속 끊김 허용, f6fba1f 튐 대응, core 8773c3a 리뷰 과속 문장, ui 5db0efc 리뷰 과속·보호구역 줄과 OSM 출처, b5ceb33 K11·K12 연결 이후). `./gradlew :core:test` 94개·`:app:testDebugUnitTest` 108개 통과. `apk/MoodLab_SideSeat_release.apk` 23,040,246바이트(23.0 MB), LLM 키 없음(`sk-ant-` 0건), `assets/zones/` 두 파일 포함. release 스모크(새로 설치, 크래시 0): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 7.9초(첫 문장 1.6초). 시연 경로 재생(release, 키 없음): K11 경로 199초·K12 364초, 규칙 기반 총평이 과속 1번(31초)과 보호구역 최고 속도를 함께 말함(437a100 뒤 3회 모두 보호구역 최고 37 km/h·과속 1번 31초 — 아래 K11·K12 절), 앱 CPU 평균 0.13 %. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
+> **최종 빌드 (2026-11-13 20:27, dev-integration)**: 소스 기준 `5a92e10`(voice 호출어·호칭 타비·호칭 꼴 규칙, ui 6b5f264 화면 이름 Persona.NAME, vehicle 437a100 위치 속도 구간 중앙값·과속 끊김 허용, f6fba1f 튐 대응, core 8773c3a 리뷰 과속 문장, ui 5db0efc 리뷰 과속·보호구역 줄과 OSM 출처, b5ceb33 K11·K12 연결 이후). `./gradlew :core:test` 94개·`:app:testDebugUnitTest` 114개 통과. `apk/MoodLab_SideSeat_release.apk` 23,056,630바이트(23.0 MB), LLM 키 없음(`sk-ant-` 0건), `assets/zones/` 두 파일 포함. **이 빌드의 에뮬레이터 스모크는 보류**(사용자 요청으로 에뮬레이터 꺼 둠, 화면·APK 안에 "선배" 문구 없음 확인). 직전 빌드(437a100) release 스모크(새로 설치, 크래시 0): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 7.9초(첫 문장 1.6초). 시연 경로 재생(release, 키 없음): K11 경로 199초·K12 364초, 규칙 기반 총평이 과속 1번(31초)과 보호구역 최고 속도를 함께 말함(437a100 뒤 3회 모두 보호구역 최고 37 km/h·과속 1번 31초 — 아래 K11·K12 절), 앱 CPU 평균 0.13 %. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
+
+> **호출어 "타비" 직접 불러 보기(사람 목소리, debug 빌드)** — 에뮬레이터를 다시 켠 뒤 아직 통합 세션이 직접 돌려 보지 않음
+> 1. 에뮬레이터를 `emulator -avd Pleos_Connect_v2.1 -no-snapshot-load -allow-host-audio -crash-report-mode never`로 켜고 `adb emu avd hostmicon`(맥 시스템 설정 → 개인정보 보호 및 보안 → 마이크에서 터미널·에뮬레이터 허용).
+> 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`.
+> 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 

@@ -77,6 +77,8 @@ object AppGraph {
         return base.copy(
             cycleMaxMs = kv["cycleMaxMs"] ?: base.cycleMaxMs,
             restartGapMs = kv["restartGapMs"] ?: base.restartGapMs,
+            // 나비·아비·차비 좁은 규칙(기본 꺼짐). wake_config.txt에 allowWeakWakeWords=1
+            allowWeakWakeWords = kv["allowWeakWakeWords"]?.let { it != 0L } ?: base.allowWeakWakeWords,
         ).also { Log.i("SideSeatMeasure", "app debug wake config $it") }
     }
 

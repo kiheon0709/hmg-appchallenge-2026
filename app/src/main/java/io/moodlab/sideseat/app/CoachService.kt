@@ -71,7 +71,8 @@ class CoachService : Service() {
     }
 
     private fun textFor(mode: AppMode) = when (mode) {
-        AppMode.COACH -> "선배가 옆자리에서 같이 보고 있어요"
+        // 이름은 Persona.NAME 하나에서 바꾼다(받침 없는 이름 전제: "가").
+        AppMode.COACH -> "${io.moodlab.sideseat.voice.Persona.NAME}가 옆자리에서 같이 보고 있어요"
         AppMode.REVIEW -> "오늘 운전을 같이 돌아봐요"
         else -> "세워 둔 지금, 진짜 스위치로 연습해요"
     }

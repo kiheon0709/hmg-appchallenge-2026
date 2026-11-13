@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
  * - `wake_pcm <files 안 PCM>`: 연속 청취의 다음 한 번을 PCM으로, `wake_status`: 상태·횟수
  * - `navi start|route <lat>,<lon>|trip <lat>,<lon>|get|reroute|cancel|stop`: NaviHelper 콜백 실측(NaviProbe)
  * - `loc start|stop`: FusedLocation 콜백 실측(LocationProbe)
+ * - `wake_test on|off`: 사람 목소리로 호출어 직접 시험(VoiceModule.startWakeTest/stopWakeTest, 토스트·`wake test #n` 로그)
  * - `wake_trial <files 안 목록 파일>`: 호출어 이름 후보 시험(VoiceModule.debugWakeTrial). 목록 줄은 `<PCM 파일>\t<wake|plain>`
  */
 class DebugCommands(private val context: Context, private val controller: SideSeatController) : BroadcastReceiver() {
@@ -57,6 +58,10 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "reststop" -> gatewayCall("rest stop") { it.addRestStopWaypoint() }
             "navi" -> naviProbe.command(arg)
             "loc" -> locationProbe.command(arg)
+            "wake_test" -> when (arg) {
+                "on" -> Log.i("SideSeatMeasure", "app debug wake test start ok=${io.moodlab.sideseat.voice.VoiceModule.startWakeTest()}")
+                else -> io.moodlab.sideseat.voice.VoiceModule.stopWakeTest()
+            }
             "wake_trial" -> runCatching {
                 File(context.filesDir, arg).readLines().filter { it.isNotBlank() }.map { line ->
                     val (name, expect) = line.split('\t')
