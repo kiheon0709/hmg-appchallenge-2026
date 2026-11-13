@@ -124,12 +124,12 @@ class KnowledgeBaseTest {
         // 명세 6.3의 주행 중 질문 예
         assertEquals("defog_windshield", real.match("앞유리가 뿌예")?.entry?.id)
         assertEquals("warning_light", real.match("이 경고등 뭐야")?.entry?.id)
-        assertEquals("sw_fog", real.match("안개등 어떻게 켜?")?.entry?.id)
+        // 스위치 질문은 SwitchGuideTest(차종별 지식)에서 본다
+        assertEquals("dense_fog", real.match("안개 낀 날 어떻게 해")?.entry?.id)
         // 그 밖의 대표 질문
         assertEquals("breakdown_highway", real.match("고속도로에서 차가 멈췄어")?.entry?.id)
         assertEquals("unintended_accel", real.match("차가 안 멈춰 어떡해")?.entry?.id)
         assertEquals("tpms", real.match("타이어 공기압 경고등이 켜졌어")?.entry?.id)
-        assertEquals("sw_hazard", real.match("비상등 어딨어")?.entry?.id)
         assertEquals("drowsy", real.match("너무 졸려")?.entry?.id)
         assertEquals("tunnel", real.match("터널 들어가")?.entry?.id)
     }
