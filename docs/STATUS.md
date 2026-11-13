@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 16:05, dev-integration)**: 소스 기준 이 커밋(core 8773c3a 리뷰 과속 문장, ui 5db0efc 리뷰 과속·보호구역 줄과 OSM 출처, b5ceb33 K11·K12 연결 이후). `./gradlew :core:test` 91개·`:app:testDebugUnitTest` 108개 통과. `apk/MoodLab_SideSeat_release.apk` 23,040,246바이트(23.0 MB), LLM 키 없음(`sk-ant-` 0건), `assets/zones/` 두 파일 포함. release 스모크(새로 설치, 크래시 0): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 8.0초. 시연 경로 재생(release): K11 경로 199초·K12 364초, 리뷰 요약 과속 1번 31초·보호구역 최고 37 km/h, 앱 CPU 평균 0.13 %. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
+> **최종 빌드 (2026-11-13 16:05, dev-integration)**: 소스 기준 `db28383`(core 8773c3a 리뷰 과속 문장, ui 5db0efc 리뷰 과속·보호구역 줄과 OSM 출처, b5ceb33 K11·K12 연결 이후). `./gradlew :core:test` 91개·`:app:testDebugUnitTest` 108개 통과. `apk/MoodLab_SideSeat_release.apk` 23,040,246바이트(23.0 MB), LLM 키 없음(`sk-ant-` 0건), `assets/zones/` 두 파일 포함. release 스모크(새로 설치, 크래시 0): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 8.0초. 시연 경로 재생(release, 키 없음): K11 경로 199초·K12 364초, 규칙 기반 총평이 과속 1번(31초)과 보호구역 최고 속도를 함께 말함(보호구역 최고 38 km/h, 4회 중 1회는 72 km/h로 튐 — 아래 K11·K12 절), 앱 CPU 평균 0.13 %. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -148,6 +148,7 @@
 | 외부 조회 | 시연 지역은 미리 읽은 제한속도만 써서 Overpass 요청 없음(로그에 조회 없음) |
 
 - **리뷰 화면 보강 확인(ui 5db0efc + core 8773c3a, 16:00)**: 같은 경로를 다시 재생한 뒤 리뷰 "선배가 본 것"에 "제한속도를 넘긴 구간 1번 (가장 길게 31초)", "어린이 보호구역 1번 통과 (최고 37km/h)" 두 줄과 아래 "제한속도·보호구역 자료 © OpenStreetMap contributors"가 가로에서 스크롤 없이 보임(`v6_day_landscape_review_speeding_zone.jpg`). 규칙 기반 총평도 "어린이 보호구역에서 최고 37km/h였고, 과속도 1번(가장 길게 31초) 있었어요…"로 과속을 말함. 홈은 오른쪽 목록 맨 아래에 같은 출처 문구(`v6_day_landscape_home_bottom_osm_credit.jpg`). 디버그 패널 "제한속도" 키는 `onDebugChange`가 디버그 게이트웨이 상태를 통째로 바꾸므로(`g.update { s }`) 따로 연결할 것 없음. 앞의 `v6_day_landscape_review_llm.jpg`는 5db0efc 이전 빌드로 찍은 것.
+- **키 없는 release(db28383, core 8773c3a 포함)로 경로 재생 2회(16:00~16:10)**: 규칙 기반 총평 두 번째 문장이 "어린이 보호구역에서 최고 38km/h였고, 과속도 1번(가장 길게 31초) 있었어요. 보호구역은 30 아래로, 다른 길은 제한속도를 한 번 더 봐요."로 **과속과 보호구역을 같이 말함**(`v6_release_review_rule_based.jpg` 갱신). 다만 보호구역 최고 속도가 2회 중 1회 **72 km/h**(다른 회 38, 앞선 회들 37)로 나왔다. 호스트가 넣은 위치 간격은 0.99~1.01초로 고르므로 에뮬레이터 위치 전달에서 1초 몫을 건너뛰어 거리가 두 배로 잡힌 것으로 보인다(72 ≈ 36×2). vehicle 세션에 알림. 이 리뷰 화면은 "지난번과 같아요" 줄 때문에 출처 문구가 스크롤 아래에 있다.
 캡처: `v6_day_landscape_coach_k11.jpg`, `v6_day_landscape_coach_k12.jpg`, `v6_day_landscape_review_llm.jpg`, `v6_release_review_rule_based.jpg`. 남은 일: OSM(ODbL) "© OpenStreetMap contributors" 표시를 앱 화면 어딘가에 넣어야 함(ui 세션에 요청).
 
 ### FusedLocation이 에뮬레이터 위치 주입을 받는지 (2026-11-13 14:40, 디버그 실측 도구 `LocationProbe`)
