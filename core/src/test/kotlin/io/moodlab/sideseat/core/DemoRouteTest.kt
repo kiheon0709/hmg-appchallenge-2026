@@ -49,7 +49,11 @@ class DemoRouteTest {
         assertTrue(k12.first().first in 338..380, "K12 at ${k12.first().first}")
         assertTrue(summary.schoolZonePasses >= 1)
         assertTrue(summary.schoolZoneMaxKmh!! in 34..40, "zoneMax=${summary.schoolZoneMaxKmh}")
-        assertEquals("어린이 보호구역에서 최고 ${summary.schoolZoneMaxKmh}km/h였어요. 다음엔 30 아래로 지나가요.", summary.ruleBasedReview[1])
+        assertEquals(
+            "어린이 보호구역에서 최고 ${summary.schoolZoneMaxKmh}km/h였고, 과속도 1번(가장 길게 ${summary.longestSpeedingSec}초) 있었어요. " +
+                "보호구역은 30 아래로, 다른 길은 제한속도를 한 번 더 봐요.",
+            summary.ruleBasedReview[1],
+        )
         assertEquals(1, summary.speedingCount)
         assertTrue(summary.longestSpeedingSec >= 10, "longest=${summary.longestSpeedingSec}")
         println("demo route: said=${said.map { "${it.first}s ${it.second.ruleId}" }} summary=$summary")

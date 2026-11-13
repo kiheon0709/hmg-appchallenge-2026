@@ -452,6 +452,11 @@ class DefaultDriveCoach(
         val noSignal = obs["NO_SIGNAL_TURN"] ?: 0
         val hardBrake = obs["HARD_BRAKE"] ?: 0
         val fix = when {
+            // 보호구역 과속과 도로 과속이 함께 있으면 한 문장으로 같이 짚는다(명세 6.4 리뷰).
+            zoneOverLimit != null && speedingCount > 0 -> zoneOverLimit!!.let { (v, limit) ->
+                "어린이 보호구역에서 최고 ${Math.round(v)}km/h였고, 과속도 ${speedingCount}번(가장 길게 ${longestSpeedingMs / 1000}초) 있었어요. " +
+                    "보호구역은 $limit 아래로, 다른 길은 제한속도를 한 번 더 봐요."
+            }
             zoneOverLimit != null -> zoneOverLimit!!.let { (v, limit) ->
                 "어린이 보호구역에서 최고 ${Math.round(v)}km/h였어요. 다음엔 $limit 아래로 지나가요."
             }

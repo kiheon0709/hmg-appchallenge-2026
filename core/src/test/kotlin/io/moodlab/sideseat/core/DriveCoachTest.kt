@@ -443,7 +443,12 @@ class DriveCoachTest {
         d.drive(30, 45.0)
         val s = d.coach.onDriveEnd(d.now)
         assertTrue(d.said.any { it.ruleId == "K12" && it.text == "제한속도가 30이에요. 조금 줄여요." })
-        assertEquals("어린이 보호구역에서 최고 45km/h였어요. 다음엔 30 아래로 지나가요.", s.ruleBasedReview[1])
+        assertEquals(1, s.speedingCount)
+        assertTrue(s.ruleBasedReview[1].startsWith("어린이 보호구역에서 최고 45km/h였고, 과속도 1번"), s.ruleBasedReview[1])
+        // 과속 없이 보호구역만 30을 넘었으면 보호구역만 짚는다
+        val mild = geo()
+        mild.drive(200, 36.0)
+        assertEquals("어린이 보호구역에서 최고 36km/h였어요. 다음엔 30 아래로 지나가요.", mild.coach.onDriveEnd(mild.now).ruleBasedReview[1])
     }
 
     @Test
