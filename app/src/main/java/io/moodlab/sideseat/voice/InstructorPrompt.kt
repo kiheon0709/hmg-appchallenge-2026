@@ -32,20 +32,31 @@ object InstructorPrompt {
         appendLine("비 오는 중 주행: ${summary.rainMin}분")
         appendLine("야간 주행: ${summary.nightMin}분")
         if (summary.utterances.isEmpty()) {
-            appendLine("선배가 주행 중에 한 말: 없음")
+            appendLine("주행 중에 한 말: 없음")
         } else {
-            appendLine("선배가 주행 중에 한 말:")
+            appendLine("주행 중에 한 말:")
             summary.utterances.forEach { appendLine("- [${it.ruleId}] ${it.text}") }
         }
         if (summary.observations.isNotEmpty()) {
             appendLine("관찰(말하지 않고 기록한 것):")
             summary.observations.forEach { (k, v) -> appendLine("- ${OBSERVATION_NAMES[k] ?: k}: ${v}번") }
         }
+        // 위치 연계 코치(core K11·K12): 말하지 않았어도 센 값이다.
+        if (summary.speedingCount > 0) {
+            appendLine("과속(제한속도보다 10km/h 넘게 5초 이상): ${summary.speedingCount}번, 가장 긴 구간 ${summary.longestSpeedingSec}초")
+        } else {
+            appendLine("과속: 없음")
+        }
+        if (summary.schoolZonePasses > 0) {
+            val max = summary.schoolZoneMaxKmh?.let { "${it}km/h" } ?: "모름"
+            appendLine("어린이 보호구역 통과: ${summary.schoolZonePasses}곳, 안에서 최고 속도 $max (앱 기준 30km/h)")
+        }
         summary.suggestedSituation?.let { appendLine("추천 훈련 상황 ID: ${it.name}") }
         appendLine("규칙 기반 총평 초안:")
         summary.ruleBasedReview.forEach { appendLine("- $it") }
         appendLine("</drive>")
         appendLine("위 기록만 근거로, 잘한 것 하나, 다음에 신경 쓸 것 하나, 다음 정차 때 해 볼 훈련 하나를 한 문장씩 말해 주세요.")
+        appendLine("다음에 신경 쓸 것은 안전에 가장 중요한 것을 고르세요: 어린이 보호구역에서 30km/h를 넘은 것 > 과속 > 그 밖. 숫자는 기록에 있는 그대로만 말하고, 범칙금이나 벌점은 말하지 않아요.")
     }
 
     private val OBSERVATION_NAMES = mapOf(

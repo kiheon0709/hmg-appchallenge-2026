@@ -176,6 +176,25 @@ class SeniorInstructorTest {
         assertTrue(llm.calls.single().second.contains("깜빡이 없이 크게 핸들을 돌림: 1번"))
     }
 
+    @Test fun reviewIncludesSpeedingAndSchoolZone() = runTest {
+        val llm = FakeLlm()
+        val (ins, _) = instructor(llm)
+        ins.review(summary.copy(speedingCount = 2, longestSpeedingSec = 12, schoolZonePasses = 1, schoolZoneMaxKmh = 37)).toList()
+        val user = llm.calls.single().second
+        assertTrue(user, "과속(제한속도보다 10km/h 넘게 5초 이상): 2번, 가장 긴 구간 12초" in user)
+        assertTrue(user, "어린이 보호구역 통과: 1곳, 안에서 최고 속도 37km/h" in user)
+        assertTrue(user, "어린이 보호구역에서 30km/h를 넘은 것 > 과속" in user)
+    }
+
+    @Test fun reviewSaysNoSpeedingAndSkipsSchoolZoneWhenNone() = runTest {
+        val llm = FakeLlm()
+        val (ins, _) = instructor(llm)
+        ins.review(summary).toList()
+        val user = llm.calls.single().second
+        assertTrue(user, "과속: 없음" in user)
+        assertTrue(user, "어린이 보호구역 통과" !in user)
+    }
+
     @Test fun systemPromptIsIdenticalAcrossRequestsForCaching() = runTest {
         val llm = FakeLlm()
         val (ins, _) = instructor(llm)
