@@ -1,11 +1,19 @@
 package io.moodlab.sideseat.ui
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import io.moodlab.sideseat.core.ChapterCatalog
 import io.moodlab.sideseat.core.SituationCatalog
 import io.moodlab.sideseat.core.SituationDef
 import io.moodlab.sideseat.core.SituationId
 
-/** 상황·단계의 이름과 스위치 위치 안내. 문장은 core의 상황 정의(출처가 확인된 것)에서만 가져온다. */
+/**
+ * 이 차의 스위치 위치 문장을 찾는 함수. 화면은 음성 모듈을 직접 만지지 않으므로 통합 세션이
+ * `CompositionLocalProvider(LocalSwitchLocation provides { id -> voiceModule.switchLocation(id) })`로 넣어 준다.
+ * 인자는 `sw_wiper` 같은 스위치 아이디이고, 모르면 null을 돌려준다. 넣지 않으면 위치 문장 없이 조작 문장만 보인다.
+ */
+val LocalSwitchLocation = staticCompositionLocalOf<(String) -> String?> { { null } }
+
+/** 상황·단계의 이름과 조작 안내. 문장은 core의 상황 정의(출처가 확인된 것)에서만 가져온다. */
 internal object SituationTexts {
     private val defs: Map<SituationId, SituationDef> by lazy { SituationCatalog.all().associateBy { it.id } }
 
@@ -19,6 +27,21 @@ internal object SituationTexts {
 
     /** 그 조작의 스위치가 어디 있는지(차종 공통 표현). */
     fun hint(id: SituationId?, stepId: String): String? = defs[id]?.steps?.firstOrNull { it.id == stepId }?.hint
+
+    /** 훈련 단계 아이디 → 스위치 위치 아이디. 스위치가 없는 단계(브레이크, 선택지)는 null. */
+    fun switchId(stepId: String): String? = when (stepId) {
+        "wiper_fast", "wiper_on" -> "sw_wiper"
+        "low_beam_on", "lights_off" -> "sw_headlight"
+        "high_beam_off" -> "sw_highbeam"
+        "fog_on" -> "sw_fog"
+        "hazard_on" -> "sw_hazard"
+        "defrost_on" -> "sw_defrost"
+        "ac_on" -> "sw_ac"
+        "fresh_air" -> "sw_recirc"
+        "window_open", "windows_closed" -> "sw_window"
+        "parking_brake", "epb_pull" -> "sw_epb"
+        else -> null
+    }
 
     fun penaltyLine(id: SituationId, penaltyId: String): String =
         defs[id]?.penalties?.firstOrNull { it.id == penaltyId }?.line ?: "감점 조작이 있었어요."

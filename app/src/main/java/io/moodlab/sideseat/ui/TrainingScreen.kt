@@ -245,17 +245,19 @@ private fun StepRow(step: StepView, current: Boolean) {
     }
 }
 
-/** 힌트 단계와 실패 때 스위치 위치를 알려 준다. */
+/** 힌트 단계와 실패 때 해야 할 조작과, 이 차의 스위치 위치(통합 세션이 넣어 준 경우)를 알려 준다. */
 @Composable
 private fun HintBanner(view: TrainingView, modifier: Modifier) {
     val sz = LocalSz.current
     val show = view.phase == TrainingPhase.HINT || view.phase == TrainingPhase.FAIL
     val step = view.steps.firstOrNull { !it.done }
     val hint = if (show && step != null) SituationTexts.hint(view.situation, step.id) else null
+    val where = if (show && step != null) SituationTexts.switchId(step.id)?.let { LocalSwitchLocation.current(it) } else null
     AnimatedVisibility(hint != null, modifier, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
         Panel(border = Sc.warn, padding = sz.dp(18f)) {
-            Text("스위치 위치", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+            Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)
+            if (where != null) Text("이 차에서는 · $where", color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
         }
     }
 }

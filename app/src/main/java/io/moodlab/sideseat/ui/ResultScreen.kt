@@ -87,6 +87,7 @@ fun ResultScreen(result: ChapterResult, progress: TrainingProgress, onAction: (U
 @Composable
 private fun SituationResultCard(index: Int, r: SituationResult, progress: TrainingProgress) {
     val sz = LocalSz.current
+    val where = LocalSwitchLocation.current
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(22f))) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -106,7 +107,7 @@ private fun SituationResultCard(index: Int, r: SituationResult, progress: Traini
         }
         if (r.missedStepIds.isNotEmpty()) {
             Spacer(Modifier.height(sz.dp(12f)))
-            Text("놓친 조작 · 이 차에서 스위치는 여기 있어요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+            Text("놓친 조작", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             r.missedStepIds.forEach { stepId ->
                 Row(Modifier.padding(top = sz.dp(8f))) {
                     Dot(Sc.warn, sz.dp(10f), Modifier.padding(top = sz.dp(10f), end = sz.dp(10f)))
@@ -114,6 +115,10 @@ private fun SituationResultCard(index: Int, r: SituationResult, progress: Traini
                         Text(SituationTexts.stepLabel(r.id, stepId), color = Sc.text, fontSize = sz.label, fontWeight = FontWeight.SemiBold)
                         SituationTexts.hint(r.id, stepId)?.let {
                             Text(it, color = Sc.textDim, fontSize = sz.label, lineHeight = sz.label * 1.35f)
+                        }
+                        // 이 차의 스위치 위치(통합 세션이 넣어 준 경우에만)
+                        SituationTexts.switchId(stepId)?.let { where(it) }?.let {
+                            Text("이 차에서는 · $it", color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
                         }
                     }
                 }
