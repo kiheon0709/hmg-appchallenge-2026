@@ -4,7 +4,7 @@
 
 > **호출어 "타비" 직접 불러 보기(사람 목소리, debug 빌드)** — 에뮬레이터를 다시 켠 뒤 아직 통합 세션이 직접 돌려 보지 않음
 > 1. 에뮬레이터를 `emulator -avd Pleos_Connect_v2.1 -no-snapshot-load -allow-host-audio -crash-report-mode never`로 켜고 `adb emu avd hostmicon`(맥 시스템 설정 → 개인정보 보호 및 보안 → 마이크에서 터미널·에뮬레이터 허용).
-> 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`.
+> 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)

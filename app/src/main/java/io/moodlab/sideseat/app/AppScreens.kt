@@ -26,6 +26,9 @@ import io.moodlab.sideseat.ui.SafeDialScreen
 import io.moodlab.sideseat.ui.Sc
 import io.moodlab.sideseat.ui.TrainingScreen
 import io.moodlab.sideseat.ui.UiAction
+import io.moodlab.sideseat.ui.WakeTestUi
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 /** 모드에 맞는 화면 하나를 고른다. 화면은 ui 패키지(dev-sim-ui)가 그린다. */
 @Composable
@@ -53,10 +56,14 @@ private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChang
             }
         }
         if (ui.debugPanel && onDebugChange != null) {
+            // 호출어 직접 불러 보기 시험(사람 목소리). 음성 모듈 상태를 화면 모델로 옮긴다.
+            val wt by VoiceModule.wakeTest.collectAsState()
             DebugPanel(
                 ui.vehicle, onDebugChange,
                 Modifier.align(Alignment.BottomEnd).padding(16.dp).widthIn(max = 560.dp).heightIn(max = 640.dp),
                 onClose = { onAction(UiAction.ToggleDebugPanel) },
+                wakeTest = WakeTestUi(wt.running, wt.lines, wt.summary),
+                onWakeTest = { start -> if (start) VoiceModule.startWakeTest() else VoiceModule.stopWakeTest() },
             )
         }
     }
