@@ -148,7 +148,8 @@ internal class PleosVoice(
         stopWhen: ((String) -> Boolean)? = null,
     ): String? {
         lastCycleError = null
-        fun vlog(msg: String) { if (!quiet) vlog(msg) }
+        // 통합 세션 수정(11-13): 이전에는 자기 자신을 불러 StackOverflowError로 앱이 죽었다(질문할 때마다).
+        fun vlog(msg: String) { if (!quiet) Log.i(MEASURE_TAG, msg) }
         if (withTimeoutOrNull(5_000) { sttReady.await() } != true) {
             Log.w(MEASURE_TAG, "stt not ready")
             return null
