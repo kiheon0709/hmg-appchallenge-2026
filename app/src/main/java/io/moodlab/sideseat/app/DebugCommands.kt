@@ -21,8 +21,11 @@ import kotlinx.coroutines.launch
  * - `chapter <id>`: 챕터 시작, `inject <SituationId>`: 교관 대결로 상황 던지기
  * - `vehicle debug|pleos`: 차량 신호 출처 전환
  * - `ambient CALM|ALERT|SUCCESS|OFF`, `reststop`: 게이트웨이 제어를 바로 시험
+ * - `navi start|route <lat>,<lon>|trip <lat>,<lon>|get|reroute|cancel|stop`: NaviHelper 콜백 실측(NaviProbe)
  */
 class DebugCommands(private val context: Context, private val controller: SideSeatController) : BroadcastReceiver() {
+    private val naviProbe by lazy { io.moodlab.sideseat.app.measure.NaviProbe(context) }
+
     fun register() {
         val filter = IntentFilter("io.moodlab.sideseat.DEBUG")
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
@@ -47,6 +50,7 @@ class DebugCommands(private val context: Context, private val controller: SideSe
                 gatewayCall("ambient $mood") { it.setAmbient(mood) }
             }
             "reststop" -> gatewayCall("rest stop") { it.addRestStopWaypoint() }
+            "navi" -> naviProbe.command(arg)
         }
     }
 

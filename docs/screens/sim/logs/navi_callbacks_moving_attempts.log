@@ -1,0 +1,128 @@
+t=18103552 navi onCurrentRoadSpeedLimit #40 gap=1000ms 0
+t=18104540 navi onCurrentRoadSpeedLimit #41 gap=988ms 0
+t=18105539 navi onCurrentRoadSpeedLimit #42 gap=999ms 0
+t=18106554 navi onCurrentRoadSpeedLimit #43 gap=1015ms 0
+t=18107553 navi onCurrentRoadSpeedLimit #44 gap=999ms 0
+t=18108555 navi onCurrentRoadSpeedLimit #45 gap=1002ms 0
+t=18109543 navi onCurrentRoadSpeedLimit #46 gap=988ms 0
+t=18110541 navi onCurrentRoadSpeedLimit #47 gap=998ms 0
+t=18111553 navi onCurrentRoadSpeedLimit #48 gap=1012ms 0
+t=18112555 navi onCurrentRoadSpeedLimit #49 gap=1002ms 0
+t=18113541 navi onCurrentRoadSpeedLimit #50 gap=986ms 0
+t=18114543 navi onCurrentRoadSpeedLimit #51 gap=1002ms 0
+t=18115540 navi onCurrentRoadSpeedLimit #52 gap=997ms 0
+t=18116555 navi onCurrentRoadSpeedLimit #53 gap=1015ms 0
+t=18117556 navi onCurrentRoadSpeedLimit #54 gap=1001ms 0
+t=18118558 navi onCurrentRoadSpeedLimit #55 gap=1002ms 0
+t=18119559 navi onCurrentRoadSpeedLimit #56 gap=1001ms 0
+t=18120553 navi onCurrentRoadSpeedLimit #57 gap=994ms 0
+t=18121547 navi onCurrentRoadSpeedLimit #58 gap=994ms 0
+t=18122541 navi onCurrentRoadSpeedLimit #59 gap=994ms 0
+t=18123554 navi onCurrentRoadSpeedLimit #60 gap=1013ms 0
+t=18124559 navi onCurrentRoadSpeedLimit #61 gap=1005ms 0
+t=18125541 navi onCurrentRoadSpeedLimit #62 gap=982ms 0
+t=18126549 navi onCurrentRoadSpeedLimit #63 gap=1008ms 0
+t=18127544 navi onCurrentRoadSpeedLimit #64 gap=995ms 0
+t=18128543 navi onCurrentRoadSpeedLimit #65 gap=999ms 0
+t=18129559 navi onCurrentRoadSpeedLimit #66 gap=1016ms 0
+t=18130552 navi onCurrentRoadSpeedLimit #67 gap=993ms 0
+t=18131546 navi onCurrentRoadSpeedLimit #68 gap=994ms 0
+t=18132557 navi onCurrentRoadSpeedLimit #69 gap=1011ms 0
+t=18133556 navi onCurrentRoadSpeedLimit #70 gap=999ms 0
+t=18134541 navi onCurrentRoadSpeedLimit #71 gap=985ms 0
+t=18135541 navi onCurrentRoadSpeedLimit #72 gap=1000ms 0
+t=18136541 navi onCurrentRoadSpeedLimit #73 gap=1000ms 0
+t=18137550 navi onCurrentRoadSpeedLimit #74 gap=1009ms 0
+t=18138552 navi onCurrentRoadSpeedLimit #75 gap=1002ms 0
+t=18139557 navi onCurrentRoadSpeedLimit #76 gap=1005ms 0
+t=18140539 navi onCurrentRoadSpeedLimit #77 gap=982ms 0
+t=18141540 navi onCurrentRoadSpeedLimit #78 gap=1001ms 0
+t=18142542 navi onCurrentRoadSpeedLimit #79 gap=1002ms 0
+t=18143545 navi onCurrentRoadSpeedLimit #80 gap=1003ms 0
+t=18144553 navi onCurrentRoadSpeedLimit #81 gap=1008ms 0
+t=18145543 navi onCurrentRoadSpeedLimit #82 gap=990ms 0
+t=18146551 navi onCurrentRoadSpeedLimit #83 gap=1008ms 0
+t=18147552 navi onCurrentRoadSpeedLimit #84 gap=1001ms 0
+t=18148551 navi onCurrentRoadSpeedLimit #85 gap=999ms 0
+t=18149546 navi onCurrentRoadSpeedLimit #86 gap=995ms 0
+t=18150548 navi onCurrentRoadSpeedLimit #87 gap=1002ms 0
+t=18151540 navi onCurrentRoadSpeedLimit #88 gap=992ms 0
+t=18152554 navi onCurrentRoadSpeedLimit #89 gap=1014ms 0
+t=18153547 navi onCurrentRoadSpeedLimit #90 gap=993ms 0
+t=18154547 navi onCurrentRoadSpeedLimit #91 gap=1000ms 0
+t=18155553 navi onCurrentRoadSpeedLimit #92 gap=1006ms 0
+t=18156555 navi onCurrentRoadSpeedLimit #93 gap=1002ms 0
+t=18157552 navi onCurrentRoadSpeedLimit #94 gap=997ms 0
+t=18158556 navi onCurrentRoadSpeedLimit #95 gap=1004ms 0
+t=18159545 navi onCurrentRoadSpeedLimit #96 gap=989ms 0
+t=18160555 navi onCurrentRoadSpeedLimit #97 gap=1010ms 0
+t=18161549 navi onCurrentRoadSpeedLimit #98 gap=994ms 0
+t=18162547 navi onCurrentRoadSpeedLimit #99 gap=998ms 0
+t=18163546 navi onCurrentRoadSpeedLimit #100 gap=999ms 0
+t=18164543 navi onCurrentRoadSpeedLimit #101 gap=997ms 0
+t=18165551 navi onCurrentRoadSpeedLimit #102 gap=1008ms 0
+app debug cmd=navi arg=get
+navi probe cmd 'get' done
+t=18165895 navi onRouteStateInfo #4 gap=77117ms RouteStateInfo(termsAgreement=true, naviMode=ROUTE_GUIDING, isRouting=false, routeOption=RECOMMENDED, remainDestinationChargingInt=77002, remainWaypointChargingInt=[0, 0], trafficStatus=TrafficStatus(summary=TrafficCongestionSummary(totalCongestionDist=1300.0, totalCongestionTime=240, totalCongestionAvrSpeed=17.44214808541092), congestionItemList=[TrafficCongestionInfo(offset=400.0, distance=100.0, trafficCongestionTime=60, trafficCongestionType=HEAVY, avrSpeed=30.09080035800002, roadName=대왕판교로, startCrossName=, endCrossName=금토동삼거리), TrafficCongestionInfo(offset=500.0, distance=100.0, trafficC
+t=18165896 navi onCurrentLocationInfo #3 gap=77122ms CurrentLocationInfo(latitude=37.4127212, longitude=127.094681, heading=0.0, address=수정구 시흥동, routeId=52d28e67-df0d-11f1-baf3-72e3ec72fa29, currentRouteIndex=0)
+t=18165898 navi onTBTInfo #4 gap=76980ms [TBTInfo(type=TURN_LEFT, distance=80.0, description=기업지원허브 방면), TBTInfo(type=TURN_RIGHT, distance=380.0, description=판교IC 방면), TBTInfo(type=TURN_AVOID_UNDER_R, distance=730.0, description=판교IC 방면), TBTInfo(type=TURN_LEFT, distance=1200.0, description=판교(판교테크노밸리)역 방면), TBTInfo(type=TURN_RIGHT, distance=530.0, description=백현동행정복지센터 방면), TBTInfo(type=TURN_RIGHT, distance=120.0, description=이름 없는 도로), TBTInfo(type=TURN_ARRIVE, distance=60.0, description=도착)]
+t=18166544 navi onCurrentRoadSpeedLimit #103 gap=993ms 0
+t=18166897 navi onDestinationInfo #3 gap=77131ms DestinationInfo(latitude=37.3948, longitude=127.1112, displayLatitude=null, displayLongitude=null, name=probe, address=분당구 백현동, remainDistance=3100, remainTime=780, tollFare=0, poiId=, poiSubId=null, poiProvider=)
+t=18167546 navi onCurrentRoadSpeedLimit #104 gap=1002ms 0
+t=18176540 navi onCurrentRoadSpeedLimit #113 gap=997ms 0
+t=18177557 navi onCurrentRoadSpeedLimit #114 gap=1017ms 0
+t=18178541 navi onCurrentRoadSpeedLimit #115 gap=984ms 0
+t=18179547 navi onCurrentRoadSpeedLimit #116 gap=1006ms 0
+t=18180551 navi onCurrentRoadSpeedLimit #117 gap=1004ms 0
+t=18181552 navi onCurrentRoadSpeedLimit #118 gap=1001ms 0
+t=18182551 navi onCurrentRoadSpeedLimit #119 gap=999ms 0
+t=18183551 navi onCurrentRoadSpeedLimit #120 gap=1000ms 0
+t=18184539 navi onCurrentRoadSpeedLimit #121 gap=988ms 0
+t=18185540 navi onCurrentRoadSpeedLimit #122 gap=1001ms 0
+t=18186542 navi onCurrentRoadSpeedLimit #123 gap=1002ms 0
+t=18187546 navi onCurrentRoadSpeedLimit #124 gap=1004ms 0
+t=18188543 navi onCurrentRoadSpeedLimit #125 gap=997ms 0
+t=18189551 navi onCurrentRoadSpeedLimit #126 gap=1008ms 0
+t=18190551 navi onCurrentRoadSpeedLimit #127 gap=1000ms 0
+t=18191553 navi onCurrentRoadSpeedLimit #128 gap=1002ms 0
+t=18192553 navi onCurrentRoadSpeedLimit #129 gap=1000ms 0
+t=18193553 navi onCurrentRoadSpeedLimit #130 gap=1000ms 0
+t=18194559 navi onCurrentRoadSpeedLimit #131 gap=1006ms 0
+t=18195559 navi onCurrentRoadSpeedLimit #132 gap=1000ms 0
+t=18196556 navi onCurrentRoadSpeedLimit #133 gap=997ms 0
+t=18197549 navi onCurrentRoadSpeedLimit #134 gap=993ms 0
+t=18198550 navi onCurrentRoadSpeedLimit #135 gap=1001ms 0
+t=18199544 navi onCurrentRoadSpeedLimit #136 gap=994ms 0
+t=18200551 navi onCurrentRoadSpeedLimit #137 gap=1007ms 0
+t=18201553 navi onCurrentRoadSpeedLimit #138 gap=1002ms 0
+t=18202550 navi onCurrentRoadSpeedLimit #139 gap=997ms 0
+t=18203551 navi onCurrentRoadSpeedLimit #140 gap=1001ms 0
+t=18204553 navi onCurrentRoadSpeedLimit #141 gap=1002ms 0
+t=18205546 navi onCurrentRoadSpeedLimit #142 gap=993ms 0
+t=18206552 navi onCurrentRoadSpeedLimit #143 gap=1006ms 0
+t=18207547 navi onCurrentRoadSpeedLimit #144 gap=995ms 0
+t=18208558 navi onCurrentRoadSpeedLimit #145 gap=1011ms 0
+t=18209541 navi onCurrentRoadSpeedLimit #146 gap=983ms 0
+t=18210547 navi onCurrentRoadSpeedLimit #147 gap=1006ms 0
+t=18211542 navi onCurrentRoadSpeedLimit #148 gap=995ms 0
+t=18212559 navi onCurrentRoadSpeedLimit #149 gap=1017ms 0
+t=18213557 navi onCurrentRoadSpeedLimit #150 gap=998ms 0
+t=18214559 navi onCurrentRoadSpeedLimit #151 gap=1002ms 0
+t=18215539 navi onCurrentRoadSpeedLimit #152 gap=980ms 0
+t=18216553 navi onCurrentRoadSpeedLimit #153 gap=1014ms 0
+t=18217555 navi onCurrentRoadSpeedLimit #154 gap=1002ms 0
+t=18218553 navi onCurrentRoadSpeedLimit #155 gap=998ms 0
+t=18219540 navi onCurrentRoadSpeedLimit #156 gap=987ms 0
+t=18220558 navi onCurrentRoadSpeedLimit #157 gap=1018ms 0
+t=18221540 navi onCurrentRoadSpeedLimit #158 gap=982ms 0
+t=18222539 navi onCurrentRoadSpeedLimit #159 gap=999ms 0
+t=18223541 navi onCurrentRoadSpeedLimit #160 gap=1002ms 0
+t=18224546 navi onCurrentRoadSpeedLimit #161 gap=1005ms 0
+app debug cmd=navi arg=get
+navi probe cmd 'get' done
+t=18225362 navi onCurrentLocationInfo #4 gap=59466ms CurrentLocationInfo(latitude=37.4127212, longitude=127.094681, heading=0.0, address=수정구 시흥동, routeId=52d28e67-df0d-11f1-baf3-72e3ec72fa29, currentRouteIndex=0)
+t=18225368 navi onRouteStateInfo #5 gap=59473ms RouteStateInfo(termsAgreement=true, naviMode=ROUTE_GUIDING, isRouting=false, routeOption=RECOMMENDED, remainDestinationChargingInt=77002, remainWaypointChargingInt=[0, 0], trafficStatus=TrafficStatus(summary=TrafficCongestionSummary(totalCongestionDist=1300.0, totalCongestionTime=240, totalCongestionAvrSpeed=17.44214808541092), congestionItemList=[TrafficCongestionInfo(offset=400.0, distance=100.0, trafficCongestionTime=60, trafficCongestionType=HEAVY, avrSpeed=30.09080035800002, roadName=대왕판교로, startCrossName=, endCrossName=금토동삼거리), TrafficCongestionInfo(offset=500.0, distance=100.0, trafficC
+t=18225371 navi onTBTInfo #5 gap=59473ms [TBTInfo(type=TURN_LEFT, distance=80.0, description=기업지원허브 방면), TBTInfo(type=TURN_RIGHT, distance=380.0, description=판교IC 방면), TBTInfo(type=TURN_AVOID_UNDER_R, distance=730.0, description=판교IC 방면), TBTInfo(type=TURN_LEFT, distance=1200.0, description=판교(판교테크노밸리)역 방면), TBTInfo(type=TURN_RIGHT, distance=530.0, description=백현동행정복지센터 방면), TBTInfo(type=TURN_RIGHT, distance=120.0, description=이름 없는 도로), TBTInfo(type=TURN_ARRIVE, distance=60.0, description=도착)]
+t=18225544 navi onCurrentRoadSpeedLimit #162 gap=998ms 0
+t=18226363 navi onDestinationInfo #4 gap=59466ms DestinationInfo(latitude=37.3948, longitude=127.1112, displayLatitude=null, displayLongitude=null, name=probe, address=분당구 백현동, remainDistance=3100, remainTime=780, tollFare=0, poiId=, poiSubId=null, poiProvider=)
+t=18226551 navi onCurrentRoadSpeedLimit #163 gap=1007ms 0

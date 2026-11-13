@@ -68,6 +68,39 @@
 
 다시 찍은 캡처(ui 검수 반영 뒤): `v2_calm_cruise_traffic_wiper_off.jpg`, `v2_s03_sudden_stop_just_after.jpg`, `v2_s03_after_brake.jpg`, `v2_s01_heavy_rain_wiper_off.jpg`, `v2_s01_heavy_rain_wiper_high.jpg`, `v2_home_landscape.jpg`, `v2_portrait_home.jpg`, `v2_portrait_s01_heavy_rain.jpg`, `v2_coach_k01_landscape.jpg`, `v2_portrait_coach_k01.jpg`, `v2_coach_landscape_after_gear_d.jpg`, `v2_portrait_coach_after_gear_d.jpg`, 앱과 Virtual Console을 나란히 둔 `11-virtual-console.png`.
 
+### 주행 중 CPU·메모리 기준선 (2026-11-13 08:40)
+
+방법: 앱·음성 서비스(`ai.pleos.playground.caas`, 사용자 10의 pid 2693) 프로세스의 `/proc/<pid>/stat` utime+stime을 1초마다 읽어 `/proc/uptime` 차이로 나눔(CLK_TCK 100). "1코어 기준"은 코어 하나를 100 %로, "전체"는 4코어 합을 100 %로 본 값(= 1코어 기준 ÷ 4). PSS는 `dumpsys meminfo <pid>`의 TOTAL PSS를 30초마다. 원본: `docs/screens/sim/logs/cpu_coach_idle_release_5min.csv`, `cpu_coach_peak_debug_90s.csv`. 기준: 주행 중 비내비 앱 CPU 5 % 미만, RAM 400 MB.
+
+| 조건 | 프로세스 | 평균 | p95 | 최대 | PSS |
+| --- | --- | --- | --- | --- | --- |
+| **코치 모드 5분**(release, Gear D, 앱이 앞, 292초, 그사이 K02 발화 1회) | 앱 | **전체 0.05 %**(1코어 0.2 %) | 0.25 %(1.0 %) | 0.90 %(3.6 %) | **58 MB** |
+| | 음성 서비스 | 0.01 % | 0.00 % | 4.38 %(발화 순간) | – |
+| **발화·질문이 낀 90초**(debug, Gear D, K01·K02 발화, PCM 질문 1회 → 0.39초에 답) | 앱 | **전체 0.22 %**(1코어 0.9 %) | 0.72 %(2.9 %) | **1.95 %**(7.8 %, 질문 처리 순간) | 102 MB(debug) |
+| | 음성 서비스 | 0.32 % | 4.12 % | 5.35 %(21.4 %, 인식·합성 중) | – |
+
+판정: **앱 프로세스는 기준(5 % 미만) 안**. 평소 0.05 %, 질문 순간 최대 1.95 %. 메모리도 release 58 MB로 400 MB 안. 음성 인식·합성은 시스템 음성 서비스 프로세스가 쓰며, 순간 최대 5.35 %(전체 기준)였다. 앱과 서비스를 합친 90초 평균은 0.54 %. debug 빌드는 R8이 없어 PSS가 크다(102 MB).
+
+### NaviHelper 주행 콜백 탐색 (2026-11-13 08:50, 디버그 실측 도구 `NaviProbe`)
+
+방법: 디버그 명령 `navi start|get|route <lat>,<lon>|trip|reroute|cancel`으로 NaviHelper 3.0.5에 붙어 모든 콜백을 시각과 간격으로 기록. 권한: 이미 선언된 `NAVI_ROUTE`·`NAVI_ROUTE_SEARCH`(·`NAVI_CUSTOM_MAP`)로 충분했다(추가 권한 없음). 원본: `docs/screens/sim/logs/navi_callbacks_moving_attempts.log`.
+
+| 콜백 | 실제로 옴? | 값 예시 / 주기 |
+| --- | --- | --- |
+| `onCurrentRoadSpeedLimit` | **예**, 연결하자마자 | **약 1초마다**, 값은 늘 `0`(정지 상태) |
+| `onRouteStarted` | 예(`requestRoute` 뒤) | `duration=780, distance=3100, tollFare=0` |
+| `onNavigationStatus` | 예 | 경로 시작 `ROUTE_DRIVE`, 취소 `FREE_DRIVE` |
+| `onDrivingInfo` | 예(경로 시작·취소 때) | `destination=DrivingState(duration=780, distance=3100, …)` — 정지 상태라 주행 중 갱신은 못 봄 |
+| `onTBTInfo` | 예(`getTBTInfo`와 경로 시작 직후) | `[TURN_LEFT 80 m 기업지원허브 방면, TURN_RIGHT 380 m 판교IC 방면, …]` |
+| `onRouteStateInfo` | 예(`getRouteStateInfo`) | `naviMode=ROUTE_GUIDING`, 교통 요약 `totalCongestionDist=1300` |
+| `onDestinationInfo`·`onCurrentLocationInfo` | 예(조회 때) | 목적지 `remainDistance=3100, remainTime=780`, 현재 위치 37.4127, 127.0947(성남 수정구) |
+| `onTripInfo` | 예(`requestTrip`) | `distance=3211, eta=727, estimatedSocAtDest=99`, 구간별 혼잡 |
+| `onRouteCancelled` | 예(`cancelRoute`) | – |
+| `onCameraAlert`·`onCautionPointInfo` | **오지 않음** | 차가 움직이지 않아 확인 불가 |
+| `onReRouteEnded` | **오지 않음** | `requestReRoute`를 불러도 정지 상태에서는 없음 |
+
+**에뮬레이터에서 내비를 움직이는 방법을 찾지 못함**: ① `adb emu geo fix`로 GPS를 61초 동안 목적지 쪽으로 옮김 → 내비 위치 그대로(내비는 에뮬레이터 GPS를 쓰지 않음). ② Virtual Console에서 D + ACCEL로 최고 140 km/h까지 33초 주행 → 내비 위치 그대로. ③ 내비 설정(버전 3.3.2-rc5-hotfix.3)에 모의 주행 항목 없음. 그래서 과속 카메라(`isOverSpeed` 포함), 주의 지점, 경로 이탈 재탐색, 주행 중 남은 거리 갱신은 **에뮬레이터에서 미확인**. 경로 이탈 신호 후보는 `onReRouteEnded`와 `onDrivingInfo`·`onDestinationInfo`의 남은 거리 증가지만 실측하지 못했다. 제한 속도는 1초마다 오므로 실차에서 값이 채워지는지만 확인하면 된다.
+
 ### 음성 지연 재측정 — voice 4e8a888 추측 요청 비교 정규화 뒤 (2026-11-13 08:20)
 
 같은 방법(LLM 질문 PCM 12회, 15초 간격, 앱을 새로 시작, 에뮬레이터 Wi-Fi `AndroidWifi`). 원본: `docs/screens/sim/logs/voice_latency_4e8a888_gap15s_speculative.log`. 연결 12/12 reused, `Socket closed` 0회.
