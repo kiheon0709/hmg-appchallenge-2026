@@ -23,10 +23,12 @@ import io.moodlab.sideseat.ui.HomeUi
 import io.moodlab.sideseat.ui.ReviewUi
 import io.moodlab.sideseat.ui.TalkUi
 import io.moodlab.sideseat.ui.UiAction
+import io.moodlab.sideseat.ui.WakeUi
 import io.moodlab.sideseat.vehicle.VehicleGateway
 import io.moodlab.sideseat.voice.Instructor
 import io.moodlab.sideseat.voice.PleosVoice
 import io.moodlab.sideseat.voice.WakeListening
+import io.moodlab.sideseat.voice.WakeState
 import io.moodlab.sideseat.voice.Sfx
 import io.moodlab.sideseat.voice.Voice
 import kotlinx.coroutines.CoroutineScope
@@ -91,10 +93,20 @@ class SideSeatController(
             }
         }
         scope.launch { gatewayFlow.collectLatest { g -> g.arrivals.collect { Log.i(TAG, "app navi arrival") } } }
+        wake?.let { w -> scope.launch { w.state.collect { st -> _ui.update { it.copy(coach = it.coach.copy(wake = wakeUi(st))) } } } }
         refreshHome()
     }
 
     private fun isDebugGateway(g: VehicleGateway) = g.javaClass.simpleName.startsWith("Debug")
+
+    /** 말하는 중(SPEAKING)은 talk.speaking으로 보이므로 호출어 안내는 끈다. */
+    private fun wakeUi(st: WakeState): WakeUi = when (st) {
+        WakeState.LISTENING -> WakeUi.WAITING
+        WakeState.FOLLOW_UP -> WakeUi.FOLLOW_UP
+        WakeState.HANDLING -> WakeUi.HEARD
+        WakeState.BACKED_OFF -> WakeUi.YIELDED
+        WakeState.OFF, WakeState.SPEAKING -> WakeUi.OFF
+    }
 
     // ---------- 차 상태 → 모드 ----------
 
@@ -144,7 +156,7 @@ class SideSeatController(
         setAmbient(AmbientMood.OFF, force = true)
         _ui.update {
             it.copy(training = null, miniGame = null, safeDial = null, turnGame = null, windowGame = null, review = null,
-                coach = CoachUi(lastLine = null, talk = it.coach.talk.copy(partialText = null, answerText = null)))
+                coach = CoachUi(lastLine = null, wake = it.coach.wake, talk = it.coach.talk.copy(partialText = null, answerText = null)))
         }
         setMode(AppMode.COACH)
         coach.onDriveStart(t)
@@ -156,7 +168,8 @@ class SideSeatController(
         val state = _ui.value.vehicle
         val u = coach.tick(state, now()) ?: return
         Log.i(TAG, "app coach say rule=${u.ruleId} urgent=${u.urgent} '${u.text}'")
-        _ui.update { it.copy(coach = it.coach.copy(lastLine = coachLine(u.text), urgent = u.urgent)) }
+        // 위험 단계: 경고등(K10, "안전한 곳에 세우고")만. 다른 안내는 기본 글자색.
+        _ui.update { it.copy(coach = it.coach.copy(lastLine = coachLine(u.text), urgent = u.urgent, danger = u.ruleId == "K10")) }
         voice.say(u.text, urgent = u.urgent)
         val kind = u.expectReply ?: return
         talkJob?.cancel()
