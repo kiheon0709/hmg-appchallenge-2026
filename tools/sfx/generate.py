@@ -19,6 +19,7 @@
 - hazard      반복  비상등(S07·S12) 릴레이 '딸깍-딱' 소리, 분당 약 90회
 - breath      반복  김서림(S02) 정적 속 숨소리. 느린 들숨·날숨
 - yawn        단발  졸음(S09). 하품 한 번(성대음을 모음 '아' 공명으로 거른 소리) 뒤 느린 숨 두 번, 7초(반복해도 이음매 없음)
+- wake        단발  호출어 확인음(주행 중). 0.22초짜리 부드러운 두 음 '띠링', 운전에 방해되지 않게 작고 짧게
 - unlock      단발  금고 번호 하나를 맞춤(M1). 묵직한 걸쇠 '철컥' + 짧은 금속 울림
 - buzzer      단발  퀴즈 미니게임 먼저 누르기. 밝고 경쾌한 '삐빅'
 - success     단발  해결. 밝은 종소리 아르페지오
@@ -520,6 +521,14 @@ def yawn():
     return norm_peak(x, -6)
 
 
+def wake():
+    # 짧게 올라가는 두 음(E6→A6). 종소리 배음을 약하게, 꼬리는 짧게.
+    n = int(SR * 0.32)
+    x = place(bell(1318.5, 0.25, 0.09, 0.4), n, 0.0) * 0.8 + place(bell(1760.0, 0.25, 0.12, 0.4), n, 0.07)
+    x = reverb(x, 0.4, 0.08)[:n]
+    return norm_peak(fade(x, 0.001, 0.05), -6)
+
+
 def unlock():
     sec = 0.6
     n = int(SR * sec)
@@ -588,7 +597,7 @@ def fail():
 SOUNDS = {
     "rain": rain, "wind": wind, "engine": engine, "engine_rise": engine_rise, "thunder": thunder,
     "tire": tire, "alarm": alarm, "chime": chime, "click": click, "tick": tick, "wiper": wiper,
-    "hazard": hazard, "breath": breath, "yawn": yawn, "unlock": unlock, "buzzer": buzzer, "success": success, "fail": fail,
+    "wake": wake, "hazard": hazard, "breath": breath, "yawn": yawn, "unlock": unlock, "buzzer": buzzer, "success": success, "fail": fail,
 }
 
 if __name__ == "__main__":

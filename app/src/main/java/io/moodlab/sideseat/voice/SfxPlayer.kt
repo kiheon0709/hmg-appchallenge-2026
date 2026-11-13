@@ -227,6 +227,7 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
             "breath" to 0.6f,
             "yawn" to 0.6f,
             "unlock" to 1.0f,
+            "wake" to 0.6f,
             "buzzer" to 0.6f,
             "success" to 0.7f,
             "fail" to 0.6f,

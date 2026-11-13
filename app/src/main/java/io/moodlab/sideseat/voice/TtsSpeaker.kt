@@ -71,6 +71,9 @@ internal class TtsSpeaker(
     /** TTS onStart·onDone을 밖(효과음 줄이기 등)에 알린다. */
     var onAudible: (Boolean) -> Unit = {}
 
+    /** 오디오 포커스를 잃음(Gleo 호출·통화 등). 연속 청취가 물러난다. */
+    var onFocusLost: (permanent: Boolean) -> Unit = {}
+
     private val focus = AudioFocusGate(
         audio = context.getSystemService(AudioManager::class.java),
         attributes = AudioFocusGate.speechAttributes(),
@@ -200,6 +203,7 @@ internal class TtsSpeaker(
     }
 
     private fun onFocusLoss(permanent: Boolean) {
+        onFocusLost(permanent)
         val item = currentItem
         if (permanent) queue.clear()
         else if (item is Item.Line) queue.addFirst(item) // 다시 GAIN을 받으면 처음부터 다시 말한다

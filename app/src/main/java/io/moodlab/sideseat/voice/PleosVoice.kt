@@ -110,6 +110,25 @@ internal class PleosVoice(
         listenLock.withLock { listenOnce(kind, onPartial, pcm = null) }
     }
 
+    /** 마지막 듣기에서 난 STT 오류(없으면 null). 연속 청취가 오류와 무음을 나눠 백오프한다. */
+    @Volatile var lastCycleError: ErrorType? = null
+        private set
+
+    /**
+     * 연속 청취의 한 번(호출어 기다리기). [pcm]이 있으면 마이크 대신 넣는다(실측용).
+     * 말이 없으면 [maxMs] 뒤 닫는다. 결과 텍스트(없으면 null), 오류는 [lastCycleError].
+     */
+    suspend fun wakeCycle(pcm: ByteArray?, maxMs: Long, onPartial: (String) -> Unit, stopWhen: (String) -> Boolean): String? =
+        withContext(Dispatchers.Main) {
+            listenLock.withLock {
+                listenOnce(
+                    ReplyKind.FREE, onPartial, pcm, quiet = true,
+                    limitsOverride = Limits(noSpeechMs = maxMs, maxMs = maxMs + WAKE_SPEECH_EXTRA_MS, finalAfterEpdMs = 1_000),
+                    stopWhen = stopWhen,
+                )
+            }
+        }
+
     /**
      * 실측·시연용: 차량 마이크 대신 16kHz 16bit mono PCM을 실시간 속도로 넣어 같은 경로(중간 결과·EPD·추측 요청·지연 측정)로 듣는다.
      * SpeechToText.sendAudio는 ON_DEVICE 모드에서만 된다(문서). 에뮬레이터는 호스트 마이크 소리가 인식되지 않아 이 길로 잰다.
@@ -118,16 +137,27 @@ internal class PleosVoice(
         listenLock.withLock { listenOnce(kind, onPartial, pcm) }
     }
 
-    private suspend fun listenOnce(kind: ReplyKind, onPartial: (String) -> Unit, pcm: ByteArray?): String? {
+    private suspend fun listenOnce(
+        kind: ReplyKind,
+        onPartial: (String) -> Unit,
+        pcm: ByteArray?,
+        /** 연속 청취용: 예열·추측 요청·지연 측정·listening 표시를 하지 않고 로그를 줄인다(주행 중 CPU). */
+        quiet: Boolean = false,
+        limitsOverride: Limits? = null,
+        /** 중간 결과가 이 조건을 만족하면 바로 끝낸다(예: Gleo 호출이 들리면 마이크를 즉시 놓기). */
+        stopWhen: ((String) -> Boolean)? = null,
+    ): String? {
+        lastCycleError = null
+        fun vlog(msg: String) { if (!quiet) vlog(msg) }
         if (withTimeoutOrNull(5_000) { sttReady.await() } != true) {
             Log.w(MEASURE_TAG, "stt not ready")
             return null
         }
         if (!bargeIn) speaker.awaitIdle(20_000)
-        val limits = Limits.of(kind)
-        hooks.onListenStart()
+        val limits = limitsOverride ?: Limits.of(kind)
+        if (!quiet) hooks.onListenStart()
         while (events.tryReceive().isSuccess) Unit // 지난 듣기의 늦은 이벤트를 버린다
-        _listening.value = true
+        if (!quiet) _listening.value = true
         val t0 = SystemClock.elapsedRealtime()
         var lastPartial = ""
         var final: String? = null
@@ -146,18 +176,19 @@ internal class PleosVoice(
         var guesses = 0
         /** 말이 끝났다고 "추측"되면 Instructor가 LLM 요청을 먼저 보낸다. 듣기는 계속한다. 같은 글에는 한 번만. */
         fun guessEnd(source: String) {
+            if (quiet) return
             val norm = ReplyClassifier.normalize(lastPartial)
             if (norm.isEmpty() || norm == guessedNorm || guesses >= MAX_GUESSES) return
             guessedNorm = norm
             guesses++
-            Log.i(MEASURE_TAG, "stt guess end ($source) #$guesses chars=${lastPartial.length} at=${SystemClock.elapsedRealtime() - t0}ms")
+            vlog("stt guess end ($source) #$guesses chars=${lastPartial.length} at=${SystemClock.elapsedRealtime() - t0}ms")
             hooks.onEpdEnd(lastPartial)
         }
         /** 엔진 EPD·RMS로 말 끝이 확인됨: 최종 결과 대기 시간 제한을 건다. */
         fun markSpeechEnd(source: String) {
             if (epdAt != null) return
             epdAt = SystemClock.elapsedRealtime()
-            Log.i(MEASURE_TAG, "stt speech end ($source) at=${epdAt!! - t0}ms")
+            vlog("stt speech end ($source) at=${epdAt!! - t0}ms")
             guessEnd(source)
         }
         var firstPartialAt: Long? = null
@@ -175,10 +206,10 @@ internal class PleosVoice(
                         delay(100)
                     }
                     stt.completeAudioSend()
-                    Log.i(MEASURE_TAG, "stt pcm sent bytes=${pcm.size} at=${SystemClock.elapsedRealtime() - t0}ms")
+                    vlog("stt pcm sent bytes=${pcm.size} at=${SystemClock.elapsedRealtime() - t0}ms")
                 }
             }
-            Log.i(MEASURE_TAG, "stt request kind=$kind source=${if (pcm == null) "mic" else "pcm"} speaking=${speaker.speaking.value}")
+            vlog("stt request kind=$kind source=${if (pcm == null) "mic" else "pcm"} speaking=${speaker.speaking.value}")
             loop@ while (true) {
                 val now = SystemClock.elapsedRealtime()
                 val elapsed = now - t0
@@ -190,7 +221,7 @@ internal class PleosVoice(
                     endedAt?.let { FINAL_AFTER_END_MS - (now - it) },
                 ).min()
                 if (deadline <= 0) {
-                    Log.i(MEASURE_TAG, "stt ${if (endedAt != null) "no final after end" else "timeout"} speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
+                    vlog("stt ${if (endedAt != null) "no final after end" else "timeout"} speechSeen=$speechSeen epd=${epdAt != null} elapsed=${elapsed}ms")
                     break@loop
                 }
                 // 중간 결과가 잠시 새로 오지 않으면 말이 끝났다고 추측한다(듣기는 계속).
@@ -205,25 +236,29 @@ internal class PleosVoice(
                 val e = withTimeoutOrNull(if (guessIn != null) minOf(deadline, guessIn) else deadline) { events.receive() } ?: continue@loop
                 when (e) {
                     SttEvent.Ready -> Unit
-                    SttEvent.Started -> if (startedLogged++ == 0) Log.i(MEASURE_TAG, "stt started at=${SystemClock.elapsedRealtime() - t0}ms")
+                    SttEvent.Started -> if (startedLogged++ == 0) vlog("stt started at=${SystemClock.elapsedRealtime() - t0}ms")
                     is SttEvent.Updated -> {
                         val text = e.text.trim()
                         if (e.completed) {
                             if (text.isNotEmpty()) final = text
-                            Log.i(MEASURE_TAG, "stt final chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms " +
+                            vlog("stt final chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms " +
                                 "end->final=${endedAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms silence->final=${epdAt?.let { SystemClock.elapsedRealtime() - it } ?: "-"}ms")
                             break@loop
                         }
                         if (text.isNotEmpty()) {
                             if (firstPartialAt == null) {
                                 firstPartialAt = SystemClock.elapsedRealtime()
-                                Log.i(MEASURE_TAG, "stt first partial at=${firstPartialAt!! - t0}ms")
+                                vlog("stt first partial at=${firstPartialAt!! - t0}ms")
                             }
                             speechSeen = true
                             lastPartial = text
                             lastPartialAt = SystemClock.elapsedRealtime()
                             onPartial(text)
-                            hooks.onPartial(text)
+                            if (!quiet) hooks.onPartial(text)
+                            if (stopWhen?.invoke(text) == true) {
+                                vlog("stt cycle stopped early chars=${text.length}")
+                                break@loop
+                            }
                             // 같은 중간 결과가 한 번 더 오면 말이 멈춘 것으로 보고 LLM 요청을 먼저 보낸다.
                             val norm = ReplyClassifier.normalize(text)
                             if (norm == prevPartialNorm) guessEnd("stable")
@@ -231,7 +266,7 @@ internal class PleosVoice(
                         }
                     }
                     is SttEvent.Epd -> {
-                        Log.i(MEASURE_TAG, "stt epd on=${e.on} off=${e.off} at=${SystemClock.elapsedRealtime() - t0}ms")
+                        vlog("stt epd on=${e.on} off=${e.off} at=${SystemClock.elapsedRealtime() - t0}ms")
                         if (e.on > 0) speechSeen = true
                         if (e.off > 0) markSpeechEnd("epd")
                     }
@@ -250,24 +285,25 @@ internal class PleosVoice(
                         if (endedAt == null) {
                             endedAt = SystemClock.elapsedRealtime()
                             ended = true
-                            Log.i(MEASURE_TAG, "stt ended at=${endedAt!! - t0}ms")
+                            vlog("stt ended at=${endedAt!! - t0}ms")
                         }
                     }
                     is SttEvent.Error -> {
+                        lastCycleError = e.type
                         Log.w(MEASURE_TAG, "stt error=${e.type}")
                         break@loop
                     }
                 }
             }
-            if (rmsCount > 0) Log.i(MEASURE_TAG, "stt rms n=$rmsCount max=${"%.4f".format(rmsMax)} min=${"%.4f".format(rmsMin)}")
+            if (rmsCount > 0) vlog("stt rms n=$rmsCount max=${"%.4f".format(rmsMax)} min=${"%.4f".format(rmsMin)}")
         } finally {
             sender?.cancel()
             if (!ended) runCatching { stt.stop() }.onFailure { Log.w(MEASURE_TAG, "stt stop failed: $it") }
-            _listening.value = false
+            if (!quiet) _listening.value = false
         }
         val result = (final ?: lastPartial).trim().ifEmpty { null }
-        if (result != null) hooks.onFinal(result) else meter.cancel()
-        Log.i(MEASURE_TAG, "stt result=${if (result == null) "none" else "chars=${result.length}"} source=${if (final != null) "final" else "partial"}")
+        if (!quiet) { if (result != null) hooks.onFinal(result) else meter.cancel() }
+        vlog("stt result=${if (result == null) "none" else "chars=${result.length}"} source=${if (final != null) "final" else "partial"}")
         return result
     }
 
@@ -288,6 +324,8 @@ internal class PleosVoice(
         const val QUIET_GUESS_COMPLETE_MS = 220L
         /** 한 번 듣는 동안 추측 요청 최대 횟수(말을 이어 가면 글이 바뀌어 다시 보낸다). */
         const val MAX_GUESSES = 3
+        /** 연속 청취에서 말이 시작된 뒤 더 들어 주는 시간(질문이 붙어 길어질 수 있음). */
+        const val WAKE_SPEECH_EXTRA_MS = 8_000L
     }
 
     private data class Limits(val noSpeechMs: Long, val maxMs: Long, val finalAfterEpdMs: Long) {

@@ -36,7 +36,11 @@ object VoiceModule {
         val speaker: TtsSpeaker,
         val sfx: SfxPlayer,
         val instructor: SeniorInstructor,
+        val wake: WakeListener,
     )
+
+    /** 주행 중 연속 청취(호출어). [create] 뒤에 쓴다. 켜고 끄는 시점(코치 모드 진입·이탈)은 통합 세션이 정한다. */
+    val wake: WakeListening? get() = parts?.wake
 
     @Synchronized
     fun create(context: Context, config: VoiceConfig): Triple<Voice, Sfx, Instructor> {
@@ -71,8 +75,10 @@ object VoiceModule {
             instructor.prewarmReview()
         }
 
+        val wake = WakeListener(app, s, voice, speaker, sfx, cfg.wake)
+
         scope = s
-        parts = Parts(voice, speaker, sfx, instructor)
+        parts = Parts(voice, speaker, sfx, instructor, wake)
         return Triple(voice, sfx, instructor)
     }
 
@@ -86,6 +92,7 @@ object VoiceModule {
     @Synchronized
     fun release() {
         parts?.let {
+            runCatching { it.wake.stop() }
             runCatching { it.voice.release() }
             runCatching { it.speaker.release() }
             runCatching { it.sfx.release() }

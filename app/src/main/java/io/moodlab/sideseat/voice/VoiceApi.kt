@@ -26,7 +26,7 @@ interface Voice {
 
 /**
  * 효과음. 이름: rain·wind·engine·hazard·breath(항상 반복), yawn(하품 한 번+숨, 7초), thunder, tire, alarm, click, tick, chime,
- * wiper, engine_rise, unlock, buzzer, success, fail. 모르는 이름은 무시하고 로그만 남긴다.
+ * wiper, engine_rise, unlock, buzzer, success, fail, wake(호출 확인음). 모르는 이름은 무시하고 로그만 남긴다.
  */
 interface Sfx {
     fun play(name: String, loop: Boolean = false)
@@ -50,6 +50,27 @@ interface Instructor {
      * 말이 끝나는 순간(EPD) STT 최종 결과를 기다리지 않고 LLM 요청을 먼저 보낸다. 안 불러도 동작은 같다.
      */
     fun prepareQuestion(parked: Boolean, context: String) {}
+}
+
+/**
+ * 주행 중 손 안 대는 호출. 켜 두면 Pleos STT(ON_DEVICE)로 계속 들으며 맨 앞의 호출어([Persona.WAKE_WORDS])를 기다린다.
+ * 호출어가 들리면 확인음("wake") → 같은 말에 붙은 질문(없으면 이어서 한 번 더 듣기)을 [start]의 onQuestion으로 넘긴다.
+ * 선배가 말을 마치면 [WakeConfig.followUpMs] 동안 호출어 없이 되묻기를 받는다.
+ * Gleo 우선: Gleo 호출어가 들리거나, 오디오 포커스를 잃거나, 다른 앱이 마이크를 쓰거나, 통화 중이면 즉시 놓고 물러난다.
+ * 선배가 말하는 동안은 듣지 않는다(에코 제거가 없어 자기 목소리를 호출어로 오인할 수 있음).
+ */
+interface WakeListening {
+    val state: StateFlow<WakeState>
+
+    /** 연속 청취를 켠다. onQuestion에서 답을 만들어 Voice.sayStreaming으로 말하면, 말이 끝날 때까지 기다렸다가 다시 듣는다. */
+    fun start(onQuestion: suspend (question: String) -> Unit)
+    fun stop()
+
+    /** 디버그: 상태·횟수 한 줄. */
+    fun debugStatus(): String
+
+    /** 디버그·실측: 다음 한 번을 마이크 대신 이 PCM(16kHz 16bit mono raw)으로 듣는다. */
+    fun debugFeedPcm(pcm: ByteArray)
 }
 
 /** Voice가 듣는 동안 Instructor에게 알려 주는 신호. VoiceModule이 둘을 잇는다. */
@@ -80,6 +101,8 @@ data class VoiceConfig(
      * 끄면 연결 예열만 한다. 버려진 비율은 로그 `llm speculative … discarded=%`.
      */
     val speculativeRequests: Boolean = true,
+    /** 주행 중 연속 청취(호출어) 간격·백오프. */
+    val wake: WakeConfig = WakeConfig(),
 ) {
     val llmEnabled: Boolean
         get() = apiKey.isNotBlank() && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }
