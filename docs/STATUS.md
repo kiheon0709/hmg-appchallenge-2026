@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 08:13, dev-integration)**: 소스 기준 `4e8a888`(voice 추측 요청 정규화·지연 꼬리·연결 재사용, e9cb7f0 효과음, ui a7d894b, vehicle 6b80523). `./gradlew :core:test` 77개·`:app:testDebugUnitTest` 71개 통과. `apk/MoodLab_SideSeat_release.apk` 22,855,739바이트(22.9 MB), 08:13 빌드. release 스모크(에뮬레이터, 크래시 0): C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 7.9초에 열림. 디버그 빌드 Claude 질문 15초 간격 12회: 실제 답 시작 중앙값 0.44초(0.27~0.54), 1초 초과 0/12, 추측 요청 12/12 적중(버림 0%), 연결 12/12 재사용. 폼 팩터 12.9″ 세로·14.6″ 가로 확인. 소리 출력 기기 기준 확인. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`로 켜져 있음.
+> **최종 빌드 (2026-11-13 14:24, dev-integration)**: 소스 기준 `74a4b92`(voice 10d9624 호출어 규칙·a76254b 듣기 루프 수정, ui 1ac9909 코치 호출어 상태·세로 힌트, knowledge c9120ef 차종 위치 문구, core a81e0a0 이후). `./gradlew :core:test` 78개·`:app:testDebugUnitTest` 106개 통과. `apk/MoodLab_SideSeat_release.apk` 22,961,664바이트(23.0 MB), LLM 키 없음(APK 안 `sk-ant-` 0건). release 스모크(새로 설치, 크래시 0 — 그사이 난 크래시 2건은 가상 디스플레이를 붙였다 뗄 때의 시스템 키보드 `ai.umos.inputmethod`): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 8.1초에 열림(`v5_release_*.jpg`). 이번 회차 실측: 호출어 연속 청취 CPU 앱 0.23 %·서비스 0.63 %(debug), 마이크 공백 3.1 %, 호출어 17/20·오인식 0/20(10d9624), 이름 후보 28개 비교, 차종별 위치 답 4차종 확인, v4·v5 재촬영, 반응 0.25초 안·60 fps. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
