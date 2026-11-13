@@ -108,6 +108,10 @@ class LocationTest {
         assertEquals(30, RoadSpeedLimits.match(37.4130, 127.09402, 90.0, ways)?.limitKmh)
         // 같은 교차점에서 북쪽으로 가면 남북 도로
         assertEquals(60, RoadSpeedLimits.match(37.4130, 127.09402, 0.0, ways)?.limitKmh)
+        // 일방통행(동쪽)을 거슬러 서쪽으로 가는 방향이면, 방향이 맞는 도로가 없어 모름
+        assertNull(RoadSpeedLimits.match(37.4130, 127.0943, 270.0, ways))
+        // 위를 지나는 남북 도로 아래를 동서로 지나도(내 도로에 maxspeed 없음) 남북 도로 값을 쓰지 않는다
+        assertNull(RoadSpeedLimits.match(37.4125, 127.09401, 90.0, ways))
         // 25m보다 멀면 모름
         assertNull(RoadSpeedLimits.match(37.4125, 127.0950, null, ways))
         assertTrue(RoadSpeedLimits.parseOverpassWays("not json").isEmpty())

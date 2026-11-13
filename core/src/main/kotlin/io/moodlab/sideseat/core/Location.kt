@@ -190,13 +190,13 @@ data class RoadWay(val id: Long, val limitKmh: Int, val oneway: Boolean, val poi
 
 /**
  * 캐시해 둔 도로 중 현재 좌표에서 가장 가까운 도로의 제한속도를 고른다.
- * 진행 방향을 알면 방향이 맞지 않는 도로(교차로의 다른 길)에 거리 벌점을 준다.
+ * 진행 방향을 알면 방향이 맞는 도로만 고른다(교차·고가 도로 오인 방지).
  */
 object RoadSpeedLimits {
     /** 이보다 먼 도로는 내 도로가 아니다. */
     const val MAX_MATCH_M = 25.0
-    private const val MISALIGNED_PENALTY_M = 15.0
-    private const val ALIGN_DEG = 40.0
+    /** 진행 방향과 도로 방향 차이가 이 안이어야 같은 도로. 나들목에서 비스듬히 만나는 길을 빼려고 좁게 둔다. */
+    private const val ALIGN_DEG = 30.0
 
     fun match(lat: Double, lon: Double, headingDeg: Double?, ways: List<RoadWay>, maxMatchM: Double = MAX_MATCH_M): RoadWay? {
         var best: RoadWay? = null
@@ -207,15 +207,16 @@ object RoadSpeedLimits {
                 val (bLat, bLon) = w.points[i + 1]
                 val d = GeoMath.distanceToSegmentMeters(lat, lon, aLat, aLon, bLat, bLon)
                 if (d > maxMatchM) continue
-                var score = d
+                // 진행 방향을 알면 방향이 맞지 않는 도로는 뺀다. 교차로의 다른 길, 위·아래로 지나는 고가도로를
+                // 내 도로로 잘못 고르지 않게 한다(내 도로에 maxspeed가 없으면 모름으로 둔다).
                 if (headingDeg != null) {
                     val seg = GeoMath.bearingDeg(aLat, aLon, bLat, bLon)
                     val diff = GeoMath.angleDiff(seg, headingDeg)
                     val aligned = diff <= ALIGN_DEG || (!w.oneway && diff >= 180 - ALIGN_DEG)
-                    if (!aligned) score += MISALIGNED_PENALTY_M
+                    if (!aligned) continue
                 }
-                if (score < bestScore) {
-                    bestScore = score
+                if (d < bestScore) {
+                    bestScore = d
                     best = w
                 }
             }

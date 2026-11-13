@@ -182,6 +182,9 @@ class PleosVehicleGateway(
     private val mapFailedAt = mutableMapOf<Pair<Int, Int>, Long>()
     private var mapInFlight: Pair<Int, Int>? = null
     private var mapLastRequestMs = 0L
+    /** 앱에 넣어 둔 칸(지우지 않음). */
+    private val staticCells = mutableMapOf<Pair<Int, Int>, List<RoadWay>>()
+    private var preloaded = false
     private val unregister = mutableListOf<() -> Unit>()
     private var started = false
 
@@ -209,6 +212,7 @@ class PleosVehicleGateway(
         }
         runCatching { startCarApi() }.onFailure { log("FAIL car api $it") }
         runCatching { startNavi() }.onFailure { log("FAIL navi $it") }
+        runCatching { preloadRoadLimits() }.onFailure { log("FAIL road limits asset $it") }
         runCatching { startLocation() }.onFailure { log("FAIL location $it") }
         startTicker()
         log("gateway started config=$config")
@@ -604,13 +608,45 @@ class PleosVehicleGateway(
 
     // ---------- 지도 제한속도: OpenStreetMap Overpass, 격자 칸 단위 캐시 ----------
 
+    /**
+     * 앱에 넣어 둔 시연 지역 제한속도(assets/zones/road_limits.json, tools/zones/make_demo_route.py)를 칸에 미리 채운다.
+     * 이 범위 안 칸은 "아는 칸"이 되어 외부에 묻지 않는다(시연 때 Overpass가 붐벼도 판정된다).
+     */
+    private fun preloadRoadLimits() {
+        if (preloaded) return
+        val text = context.assets.open(ROAD_LIMITS_ASSET).bufferedReader().use { it.readText() }
+        val ways = RoadSpeedLimits.parseOverpassWays(text)
+        val bbox = Regex(""""bbox":\[([^\]]+)]""").find(text)?.groupValues?.get(1)?.split(",")?.map { it.trim().toDouble() }
+        val byCell = mutableMapOf<Pair<Int, Int>, MutableList<RoadWay>>()
+        ways.forEach { w ->
+            w.points.map { (la, lo) -> RoadSpeedLimits.cellOf(la, lo, config.mapCellDeg) }.toSet()
+                .forEach { c -> byCell.getOrPut(c) { mutableListOf() } += w }
+        }
+        synchronized(mapCells) {
+            if (bbox != null && bbox.size == 4) {
+                val (s0, w0) = RoadSpeedLimits.cellOf(bbox[0], bbox[1], config.mapCellDeg)
+                val (n0, e0) = RoadSpeedLimits.cellOf(bbox[2], bbox[3], config.mapCellDeg)
+                // 범위 안 칸은 도로가 없어도 아는 칸(빈 목록)으로 둔다.
+                for (y in s0 + 1 until n0) for (x in w0 + 1 until e0) staticCells[y to x] = byCell[y to x].orEmpty()
+            }
+            byCell.forEach { (c, list) -> staticCells.putIfAbsent(c, list) }
+        }
+        preloaded = true
+        log("road limits preloaded ways=${ways.size} cells=${staticCells.size}")
+    }
+
     /** 캐시한 칸의 도로로 제한속도를 고르고, 지금 칸이 없으면 드물게 한 번 묻는다. 모르면 null(판정 안 함). */
     private fun mapLimitAt(lat: Double, lon: Double, heading: Double?): Int? {
         val cell = RoadSpeedLimits.cellOf(lat, lon, config.mapCellDeg)
         val ways = synchronized(mapCells) {
-            (-1..1).flatMap { dy -> (-1..1).flatMap { dx -> mapCells[(cell.first + dy) to (cell.second + dx)].orEmpty() } }
+            (-1..1).flatMap { dy ->
+                (-1..1).flatMap { dx ->
+                    val c = (cell.first + dy) to (cell.second + dx)
+                    staticCells[c] ?: mapCells[c].orEmpty()
+                }
+            }.distinctBy { it.id }
         }
-        val known = synchronized(mapCells) { mapCells.containsKey(cell) }
+        val known = synchronized(mapCells) { staticCells.containsKey(cell) || mapCells.containsKey(cell) }
         if (!known) requestMapCell(cell)
         return RoadSpeedLimits.match(lat, lon, heading, ways)?.limitKmh
     }
@@ -811,6 +847,8 @@ class PleosVehicleGateway(
     private fun nowMinute(): Int = Calendar.getInstance().let { it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE) }
 
     private companion object {
+        const val ROAD_LIMITS_ASSET = "zones/road_limits.json"
+
         /** 제한 대상 set은 P단 밖에서 메시지 "...: 50001"로 온다(실측 11-07). */
         fun Exception.isDrivingRestricted(): Boolean =
             message?.contains("DRIVING_RESTRICTED") == true || message?.endsWith("50001") == true
