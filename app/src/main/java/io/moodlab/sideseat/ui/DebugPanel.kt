@@ -32,11 +32,11 @@ import io.moodlab.sideseat.core.WiperLevel
 @Composable
 fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: Modifier = Modifier, onClose: (() -> Unit)? = null) {
     Column(
-        modifier.clip(RoundedCornerShape(20.dp)).background(Color(0xF20B0F18)).border(1.dp, Sc.outline, RoundedCornerShape(20.dp)).padding(14.dp),
+        modifier.clip(RoundedCornerShape(2.dp)).background(Sc.scrim).border(1.dp, Sc.text, RoundedCornerShape(2.dp)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            "디버그 신호 · 화면 %.0f fps".format(SideSeatUiDebug.lastFps), color = Sc.accent, fontSize = 16.sp, fontWeight = FontWeight.Bold,
+            "디버그 신호 · 화면 %.0f fps".format(SideSeatUiDebug.lastFps), color = Sc.accent, fontSize = 16.sp, fontWeight = FontWeight.Medium,
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val wiper = state.wiper ?: WiperLevel.OFF
@@ -64,6 +64,10 @@ fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: 
             }
             Key(if (state.parked) "정차(P)" else "주행", state.parked) { onChange(state.copy(parked = !state.parked)) }
             Key("프레임 로그", SideSeatUiDebug.logFrames) { SideSeatUiDebug.logFrames = !SideSeatUiDebug.logFrames; onChange(state) }
+            val dark = SideSeatUiDebug.forceDark
+            Key(when (dark) { null -> "테마 시스템"; true -> "테마 야간"; false -> "테마 주간" }, dark != null) {
+                SideSeatUiDebug.forceDark = when (dark) { null -> true; true -> false; false -> null }
+            }
             if (onClose != null) Key("닫기", false, onClose)
         }
         val steer = state.steeringAngleDeg ?: 0f
@@ -75,8 +79,8 @@ fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: 
 @Composable
 private fun Key(label: String, on: Boolean, onClick: () -> Unit) {
     Text(
-        label, color = if (on) Sc.onAccent else Sc.text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) Sc.accent else Sc.surfaceHi)
+        label, color = if (on) Sc.onPrimary else Sc.text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.clip(RoundedCornerShape(2.dp)).background(if (on) Sc.primary else Sc.surface)
             .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
     )
 }

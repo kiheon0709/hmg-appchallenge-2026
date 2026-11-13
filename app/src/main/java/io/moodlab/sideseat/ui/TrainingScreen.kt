@@ -62,13 +62,13 @@ import io.moodlab.sideseat.ui.scene.DriveScene
  */
 @Composable
 fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         val pulse by rememberInfiniteTransition(label = "alert").animateFloat(
             0f, 1f, infiniteRepeatable(tween(520), RepeatMode.Reverse), label = "pulse",
         )
         val success = view.phase == TrainingPhase.SUCCESS
         val glowColor = if (success) Sc.ok else if (view.scene.alert > 0.05f) Sc.danger else Color(0xFFBFD4FF)
-        val glow = { if (success) 0.85f else if (view.scene.alert > 0.05f) view.scene.alert * (0.45f + 0.55f * pulse) else 0.1f }
+        val glow = { if (success) 0.7f else if (view.scene.alert > 0.05f) view.scene.alert * (0.35f + 0.4f * pulse) else 0f }
 
         if (sz.wide) {
             Box(Modifier.fillMaxSize()) {
@@ -97,6 +97,8 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
                     DriveScene(view, vehicle, Modifier.fillMaxSize())
                     SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.gap).widthIn(max = sz.width * 0.68f))
                     CenterOverlays(view, onAction)
+                    // 빛 띠는 주행 화면에만 두른다(아래 체크리스트 판은 시스템 바탕 그대로)
+                    EdgeGlow(glowColor, glow)
                     // 세로에서는 아래 판이 길어져도 항상 보이게 주행 화면 위에 둔다
                     BigButton("그만하기", Modifier.align(Alignment.TopEnd).padding(sz.gap)) { onAction(UiAction.AbortTraining) }
                 }
@@ -110,7 +112,6 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
                     }
                 }
             }
-            EdgeGlow(glowColor, glow)
         }
     }
 }
@@ -122,8 +123,8 @@ private fun SituationCard(view: TrainingView, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
         Row(horizontalArrangement = Arrangement.spacedBy(sz.dp(8f)), verticalAlignment = Alignment.CenterVertically) {
             val chapter = SituationTexts.chapterTitle(view.chapterId)
-            if (chapter.isNotEmpty()) Chip(chapter, color = Sc.accent, size = sz.label)
-            if (view.chapterId == ChapterCatalog.SURPRISE) Chip("${view.surviveCount}개 버팀", color = Sc.star, size = sz.label)
+            if (chapter.isNotEmpty()) Chip(chapter, color = Sc.text, size = sz.label)
+            if (view.chapterId == ChapterCatalog.SURPRISE) Chip("${view.surviveCount}개 버팀", color = Sc.text, size = sz.label)
             Chip(
                 when (view.phase) {
                     TrainingPhase.IDLE -> "준비"
@@ -142,7 +143,7 @@ private fun SituationCard(view: TrainingView, modifier: Modifier) {
             Panel(border = if (live) Sc.danger else Sc.outline, padding = sz.dp(18f)) {
                 val long = view.title.length > 8
                 Text(
-                    view.title, color = Sc.text, fontSize = if (long) sz.title else sz.display, fontWeight = FontWeight.Black,
+                    view.title, color = Sc.text, fontSize = if (long) sz.title else sz.display, fontWeight = FontWeight.SemiBold,
                     lineHeight = (if (long) sz.title else sz.display) * 1.15f, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -157,7 +158,7 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
     Column(modifier, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
         if (versusIdle) {
             Panel {
-                Text("교관 대결", color = Sc.accent, fontSize = sz.label, fontWeight = FontWeight.Bold)
+                Text("교관 대결", color = Sc.text, fontSize = sz.label, fontWeight = FontWeight.Medium)
                 Text("조수석에서 상황을 골라 던져요", color = Sc.textDim, fontSize = sz.caption)
                 Spacer(Modifier.height(sz.dp(12f)))
                 SituationTexts.all.chunked(2).forEach { row ->
@@ -173,7 +174,7 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("해야 할 조작", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
-                        Text("${view.steps.count { it.done }} / ${view.steps.size}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                        Text("${view.steps.count { it.done }} / ${view.steps.size}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Medium)
                     }
                     Timer(view)
                 }
@@ -183,8 +184,8 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
             }
         }
         view.choice?.let { choice ->
-            Panel(border = Sc.accent) {
-                Text(choice.question, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Bold, lineHeight = sz.body * 1.3f)
+            Panel(border = Sc.text) {
+                Text(choice.question, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Medium, lineHeight = sz.body * 1.3f)
                 Text("말로 답해도 돼요", color = Sc.textDim, fontSize = sz.caption, modifier = Modifier.padding(top = sz.dp(4f), bottom = sz.dp(12f)))
                 choice.options.forEachIndexed { i, option ->
                     BigButton("${i + 1}. $option", Modifier.fillMaxWidth().padding(bottom = sz.dp(8f))) { onAction(UiAction.Answer(option)) }
@@ -215,11 +216,11 @@ private fun Timer(view: TrainingView) {
 private fun StepRow(step: StepView, current: Boolean) {
     val sz = LocalSz.current
     val done by animateFloatAsState(if (step.done) 1f else 0f, spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow), label = "step")
-    val shape = RoundedCornerShape(sz.dp(18f))
+    val shape = RoundedCornerShape(sz.radius)
     Row(
         Modifier.fillMaxWidth().padding(vertical = sz.dp(4f)).clip(shape)
-            .background(if (step.done) Sc.ok.copy(alpha = 0.16f) else if (current) Sc.accent.copy(alpha = 0.12f) else Color.Transparent)
-            .border(sz.dp(1.5f), if (step.done) Sc.ok.copy(alpha = 0.7f) else if (current) Sc.accent else Sc.outline, shape)
+            .background(if (step.done) Sc.ok.copy(alpha = 0.12f) else Color.Transparent)
+            .border(sz.line, if (step.done) Sc.ok else if (current) Sc.text else Sc.outline, shape)
             .padding(horizontal = sz.dp(14f), vertical = sz.dp(12f)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -239,7 +240,7 @@ private fun StepRow(step: StepView, current: Boolean) {
         Spacer(Modifier.width(sz.dp(14f)))
         Text(
             step.label, color = if (step.done) Sc.ok else Sc.text, fontSize = sz.body,
-            fontWeight = if (current) FontWeight.Bold else FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            fontWeight = if (current) FontWeight.Medium else FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -253,7 +254,7 @@ private fun HintBanner(view: TrainingView, modifier: Modifier) {
     val hint = if (show && step != null) SituationTexts.hint(view.situation, step.id) else null
     AnimatedVisibility(hint != null, modifier, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
         Panel(border = Sc.warn, padding = sz.dp(18f)) {
-            Text("스위치 위치", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Bold)
+            Text("스위치 위치", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)
         }
     }
@@ -277,7 +278,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                 }
                 Text(
                     if (checkOnly) "확인 완료" else when (result?.stars) { 3 -> "완벽해요!"; 2 -> "좋아요!"; else -> "됐어요!" },
-                    color = Sc.ok, fontSize = sz.display, fontWeight = FontWeight.Black,
+                    color = Sc.ok, fontSize = sz.display, fontWeight = FontWeight.SemiBold,
                 )
                 result?.reactionMs?.takeIf { !checkOnly }?.let {
                     Text(SituationTexts.seconds(it) + " 걸렸어요", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
@@ -294,31 +295,31 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     AnimatedVisibility(view.phase == TrainingPhase.FAIL, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         Panel(border = Sc.warn, padding = sz.dp(30f)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.widthIn(min = sz.dp(360f), max = sz.dp(620f))) {
-                Text("괜찮아요", color = Sc.warn, fontSize = sz.display, fontWeight = FontWeight.Black)
+                Text("괜찮아요", color = Sc.warn, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
                 Text("한 번 더 해 볼까요?", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
             }
         }
     }
     AnimatedVisibility(view.phase == TrainingPhase.BRIEFING && view.situation == null, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         Panel(padding = sz.dp(30f)) {
-            Text(view.title, color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black)
+            Text(view.title, color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
             Text("선배 말을 듣고, 진짜 스위치로 대처해요", color = Sc.textDim, fontSize = sz.label)
         }
     }
     AnimatedVisibility(view.phase == TrainingPhase.CHAPTER_DONE, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
-        Panel(border = Sc.accent, padding = sz.dp(34f)) {
+        Panel(border = Sc.text, padding = sz.dp(34f)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.widthIn(min = sz.dp(420f))) {
                 val res = view.chapterResult
                 Text(
                     if (view.chapterId == ChapterCatalog.SURPRISE) "${view.surviveCount}개 버텼어요!" else "${SituationTexts.chapterTitle(view.chapterId)} 완료!",
-                    color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black, textAlign = TextAlign.Center,
+                    color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center,
                 )
                 if (res != null) {
                     val scored = res.results.filter { it.id != SituationId.BEFORE_EXIT }
                     if (scored.isEmpty()) {
-                        Text("확인 완료", color = Sc.ok, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                        Text("확인 완료", color = Sc.ok, fontSize = sz.title, fontWeight = FontWeight.Medium)
                     } else {
-                        Text("별 ${scored.sumOf { it.stars }} / ${scored.size * 3}", color = Sc.star, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                        Text("별 ${scored.sumOf { it.stars }} / ${scored.size * 3}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Medium)
                     }
                 }
                 Spacer(Modifier.height(sz.dp(18f)))

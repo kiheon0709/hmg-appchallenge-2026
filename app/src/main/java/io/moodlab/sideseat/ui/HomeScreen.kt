@@ -35,7 +35,7 @@ import io.moodlab.sideseat.ui.scene.DriveScene
 /** 홈(정차). 가로: 왼쪽 선배 인사와 추천 훈련, 오른쪽 챕터·면허·미니게임. 세로: 위아래로 쌓는다. */
 @Composable
 fun HomeScreen(state: HomeUi, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         if (sz.wide) {
             Row(Modifier.fillMaxSize().padding(sz.pad), horizontalArrangement = Arrangement.spacedBy(sz.pad)) {
                 Column(Modifier.weight(0.46f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
@@ -62,24 +62,24 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
     val sz = LocalSz.current
     val calm = remember { SceneParams() }
     val car = remember { VehicleState(timestampMs = 0, parked = true, lowBeamOn = true) }
-    Box(modifier.clip(RoundedCornerShape(sz.dp(32f))).border(sz.dp(1.5f), Sc.outline, RoundedCornerShape(sz.dp(32f)))) {
+    Box(modifier.clip(RoundedCornerShape(sz.radius))) {
         DriveScene(calm, car, 80f, Modifier.fillMaxSize())
         Box(
             Modifier.fillMaxSize().background(
-                Brush.verticalGradient(0f to Color(0x99070A12), 0.35f to Color(0x22070A12), 0.6f to Color(0x66070A12), 1f to Color(0xF2070A12)),
+                Brush.verticalGradient(0f to Color(0xA6000000), 0.35f to Color(0x22000000), 0.6f to Color(0x73000000), 1f to Color(0xF2000000)),
             ),
         )
         Row(Modifier.align(Alignment.TopStart).padding(sz.pad), verticalAlignment = Alignment.CenterVertically) {
             SeniorBadge(speaking = state.talk.speaking)
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
-                Text("옆자리", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Black)
-                Text(state.vehicleName ?: "운전 잘하는 선배가 앉아요", color = Sc.textDim, fontSize = sz.caption)
+                Text("옆자리", color = HeroText, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
+                Text(state.vehicleName ?: "운전 잘하는 선배가 앉아요", color = HeroDim, fontSize = sz.caption)
             }
         }
         Column(Modifier.align(Alignment.BottomStart).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
-            Text(state.greeting, color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Black, lineHeight = sz.title * 1.2f, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            Text(state.subGreeting, color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.3f, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(state.greeting, color = HeroText, fontSize = sz.title, fontWeight = FontWeight.SemiBold, lineHeight = sz.title * 1.2f, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(state.subGreeting, color = HeroDim, fontSize = sz.body, lineHeight = sz.body * 1.3f, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(sz.dp(6f)))
             val resume = state.chapters.firstOrNull { it.id == state.resumeChapterId }
             val pick = resume ?: state.chapters.firstOrNull { it.id == state.recommendedChapterId } ?: state.chapters.firstOrNull { !it.locked }
@@ -88,7 +88,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
             } else if (pick != null) {
                 BigButton(
                     if (resume != null) "이어서 하기 · ${pick.title}" else "오늘의 추천 · ${pick.title}",
-                    Modifier.fillMaxWidth(), primary = true,
+                    Modifier.fillMaxWidth(), primary = true, color = Color.White,
                     sub = state.recommendReason?.takeIf { resume == null } ?: "약 ${pick.estMinutes}분 · 상황 ${pick.situations.size}개",
                 ) { onAction(UiAction.StartChapter(pick.id)) }
             }
@@ -109,14 +109,14 @@ private fun TalkArea(state: HomeUi, onAction: (UiAction) -> Unit) {
 private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit) {
     val sz = LocalSz.current
     LicenseBar(state.progress, state.vehicleModelKey, state.vehicleName)
-    Text("챕터", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Bold)
+    Text("챕터", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
     state.chapters.chunked(2).forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
             row.forEach { ch -> ChapterCard(ch, state, Modifier.weight(1f)) { onAction(UiAction.StartChapter(ch.id)) } }
             if (row.size == 1) Spacer(Modifier.weight(1f))
         }
     }
-    Text("더 해 보기", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Bold)
+    Text("더 해 보기", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
         BigButton("돌발 모드", Modifier.weight(1f), enabled = state.canTrain, sub = "최고 ${state.progress.surpriseBest}개 버팀") { onAction(UiAction.StartSurprise) }
         BigButton("교관 대결", Modifier.weight(1f), enabled = state.canTrain, sub = "조수석이 상황을 던져요") { onAction(UiAction.StartVersus) }
@@ -139,20 +139,20 @@ private fun ChapterCard(ch: ChapterInfo, state: HomeUi, modifier: Modifier, onCl
     val max = ch.situations.size * 3
     val recommended = ch.id == state.recommendedChapterId
     Column(
-        modifier.clip(shape).background(Sc.surface)
-            .border(sz.dp(1.5f), if (recommended) Sc.accent else Sc.outline, shape)
+        modifier.clip(shape).background(Sc.bg)
+            .border(sz.line, if (recommended) Sc.text else Sc.outline, shape)
             .clickable(enabled = enabled, onClick = onClick).padding(sz.dp(20f)),
         verticalArrangement = Arrangement.spacedBy(sz.dp(6f)),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(ch.id, color = Sc.accent, fontSize = sz.caption, fontWeight = FontWeight.Bold)
+            Text(ch.id, color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             Spacer(Modifier.weight(1f))
             Text(
                 when { ch.locked -> "이 차에서는 잠김"; best != null -> "별 $best / $max"; else -> "약 ${ch.estMinutes}분" },
-                color = if (best != null) Sc.star else Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold,
+                color = if (best != null) Sc.text else Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold,
             )
         }
-        Text(ch.title, color = if (enabled) Sc.text else Sc.textDim, fontSize = sz.h2, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(ch.title, color = if (enabled) Sc.text else Sc.textDim, fontSize = sz.h2, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(ch.story, color = Sc.textDim, fontSize = sz.caption, lineHeight = sz.caption * 1.4f, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Text(
             ch.situations.joinToString(" · ") { SituationTexts.title(it) }, color = Sc.text, fontSize = sz.caption,
@@ -160,3 +160,7 @@ private fun ChapterCard(ch: ChapterInfo, state: HomeUi, modifier: Modifier, onCl
         )
     }
 }
+
+// 사진·장면 위에 얹는 글자는 테마와 상관없이 밝은 색으로 고정한다
+private val HeroText = Color(0xFFFFFFFF)
+private val HeroDim = Color(0xFFD9D9D9)

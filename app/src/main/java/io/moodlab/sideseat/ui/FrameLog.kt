@@ -10,6 +10,12 @@ object SideSeatUiDebug {
     /** 마지막으로 잰 초당 프레임 수(디버그 패널 표시용). */
     @Volatile var lastFps: Float = 0f
 
+    /** null이면 시스템의 주간·야간 모드를 따른다. true/false면 그 모드로 고정(검수용). */
+    var forceDark: Boolean?
+        get() = forceDarkState.value
+        set(v) { forceDarkState.value = v }
+    private val forceDarkState = androidx.compose.runtime.mutableStateOf<Boolean?>(null)
+
     /** true면 주행 화면이 효과를 줄여 그린다. 프레임이 26fps 아래로 떨어지면 주행 화면이 스스로 켠다. */
     @Volatile var lowDetail: Boolean = false
 }

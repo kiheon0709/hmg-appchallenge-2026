@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
  */
 @Composable
 fun CoachScreen(state: CoachUi, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         Column(
             Modifier.fillMaxSize().padding(sz.dp(48f)),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
@@ -39,8 +39,8 @@ fun CoachScreen(state: CoachUi, onAction: (UiAction) -> Unit) {
             val size = fit.coerceIn(30f * sz.scale, base)
             Text(
                 sentences.joinToString("\n"),
-                color = when { heard != null -> Sc.pink; line == null -> Sc.textDim; state.urgent -> Sc.warn; else -> Sc.text },
-                fontSize = size.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                color = when { heard != null -> Sc.accent; line == null -> Sc.textDim; state.urgent -> Sc.danger; else -> Sc.text },
+                fontSize = size.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center,
                 lineHeight = (size * 1.3f).sp, maxLines = sentences.size + 2, overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.weight(1f))

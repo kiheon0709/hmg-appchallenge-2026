@@ -60,7 +60,7 @@ fun Panel(
 ) {
     val sz = LocalSz.current
     val shape = RoundedCornerShape(sz.radius)
-    Column(modifier.clip(shape).background(color).border(sz.dp(1.5f), border, shape).padding(padding), content = content)
+    Column(modifier.clip(shape).background(color).border(sz.line, border, shape).padding(padding), content = content)
 }
 
 @Composable
@@ -69,21 +69,22 @@ fun BigButton(
     modifier: Modifier = Modifier,
     primary: Boolean = false,
     enabled: Boolean = true,
-    color: Color = Sc.accent,
+    color: Color = Sc.primary,
     sub: String? = null,
     onClick: () -> Unit,
 ) {
     val sz = LocalSz.current
     val shape = RoundedCornerShape(sz.radius)
-    val bg = when { !enabled -> Sc.surface; primary -> color; else -> Sc.surfaceHi }
-    val fg = when { !enabled -> Sc.textDim; primary -> Sc.onAccent; else -> Sc.text }
+    // 시스템 선택 칸과 같은 모양: 주 버튼은 검은(야간은 흰) 채움, 나머지는 바탕색에 테두리
+    val bg = when { !enabled -> Sc.surface; primary -> color; else -> Sc.bg }
+    val fg = when { !enabled -> Sc.textDim; primary -> if (color == Color.White) Color.Black else if (color == Sc.primary) Sc.onPrimary else Sc.onAccent; else -> Sc.text }
     Column(
         modifier.defaultMinSize(minHeight = sz.touch).clip(shape).background(bg)
-            .border(sz.dp(1.5f), if (primary || !enabled) Color.Transparent else Sc.outline, shape)
+            .border(sz.line, if (primary) Color.Transparent else if (!enabled) Sc.outline else Sc.text, shape)
             .clickable(enabled = enabled, onClick = onClick).padding(horizontal = sz.dp(24f), vertical = sz.dp(12f)),
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (sub != null) Text(sub, color = fg.copy(alpha = 0.8f), fontSize = sz.caption, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -93,7 +94,7 @@ fun Chip(text: String, modifier: Modifier = Modifier, color: Color = Sc.text, bg
     val sz = LocalSz.current
     Text(
         text, color = color, fontSize = size, fontWeight = FontWeight.SemiBold, maxLines = 1,
-        modifier = modifier.clip(RoundedCornerShape(50)).background(bg).padding(horizontal = sz.dp(14f), vertical = sz.dp(5f)),
+        modifier = modifier.clip(RoundedCornerShape(sz.radius)).background(bg).padding(horizontal = sz.dp(12f), vertical = sz.dp(5f)),
     )
 }
 
@@ -129,7 +130,6 @@ fun Stars(count: Int, modifier: Modifier = Modifier, max: Int = 3, size: Dp = Lo
             starPath(path, cx, s / 2f, s * 0.48f * (if (on) 0.4f + 0.6f * k else 1f))
             if (on) {
                 if (k > 0.01f) {
-                    drawCircle(Sc.star, s * 0.62f * k, Offset(cx, s / 2f), alpha = 0.16f * k)
                     drawPath(path, Sc.star, alpha = k.coerceIn(0f, 1f))
                 }
             } else {
@@ -172,7 +172,7 @@ fun EdgeGlow(color: Color, intensity: () -> Float, modifier: Modifier = Modifier
 fun TimerRing(fraction: Float, label: String, modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(132f), caption: String? = null) {
     val sz = LocalSz.current
     val f = fraction.coerceIn(0f, 1f)
-    val c = when { f > 0.8f -> Sc.danger; f > 0.5f -> Sc.warn; else -> Sc.accent }
+    val c = when { f > 0.8f -> Sc.danger; f > 0.5f -> Sc.warn; else -> Sc.text }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val st = this.size.minDimension * 0.09f
@@ -182,7 +182,7 @@ fun TimerRing(fraction: Float, label: String, modifier: Modifier = Modifier, siz
             drawArc(c, -90f, 360f * (1f - f), false, Offset(inset, inset), arc, style = Stroke(st, cap = StrokeCap.Round))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(label, color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Bold)
+            Text(label, color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Medium)
             if (caption != null) Text(caption, color = Sc.textDim, fontSize = sz.caption)
         }
     }
@@ -190,7 +190,7 @@ fun TimerRing(fraction: Float, label: String, modifier: Modifier = Modifier, siz
 
 /** 진행 막대. */
 @Composable
-fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Sc.accent) {
+fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Sc.text) {
     val sz = LocalSz.current
     Box(modifier.height(sz.dp(12f)).clip(RoundedCornerShape(50)).background(Sc.outline)) {
         Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).height(sz.dp(12f)).clip(RoundedCornerShape(50)).background(color))
@@ -219,11 +219,12 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
         talk.speaking -> "눌러서 멈추기"
         else -> "질문하기"
     }
-    val bg = when { talk.listening -> Sc.pink; active -> Sc.surfaceHi; else -> Sc.accent }
-    val fg = if (talk.listening || !active) Sc.onAccent else Sc.text
-    val shape = RoundedCornerShape(sz.dp(36f))
+    val bg = when { talk.listening -> Sc.accent; active -> Sc.bg; else -> Sc.primary }
+    val fg = when { talk.listening -> Sc.onAccent; active -> Sc.text; else -> Sc.onPrimary }
+    val shape = RoundedCornerShape(sz.radius)
     Row(
         modifier.height(height).clip(shape).background(bg)
+            .border(sz.line, if (active && !talk.listening) Sc.text else Color.Transparent, shape)
             .clickable { onAction(if (active) UiAction.StopTalking else UiAction.AskQuestion) }
             .padding(horizontal = sz.dp(20f)),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
@@ -232,7 +233,7 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
         Spacer(Modifier.width(sz.dp(18f)))
         // 좁은 버튼에서도 글자가 잘리지 않게 긴 문구는 한 단계 작게 쓴다
         Text(
-            label, color = fg, fontSize = if (label.length > 5) sz.body else sz.h2, fontWeight = FontWeight.Bold,
+            label, color = fg, fontSize = if (label.length > 5) sz.body else sz.h2, fontWeight = FontWeight.Medium,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
         )
     }
@@ -246,7 +247,7 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
     val said = talk.answerText?.takeIf { it.isNotBlank() }
     if (heard == null && said == null) return
     Column(modifier, verticalArrangement = Arrangement.spacedBy(sz.dp(8f))) {
-        if (heard != null) Text("“$heard”", color = Sc.pink, fontSize = sz.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        if (heard != null) Text("“$heard”", color = Sc.accent, fontSize = sz.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
         if (said != null) Text(said, color = Sc.text, fontSize = sz.body, lineHeight = sz.body * 1.35f, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -256,10 +257,9 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
 fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f), speaking: Boolean = false) {
     Canvas(modifier.size(size).graphicsLayer { }) {
         val s = this.size.minDimension
-        drawCircle(Brush.linearGradient(listOf(Sc.accent, Sc.pink)), s / 2f)
-        drawCircle(Sc.bg, s * 0.44f)
+        drawCircle(if (speaking) Sc.accent else Sc.primary, s / 2f)
         // 좌석: 등받이와 방석
-        val c = if (speaking) Sc.accent else Sc.text
+        val c = if (speaking) Sc.onAccent else Sc.onPrimary
         drawRoundRect(c, Offset(s * 0.36f, s * 0.2f), Size(s * 0.24f, s * 0.42f), androidx.compose.ui.geometry.CornerRadius(s * 0.08f))
         drawRoundRect(c, Offset(s * 0.3f, s * 0.6f), Size(s * 0.42f, s * 0.14f), androidx.compose.ui.geometry.CornerRadius(s * 0.06f))
         drawCircle(c, s * 0.07f, Offset(s * 0.48f, s * 0.14f + s * 0.02f))
@@ -270,9 +270,9 @@ fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f
 fun StatTile(value: String, label: String, modifier: Modifier = Modifier, delta: String? = null, color: Color = Sc.text) {
     val sz = LocalSz.current
     Column(modifier.clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(18f))) {
-        Text(value, color = color, fontSize = sz.title, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(value, color = color, fontSize = sz.title, fontWeight = FontWeight.Medium, maxLines = 1)
         Text(label, color = Sc.textDim, fontSize = sz.caption, maxLines = 1)
-        if (delta != null) Text(delta, color = Sc.accent, fontSize = sz.caption, maxLines = 1)
+        if (delta != null) Text(delta, color = Sc.textDim, fontSize = sz.caption, maxLines = 1)
     }
 }
 

@@ -59,34 +59,38 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+// 금고 다이얼은 어두운 금속 물체라 테마와 상관없이 같은 색으로 그린다
+private val DialBlue = Color(0xFF5C9DFF)
+private val DialGreen = Color(0xFF35D07F)
+
 private fun sideWord(deg: Number): String = if (deg.toFloat() >= 0f) "오른쪽" else "왼쪽"
 
 /** M1 금고 다이얼(정차 중). 핸들 각도대로 다이얼이 돌고, 번호에 가까워질수록 빛난다. */
 @Composable
 fun SafeDialScreen(view: SafeDialView, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         val info: @Composable (Modifier) -> Unit = { m ->
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
-                Chip("미니게임", color = Sc.accent, bg = Sc.surface)
-                Text("금고 다이얼", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black)
+                Chip("미니게임", color = Sc.textDim, bg = Sc.surface)
+                Text("금고 다이얼", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
                 Row(horizontalArrangement = Arrangement.spacedBy(sz.dp(12f))) {
                     view.targetsDeg.forEachIndexed { i, _ ->
                         val solved = i < view.solved || view.done
                         Box(
-                            Modifier.size(sz.dp(56f)).clip(RoundedCornerShape(50))
+                            Modifier.size(sz.dp(56f)).clip(RoundedCornerShape(sz.radius))
                                 .background(if (solved) Sc.ok else Sc.surface)
-                                .border(sz.dp(2f), if (i == view.solved && !view.done) Sc.accent else Sc.outline, RoundedCornerShape(50)),
+                                .border(sz.dp(2f), if (i == view.solved && !view.done) Sc.text else Sc.outline, RoundedCornerShape(sz.radius)),
                             contentAlignment = Alignment.Center,
-                        ) { Text("${i + 1}", color = if (solved) Sc.onAccent else Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Bold) }
+                        ) { Text("${i + 1}", color = if (solved) Sc.onAccent else Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium) }
                     }
                 }
                 val target = view.targetsDeg.getOrNull(view.solved)
                 if (view.done) {
-                    Text("열렸어요!", color = Sc.ok, fontSize = sz.display, fontWeight = FontWeight.Black)
+                    Text("열렸어요!", color = Sc.ok, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
                     Text("${SituationTexts.seconds(view.elapsedMs)} 걸렸어요", color = Sc.text, fontSize = sz.h2)
                 } else if (target != null) {
                     Text("핸들을 ${sideWord(target)}으로", color = Sc.textDim, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
-                    Text("${abs(target)}°", color = Sc.accent, fontSize = sz.sp(120f), fontWeight = FontWeight.Black)
+                    Text("${abs(target)}°", color = Sc.text, fontSize = sz.sp(120f), fontWeight = FontWeight.SemiBold)
                     Text(
                         "지금 ${sideWord(view.currentDeg)} ${abs(view.currentDeg).roundToInt()}° · 맞는 자리에서 잠깐 멈춰요",
                         color = Sc.text, fontSize = sz.label,
@@ -129,7 +133,7 @@ private fun Dial(view: SafeDialView, modifier: Modifier) {
                 moveTo(c.x, c.y - r * 0.8f); lineTo(c.x - r * 0.045f, c.y - r * 0.9f); lineTo(c.x + r * 0.045f, c.y - r * 0.9f); close()
             }
             onDrawBehind {
-                val glowC = lerp(Sc.accent, Sc.ok, close)
+                val glowC = lerp(DialBlue, DialGreen, close)
                 // 빛: 가까워질수록 세진다
                 drawCircle(Brush.radialGradient(listOf(glowC.copy(alpha = 0.55f * close * pulse), Color.Transparent), c, r * 1.05f), r * 1.05f, c)
                 drawCircle(door, r * 0.94f, c)
@@ -143,7 +147,7 @@ private fun Dial(view: SafeDialView, modifier: Modifier) {
                     val major = i % 3 == 0
                     rotate(i * 10f, c) {
                         drawLine(
-                            if (major) Sc.text else Sc.textDim, Offset(c.x, c.y - r * 0.78f), Offset(c.x, c.y - r * (if (major) 0.7f else 0.74f)),
+                            if (major) Color(0xFFF5F5F5) else Color(0xFFA6A6A6), Offset(c.x, c.y - r * 0.78f), Offset(c.x, c.y - r * (if (major) 0.7f else 0.74f)),
                             r * (if (major) 0.012f else 0.006f), cap = StrokeCap.Round, alpha = if (major) 0.9f else 0.5f,
                         )
                     }
@@ -152,14 +156,14 @@ private fun Dial(view: SafeDialView, modifier: Modifier) {
                 view.targetsDeg.forEachIndexed { i, t ->
                     val solved = i < view.solved || view.done
                     if (solved || i == view.solved) rotate(t.toFloat(), c) {
-                        drawPath(marker, if (solved) Sc.ok else glowC, alpha = if (solved) 0.7f else 1f)
+                        drawPath(marker, if (solved) DialGreen else glowC, alpha = if (solved) 0.7f else 1f)
                         if (!solved) drawCircle(glowC, r * 0.09f * (0.6f + 0.4f * pulse), Offset(c.x, c.y - r * 0.86f), alpha = 0.25f + 0.4f * close)
                     }
                 }
                 // 맞은 자리에서 멈춘 정도
                 if (view.holdProgress > 0.01f && !view.done) {
                     drawArc(
-                        Sc.ok, -90f, 360f * view.holdProgress, false, Offset(c.x - r * 0.62f, c.y - r * 0.62f), Size(r * 1.24f, r * 1.24f),
+                        DialGreen, -90f, 360f * view.holdProgress, false, Offset(c.x - r * 0.62f, c.y - r * 0.62f), Size(r * 1.24f, r * 1.24f),
                         style = Stroke(r * 0.03f, cap = StrokeCap.Round),
                     )
                 }
@@ -181,7 +185,7 @@ private fun Dial(view: SafeDialView, modifier: Modifier) {
                 // 열릴 때 퍼지는 빛
                 if (open > 0.01f) {
                     for (i in 0 until 16) rotate(i * 22.5f, c) {
-                        drawLine(Sc.ok, Offset(c.x, c.y - r * 0.6f), Offset(c.x, c.y - r * (0.6f + 0.38f * open)), r * 0.012f, cap = StrokeCap.Round, alpha = (1.2f - open).coerceIn(0f, 1f) * 0.8f + 0.2f)
+                        drawLine(DialGreen, Offset(c.x, c.y - r * 0.6f), Offset(c.x, c.y - r * (0.6f + 0.38f * open)), r * 0.012f, cap = StrokeCap.Round, alpha = (1.2f - open).coerceIn(0f, 1f) * 0.8f + 0.2f)
                     }
                 }
             }
@@ -201,13 +205,13 @@ private fun arrowPath(p: Path, s: Float, left: Boolean) {
 /** M2 깜빡이 모스(정차 중). 화면에 나온 좌·우 순서를 방향지시등으로 따라 한다. */
 @Composable
 fun TurnSignalGameScreen(view: TurnSignalGameView, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.dp(40f)),
             verticalArrangement = Arrangement.spacedBy(sz.gap), horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Chip("미니게임 · ${view.round}라운드", color = Sc.accent, bg = Sc.surface)
-            Text("깜빡이 모스", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black)
+            Chip("미니게임 · ${view.round}라운드", color = Sc.textDim, bg = Sc.surface)
+            Text("깜빡이 모스", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
             Text(
                 when (view.phase) {
                     MiniGamePhase.SHOW -> "순서를 잘 보세요"
@@ -231,7 +235,7 @@ fun TurnSignalGameScreen(view: TurnSignalGameView, onAction: (UiAction) -> Unit)
                         Canvas(
                             Modifier.size(tile).clip(RoundedCornerShape(sz.radius))
                                 .background(lerp(Sc.surface, if (entered) Sc.ok.copy(alpha = 0.25f) else Sc.accent.copy(alpha = 0.3f), lit))
-                                .border(sz.dp(2f), if (view.phase == MiniGamePhase.INPUT && i == view.inputCount) Sc.accent else Sc.outline, RoundedCornerShape(sz.radius)),
+                                .border(sz.dp(2f), if (view.phase == MiniGamePhase.INPUT && i == view.inputCount) Sc.text else Sc.outline, RoundedCornerShape(sz.radius)),
                         ) {
                             if (hidden) {
                                 drawCircle(Sc.outline, size.minDimension * 0.08f)
@@ -264,13 +268,13 @@ private val seatLabels = mapOf(
 /** M3 창문 버저 퀴즈(정차 중). 자기 자리 창문 스위치를 먼저 누른 사람이 답한다. */
 @Composable
 fun WindowBuzzerScreen(view: WindowBuzzerView, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         val question: @Composable (Modifier) -> Unit = { m ->
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
-                Chip("창문 버저 퀴즈 · ${view.questionIndex + 1} / ${view.questionCount}", color = Sc.accent, bg = Sc.surface)
+                Chip("창문 버저 퀴즈 · ${view.questionIndex + 1} / ${view.questionCount}", color = Sc.textDim, bg = Sc.surface)
                 Text(
                     if (view.phase == BuzzerPhase.DONE) "퀴즈 끝!" else view.question, color = Sc.text, fontSize = sz.title,
-                    fontWeight = FontWeight.Black, lineHeight = sz.title * 1.25f, maxLines = 4, overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.SemiBold, lineHeight = sz.title * 1.25f, maxLines = 4, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     when (view.phase) {
@@ -289,8 +293,8 @@ fun WindowBuzzerScreen(view: WindowBuzzerView, onAction: (UiAction) -> Unit) {
             }
         }
         val seats: @Composable (Modifier) -> Unit = { m ->
-            Column(m.clip(RoundedCornerShape(sz.dp(32f))).background(Sc.surface).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
-                Text("자리별 점수", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Bold)
+            Column(m.clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
+                Text("자리별 점수", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
                 listOf(listOf(Seat.DRIVER, Seat.PASSENGER), listOf(Seat.REAR_LEFT, Seat.REAR_CENTER, Seat.REAR_RIGHT)).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
                         row.forEach { seat ->
@@ -302,7 +306,7 @@ fun WindowBuzzerScreen(view: WindowBuzzerView, onAction: (UiAction) -> Unit) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Text(seatLabels[seat] ?: seat.name, color = Sc.textDim, fontSize = sz.caption, maxLines = 1)
-                                Text("${view.scores[seat] ?: 0}", color = if (buzzed) Sc.accent else Sc.text, fontSize = sz.title, fontWeight = FontWeight.Black)
+                                Text("${view.scores[seat] ?: 0}", color = if (buzzed) Sc.accent else Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }

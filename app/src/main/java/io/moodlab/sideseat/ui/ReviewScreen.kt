@@ -38,7 +38,7 @@ private val observationLabels = mapOf(
 /** 리뷰(도착 후). 가로: 왼쪽 오늘 요약, 오른쪽 선배 총평 자막과 1분 훈련 버튼. 점수·등수 없이 "지난번보다"로 말한다. */
 @Composable
 fun ReviewScreen(state: ReviewUi, onAction: (UiAction) -> Unit) {
-    SideSeatFrame(Modifier.background(Sc.bg)) { sz ->
+    SideSeatFrame { sz ->
         if (sz.wide) {
             Row(Modifier.fillMaxSize().padding(sz.dp(40f)), horizontalArrangement = Arrangement.spacedBy(sz.dp(40f))) {
                 Column(Modifier.weight(0.5f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
@@ -72,7 +72,7 @@ private fun Today(state: ReviewUi) {
     val sz = LocalSz.current
     val s: DriveSummary = state.summary
     val p = state.previous
-    Text("오늘 운전", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.Black)
+    Text("오늘 운전", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
         StatTile("${s.durationMin}분", "주행 시간", Modifier.weight(1f), delta(s.durationMin, p?.durationMin, "분"))
         StatTile("${s.utterances.size}번", "선배가 말한 횟수", Modifier.weight(1f), delta(s.utterances.size, p?.utterances?.size, "번"))
@@ -83,24 +83,24 @@ private fun Today(state: ReviewUi) {
     }
     val keys = (observationLabels.keys + s.observations.keys).distinct()
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f)), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
-        Text("선배가 본 것", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Bold)
+        Text("선배가 본 것", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
         keys.forEach { k ->
             val n = s.observations[k] ?: 0
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(observationLabels[k] ?: k, color = Sc.text, fontSize = sz.label, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(if (n == 0) "없었어요" else "${n}번", color = if (n == 0) Sc.ok else Sc.warn, fontSize = sz.label, fontWeight = FontWeight.Bold)
-                    delta(n, p?.let { it.observations[k] ?: 0 }, "번")?.let { Text(it, color = Sc.accent, fontSize = sz.caption) }
+                    Text(if (n == 0) "없었어요" else "${n}번", color = if (n == 0) Sc.ok else Sc.warn, fontSize = sz.label, fontWeight = FontWeight.Medium)
+                    delta(n, p?.let { it.observations[k] ?: 0 }, "번")?.let { Text(it, color = Sc.textDim, fontSize = sz.caption) }
                 }
             }
         }
     }
     if (s.utterances.isNotEmpty()) {
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f)), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
-            Text("달리면서 한 말", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Bold)
+            Text("달리면서 한 말", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             s.utterances.take(6).forEach { u ->
                 Row {
-                    Dot(if (u.urgent) Sc.warn else Sc.accent, sz.dp(10f), Modifier.padding(top = sz.dp(10f), end = sz.dp(12f)))
+                    Dot(if (u.urgent) Sc.danger else Sc.text, sz.dp(10f), Modifier.padding(top = sz.dp(10f), end = sz.dp(12f)))
                     Text(u.text, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
                 }
             }
@@ -112,14 +112,14 @@ private fun Today(state: ReviewUi) {
 private fun Senior(state: ReviewUi, onAction: (UiAction) -> Unit, modifier: Modifier) {
     val sz = LocalSz.current
     Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(sz.dp(32f))).background(Sc.surface).padding(sz.pad),
+        modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.pad),
         verticalArrangement = Arrangement.spacedBy(sz.dp(14f)),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SeniorBadge(speaking = state.talk.speaking)
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
-                Text("선배 한마디", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Bold)
+                Text("선배 한마디", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Medium)
                 Text(if (state.reviewStreaming) "말하는 중…" else "점수는 없어요. 지난번과 견줘 볼게요.", color = Sc.textDim, fontSize = sz.caption)
             }
         }
