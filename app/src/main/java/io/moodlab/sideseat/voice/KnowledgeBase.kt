@@ -43,8 +43,24 @@ class KnowledgeBase(val entries: List<Entry>, val rawText: String) {
         return best
     }
 
+    /** 항목을 같은 파일 형식으로 다시 쓴다(차종별로 합친 지식을 LLM 시스템 프롬프트에 넣을 때). */
+    fun render(header: String = ""): String = buildString {
+        if (header.isNotBlank()) appendLine(header.trim()).appendLine()
+        entries.forEach { e ->
+            appendLine("## ${e.id} ${e.title}")
+            if (e.keywords.isNotEmpty()) appendLine("질문: ${e.keywords.joinToString(", ")}")
+            appendLine("짧게: ${e.short}")
+            if (e.detail != e.short) appendLine("자세히: ${e.detail}")
+            if (e.source.isNotBlank()) appendLine("출처: ${e.source}")
+            appendLine()
+        }
+    }.trim()
+
     companion object {
         val EMPTY = KnowledgeBase(emptyList(), "")
+
+        /** 파일 한 개의 항목만 읽는다(차종별 덮어쓰기 파일용). */
+        fun entriesOf(text: String): List<Entry> = parseFile(text)
 
         /** 여러 파일 내용을 받아 합친다. */
         fun parse(files: List<String>): KnowledgeBase {

@@ -34,7 +34,7 @@ interface LlmClient {
  * - LLM이 없거나 실패하면 지식 파일 안의 답, 그것도 없으면 "모르겠어요", 총평은 규칙 기반 총평.
  */
 internal class SeniorInstructor(
-    private val knowledge: KnowledgeBase,
+    knowledge: KnowledgeBase,
     private val llm: LlmClient?,
     private val meter: LatencyMeter,
     private val scope: CoroutineScope,
@@ -44,8 +44,17 @@ internal class SeniorInstructor(
     private val speculative: Boolean = true,
 ) : Instructor, ListenHooks {
 
-    private val fastPath = FastPath(knowledge)
-    private val system = InstructorPrompt.system(knowledge)
+    // 차종이 바뀌면 지식(스위치 위치)과 시스템 프롬프트를 통째로 바꾼다. 프롬프트 캐시는 차종마다 한 번 새로 써진다.
+    @Volatile private var fastPath = FastPath(knowledge)
+    @Volatile private var system = InstructorPrompt.system(knowledge)
+
+    /** 현재 차종의 지식으로 바꾼다(빠른 길·LLM 프롬프트 모두). 다음 듣기 때 새 프롬프트로 다시 데운다. */
+    fun setKnowledge(kb: KnowledgeBase) {
+        fastPath = FastPath(kb)
+        system = InstructorPrompt.system(kb)
+        lastPrewarmAt = Long.MIN_VALUE / 2
+        speculation?.job?.cancel(); speculation = null
+    }
     private var lastPrewarmAt = Long.MIN_VALUE / 2
 
     override val lastLatencyMs: StateFlow<Long?> get() = meter.last

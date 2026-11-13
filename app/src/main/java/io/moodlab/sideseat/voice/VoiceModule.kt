@@ -42,6 +42,50 @@ object VoiceModule {
     /** 주행 중 연속 청취(호출어). [create] 뒤에 쓴다. 켜고 끄는 시점(코치 모드 진입·이탈)은 통합 세션이 정한다. */
     val wake: WakeListening? get() = parts?.wake
 
+    // ---------- 차종별 스위치 위치 ----------
+    private var switchGuide: SwitchGuide? = null
+    private var detectedVehicle: VehicleProfile? = null
+    private var forcedVehicle: VehicleProfile? = null
+    private var lastVinKey: String? = null
+
+    /** 지금 쓰는 차종(강제 지정이 우선). 모르면 null(공통 문장 + "차마다 조금 달라요"). */
+    val currentVehicle: VehicleProfile? get() = forcedVehicle ?: detectedVehicle
+
+    /** VIN 또는 VIN 앞 8자리 차종 키(VehicleState.vehicleModelKey)가 바뀔 때 부른다. 같은 값이면 아무것도 안 한다. */
+    @Synchronized
+    fun setVehicle(vinOrKey: String?) {
+        if (vinOrKey == lastVinKey) return
+        lastVinKey = vinOrKey
+        detectedVehicle = switchGuide?.resolve(vinOrKey)
+        Log.i(MEASURE_TAG, "vehicle detected=${detectedVehicle?.id ?: "unknown"}")
+        applyVehicle()
+    }
+
+    /** 디버그: 차종을 강제로 지정(에뮬레이터 VIN은 가짜). null이면 강제 해제. 모르는 아이디면 false. */
+    @Synchronized
+    fun forceVehicle(profileId: String?): Boolean {
+        val p = profileId?.let { id -> switchGuide?.byId(id) ?: return false }
+        forcedVehicle = p
+        Log.i(MEASURE_TAG, "vehicle forced=${p?.id ?: "off"}")
+        applyVehicle()
+        return true
+    }
+
+    /** 디버그·설정 화면: 데이터가 있는 차종 (아이디, 이름). */
+    fun vehicleProfiles(): List<Pair<String, String>> = switchGuide?.profiles?.map { it.id to it.name }.orEmpty()
+
+    /**
+     * 훈련 힌트·결과 화면의 "스위치 위치" 문장(현재 차종). 아이디는 sw_wiper, sw_headlight, sw_highbeam, sw_fog, sw_hazard,
+     * sw_defrost, sw_ac, sw_recirc, sw_window, sw_epb. 모르는 아이디면 null(core의 공통 문장을 그대로 쓰면 됨).
+     */
+    fun switchLocation(entryId: String, detailed: Boolean = false): String? =
+        switchGuide?.location(entryId, currentVehicle, detailed)
+
+    private fun applyVehicle() {
+        val guide = switchGuide ?: return
+        parts?.instructor?.setKnowledge(guide.knowledgeFor(currentVehicle))
+    }
+
     @Synchronized
     fun create(context: Context, config: VoiceConfig): Triple<Voice, Sfx, Instructor> {
         parts?.let { return Triple(it.voice, it.sfx, it.instructor) }
@@ -55,8 +99,10 @@ object VoiceModule {
 
         val log: (String) -> Unit = { Log.i(MEASURE_TAG, it) }
         val meter = LatencyMeter(now = SystemClock::elapsedRealtime, log = log)
-        val knowledge = loadKnowledge(app)
-        Log.i(MEASURE_TAG, "knowledge entries=${knowledge.entries.size} chars=${knowledge.rawText.length}")
+        val guide = loadSwitchGuide(app)
+        switchGuide = guide
+        val knowledge = guide.knowledgeFor(null)
+        Log.i(MEASURE_TAG, "knowledge entries=${knowledge.entries.size} chars=${knowledge.rawText.length} vehicles=${guide.profiles.map { it.id }}")
         val llm: LlmClient? = if (cfg.llmEnabled) createLlmClient(cfg, log) else null
         val instructor = SeniorInstructor(knowledge, llm, meter, s, SystemClock::elapsedRealtime, log, speculative = cfg.speculativeRequests)
         val speaker = TtsSpeaker(app, s, meter, chunked = cfg.chunkedTts)
@@ -98,15 +144,20 @@ object VoiceModule {
             runCatching { it.sfx.release() }
         }
         parts = null
+        switchGuide = null
+        detectedVehicle = null
+        forcedVehicle = null
+        lastVinKey = null
         scope?.cancel()
         scope = null
     }
 
-    private fun loadKnowledge(context: Context): KnowledgeBase = runCatching {
-        val files = context.assets.list("knowledge").orEmpty().filter { it.endsWith(".md") }.sorted()
-        KnowledgeBase.parse(files.map { name -> context.assets.open("knowledge/$name").bufferedReader().use { it.readText() } })
+    private fun loadSwitchGuide(context: Context): SwitchGuide = runCatching {
+        fun read(dir: String) = context.assets.list(dir).orEmpty().filter { it.endsWith(".md") }.sorted()
+            .map { name -> context.assets.open("$dir/$name").bufferedReader().use { it.readText() } }
+        SwitchGuide.parse(read("knowledge"), read("knowledge/vehicles"))
     }.getOrElse {
         Log.w(MEASURE_TAG, "knowledge load failed: $it")
-        KnowledgeBase.EMPTY
+        SwitchGuide(emptyList(), emptyList(), emptyList())
     }
 }
