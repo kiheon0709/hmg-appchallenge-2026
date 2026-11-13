@@ -99,6 +99,25 @@ class SwitchGuide(
         }
 
         const val SWITCH_PREFIX = "sw_"
+
+        /**
+         * core 훈련 단계 아이디 → 스위치 아이디(dev-vehicle-core a81e0a0 표 + wiper_on·hazard_on).
+         * 브레이크 단계(brake·brake_hold·slow_down)는 페달이라, 말·선택 단계(action·meaning)는 스위치가 없어 넣지 않는다.
+         */
+        val STEP_TO_SWITCH: Map<String, String> = mapOf(
+            "wiper_fast" to "sw_wiper",
+            "wiper_on" to "sw_wiper",
+            "low_beam_on" to "sw_headlight",
+            "lights_off" to "sw_headlight",
+            "high_beam_off" to "sw_highbeam",
+            "defrost_on" to "sw_defrost",
+            "ac_on" to "sw_ac",
+            "fresh_air" to "sw_recirc",
+            "window_open" to "sw_window",
+            "windows_closed" to "sw_window",
+            "hazard_on" to "sw_hazard",
+            "parking_brake" to "sw_epb",
+        )
     }
 }
 

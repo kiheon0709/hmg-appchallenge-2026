@@ -81,6 +81,13 @@ object VoiceModule {
     fun switchLocation(entryId: String, detailed: Boolean = false): String? =
         switchGuide?.location(entryId, currentVehicle, detailed)
 
+    /**
+     * core 훈련 단계 아이디(StepView.id)로 이 차의 스위치 위치 문장. 결과 화면·실패 대사에 붙인다.
+     * 스위치가 없는 단계(브레이크 페달, 말로 답하기)거나 데이터가 없으면 null(core 문장만 쓰면 됨).
+     */
+    fun switchLocationForStep(stepId: String, detailed: Boolean = false): String? =
+        SwitchGuide.STEP_TO_SWITCH[stepId]?.let { switchLocation(it, detailed) }
+
     private fun applyVehicle() {
         val guide = switchGuide ?: return
         parts?.instructor?.setKnowledge(guide.knowledgeFor(currentVehicle))

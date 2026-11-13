@@ -146,4 +146,11 @@ class SwitchGuideTest {
         assertEquals("sw_hazard", kb.match("비상등 어딨어")?.entry?.id)
         assertTrue("모르는 차는 차마다 다르다고", SwitchGuide.VARIES_NOTE in real.location("sw_wiper", null)!!)
     }
+
+    @Test fun coreStepIdsMapToExistingSwitches() {
+        val kb = real.knowledgeFor(real.byId("grandeur_gn7"))
+        SwitchGuide.STEP_TO_SWITCH.forEach { (step, sw) -> assertTrue("$step → $sw 없음", kb.entries.any { it.id == sw }) }
+        listOf("brake", "brake_hold", "slow_down", "action", "meaning").forEach { assertNull(it, SwitchGuide.STEP_TO_SWITCH[it]) }
+        assertTrue("왼쪽" in real.location(SwitchGuide.STEP_TO_SWITCH.getValue("wiper_fast"), real.byId("grandeur_gn7"))!!)
+    }
 }
