@@ -167,6 +167,7 @@ object UiSamples {
             "전조등은 제가 말한 뒤에 켰어요. 와이퍼를 켤 때 같이 켜면 돼요.",
             "다음에 세우면 김서림 대처를 1분만 연습해 봐요.",
         ),
+        speedingCount = 2, longestSpeedingSec = 12, schoolZonePasses = 1, schoolZoneMaxKmh = 34,
     )
 
     val review = ReviewUi(

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.moodlab.sideseat.core.SpeedLimitSource
 import io.moodlab.sideseat.core.TelltaleColor
 import io.moodlab.sideseat.core.TurnSignal
 import io.moodlab.sideseat.core.VehicleState
@@ -63,6 +64,11 @@ fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: 
                 onChange(state.copy(activeTelltales = if (tpms) state.activeTelltales - "TPMS" else state.activeTelltales + ("TPMS" to TelltaleColor.YELLOW)))
             }
             Key(if (state.parked) "정차(P)" else "주행", state.parked) { onChange(state.copy(parked = !state.parked)) }
+            val limit = state.speedLimitKmh
+            Key("제한속도 ${limit ?: "없음"}", limit != null) {
+                val next = when (limit) { null -> 30; 30 -> 50; 50 -> 80; else -> null }
+                onChange(state.copy(speedLimitKmh = next, speedLimitSource = next?.let { SpeedLimitSource.MAP }))
+            }
             Key("프레임 로그", SideSeatUiDebug.logFrames) { SideSeatUiDebug.logFrames = !SideSeatUiDebug.logFrames; onChange(state) }
             val dark = SideSeatUiDebug.forceDark
             Key(when (dark) { null -> "테마 시스템"; true -> "테마 야간"; false -> "테마 주간" }, dark != null) {

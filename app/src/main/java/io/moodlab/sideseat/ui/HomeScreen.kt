@@ -128,6 +128,7 @@ private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit) {
         BigButton("창문 버저", Modifier.weight(1f), enabled = open, sub = "창문으로 먼저 눌러요") { onAction(UiAction.OpenWindowBuzzer) }
     }
     if (!state.miniGamesUnlocked) Text("미니게임은 챕터를 하나 깨면 열려요.", color = Sc.textDim, fontSize = sz.caption)
+    Text(OSM_CREDIT, color = Sc.textDim, fontSize = sz.caption)
 }
 
 @Composable

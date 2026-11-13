@@ -35,6 +35,9 @@ private val observationLabels = mapOf(
     "HARD_BRAKE" to "급하게 밟은 브레이크",
 )
 
+/** 제한속도·보호구역 자료의 출처 표시(ODbL). */
+const val OSM_CREDIT = "제한속도·보호구역 자료 © OpenStreetMap contributors"
+
 /** 리뷰(도착 후). 가로: 왼쪽 오늘 요약, 오른쪽 선배 총평 자막과 1분 훈련 버튼. 점수·등수 없이 "지난번보다"로 말한다. */
 @Composable
 fun ReviewScreen(state: ReviewUi, onAction: (UiAction) -> Unit) {
@@ -94,6 +97,23 @@ private fun Today(state: ReviewUi) {
                 }
             }
         }
+        // 위치 연계 코치(명세 6.4). 과속은 이번이나 지난번에 있었을 때만, 보호구역은 지나갔을 때만 보인다.
+        if (s.speedingCount > 0 || (p?.speedingCount ?: 0) > 0) {
+            ObservedRow(
+                "제한속도를 넘긴 구간",
+                if (s.speedingCount == 0) "없었어요" else "${s.speedingCount}번 (가장 길게 ${s.longestSpeedingSec}초)",
+                if (s.speedingCount == 0) Sc.ok else Sc.warn,
+                delta(s.speedingCount, p?.speedingCount, "번"),
+            )
+        }
+        if (s.schoolZonePasses > 0) {
+            ObservedRow(
+                "어린이 보호구역",
+                "${s.schoolZonePasses}번 통과" + (s.schoolZoneMaxKmh?.let { " (최고 ${it}km/h)" } ?: ""),
+                if ((s.schoolZoneMaxKmh ?: 0) > 30) Sc.warn else Sc.text,
+                null,
+            )
+        }
     }
     if (s.utterances.isNotEmpty()) {
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f)), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
@@ -104,6 +124,19 @@ private fun Today(state: ReviewUi) {
                     Text(u.text, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
                 }
             }
+        }
+    }
+    Text(OSM_CREDIT, color = Sc.textDim, fontSize = sz.caption)
+}
+
+@Composable
+private fun ObservedRow(label: String, value: String, color: androidx.compose.ui.graphics.Color, delta: String?) {
+    val sz = LocalSz.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, color = Sc.text, fontSize = sz.label, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Column(horizontalAlignment = Alignment.End) {
+            Text(value, color = color, fontSize = sz.label, fontWeight = FontWeight.Medium)
+            if (delta != null) Text(delta, color = Sc.textDim, fontSize = sz.caption)
         }
     }
 }
