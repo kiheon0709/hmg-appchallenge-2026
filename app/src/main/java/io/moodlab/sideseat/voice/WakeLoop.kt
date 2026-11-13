@@ -13,8 +13,10 @@ data class WakeConfig(
     val gleoBackoffMs: Long = 10_000,
     /** 오디오 포커스를 잃거나 다른 앱이 마이크를 쓰면 이만큼 물러났다가 다시 확인한다. */
     val interferenceBackoffMs: Long = 5_000,
-    /** 선배가 말을 마친 직후 호출어 없이 듣는 시간(되묻기). */
+    /** 타비가 말을 마친 직후 호출어 없이 듣는 시간(되묻기). */
     val followUpMs: Long = 6_000,
+    /** 일상어 변형("나비야" 등, [Persona.WEAK_WAKE_WORDS])을 좁은 규칙으로 받을지. 사람 목소리 실측 뒤 정한다. */
+    val allowWeakWakeWords: Boolean = false,
 )
 
 /** 연속 청취 상태(화면·디버그 표시용). */
@@ -25,7 +27,7 @@ enum class WakeState { OFF, LISTENING, FOLLOW_UP, SPEAKING, HANDLING, BACKED_OFF
  *
  * 흐름: 켜면 LISTENING → STT 한 번의 결과마다 [onUtterance]로 판단
  * (맨 앞 호출어 → 질문 / 되묻기 창 안의 말 → 질문 / Gleo 호출 → 물러남 / 그 밖 → 무시).
- * 선배가 말하는 동안은 듣지 않고(에코 제거가 없어 자기 목소리를 호출어로 오인할 수 있음), 말이 끝나면 되묻기 창을 연다.
+ * 타비가 말하는 동안은 듣지 않고(에코 제거가 없어 자기 목소리를 호출어로 오인할 수 있음), 말이 끝나면 되묻기 창을 연다.
  */
 class WakeLoop(private val config: WakeConfig = WakeConfig()) {
 
@@ -35,6 +37,8 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
         object Gleo : Decision
         object Ignore : Decision
     }
+
+    private val matcher = WakeMatcher(allowWeak = config.allowWeakWakeWords)
 
     var state: WakeState = WakeState.OFF
         private set
@@ -95,7 +99,7 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
             if (state == WakeState.FOLLOW_UP) state = WakeState.LISTENING
             return Decision.Ignore
         }
-        when (val r = WakeWordDetector.detect(text)) {
+        when (val r = matcher.detect(text)) {
             WakeMatcher.Result.Gleo -> {
                 gleoBackoffs++
                 backOff(now, config.gleoBackoffMs)
@@ -134,7 +138,7 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
         backOff(now, config.interferenceBackoffMs)
     }
 
-    /** 선배가 말하기 시작/끝. 끝나면 되묻기 창을 연다. */
+    /** 타비가 말하기 시작/끝. 끝나면 되묻기 창을 연다. */
     fun onSpeaking(speaking: Boolean, now: Long) {
         if (state == WakeState.OFF) return
         if (speaking) {

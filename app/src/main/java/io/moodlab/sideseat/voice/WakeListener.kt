@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
  *
  * 물러날 신호(Gleo 우선):
  * - Gleo 호출어가 중간 결과에 보이면 그 자리에서 STT를 닫고 [WakeConfig.gleoBackoffMs] 쉰다.
- * - 선배 TTS가 오디오 포커스를 잃음(Gleo 호출·통화).
+ * - 타비 TTS가 오디오 포커스를 잃음(Gleo 호출·통화).
  * - 우리 STT가 쉬는 사이에 다른 앱이 녹음 중(AudioManager 녹음 콜백, Gleo 마이크로 추정).
  * - 통화 중(AudioManager 모드).
  * - STT 오류(마이크를 다른 쪽이 쓰는 중일 수 있음): 이어지면 대기 두 배.
@@ -119,7 +119,7 @@ internal class WakeListener(
     private suspend fun run() {
         while (scope.isActive && loop.enabled) {
             publish()
-            // 선배가 말하는 동안은 듣지 않는다. 끝나면 되묻기 창.
+            // 타비가 말하는 동안은 듣지 않는다. 끝나면 되묻기 창.
             if (speaker.speaking.value) {
                 loop.onSpeaking(true, now()); publish()
                 speaker.speaking.first { !it }
@@ -175,7 +175,7 @@ internal class WakeListener(
         if (d.viaWake) sfx.play(WAKE_CUE)
         var q = d.question
         if (q.isBlank()) {
-            // "선배"만 부른 경우: 확인음 뒤 질문을 한 번 더 듣는다(예열·추측 요청이 있는 일반 듣기).
+            // "타비"만 부른 경우: 확인음 뒤 질문을 한 번 더 듣는다(예열·추측 요청이 있는 일반 듣기).
             delay(CUE_GAP_MS)
             q = voice.listen(ReplyKind.FREE).orEmpty()
             lastOurMicAt = now()

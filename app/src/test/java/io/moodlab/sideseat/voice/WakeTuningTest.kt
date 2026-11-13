@@ -7,35 +7,39 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
-/** 11-13 실측(dev-integration da5fe02) 결과로 맞춘 호출어·Gleo·되묻기·추측 타이머 규칙. */
+/** 11-13 실측(dev-integration) 결과로 맞춘 호출어(타비)·Gleo·되묻기·추측 타이머 규칙. */
 class WakeTuningTest {
 
-    // ---------- 실측 40문장(STT가 실제로 받아 적은 글) ----------
-    private val samples: List<Triple<String, String, Boolean>> by lazy {
-        File("../docs/screens/sim/logs/wake_40_results.tsv").readLines().filter { it.isNotBlank() }.map { line ->
-            val c = line.split('\t')
-            Triple(c[0], c[4], c[1] == "wake") // (번호, 받아 적은 글, 호출어를 말했나)
+    // ---------- 이름 후보 실측(합성 음성, STT가 실제로 받아 적은 글) ----------
+    /** (PCM 파일, 호출어를 말했나, 받아 적은 글). wake_name_trial_order.tsv 순서대로 run1~4 로그의 #번호가 이어진다. */
+    private val trial: List<Triple<String, Boolean, String>> by lazy {
+        val dir = File("../docs/screens/sim/logs")
+        val order = File(dir, "wake_name_trial_order.tsv").readLines().filter { it.isNotBlank() }.map { it.split('\t') }
+        val heard = (1..4).flatMap { run ->
+            File(dir, "wake_name_trial_run$run.log").readLines().mapNotNull { HEARD.find(it)?.groupValues?.get(1) }
         }
+        assertEquals(order.size, heard.size)
+        order.zip(heard) { o, h -> Triple(o[0], o[1] == "wake", h) }
     }
 
-    @Test fun realTranscriptsScoreImprovesWithoutFalseAlarms() {
-        val score = WakeMatcher().score(samples.map { it.second to it.third })
-        // 수정 전 10/20·0/20. 받아 적은 글 기준으로 다시 채점하면 놓침은 "저기 근데"·"대학생 때"·"300 …무역 계약을" 3개뿐.
-        assertEquals("$score", 0, score.falseAlarm)
-        assertEquals(20, score.plainTotal)
-        assertTrue("$score", score.wakeHit >= 17)
+    @Test fun tabiTranscriptsWakeWithoutFalseAlarms() {
+        val tabi = trial.filter { it.first.startsWith("n05_") }.map { it.third to true }
+        val plain = trial.filter { !it.second }.map { it.third to false }
+        assertEquals(12, tabi.size)
+        assertEquals(80, plain.size)
+        val strict = WakeMatcher().score(tabi + plain)
+        // 탑이야 6 + 따비야 2. 나비야 3·아비야 1은 기본 규칙에서 놓침.
+        assertEquals("$strict", 8, strict.wakeHit)
+        assertEquals("$strict", 0, strict.falseAlarm)
+        val loose = WakeMatcher(allowWeak = true).score(tabi + plain)
+        // 나비야 + 질문 꼴 1개만 더 받음("나비야 와이브 어디 있어?").
+        assertEquals("$loose", 9, loose.wakeHit)
+        assertEquals("$loose", 0, loose.falseAlarm)
     }
 
-    @Test fun commonWordVariantsOnlyAtStartWithRequestShape() {
-        val m = WakeMatcher()
-        assertEquals(WakeMatcher.Result.Wake("안개등 어떻게 켜?"), m.detect("선택 안개등 어떻게 켜?"))
-        assertEquals(WakeMatcher.Result.Wake("타이어 경고등이 떴어"), m.detect("300 타이어 경고등이 떴어"))
-        assertEquals("뒤가 질문 꼴이 아니면 아님", WakeMatcher.Result.None, m.detect("선택 잘했네"))
-        assertEquals("붙어 있는 낱말", WakeMatcher.Result.None, m.detect("300원만 줘"))
-        assertEquals("붙어 있는 낱말", WakeMatcher.Result.None, m.detect("선택지가 어디 있어?"))
-        assertEquals("맨 앞이 아니면 아님", WakeMatcher.Result.None, m.detect("오늘 선택 어떻게 해?"))
-        assertEquals("앞말이 붙으면 일상어 변형은 아님", WakeMatcher.Result.None, m.detect("저기 선택 어떻게 해?"))
-        assertTrue("중간 결과 판정은 강한 호출어만", !m.startsWithWake("선택 안개등"))
+    @Test fun otherNamesTranscriptsNeverWakeTabi() {
+        val others = trial.filter { it.second && !it.first.startsWith("n05_") }.map { it.third to false }
+        assertEquals(0, WakeMatcher(allowWeak = true).score(others).falseAlarm)
     }
 
     @Test fun gleoLooseAfterHey() {
@@ -50,9 +54,9 @@ class WakeTuningTest {
 
     @Test fun candidateNameCanBeScored() {
         val m = WakeMatcher(wakeWords = listOf("하늘", "하눌"), weakWakeWords = emptyList())
-        val s = m.score(listOf("하늘 와이퍼 어디야" to true, "하눌 졸려" to true, "아늘 비 와" to true, "하늘이 맑다" to false))
+        val s = m.score(listOf("하늘아 와이퍼 어디야" to true, "하눌아 졸려" to true, "아늘아 비 와" to true, "하늘이 맑다" to false, "하늘 정말 맑다" to false))
         assertEquals(2, s.wakeHit)
-        assertEquals(1, s.falseAlarm) // "하늘이 맑다": 이름이 일상어면 오인식이 난다 → 후보를 고를 때 이 수치를 본다
+        assertEquals("호칭 꼴 규칙이라 일상 문장은 안 깨어남", 0, s.falseAlarm)
     }
 
     // ---------- 되묻기 창 문턱 ----------
@@ -73,7 +77,7 @@ class WakeTuningTest {
     // ---------- 추측 타이머(듣기 루프 헛돌기 회귀) ----------
     @Test fun disabledGuesserNeverArms() {
         val g = SpeechEndGuesser(enabled = false)
-        assertNull(g.onPartial("선배 와이퍼 어", 0))
+        assertNull(g.onPartial("타비야 와이퍼 어", 0))
         assertNull("연속 청취에서는 타이머가 없어야 루프가 events를 기다린다", g.dueIn(1_000))
         assertNull(g.fire())
     }
@@ -107,5 +111,9 @@ class WakeTuningTest {
         assertEquals("끝난 문장처럼 보이면 220ms", 220L, g.dueIn(800))
         g.stop()
         assertNull(g.dueIn(2_000))
+    }
+
+    private companion object {
+        val HEARD = Regex("wake trial #\\d+ expect=\\w+ woke=\\w+ heard='(.*)'")
     }
 }

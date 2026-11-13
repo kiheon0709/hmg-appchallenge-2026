@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 /** 실측 로그 태그. 통합 세션이 logcat에서 이 태그로 값을 모은다. */
 internal const val MEASURE_TAG = "SideSeatMeasure"
 
-/** 선배의 목소리와 귀. Pleos TextToSpeech·SpeechToText(ON_DEVICE)로 동작한다. */
+/** 타비의 목소리와 귀. Pleos TextToSpeech·SpeechToText(ON_DEVICE)로 동작한다. */
 interface Voice {
     /** 큐에 넣고 순서대로 말한다. urgent면 지금 하던 말과 대기열을 끊고 먼저 말한다. */
     fun say(text: String, urgent: Boolean = false)
@@ -55,9 +55,9 @@ interface Instructor {
 /**
  * 주행 중 손 안 대는 호출. 켜 두면 Pleos STT(ON_DEVICE)로 계속 들으며 맨 앞의 호출어([Persona.WAKE_WORDS])를 기다린다.
  * 호출어가 들리면 확인음("wake") → 같은 말에 붙은 질문(없으면 이어서 한 번 더 듣기)을 [start]의 onQuestion으로 넘긴다.
- * 선배가 말을 마치면 [WakeConfig.followUpMs] 동안 호출어 없이 되묻기를 받는다.
+ * 타비가 말을 마치면 [WakeConfig.followUpMs] 동안 호출어 없이 되묻기를 받는다.
  * Gleo 우선: Gleo 호출어가 들리거나, 오디오 포커스를 잃거나, 다른 앱이 마이크를 쓰거나, 통화 중이면 즉시 놓고 물러난다.
- * 선배가 말하는 동안은 듣지 않는다(에코 제거가 없어 자기 목소리를 호출어로 오인할 수 있음).
+ * 타비가 말하는 동안은 듣지 않는다(에코 제거가 없어 자기 목소리를 호출어로 오인할 수 있음).
  */
 interface WakeListening {
     val state: StateFlow<WakeState>

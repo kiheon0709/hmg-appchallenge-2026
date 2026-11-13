@@ -107,7 +107,7 @@ internal class AudioFocusGate(
 
     companion object {
         /**
-         * 선배 목소리: USAGE_ASSISTANT(VOICE_COMMAND 컨텍스트, "질문에 대한 음성 응답·안내")+SPEECH.
+         * 타비 목소리: USAGE_ASSISTANT(VOICE_COMMAND 컨텍스트, "질문에 대한 음성 응답·안내")+SPEECH.
          * 운영사무국 안내대로 TTS라는 이유로 NAVIGATION(ASSISTANCE_NAVIGATION_GUIDANCE)은 쓰지 않는다.
          */
         fun speechAttributes(): AudioAttributes = AudioAttributes.Builder()

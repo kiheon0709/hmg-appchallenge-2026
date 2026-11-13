@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
  * 훈련 효과음. `assets/sfx/<이름>.wav`(tools/sfx/generate.py가 코드로 합성)를 SoundPool로 미리 올려 지연 없이 낸다.
  *
  * - 반복음(rain·wind·engine)은 서서히 커지고 서서히 꺼진다.
- * - 선배가 말하는 동안([setDucked]) 효과음을 줄인다. 말이 끝나면 되돌린다.
+ * - 타비가 말하는 동안([setDucked]) 효과음을 줄인다. 말이 끝나면 되돌린다.
  * - 오디오 포커스: 소리가 나는 동안 GAIN_TRANSIENT_MAY_DUCK. LOSS면 전부 멈추고, LOSS_TRANSIENT면 잠시 멈췄다 이어 간다.
  *
  * 메인 스레드에서만 상태를 바꾼다([scope]는 Dispatchers.Main).
@@ -121,7 +121,7 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
         }
     }
 
-    /** 선배가 말하는 동안 효과음을 줄인다. TTS onStart·onDone에 맞춰 부른다. */
+    /** 타비가 말하는 동안 효과음을 줄인다. TTS onStart·onDone에 맞춰 부른다. */
     fun setDucked(ducked: Boolean) {
         scope.launch { applyDuck(if (ducked) SPEECH_DUCK else 1f) }
     }
@@ -199,7 +199,7 @@ internal class SfxPlayer(context: Context, private val scope: CoroutineScope) : 
         private const val DUCK_RAMP_MS = 180L
         private const val STEP_MS = 30L
         private const val RELEASE_GRACE_MS = 800L
-        /** 선배 말이 잘 들리도록 효과음을 이만큼으로 줄인다(약 -10dB). */
+        /** 타비 말이 잘 들리도록 효과음을 이만큼으로 줄인다(약 -10dB). */
         private const val SPEECH_DUCK = 0.32f
         private const val SYSTEM_DUCK = 0.4f
 

@@ -9,28 +9,57 @@ class WakeWordDetectorTest {
     private fun d(s: String) = WakeWordDetector.detect(s)
 
     @Test fun wakeAtStartWithQuestionInSameUtterance() {
-        assertEquals(WakeMatcher.Result.Wake("앞유리가 뿌예"), d("선배, 앞유리가 뿌예"))
-        assertEquals(WakeMatcher.Result.Wake("안개등 어떻게 켜?"), d("선배 안개등 어떻게 켜?"))
-        assertEquals(WakeMatcher.Result.Wake("이 경고등 뭐야"), d("선배님 이 경고등 뭐야"))
+        assertEquals(WakeMatcher.Result.Wake("앞유리가 뿌예"), d("타비야, 앞유리가 뿌예"))
+        assertEquals(WakeMatcher.Result.Wake("안개등 어떻게 켜?"), d("타비야 안개등 어떻게 켜?"))
+        assertEquals(WakeMatcher.Result.Wake("이 경고등 뭐야"), d("타비아 이 경고등 뭐야"))
     }
 
     @Test fun wakeAlone() {
-        assertEquals(WakeMatcher.Result.Wake(""), d("선배"))
-        assertEquals(WakeMatcher.Result.Wake(""), d("선배!"))
+        assertEquals(WakeMatcher.Result.Wake(""), d("타비야"))
+        assertEquals(WakeMatcher.Result.Wake(""), d("타비!"))
+        assertEquals(WakeMatcher.Result.Wake(""), d("타비"))
     }
 
     @Test fun commonMisrecognitionsAndLeadingWord() {
-        assertTrue(d("선베 터널 들어가") is WakeMatcher.Result.Wake)
-        assertTrue(d("섬배 졸려") is WakeMatcher.Result.Wake)
-        assertEquals(WakeMatcher.Result.Wake("비 와"), d("저기 선배 비 와"))
-        assertEquals(WakeMatcher.Result.Wake("깜빡이 언제 켜"), d("야 선배, 깜빡이 언제 켜"))
+        // 합성 음성 실측 11-13: "탑이야" 6/12, "따비야" 2/12
+        assertEquals(WakeMatcher.Result.Wake("와이퍼 어디에 있어?"), d("탑이야 와이퍼 어디에 있어?"))
+        assertEquals(WakeMatcher.Result.Wake("앞유리가 또 해"), d("따비야 앞유리가 또 해"))
+        assertTrue(d("다비야 졸려") is WakeMatcher.Result.Wake)
+        assertTrue(d("타피야 비 와") is WakeMatcher.Result.Wake)
+        assertEquals(WakeMatcher.Result.Wake("비 와"), d("저기 타비야 비 와"))
+        assertEquals(WakeMatcher.Result.Wake("깜빡이 언제 켜"), d("야 타비야, 깜빡이 언제 켜"))
+    }
+
+    @Test fun vocativeShapeRequired() {
+        assertEquals("이름 뒤에 바로 다른 말", WakeMatcher.Result.None, d("타비 와이퍼 어디 있어"))
+        assertEquals("조사", WakeMatcher.Result.None, d("타비가 그러는데 비 온대"))
+        assertEquals("탑이는 일상어", WakeMatcher.Result.None, d("탑이 높다"))
+        assertEquals("호칭 꼴이 띄어 있음", WakeMatcher.Result.None, d("타비 아까 그거 뭐야"))
+        assertEquals("호칭 꼴 뒤에 말이 붙음", WakeMatcher.Result.None, d("타비아까 그거 뭐야"))
     }
 
     @Test fun wakeInMiddleIsIgnored() {
-        assertEquals(WakeMatcher.Result.None, d("우리 선배가 그러는데 비 온대"))
+        assertEquals(WakeMatcher.Result.None, d("우리 타비야 오늘 잘했어"))
         assertEquals(WakeMatcher.Result.None, d("어제 회사 선배랑 밥 먹었어"))
         assertEquals(WakeMatcher.Result.None, d("오늘 날씨 좋다"))
         assertEquals(WakeMatcher.Result.None, d(""))
+    }
+
+    @Test fun weakVariantsOffByDefault() {
+        assertEquals(WakeMatcher.Result.None, d("나비야 와이퍼 어디 있어?"))
+        assertEquals(WakeMatcher.Result.None, d("아비야"))
+        assertEquals(WakeMatcher.Result.None, d("차비야 얼마야?"))
+    }
+
+    @Test fun weakVariantsNarrowRuleWhenEnabled() {
+        val m = WakeMatcher(allowWeak = true)
+        assertEquals(WakeMatcher.Result.Wake("와이브 어디 있어?"), m.detect("나비야 와이브 어디 있어?")) // 실측 남성 음성
+        assertEquals("질문 꼴이 아니면 아님", WakeMatcher.Result.None, m.detect("나비야 암 유리가 뿌얘"))
+        assertEquals("노랫말", WakeMatcher.Result.None, m.detect("나비야 나비야 이리 날아오너라"))
+        assertEquals("뒤가 없으면 아님", WakeMatcher.Result.None, m.detect("나비야"))
+        assertEquals("앞말이 붙으면 아님", WakeMatcher.Result.None, m.detect("저기 나비야 어디 있어?"))
+        assertEquals("호칭 꼴이 없으면 아님", WakeMatcher.Result.None, m.detect("나비 어디 있어?"))
+        assertEquals("강한 변형은 그대로", WakeMatcher.Result.Wake(""), m.detect("탑이야"))
     }
 
     @Test fun gleoMeansBackOff() {
@@ -42,10 +71,10 @@ class WakeWordDetectorTest {
         assertEquals(WakeMatcher.Result.None, d("아까 글레오가 그러던데"))
     }
 
-    @Test fun partialCheckIsCheap() {
-        assertTrue(WakeWordDetector.startsWithWake("선배"))
-        assertTrue(WakeWordDetector.startsWithWake("저기 선배 앞"))
-        assertFalse(WakeWordDetector.startsWithWake("우리 선배"))
+    @Test fun partialCheck() {
+        assertTrue(WakeWordDetector.startsWithWake("타비야"))
+        assertTrue(WakeWordDetector.startsWithWake("저기 탑이야 앞"))
+        assertFalse(WakeWordDetector.startsWithWake("우리 타비야"))
     }
 }
 
@@ -62,7 +91,7 @@ class WakeLoopTest {
 
     @Test fun wakeQuestionThenSpeakingThenFollowUpWindow() {
         val l = WakeLoop(cfg).apply { start() }
-        val d = l.onUtterance("선배, 앞유리가 뿌예", now = 1_000)
+        val d = l.onUtterance("타비야, 앞유리가 뿌예", now = 1_000)
         assertEquals(WakeLoop.Decision.Question("앞유리가 뿌예", viaWake = true), d)
         assertEquals(WakeState.HANDLING, l.state)
         assertEquals("답하는 동안은 듣지 않는다", -1L, l.waitBeforeListen(1_100))
@@ -127,12 +156,38 @@ class WakeLoopTest {
         l.onError(30_000); assertEquals("성공 뒤 처음부터", 1_000L, l.waitBeforeListen(30_000))
     }
 
+    @Test fun weakVariantFollowsConfig() {
+        assertEquals(WakeLoop.Decision.Ignore, WakeLoop(cfg).apply { start() }.onUtterance("나비야 와이퍼 어디 있어?", 0))
+        val loose = WakeLoop(cfg.copy(allowWeakWakeWords = true)).apply { start() }
+        assertEquals(WakeLoop.Decision.Question("와이퍼 어디 있어?", viaWake = true), loose.onUtterance("나비야 와이퍼 어디 있어?", 0))
+    }
+
     @Test fun stopTurnsEverythingOff() {
         val l = WakeLoop(cfg).apply { start() }
         l.onError(0)
         l.stop()
         assertEquals(WakeState.OFF, l.state)
         assertEquals(-1L, l.waitBeforeListen(0))
-        assertEquals(WakeLoop.Decision.Ignore, l.onUtterance("선배", 0))
+        assertEquals(WakeLoop.Decision.Ignore, l.onUtterance("타비야", 0))
+    }
+}
+
+class WakeLiveTallyTest {
+    @Test fun linesAndSummaryShowBothRules() {
+        val t = WakeLiveTally()
+        assertEquals("#1 깨어남 '탑이야 와이퍼 어디 있어?' → 질문 '와이퍼 어디 있어?'", t.record("탑이야 와이퍼 어디 있어?").line)
+        assertEquals("#2 안 깨어남 '나비야 와이브 어디 있어?' (나비야 규칙이면 깨어남)", t.record("나비야 와이브 어디 있어?").line)
+        assertEquals("#3 깨어남 '타비야'", t.record("타비야").line)
+        assertEquals("#4 Gleo로 봄 '헤이 클레어'", t.record("헤이 클레어").line)
+        assertEquals("#5 안 깨어남 '오늘 날씨 좋다'", t.record("오늘 날씨 좋다").line)
+        assertEquals("깨어남 2/5 (나비야 규칙을 켜면 3/5)", t.summary())
+        assertEquals(5, t.lines().size)
+    }
+
+    @Test fun keepsOnlyRecentLines() {
+        val t = WakeLiveTally()
+        repeat(15) { t.record("타비야 $it") }
+        assertEquals(10, t.lines().size)
+        assertTrue(t.lines().first().startsWith("#6 "))
     }
 }
