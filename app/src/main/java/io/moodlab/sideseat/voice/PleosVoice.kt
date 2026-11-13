@@ -171,28 +171,19 @@ internal class PleosVoice(
         var rmsMax = 0.0
         var rmsMin = -1.0
         var quietSince: Long? = null
-        var prevPartialNorm = ""
-        var lastPartialAt: Long? = null
-        var guessedNorm = ""
-        var guesses = 0
-        /** 말이 끝났다고 "추측"되면 Instructor가 LLM 요청을 먼저 보낸다. 듣기는 계속한다. 같은 글에는 한 번만. */
-        fun guessEnd(source: String) {
-            val norm = ReplyClassifier.normalize(lastPartial)
-            if (norm.isEmpty() || norm == guessedNorm) return
-            // 통합 세션 수정(11-13): 이 글은 판단을 마쳤다고 먼저 적는다. 전에는 quiet(연속 청취)·추측 횟수 초과일 때
-            // 적지 않고 돌아가 아래 루프가 events.receive() 없이 마감까지 헛돌았다(Main 스레드 약 17초, 최종 결과를 놓치고 중간 결과로 답함).
-            guessedNorm = norm
-            if (quiet || guesses >= MAX_GUESSES) return
-            guesses++
-            vlog("stt guess end ($source) #$guesses chars=${lastPartial.length} at=${SystemClock.elapsedRealtime() - t0}ms")
-            hooks.onEpdEnd(lastPartial)
+        // 말 끝 추측(추측 요청 신호). 연속 청취(quiet)에서는 끈다. 타이머는 fire()가 늘 풀어 루프가 헛돌지 않는다.
+        val guesser = SpeechEndGuesser(enabled = !quiet, QUIET_GUESS_MS, QUIET_GUESS_COMPLETE_MS, MAX_GUESSES)
+        fun guessEnd(source: String, text: String?) {
+            if (text == null) return
+            vlog("stt guess end ($source) #${guesser.guesses} chars=${text.length} at=${SystemClock.elapsedRealtime() - t0}ms")
+            hooks.onEpdEnd(text)
         }
         /** 엔진 EPD·RMS로 말 끝이 확인됨: 최종 결과 대기 시간 제한을 건다. */
         fun markSpeechEnd(source: String) {
             if (epdAt != null) return
             epdAt = SystemClock.elapsedRealtime()
             vlog("stt speech end ($source) at=${epdAt!! - t0}ms")
-            guessEnd(source)
+            guessEnd(source, guesser.fire())
         }
         var firstPartialAt: Long? = null
         var sender: Job? = null
@@ -229,11 +220,9 @@ internal class PleosVoice(
                 }
                 // 중간 결과가 잠시 새로 오지 않으면 말이 끝났다고 추측한다(듣기는 계속).
                 // 끝난 문장처럼 보이면 짧게(QUIET_GUESS_COMPLETE_MS), 아니면 길게 기다린다(말하는 중 중간 결과는 약 400ms마다 온다).
-                val quietMs = if (ReplyClassifier.looksComplete(lastPartial)) QUIET_GUESS_COMPLETE_MS else QUIET_GUESS_MS
-                val guessIn = lastPartialAt?.takeIf { endedAt == null && ReplyClassifier.normalize(lastPartial) != guessedNorm }
-                    ?.let { quietMs - (now - it) }
+                val guessIn = guesser.dueIn(now)
                 if (guessIn != null && guessIn <= 0) {
-                    guessEnd("quiet")
+                    guessEnd("quiet", guesser.fire()) // fire는 타이머를 풀므로 다음 바퀴는 반드시 events를 기다린다
                     continue@loop
                 }
                 val e = withTimeoutOrNull(if (guessIn != null) minOf(deadline, guessIn) else deadline) { events.receive() } ?: continue@loop
@@ -255,7 +244,6 @@ internal class PleosVoice(
                             }
                             speechSeen = true
                             lastPartial = text
-                            lastPartialAt = SystemClock.elapsedRealtime()
                             onPartial(text)
                             if (!quiet) hooks.onPartial(text)
                             if (stopWhen?.invoke(text) == true) {
@@ -263,9 +251,7 @@ internal class PleosVoice(
                                 break@loop
                             }
                             // 같은 중간 결과가 한 번 더 오면 말이 멈춘 것으로 보고 LLM 요청을 먼저 보낸다.
-                            val norm = ReplyClassifier.normalize(text)
-                            if (norm == prevPartialNorm) guessEnd("stable")
-                            prevPartialNorm = norm
+                            guessEnd("stable", guesser.onPartial(text, SystemClock.elapsedRealtime()))
                         }
                     }
                     is SttEvent.Epd -> {
@@ -286,6 +272,7 @@ internal class PleosVoice(
                     }
                     SttEvent.Ended -> {
                         if (endedAt == null) {
+                            guesser.stop()
                             endedAt = SystemClock.elapsedRealtime()
                             ended = true
                             vlog("stt ended at=${endedAt!! - t0}ms")

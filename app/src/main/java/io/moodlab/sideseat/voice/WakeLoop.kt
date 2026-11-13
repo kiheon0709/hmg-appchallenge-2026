@@ -48,6 +48,7 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
     var restarts = 0; private set
     var wakes = 0; private set
     var followUps = 0; private set
+    var followUpRejected = 0; private set
     var gleoBackoffs = 0; private set
     var interferenceBackoffs = 0; private set
     var errors = 0; private set
@@ -95,22 +96,23 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
             return Decision.Ignore
         }
         when (val r = WakeWordDetector.detect(text)) {
-            WakeWordDetector.Result.Gleo -> {
+            WakeMatcher.Result.Gleo -> {
                 gleoBackoffs++
                 backOff(now, config.gleoBackoffMs)
                 return Decision.Gleo
             }
-            is WakeWordDetector.Result.Wake -> {
+            is WakeMatcher.Result.Wake -> {
                 wakes++
                 state = WakeState.HANDLING
                 return Decision.Question(r.rest, viaWake = true)
             }
-            WakeWordDetector.Result.None -> {
-                if (wasFollowUp && ReplyClassifier.normalize(text).length >= MIN_FOLLOW_UP_CHARS) {
+            WakeMatcher.Result.None -> {
+                if (wasFollowUp && acceptsFollowUp(text)) {
                     followUps++
                     state = WakeState.HANDLING
                     return Decision.Question(text.trim(), viaWake = false)
                 }
+                if (wasFollowUp) followUpRejected++
                 return Decision.Ignore
             }
         }
@@ -156,7 +158,7 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
     val cycleMaxMs: Long get() = config.cycleMaxMs
 
     fun status(now: Long): String =
-        "state=$state cycles=$cycles restarts=$restarts wakes=$wakes followUps=$followUps gleo=$gleoBackoffs " +
+        "state=$state cycles=$cycles restarts=$restarts wakes=$wakes followUps=$followUps followUpRejected=$followUpRejected gleo=$gleoBackoffs " +
             "interference=$interferenceBackoffs errors=$errors backoffLeft=${(backoffUntil - now).coerceAtLeast(0)}ms"
 
     private fun backOff(now: Long, ms: Long) {
@@ -165,7 +167,16 @@ class WakeLoop(private val config: WakeConfig = WakeConfig()) {
         followUpUntil = 0
     }
 
+    /**
+     * 되묻기 창(호출어 없이 받음)의 문턱. 짧은 대답(응·아니·나중에·다시)이거나, 4글자 이상의 질문·요청 꼴만 받는다.
+     * 실측 11-13: 문턱이 2글자뿐이라 방 소리 "한숨만", "지금 요즘으로", "시원한"이 질문으로 들어가 엉뚱하게 답했다.
+     */
+    fun acceptsFollowUp(text: String): Boolean {
+        if (ReplyClassifier.classify(text) != Reply.UNKNOWN) return true
+        return ReplyClassifier.normalize(text).length >= MIN_FOLLOW_UP_CHARS && QuestionShape.looksLikeRequest(text)
+    }
+
     private companion object {
-        const val MIN_FOLLOW_UP_CHARS = 2
+        const val MIN_FOLLOW_UP_CHARS = 4
     }
 }

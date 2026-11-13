@@ -42,6 +42,31 @@ object VoiceModule {
     /** 주행 중 연속 청취(호출어). [create] 뒤에 쓴다. 켜고 끄는 시점(코치 모드 진입·이탈)은 통합 세션이 정한다. */
     val wake: WakeListening? get() = parts?.wake
 
+    /**
+     * 디버그: 호출어 이름 후보 시험. 각 PCM(16kHz 16bit mono raw)을 Pleos STT로 받아 적고, 후보 낱말로 판정해
+     * 인식률·오인식을 돌려준다(예: "wake=18/20 falseAlarm=0/20"). 받아 적은 글은 SideSeatMeasure 로그에 남긴다.
+     * 연속 청취는 시험 동안 멈췄다가 다시 켠다.
+     * @param words 이 이름과 STT 변형(예: ["하늘", "하눌"]), @param weakWords 일상어와 겹치는 변형(맨 앞+질문 꼴일 때만 인정)
+     * @param samples (PCM, 호출어를 말했는지)
+     */
+    suspend fun debugWakeTrial(words: List<String>, weakWords: List<String>, samples: List<Pair<ByteArray, Boolean>>): String {
+        val p = parts ?: return "voice module not created"
+        val matcher = WakeMatcher(wakeWords = words, weakWakeWords = weakWords)
+        val heard = p.wake.paused {
+            samples.mapIndexed { i, (pcm, expect) ->
+                val text = p.voice.wakeCycle(pcm, maxMs = TRIAL_MAX_MS, onPartial = {}, stopWhen = { false }).orEmpty()
+                val woke = matcher.detect(text) is WakeMatcher.Result.Wake
+                Log.i(MEASURE_TAG, "wake trial #$i expect=${if (expect) "wake" else "plain"} woke=$woke heard='$text'")
+                text to expect
+            }
+        }
+        val score = matcher.score(heard)
+        Log.i(MEASURE_TAG, "wake trial words=${words.take(3)} $score")
+        return score.toString()
+    }
+
+    private const val TRIAL_MAX_MS = 8_000L
+
     // ---------- 차종별 스위치 위치 ----------
     private var switchGuide: SwitchGuide? = null
     private var detectedVehicle: VehicleProfile? = null

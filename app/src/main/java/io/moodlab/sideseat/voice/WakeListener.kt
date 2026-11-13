@@ -88,6 +88,18 @@ internal class WakeListener(
         publish()
     }
 
+    /** 연속 청취를 잠시 멈추고 [block]을 돌린 뒤, 켜져 있었으면 다시 켠다(디버그 시험용). */
+    suspend fun <T> paused(block: suspend () -> T): T {
+        val handler = onQuestion
+        val wasOn = loop.enabled
+        if (wasOn) stop()
+        try {
+            return block()
+        } finally {
+            if (wasOn && handler != null) start(handler)
+        }
+    }
+
     override fun debugStatus(): String = "${loop.status(now())} pendingPcm=${pendingPcm.size}"
 
     override fun debugFeedPcm(pcm: ByteArray) {
@@ -133,7 +145,7 @@ internal class WakeListener(
                     pcm, maxMs,
                     onPartial = {},
                     // Gleo 호출이 보이면 마이크를 바로 놓는다.
-                    stopWhen = { partial -> WakeWordDetector.detect(partial) == WakeWordDetector.Result.Gleo },
+                    stopWhen = { partial -> WakeWordDetector.detect(partial) == WakeMatcher.Result.Gleo },
                 )
             } finally {
                 inOurCycle = false

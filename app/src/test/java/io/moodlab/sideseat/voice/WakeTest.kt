@@ -9,37 +9,37 @@ class WakeWordDetectorTest {
     private fun d(s: String) = WakeWordDetector.detect(s)
 
     @Test fun wakeAtStartWithQuestionInSameUtterance() {
-        assertEquals(WakeWordDetector.Result.Wake("앞유리가 뿌예"), d("선배, 앞유리가 뿌예"))
-        assertEquals(WakeWordDetector.Result.Wake("안개등 어떻게 켜?"), d("선배 안개등 어떻게 켜?"))
-        assertEquals(WakeWordDetector.Result.Wake("이 경고등 뭐야"), d("선배님 이 경고등 뭐야"))
+        assertEquals(WakeMatcher.Result.Wake("앞유리가 뿌예"), d("선배, 앞유리가 뿌예"))
+        assertEquals(WakeMatcher.Result.Wake("안개등 어떻게 켜?"), d("선배 안개등 어떻게 켜?"))
+        assertEquals(WakeMatcher.Result.Wake("이 경고등 뭐야"), d("선배님 이 경고등 뭐야"))
     }
 
     @Test fun wakeAlone() {
-        assertEquals(WakeWordDetector.Result.Wake(""), d("선배"))
-        assertEquals(WakeWordDetector.Result.Wake(""), d("선배!"))
+        assertEquals(WakeMatcher.Result.Wake(""), d("선배"))
+        assertEquals(WakeMatcher.Result.Wake(""), d("선배!"))
     }
 
     @Test fun commonMisrecognitionsAndLeadingWord() {
-        assertTrue(d("선베 터널 들어가") is WakeWordDetector.Result.Wake)
-        assertTrue(d("섬배 졸려") is WakeWordDetector.Result.Wake)
-        assertEquals(WakeWordDetector.Result.Wake("비 와"), d("저기 선배 비 와"))
-        assertEquals(WakeWordDetector.Result.Wake("깜빡이 언제 켜"), d("야 선배, 깜빡이 언제 켜"))
+        assertTrue(d("선베 터널 들어가") is WakeMatcher.Result.Wake)
+        assertTrue(d("섬배 졸려") is WakeMatcher.Result.Wake)
+        assertEquals(WakeMatcher.Result.Wake("비 와"), d("저기 선배 비 와"))
+        assertEquals(WakeMatcher.Result.Wake("깜빡이 언제 켜"), d("야 선배, 깜빡이 언제 켜"))
     }
 
     @Test fun wakeInMiddleIsIgnored() {
-        assertEquals(WakeWordDetector.Result.None, d("우리 선배가 그러는데 비 온대"))
-        assertEquals(WakeWordDetector.Result.None, d("어제 회사 선배랑 밥 먹었어"))
-        assertEquals(WakeWordDetector.Result.None, d("오늘 날씨 좋다"))
-        assertEquals(WakeWordDetector.Result.None, d(""))
+        assertEquals(WakeMatcher.Result.None, d("우리 선배가 그러는데 비 온대"))
+        assertEquals(WakeMatcher.Result.None, d("어제 회사 선배랑 밥 먹었어"))
+        assertEquals(WakeMatcher.Result.None, d("오늘 날씨 좋다"))
+        assertEquals(WakeMatcher.Result.None, d(""))
     }
 
     @Test fun gleoMeansBackOff() {
-        assertEquals(WakeWordDetector.Result.Gleo, d("글레오 음악 틀어 줘"))
-        assertEquals(WakeWordDetector.Result.Gleo, d("헤이 글레오"))
-        assertEquals(WakeWordDetector.Result.Gleo, d("클레오 집으로 안내해"))
-        assertEquals(WakeWordDetector.Result.Gleo, d("저기 글레오"))
+        assertEquals(WakeMatcher.Result.Gleo, d("글레오 음악 틀어 줘"))
+        assertEquals(WakeMatcher.Result.Gleo, d("헤이 글레오"))
+        assertEquals(WakeMatcher.Result.Gleo, d("클레오 집으로 안내해"))
+        assertEquals(WakeMatcher.Result.Gleo, d("저기 글레오"))
         // 중간에 나온 글레오는 우리 판단과 무관
-        assertEquals(WakeWordDetector.Result.None, d("아까 글레오가 그러던데"))
+        assertEquals(WakeMatcher.Result.None, d("아까 글레오가 그러던데"))
     }
 
     @Test fun partialCheckIsCheap() {
