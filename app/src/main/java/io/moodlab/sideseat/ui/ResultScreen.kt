@@ -118,7 +118,7 @@ private fun SituationResultCard(index: Int, r: SituationResult, progress: Traini
                         }
                         // 이 차의 스위치 위치(통합 세션이 넣어 준 경우에만)
                         SituationTexts.switchId(stepId)?.let { where(it) }?.let {
-                            Text("이 차에서는 · $it", color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
+                            Text(it, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
                         }
                     }
                 }

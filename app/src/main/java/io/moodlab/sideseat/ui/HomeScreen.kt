@@ -62,7 +62,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
     val sz = LocalSz.current
     val calm = remember { SceneParams() }
     val car = remember { VehicleState(timestampMs = 0, parked = true, lowBeamOn = true) }
-    Box(modifier.clip(RoundedCornerShape(sz.radius))) {
+    Box(modifier.clip(RoundedCornerShape(sz.radius)).border(sz.line, Sc.outline, RoundedCornerShape(sz.radius))) {
         DriveScene(calm, car, 80f, Modifier.fillMaxSize())
         Box(
             Modifier.fillMaxSize().background(

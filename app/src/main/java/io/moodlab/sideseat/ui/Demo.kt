@@ -174,7 +174,7 @@ object UiSamples {
         talk = TalkUi(),
     )
 
-    val coach = CoachUi(lastLine = "비가 와요. 전조등을 켜 주세요.", urgent = true)
+    val coach = CoachUi(lastLine = "비가 와요. 전조등을 켜 주세요.", urgent = true, wake = WakeUi.WAITING)
 }
 
 /** 모든 상황을 자동으로 도는 훈련 화면 시연. 엔진 없이 화면만 본다. */

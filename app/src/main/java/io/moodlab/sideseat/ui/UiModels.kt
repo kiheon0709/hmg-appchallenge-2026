@@ -46,12 +46,30 @@ data class HomeUi(
     val talk: TalkUi = TalkUi(),
 )
 
-/** 코치(주행 중). 화면은 한 줄과 버튼 하나뿐이다. */
+/** 주행 중 호출어 대기 상태(화면 표시용). 음성 모듈의 WakeState를 통합 세션이 이것으로 옮긴다. */
+enum class WakeUi {
+    /** 호출어 기능이 꺼져 있다. 안내를 보여 주지 않는다. */
+    OFF,
+    /** 호출어를 기다리는 중(WakeState.LISTENING). */
+    WAITING,
+    /** 방금 답했고, 호출어 없이 이어서 말해도 듣는다(WakeState.FOLLOW_UP). */
+    FOLLOW_UP,
+    /** 호출어를 들었고 질문을 받는 중(WakeState.HANDLING). */
+    HEARD,
+    /** 차량 기본 비서(Gleo)를 부른 말이라 물러나 있다(WakeState.BACKED_OFF). */
+    YIELDED,
+}
+
+/** 코치(주행 중). 화면은 한 줄, 호출 안내 한 줄, 버튼 하나뿐이다. */
 data class CoachUi(
     /** 마지막으로 한 말. 한글 24자 이내로 잘라서 준다(넘치면 화면이 줄인다). */
     val lastLine: String? = null,
-    /** 안전 규칙으로 급하게 한 말이면 true(색만 바뀐다). */
+    /** 안전 규칙으로 바로 한 말(K01 등). 색은 바뀌지 않는다. */
     val urgent: Boolean = false,
+    /** 위험 단계의 말("지금 안전한 곳에 세워야 해요" 같은 빨간 경고등 안내). 이때만 문장이 위험색이 된다. */
+    val danger: Boolean = false,
+    /** 호출어 대기 상태. */
+    val wake: WakeUi = WakeUi.OFF,
     val talk: TalkUi = TalkUi(),
 )
 

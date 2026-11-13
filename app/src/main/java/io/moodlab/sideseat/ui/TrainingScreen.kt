@@ -93,7 +93,7 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
             }
         } else {
             Column(Modifier.fillMaxSize()) {
-                Box(Modifier.fillMaxWidth().weight(0.55f)) {
+                Box(Modifier.fillMaxWidth().weight(0.5f)) {
                     DriveScene(view, vehicle, Modifier.fillMaxSize())
                     SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.gap).widthIn(max = sz.width * 0.68f))
                     CenterOverlays(view, onAction)
@@ -102,13 +102,15 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
                     // 세로에서는 아래 판이 길어져도 항상 보이게 주행 화면 위에 둔다
                     BigButton("그만하기", Modifier.align(Alignment.TopEnd).padding(sz.gap)) { onAction(UiAction.AbortTraining) }
                 }
-                Box(Modifier.fillMaxWidth().weight(0.45f)) {
+                Box(Modifier.fillMaxWidth().weight(0.5f)) {
                     Column(
                         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.gap),
                         verticalArrangement = Arrangement.spacedBy(sz.dp(10f)),
                     ) {
+                        // 세로에서는 힌트가 아래로 밀려 잘리지 않게 체크리스트 위에 둔다(선택지가 있으면 선택지 다음)
+                        if (view.choice == null) HintBanner(view, Modifier.fillMaxWidth())
                         SidePanel(view, onAction, Modifier.fillMaxWidth())
-                        HintBanner(view, Modifier.fillMaxWidth())
+                        if (view.choice != null) HintBanner(view, Modifier.fillMaxWidth())
                     }
                 }
             }
@@ -199,15 +201,17 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
 private fun Timer(view: TrainingView) {
     val running = view.phase == TrainingPhase.ACTIVE || view.phase == TrainingPhase.HINT
     val limit = view.limitMs
+    val sz = LocalSz.current
+    val ring = sz.dp(if (sz.wide) 132f else 100f)
     when {
-        limit <= 0L -> TimerRing(0f, if (running) "%.0f".format(view.elapsedMs / 1000f) else "–", caption = "천천히")
+        limit <= 0L -> TimerRing(0f, if (running) "%.0f".format(view.elapsedMs / 1000f) else "–", size = ring, caption = "천천히")
         limit <= 2500L -> TimerRing(
             if (running) view.elapsedMs / limit.toFloat() else 0f,
-            if (running) "%.2f".format(view.elapsedMs / 1000f) else "%.1f".format(limit / 1000f), caption = "반응 시간",
+            if (running) "%.2f".format(view.elapsedMs / 1000f) else "%.1f".format(limit / 1000f), size = ring, caption = "반응 시간",
         )
         else -> {
             val left = ((limit - view.elapsedMs).coerceAtLeast(0L)) / 1000f
-            TimerRing(if (running) view.elapsedMs / limit.toFloat() else 0f, if (running) "%.1f".format(left) else "%.0f".format(limit / 1000f), caption = "초")
+            TimerRing(if (running) view.elapsedMs / limit.toFloat() else 0f, if (running) "%.1f".format(left) else "%.0f".format(limit / 1000f), size = ring, caption = "초")
         }
     }
 }
@@ -257,7 +261,7 @@ private fun HintBanner(view: TrainingView, modifier: Modifier) {
         Panel(border = Sc.warn, padding = sz.dp(18f)) {
             Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)
-            if (where != null) Text("이 차에서는 · $where", color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
+            if (where != null) Text(where, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
         }
     }
 }
