@@ -48,6 +48,18 @@ class LocationTest {
     }
 
     @Test
+    fun `a late callback does not pull 100 kmh below 90`() {
+        // 실측(f6fba1f run3): 100km/h 중 콜백 하나가 1675ms 늦게 왔는데 거리는 1초 몫
+        val step = (100 / 3.6) / M_PER_DEG_LAT
+        val dts = listOf(1_001L, 1_001, 1_001, 1_001, 1_675, 1_001, 1_010, 1_008, 1_001, 1_001)
+        val t = LocationTrack()
+        var time = 0L
+        t.add(baseLat, baseLon, 0)
+        val speeds = dts.mapIndexed { i, dt -> time += dt; t.add(baseLat + (i + 1) * step, baseLon, time); t.speedKmh()!! }
+        assertTrue(speeds.drop(2).all { it >= 90f }, "speeds=$speeds")
+    }
+
+    @Test
     fun `heading follows movement east and ignores standing still`() {
         val t = LocationTrack()
         val dLon = 16.667 / (M_PER_DEG_LAT * kotlin.math.cos(Math.toRadians(baseLat)))

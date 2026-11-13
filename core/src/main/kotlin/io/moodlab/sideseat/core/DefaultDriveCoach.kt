@@ -47,8 +47,8 @@ data class CoachConfig(
     val k12HoldMs: Long = 5_000,
     /** K12: 다시 말하기까지. */
     val k12CooldownMs: Long = 3 * MIN,
-    /** 과속이 이 시간 넘게 풀려 있으면 한 구간이 끝난 것으로 본다. */
-    val speedingEndMs: Long = 3_000,
+    /** 과속이 이 시간 넘게 풀려 있으면 한 구간이 끝난 것으로 본다. 늦은 위치 콜백으로 속도가 잠깐 낮게 잡혀도 이어 보려고 5초. */
+    val speedingEndMs: Long = 5_000,
 ) {
     companion object {
         const val MIN = 60_000L

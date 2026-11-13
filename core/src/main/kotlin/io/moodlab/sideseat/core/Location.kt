@@ -61,11 +61,11 @@ object GeoMath {
 
 /**
  * 좌표 열에서 속도와 진행 방향을 계산한다. FusedLocation에는 속도 필드가 없고 heading은 늘 0이라(실측) 좌표 차이로 구한다.
- * 최근 [windowMs] 동안 두 값을 구해 작은 쪽을 쓴다.
- * - 구간 속도의 중앙값: 좌표 하나가 튀는 것(GPS 점프)을 막는다.
- * - 창 전체 이동 거리 ÷ 걸린 시간: 전달 시각이 흔들리거나 한 칸을 건너뛰어 두 칸 거리가 한 간격에 잡힐 때를 막는다
- *   (에뮬레이터 재생 4회 중 1회 보호구역 36km/h가 72로 잡힘, 11-13 실측).
- * 안전 안내에서는 과대 추정보다 과소 추정이 덜 해롭다(잘못된 과속 경고를 하지 않는다).
+ * 기본은 최근 [windowMs] 동안 구간 속도의 중앙값이다. 좌표 하나가 튀거나 콜백 하나가 늦고 다음이 빨리 오는 경우를 막는다.
+ * 창 전체 이동 거리 ÷ 걸린 시간이 중앙값보다 [averageFloor]배 넘게 낮으면 그쪽을 쓴다. 창 안의 구간 여럿이
+ * 한꺼번에 부풀어 중앙값까지 튀는 경우다(에뮬레이터 재생 4회 중 1회 보호구역 36km/h가 72로 잡힘, 11-13 실측).
+ * 평균을 늘 쓰지 않는 이유: 콜백이 1.3~2초 늦게 오면(재생마다 2~9번, 실측) 그 3초 동안 평균이 실제보다
+ * 20% 가까이 낮아져 과속 구간이 끊긴다(100km/h → 82).
  */
 class LocationTrack(
     private val windowMs: Long = 3_000,
@@ -75,6 +75,7 @@ class LocationTrack(
     private val maxGapMs: Long = 5_000,
     /** 이보다 짧게 움직이면 방향을 새로 정하지 않는다(멈춤 잡음). */
     private val minHeadingMeters: Double = 5.0,
+    private val averageFloor: Double = 0.7,
 ) {
     private data class Fix(val lat: Double, val lon: Double, val t: Long)
     private data class Segment(val kmh: Double, val meters: Double, val startT: Long, val endT: Long)
@@ -107,7 +108,7 @@ class LocationTrack(
         return true
     }
 
-    /** 최근 속도(km/h): 구간 중앙값과 창 평균 중 작은 값. 점이 둘 미만이면 null. */
+    /** 최근 속도(km/h). 점이 둘 미만이면 null. */
     fun speedKmh(): Float? {
         if (segments.isEmpty()) return null
         val sorted = segments.map { it.kmh }.sorted()
@@ -115,7 +116,7 @@ class LocationTrack(
         val median = if (sorted.size % 2 == 1) sorted[m] else (sorted[m - 1] + sorted[m]) / 2
         val spanMs = segments.last().endT - segments.first().startT
         val average = if (spanMs > 0) segments.sumOf { it.meters } / (spanMs / 1000.0) * 3.6 else median
-        return minOf(median, average).toFloat()
+        return (if (average < median * averageFloor) average else median).toFloat()
     }
 
     /** 진행 방향(북 0도, 시계 방향). 아직 모르면 null. */
