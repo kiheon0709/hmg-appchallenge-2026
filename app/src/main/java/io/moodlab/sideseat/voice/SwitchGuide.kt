@@ -14,8 +14,9 @@ package io.moodlab.sideseat.voice
  *   ## sw_wiper 와이퍼 켜는 법
  *   짧게: …   자세히: …   출처: 취급설명서 쪽·항목
  *   ```
- * - 그림을 보고 읽은 위치는 문장에 "설명서 그림으로는"을 붙이고, 확인 못 한 것은 "확인하지 못했어요"로 쓴다.
- * 차종을 모르면 기본 차종 문장 끝에 "차마다 조금 달라요."를 붙인다(이미 "차종마다/차마다"가 있으면 안 붙임).
+ * - 문장 규칙(11-14 검수): 아는 차종은 차종 이름으로 시작("그랜저는 …"), 꼬리말 없음. 모르는 차종(기본값)은 "Pleos 차는 보통 …"에
+ *   앱이 "차마다 조금 달라요."를 붙인다. 그림을 보고 읽은 위치는 "~일 거예요"로 한 단계 낮추고, 그림 판독이라는 표시는 출처 줄에만 둔다.
+ *   확인 못 한 것은 "확인하지 못했어요". 결과 화면·힌트에 접두어 없이 그대로 쓰는 완결된 한 문장이다.
  */
 class SwitchGuide(
     private val procedures: List<KnowledgeBase.Entry>,
@@ -62,9 +63,9 @@ class SwitchGuide(
     fun knowledgeFor(profile: VehicleProfile?): KnowledgeBase {
         val entries = procedures + switchesFor(profile)
         val header = if (profile == null) {
-            "# 대처 절차와 스위치 위치(차종을 모름: Pleos 탑재 차 기준이고 차마다 조금 달라요)"
+            "# 대처 절차와 스위치 위치(차종을 모름: \"Pleos 차는 보통 …\"으로 말하고 \"차마다 조금 달라요\"를 덧붙여요. \"이 차에서는\"이라고 하지 않아요)"
         } else {
-            "# 대처 절차와 스위치 위치(이 차: ${profile.name}. 스위치 위치는 이 차 취급설명서 기준이고, \"설명서 그림으로는\"이 붙은 것은 그림을 보고 읽은 위치예요)"
+            "# 대처 절차와 스위치 위치(이 차: ${profile.name}. 스위치 위치는 이 차 취급설명서 기준. \"~일 거예요\"로 적힌 위치는 답할 때도 단정하지 말고 \"~일 거예요\"로 말해요)"
         }
         return KnowledgeBase(entries, KnowledgeBase(entries, "").render(header))
     }

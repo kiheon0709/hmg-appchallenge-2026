@@ -27,7 +27,7 @@ class SwitchGuideTest {
         기본: 예
         ## sw_wiper 와이퍼 켜는 법
         질문: 와이퍼, 와이퍼 어떻게
-        짧게: 설명서 그림으로는 왼쪽 레버 끝 노브를 돌려요.
+        짧게: Pleos 차는 보통 왼쪽 레버 끝 노브를 돌려요.
         출처: 그랜저·CN8
         ## sw_autohold 자동 정차
         질문: 오토홀드
@@ -66,7 +66,7 @@ class SwitchGuideTest {
     }
 
     @Test fun unknownCarUsesPleosDefaultWithVariesNote() {
-        assertEquals("설명서 그림으로는 왼쪽 레버 끝 노브를 돌려요. ${SwitchGuide.VARIES_NOTE}", guide.location("sw_wiper", null))
+        assertEquals("Pleos 차는 보통 왼쪽 레버 끝 노브를 돌려요. ${SwitchGuide.VARIES_NOTE}", guide.location("sw_wiper", null))
         assertEquals("공통 문장은 그대로", "왼쪽 레버를 앞으로 밀어요.", guide.location("sw_highbeam", null))
         val kb = guide.knowledgeFor(null)
         assertEquals("sw_wiper", kb.match("와이퍼 어떻게 켜")?.entry?.id)
@@ -112,17 +112,35 @@ class SwitchGuideTest {
     }
 
     @Test fun realDataQualityRules() {
+        val names = mapOf(
+            "grandeur_gn7" to "그랜저", "avante_cn8" to "아반떼", "avante_cn7" to "아반떼",
+            "casper_ax" to "캐스퍼", "ray_tam" to "레이", "seltos_sp2" to "셀토스",
+        )
         real.profiles.forEach { p ->
             p.entries.forEach { e ->
-                assertTrue("${p.id}/${e.id} 출처 없음", e.source.isNotBlank())
-                assertTrue("${p.id}/${e.id} 주행 중 답이 길다 ${e.short.length}자", e.short.length <= 60)
-                assertFalse("${p.id}/${e.id} 금지어", "급발진" in e.short || "급발진" in e.detail)
-                // 그림 판독인 위치는 단정하지 않는다
-                if ("그림 판독" in e.source && "위치 미확인" !in e.source) {
-                    assertTrue("${p.id}/${e.id}: 그림 판독인데 '설명서 그림으로는'이 없음", "설명서 그림으로는" in e.short + e.detail || "설명서 그림으로" in e.detail)
+                val where = "${p.id}/${e.id}"
+                val text = e.short + " " + e.detail
+                assertTrue("$where 출처 없음", e.source.isNotBlank())
+                assertTrue("$where 주행 중 답이 길다 ${e.short.length}자", e.short.length <= 60)
+                assertFalse("$where 금지어", "급발진" in text)
+                // 11-14 문구 검수: 사용자에게 어색한 말·서로 어긋나는 말 금지
+                assertFalse("$where '설명서 그림'은 출처 줄에만", "설명서 그림" in text)
+                assertFalse("$where '이 차에서는' 금지", "이 차에서는" in text)
+                assertFalse("$where 꼬리말은 데이터에 쓰지 않음(모르는 차에만 앱이 붙임)", SwitchGuide.VARIES_NOTE in text)
+                // 그림 판독인 위치는 단정하지 않는다("~일 거예요"·"보통")
+                if ("그림 판독" in e.source && "미확인" !in e.source) {
+                    assertTrue("$where 그림 판독인데 단정함: $text", "거예요" in text || "보통" in text)
                 }
+                // 아는 차종은 이름으로 시작
+                names[p.id]?.let { n -> assertTrue("$where 이름으로 시작하지 않음: ${e.short}", e.short.startsWith(n)) }
             }
         }
+        // 모르는 차(기본값)는 "Pleos 차"로 말하고 끝에 "차마다 조금 달라요"
+        val unknown = real.location("sw_headlight", null)!!
+        assertTrue(unknown, unknown.startsWith("Pleos 차는") && unknown.endsWith(SwitchGuide.VARIES_NOTE))
+        // 아는 차는 꼬리말 없음
+        val known = real.location("sw_headlight", real.byId("grandeur_gn7"))!!
+        assertTrue(known, known.startsWith("그랜저는") && !known.endsWith(SwitchGuide.VARIES_NOTE))
     }
 
     @Test fun pleosCarsWiperIsLeftAndOthersRight() {
