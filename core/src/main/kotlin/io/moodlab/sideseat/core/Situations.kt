@@ -30,7 +30,7 @@ class SituationDef(
 class StepDef(
     val id: String,
     val label: String,
-    /** 힌트·실패 때 말하는 스위치 위치(차종 공통 표현). */
+    /** 힌트·실패 때 말하는 할 일(차종 중립). 위치는 앱이 [id]로 차종별 문장을 찾아 붙인다. */
     val hint: String,
     val setup: String? = null,
     val essential: Boolean = false,
@@ -90,8 +90,11 @@ fun ChoiceDef.match(answer: String): Int? {
 }
 
 object SituationCatalog {
-    private const val HEADLIGHT_HINT = "전조등은 핸들 왼쪽 레버 끝을 돌려서 켜요."
-    private const val HAZARD_HINT = "비상등은 가운데 빨간 삼각형 버튼이에요."
+    // 힌트는 차종 중립으로 "무엇을 할지"만 말한다. 스위치 위치는 차마다 달라서(그랜저·아반떼 CN8은 와이퍼가 왼쪽 레버,
+    // 전조등은 왼쪽 아래 버튼, 공조는 화면 안) 앱이 step id로 차종별 문장(assets/knowledge/vehicles)을 붙인다.
+    // 위치를 말하는 문장은 여섯 차종 설명서에 모두 맞는 것만 쓴다(docs/research/2026-11-13_switch-locations-by-model.md 4절).
+    private const val HEADLIGHT_HINT = "전조등을 켜요."
+    private const val HAZARD_HINT = "빨간 삼각형 비상등 버튼을 눌러요."
 
     private val lowBeamOn = StepDef(
         id = "low_beam_on", label = "전조등 켜기", hint = HEADLIGHT_HINT, setup = "전조등을 꺼 두세요",
@@ -107,7 +110,7 @@ object SituationCatalog {
             steps = listOf(
                 StepDef(
                     id = "wiper_fast", label = "와이퍼 빠르게", essential = true,
-                    hint = "와이퍼 레버는 핸들 오른쪽이에요. 가장 빠른 단으로 옮겨요.", setup = "와이퍼를 꺼 두세요",
+                    hint = "와이퍼를 가장 빠른 단으로 바꿔요.", setup = "와이퍼를 꺼 두세요",
                     available = { it.wiper != null }, done = { (it.wiper?.ordinal ?: -1) >= config.heavyRainMinWiper.ordinal },
                 ),
                 lowBeamOn,
@@ -121,17 +124,17 @@ object SituationCatalog {
             steps = listOf(
                 StepDef(
                     id = "defrost_on", label = "앞유리 성에 제거", essential = true,
-                    hint = "성에 제거는 공조 패널의 앞유리 모양 버튼이에요.", setup = "앞유리 성에 제거를 꺼 두세요",
+                    hint = "앞유리 모양 성에 제거를 켜요.", setup = "앞유리 성에 제거를 꺼 두세요",
                     available = { it.defrostFrontOn != null }, done = { it.defrostFrontOn == true },
                 ),
                 StepDef(
                     id = "ac_on", label = "에어컨 켜기",
-                    hint = "에어컨은 공조 패널의 A/C 버튼이에요.", setup = "에어컨을 꺼 두세요",
+                    hint = "에어컨(A/C)을 켜요.", setup = "에어컨을 꺼 두세요",
                     available = { it.acOn != null }, done = { it.acOn == true },
                 ),
                 StepDef(
                     id = "fresh_air", label = "외기로 바꾸기",
-                    hint = "공조 패널의 차 안 화살표 버튼을 꺼서 외기로 바꿔요.", setup = "내기순환을 켜 두세요",
+                    hint = "내기순환을 꺼서 바깥 공기가 들어오게 해요.", setup = "내기순환을 켜 두세요",
                     available = { it.recirculationOn != null }, done = { it.recirculationOn == false },
                 ),
             ),
@@ -187,7 +190,7 @@ object SituationCatalog {
             steps = listOf(
                 StepDef(
                     id = "high_beam_off", label = "상향등 끄기", essential = true,
-                    hint = "상향등은 왼쪽 레버예요. 원래 자리로 돌려요.", setup = "상향등을 켜 두세요",
+                    hint = "왼쪽 레버를 몸 쪽으로 당기면 상향등이 꺼져요.", setup = "상향등을 켜 두세요",
                     available = { it.highBeamOn != null }, done = { it.highBeamOn == false },
                 ),
             ),
@@ -284,12 +287,12 @@ object SituationCatalog {
             steps = listOf(
                 StepDef(
                     id = "fresh_air", label = "외기로 바꾸기", essential = true,
-                    hint = "공조 패널의 차 안 화살표 버튼을 꺼서 외기로 바꿔요.", setup = "내기순환을 켜 두세요",
+                    hint = "내기순환을 꺼서 바깥 공기가 들어오게 해요.", setup = "내기순환을 켜 두세요",
                     available = { it.recirculationOn != null }, done = { it.recirculationOn == false },
                 ),
                 StepDef(
                     id = "window_open", label = "창문 조금 열기",
-                    hint = "운전석 창문 스위치를 살짝 내려요.", setup = "운전석 창문을 닫아 두세요",
+                    hint = "운전석 문 팔걸이 스위치로 창문을 조금 열어요.", setup = "운전석 창문을 닫아 두세요",
                     available = { it.driverWindowOpenPct != null }, done = { (it.driverWindowOpenPct ?: 0) > 0 },
                 ),
             ),
@@ -318,11 +321,11 @@ object SituationCatalog {
             lesson = "주차 브레이크는 꼭 채워요. 전조등과 창문도 한 번 더 보는 습관이에요.",
             steps = listOf(
                 StepDef(
-                    id = "lights_off", label = "전조등 끄기", hint = "전조등 스위치를 꺼요.", setup = "전조등을 켜 두세요", essential = true,
+                    id = "lights_off", label = "전조등 끄기", hint = "전조등을 꺼요.", setup = "전조등을 켜 두세요", essential = true,
                     available = { it.lowBeamOn != null }, done = { it.lowBeamOn == false },
                 ),
                 StepDef(
-                    id = "windows_closed", label = "창문 닫기", hint = "창문 스위치를 끝까지 올려 닫아요.", setup = "운전석 창문을 조금 열어 두세요",
+                    id = "windows_closed", label = "창문 닫기", hint = "창문을 끝까지 닫아요.", setup = "운전석 창문을 조금 열어 두세요",
                     available = { it.driverWindowOpenPct != null },
                     done = { (it.driverWindowOpenPct ?: 0) == 0 && it.windowOpenPct.values.all { p -> p == 0 } },
                 ),

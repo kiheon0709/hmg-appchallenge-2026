@@ -49,6 +49,17 @@ class TrainingEngineTest {
         assertTrue(lines.none { "급발진" in it })
     }
 
+    @Test
+    fun `hints do not claim switch positions that differ by model`() {
+        // 그랜저·아반떼 CN8은 와이퍼가 왼쪽 레버, 전조등은 버튼, 공조는 화면 안이라 위치 단정은 틀린다.
+        // 예외: 상향등 왼쪽 레버, 창문 팔걸이 스위치는 여섯 차종 공통(조사 4절).
+        val claims = listOf("오른쪽", "공조 패널", "레버 끝", "가운데", "핸들 오른쪽")
+        val hints = SituationCatalog.all().flatMap { d -> d.steps.map { it.hint } + d.penalties.mapNotNull { it.line } }
+        hints.forEach { h -> assertTrue(claims.none { it in h }, "위치를 단정함: $h") }
+        val wiper = SituationCatalog.all().first { it.id == SituationId.HEAVY_RAIN }.steps.first { it.id == "wiper_fast" }
+        assertFalse("레버" in wiper.hint)
+    }
+
     // ---------- 챕터 목록과 신호 가용성 ----------
 
     @Test
@@ -205,7 +216,7 @@ class TrainingEngineTest {
         assertEquals(TrainingPhase.ACTIVE, d.view.phase)
         d.advance(200)
         assertEquals(TrainingPhase.HINT, d.view.phase)
-        assertTrue(d.says().any { it.startsWith("와이퍼 레버는 핸들 오른쪽이에요") })
+        assertTrue("와이퍼를 가장 빠른 단으로 바꿔요." in d.says())
     }
 
     @Test
