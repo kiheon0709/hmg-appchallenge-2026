@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
  * - `wake_pcm <files 안 PCM>`: 연속 청취의 다음 한 번을 PCM으로, `wake_status`: 상태·횟수
  * - `navi start|route <lat>,<lon>|trip <lat>,<lon>|get|reroute|cancel|stop`: NaviHelper 콜백 실측(NaviProbe)
  * - `loc start|stop`: FusedLocation 콜백 실측(LocationProbe)
+ * - `wake_trial <files 안 목록 파일>`: 호출어 이름 후보 시험(VoiceModule.debugWakeTrial). 목록 줄은 `<PCM 파일>\t<wake|plain>`
  */
 class DebugCommands(private val context: Context, private val controller: SideSeatController) : BroadcastReceiver() {
     private val naviProbe by lazy { io.moodlab.sideseat.app.measure.NaviProbe(context) }
@@ -56,6 +57,17 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "reststop" -> gatewayCall("rest stop") { it.addRestStopWaypoint() }
             "navi" -> naviProbe.command(arg)
             "loc" -> locationProbe.command(arg)
+            "wake_trial" -> runCatching {
+                File(context.filesDir, arg).readLines().filter { it.isNotBlank() }.map { line ->
+                    val (name, expect) = line.split('\t')
+                    File(context.filesDir, name).readBytes() to (expect == "wake")
+                }
+            }.onSuccess { samples ->
+                kotlinx.coroutines.MainScope().launch {
+                    val score = io.moodlab.sideseat.voice.VoiceModule.debugWakeTrial(io.moodlab.sideseat.voice.Persona.WAKE_WORDS, io.moodlab.sideseat.voice.Persona.WEAK_WAKE_WORDS, samples)
+                    Log.i("SideSeatMeasure", "app debug wake trial done n=${samples.size} $score")
+                }
+            }.onFailure { Log.w("SideSeatMeasure", "app debug wake trial read failed: $it") }
             "wake_pcm" -> runCatching { File(context.filesDir, arg).readBytes() }
                 .onSuccess { io.moodlab.sideseat.voice.VoiceModule.wake?.debugFeedPcm(it) }
                 .onFailure { Log.w("SideSeatMeasure", "app debug wake pcm read failed: $it") }
