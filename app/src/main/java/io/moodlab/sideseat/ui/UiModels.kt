@@ -87,6 +87,9 @@ data class ReviewUi(
     val talk: TalkUi = TalkUi(),
 )
 
+/** 디버그 패널의 호출어 직접 불러 보기 시험. [lines]는 한 번 부를 때마다 한 줄, [summary]는 "깨어남 a/b" 꼴. */
+data class WakeTestUi(val running: Boolean = false, val lines: List<String> = emptyList(), val summary: String = "")
+
 /** 화면에서 일어난 일. */
 sealed interface UiAction {
     data class StartChapter(val chapterId: String) : UiAction

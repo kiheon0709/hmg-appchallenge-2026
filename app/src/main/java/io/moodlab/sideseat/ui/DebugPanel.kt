@@ -1,5 +1,11 @@
 package io.moodlab.sideseat.ui
 
+import io.moodlab.sideseat.voice.Persona
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +37,11 @@ import io.moodlab.sideseat.core.WiperLevel
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: Modifier = Modifier, onClose: (() -> Unit)? = null) {
+fun DebugPanel(
+    state: VehicleState, onChange: (VehicleState) -> Unit, modifier: Modifier = Modifier, onClose: (() -> Unit)? = null,
+    /** 호출어 직접 불러 보기 시험. 둘 다 넘기면 시작·멈춤 키와 기록이 보인다. */
+    wakeTest: WakeTestUi? = null, onWakeTest: ((start: Boolean) -> Unit)? = null,
+) {
     Column(
         modifier.clip(RoundedCornerShape(2.dp)).background(Sc.scrim).border(1.dp, Sc.text, RoundedCornerShape(2.dp)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -79,6 +89,17 @@ fun DebugPanel(state: VehicleState, onChange: (VehicleState) -> Unit, modifier: 
         val steer = state.steeringAngleDeg ?: 0f
         Text("핸들 %.0f°".format(steer), color = Sc.text, fontSize = 16.sp)
         Slider(steer, { onChange(state.copy(steeringAngleDeg = it)) }, Modifier.fillMaxWidth(), valueRange = -180f..180f)
+        if (wakeTest != null && onWakeTest != null) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Key(if (wakeTest.running) "‘${Persona.CALL}’ 시험 멈추기" else "‘${Persona.CALL}’ 직접 불러 보기", wakeTest.running) { onWakeTest(!wakeTest.running) }
+                Text(wakeTest.summary, color = Sc.text, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            }
+            if (wakeTest.lines.isNotEmpty()) {
+                Column(Modifier.fillMaxWidth().heightIn(max = 170.dp).verticalScroll(rememberScrollState())) {
+                    wakeTest.lines.forEach { Text(it, color = Sc.textDim, fontSize = 14.sp, lineHeight = 19.sp) }
+                }
+            }
+        }
     }
 }
 
