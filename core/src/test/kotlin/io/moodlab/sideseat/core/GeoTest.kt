@@ -27,25 +27,4 @@ class GeoTest {
     fun `polar night has no sunrise`() {
         assertNull(SolarTimes.sunriseSunset(80.0, 0.0, 355, 0))
     }
-
-    @Test
-    fun `speed from two fixes one second apart`() {
-        val e = SpeedEstimator(alpha = 1f)
-        assertNull(e.add(37.0, 127.0, 0))
-        // 위도 0.0001도 ≈ 11.1m → 1초에 약 40km/h
-        val v = assertNotNull(e.add(37.0001, 127.0, 1_000))
-        assertEquals(40f, v, 1f)
-        // 너무 가까운 점은 무시, 끊긴 뒤에는 모름
-        assertEquals(v, e.add(37.00011, 127.0, 1_100))
-        assertNull(e.add(37.01, 127.0, 20_000))
-    }
-
-    @Test
-    fun `speed is smoothed`() {
-        val e = SpeedEstimator(alpha = 0.5f)
-        e.add(37.0, 127.0, 0)
-        val first = e.add(37.0001, 127.0, 1_000)!!
-        val second = e.add(37.0001, 127.0, 2_000)!! // 멈춤
-        assertEquals(first / 2, second, 0.5f)
-    }
 }

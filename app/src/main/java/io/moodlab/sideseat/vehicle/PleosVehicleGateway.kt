@@ -47,7 +47,10 @@ import io.moodlab.sideseat.core.ParkedInputs
 import io.moodlab.sideseat.core.ParkedSource
 import io.moodlab.sideseat.core.Seat
 import io.moodlab.sideseat.core.SolarTimes
-import io.moodlab.sideseat.core.SpeedEstimator
+import io.moodlab.sideseat.core.LocationTrack
+import io.moodlab.sideseat.core.RoadSpeedLimits
+import io.moodlab.sideseat.core.RoadWay
+import io.moodlab.sideseat.core.SpeedLimitSource
 import io.moodlab.sideseat.core.TelltaleColor
 import io.moodlab.sideseat.core.TurnSignal
 import io.moodlab.sideseat.core.TurnSignalResolver
@@ -80,6 +83,7 @@ import kotlin.coroutines.resume
  * 실차·에뮬레이터 신호. 값은 [GatewayConfig]의 실측 보정을 거친다.
  * 에뮬레이터 실측(docs/STATUS.md 11-13): 조향 부호 반대, 착좌 반대, 창문 0~10, 안개등 미지원, 비상등·경고등 읽기 불가.
  * 정차 판정은 주행 규제(CarUxRestrictions)로 한다. AAOS 기어·차속은 쓰지 않는다.
+ * 속도·방향은 FusedLocation 좌표로 계산하고, 제한속도는 내비 값 → 없으면 OpenStreetMap maxspeed(명세 6.4).
  */
 data class GatewayConfig(
     /** 와이퍼가 켜져 있는 동안 스위치 조회 주기. 단계만 바뀌면 알림이 없다(실측). 200ms 조회에서 지연 30~160ms. */
@@ -90,6 +94,18 @@ data class GatewayConfig(
     val invertOccupancy: Boolean = isEmulator(),
     /** 정차 판정 순서. 주행 규제만 쓴다(주차 브레이크 경고등은 권한이 있는 차에서만 보조로). */
     val parkedOrder: List<ParkedSource> = listOf(ParkedSource.UX_RESTRICTIONS, ParkedSource.PARKING_BRAKE),
+    /** 내비 제한속도가 0일 때 OpenStreetMap maxspeed로 대신한다(명세 6.4). 밖으로 보내는 것은 좌표 칸(bbox)뿐. */
+    val useMapSpeedLimit: Boolean = true,
+    val overpassUrl: String = "https://overpass-api.de/api/interpreter",
+    /** 조회 단위 격자(도). 0.005도 ≈ 남북 550m·동서 440m라 이 정도 이동마다 한 번 묻는다. */
+    val mapCellDeg: Double = 0.005,
+    /** 외부 조회 사이 최소 간격. */
+    val mapMinIntervalMs: Long = 10_000,
+    /** 실패한 칸을 다시 묻기까지. */
+    val mapRetryMs: Long = 60_000,
+    val mapTimeoutMs: Int = 6_000,
+    /** 내비 제한속도가 이 시간 안에 왔으면 유효. */
+    val naviLimitFreshMs: Long = 3_000,
 ) {
     companion object {
         fun isEmulator(): Boolean =
@@ -127,6 +143,12 @@ class PleosVehicleGateway(
         val telltalesKnown: Boolean = false,
         val uxRestricted: Boolean? = null,
         val locationSpeedKmh: Float? = null,
+        val latitude: Double? = null,
+        val longitude: Double? = null,
+        val locationTimeMs: Long? = null,
+        val naviLimit: Int? = null,
+        val naviLimitAtMs: Long = 0,
+        val mapLimit: Int? = null,
         val sunrise: Int? = null,
         val sunset: Int? = null,
         val modelKey: String? = null,
@@ -153,7 +175,13 @@ class PleosVehicleGateway(
     private var car: Car? = null
     private var navi: NaviHelper? = null
     private var fused: FusedLocation? = null
-    private val speedEstimator = SpeedEstimator()
+    private val track = LocationTrack()
+    private val mapCells = object : LinkedHashMap<Pair<Int, Int>, List<RoadWay>>(32, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Pair<Int, Int>, List<RoadWay>>?) = size > 48
+    }
+    private val mapFailedAt = mutableMapOf<Pair<Int, Int>, Long>()
+    private var mapInFlight: Pair<Int, Int>? = null
+    private var mapLastRequestMs = 0L
     private val unregister = mutableListOf<() -> Unit>()
     private var started = false
 
@@ -502,6 +530,13 @@ class PleosVehicleGateway(
         override fun onRouteCancelled() {
             remaining.value = null
         }
+        override fun onCurrentRoadSpeedLimit(speedLimit: Int) {
+            // 에뮬레이터는 늘 0(실측). 0보다 클 때만 쓴다.
+            val v = speedLimit.takeIf { it > 0 }
+            if (v != raw.naviLimit) log("sig navi speedLimit=$speedLimit")
+            synchronized(lock) { raw = raw.copy(naviLimit = v, naviLimitAtMs = SystemClock.elapsedRealtime()) }
+            if (v != null) publish()
+        }
         override fun onTBTInfo(tbtInfo: List<TBTInfo>) {
             tbtInfo.firstOrNull { it.type == TurnType.TURN_ENTER_SERVICEAREA || it.type == TurnType.TURN_RESTAREA }
                 ?.let { log("sig navi nextRestArea=${it.distance}m") }
@@ -549,11 +584,76 @@ class PleosVehicleGateway(
         val cal = Calendar.getInstance()
         val offset = TimeZone.getDefault().getOffset(cal.timeInMillis) / 60_000
         val sun = SolarTimes.sunriseSunset(loc.latitude, loc.longitude, cal.get(Calendar.DAY_OF_YEAR), offset)
-        val speed = speedEstimator.add(loc.latitude, loc.longitude, loc.timestampMillis.takeIf { it > 0 } ?: System.currentTimeMillis())
+        val t = loc.timestampMillis.takeIf { it > 0 } ?: System.currentTimeMillis()
+        val (speed, heading) = synchronized(lock) {
+            track.add(loc.latitude, loc.longitude, t)
+            track.speedKmh() to track.headingDeg()
+        }
         val changedSun = sun?.first != raw.sunrise || sun?.second != raw.sunset
         if (changedSun) log("sig sun rise=${sun?.first} set=${sun?.second}")
-        synchronized(lock) { raw = raw.copy(sunrise = sun?.first, sunset = sun?.second, locationSpeedKmh = speed) }
+        val mapLimit = if (config.useMapSpeedLimit) mapLimitAt(loc.latitude, loc.longitude, heading) else null
+        if (mapLimit != raw.mapLimit) log("sig map speedLimit=$mapLimit")
+        synchronized(lock) {
+            raw = raw.copy(
+                sunrise = sun?.first, sunset = sun?.second, locationSpeedKmh = speed,
+                latitude = loc.latitude, longitude = loc.longitude, locationTimeMs = t, mapLimit = mapLimit,
+            )
+        }
         publish()
+    }
+
+    // ---------- 지도 제한속도: OpenStreetMap Overpass, 격자 칸 단위 캐시 ----------
+
+    /** 캐시한 칸의 도로로 제한속도를 고르고, 지금 칸이 없으면 드물게 한 번 묻는다. 모르면 null(판정 안 함). */
+    private fun mapLimitAt(lat: Double, lon: Double, heading: Double?): Int? {
+        val cell = RoadSpeedLimits.cellOf(lat, lon, config.mapCellDeg)
+        val ways = synchronized(mapCells) {
+            (-1..1).flatMap { dy -> (-1..1).flatMap { dx -> mapCells[(cell.first + dy) to (cell.second + dx)].orEmpty() } }
+        }
+        val known = synchronized(mapCells) { mapCells.containsKey(cell) }
+        if (!known) requestMapCell(cell)
+        return RoadSpeedLimits.match(lat, lon, heading, ways)?.limitKmh
+    }
+
+    private fun requestMapCell(cell: Pair<Int, Int>) {
+        val now = SystemClock.elapsedRealtime()
+        if (mapInFlight != null || now - mapLastRequestMs < config.mapMinIntervalMs) return
+        if (mapFailedAt[cell]?.let { now - it < config.mapRetryMs } == true) return
+        mapInFlight = cell
+        mapLastRequestMs = now
+        scope.launch(Dispatchers.IO) {
+            val t0 = SystemClock.elapsedRealtime()
+            val query = RoadSpeedLimits.overpassQuery(RoadSpeedLimits.bboxOf(cell, config.mapCellDeg))
+            val result = runCatching { postOverpass(query) }
+            result.onSuccess { body ->
+                val ways = RoadSpeedLimits.parseOverpassWays(body)
+                synchronized(mapCells) { mapCells[cell] = ways }
+                log("map cell=$cell ways=${ways.size} bytes=${body.length} took=${SystemClock.elapsedRealtime() - t0}ms")
+            }.onFailure {
+                mapFailedAt[cell] = SystemClock.elapsedRealtime()
+                log("FAIL map cell=$cell ${it.javaClass.simpleName}: ${it.message}")
+            }
+            mapInFlight = null
+        }
+    }
+
+    /** 보내는 것은 칸의 경계 좌표뿐이다. 계정·키·기기 정보는 보내지 않는다. */
+    private fun postOverpass(query: String): String {
+        val conn = java.net.URL(config.overpassUrl).openConnection() as java.net.HttpURLConnection
+        try {
+            conn.requestMethod = "POST"
+            conn.connectTimeout = config.mapTimeoutMs
+            conn.readTimeout = config.mapTimeoutMs
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+            conn.setRequestProperty("User-Agent", "SideSeat/1.0")
+            conn.outputStream.use { it.write(("data=" + java.net.URLEncoder.encode(query, "UTF-8")).toByteArray()) }
+            val code = conn.responseCode
+            if (code != 200) error("HTTP $code")
+            return conn.inputStream.bufferedReader().use { it.readText() }
+        } finally {
+            conn.disconnect()
+        }
     }
 
     // ---------- 실내 조명 ----------
@@ -655,6 +755,8 @@ class PleosVehicleGateway(
         }
         val now = SystemClock.elapsedRealtime()
         val turn = turnResolver.resolve(r.turnApi, now)
+        val navi = r.naviLimit?.takeIf { now - r.naviLimitAtMs <= config.naviLimitFreshMs }
+        val limit = navi?.let { it to SpeedLimitSource.NAVI } ?: r.mapLimit?.let { it to SpeedLimitSource.MAP }
         val defrost = if (r.defroster == null && r.maxDefrost == null) null else r.defroster == true || r.maxDefrost == true
         val windows = r.windows
         val next = VehicleState(
@@ -678,6 +780,11 @@ class PleosVehicleGateway(
             parkingBrakeOn = inputs.parkingBrakeOn,
             activeTelltales = r.telltales.filterValues { it.first }.mapValues { it.value.second },
             speedKmhEstimate = r.locationSpeedKmh,
+            latitude = r.latitude,
+            longitude = r.longitude,
+            locationTimeMs = r.locationTimeMs,
+            speedLimitKmh = limit?.first,
+            speedLimitSource = limit?.second,
             minuteOfDay = nowMinute(),
             sunsetMinute = r.sunset,
             sunriseMinute = r.sunrise,

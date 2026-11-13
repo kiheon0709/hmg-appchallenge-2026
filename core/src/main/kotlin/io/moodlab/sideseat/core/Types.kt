@@ -9,6 +9,8 @@ enum class WiperLevel { OFF, MIST, INTERMITTENT, LOW, HIGH }
 
 enum class TurnSignal { OFF, LEFT, RIGHT, HAZARD }
 
+enum class SpeedLimitSource { NAVI, MAP }
+
 enum class TelltaleColor { WHITE, GREEN, BLUE, YELLOW, RED, GRAY }
 
 enum class Seat { DRIVER, PASSENGER, REAR_LEFT, REAR_CENTER, REAR_RIGHT }
@@ -41,8 +43,16 @@ data class VehicleState(
     val parkingBrakeOn: Boolean? = null,
     /** 키는 SDK TelltaleType 이름(예: "TIRE_PRESSURE", "PARKING_BRAKE"). */
     val activeTelltales: Map<String, TelltaleColor> = emptyMap(),
-    /** FusedLocation 기반 추정. */
+    /** FusedLocation 좌표로 계산한 속도(최근 3초 중앙값). */
     val speedKmhEstimate: Float? = null,
+    /** FusedLocation 좌표(명세 6.4). 모르면 null. */
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    /** 좌표를 받은 시각. 같은 좌표를 두 번 세지 않도록 쓴다. */
+    val locationTimeMs: Long? = null,
+    /** 지금 도로의 제한속도. 내비 값이 있으면 그것, 없으면 지도(OSM) 값. 둘 다 없으면 null → 과속 판정 안 함. */
+    val speedLimitKmh: Int? = null,
+    val speedLimitSource: SpeedLimitSource? = null,
     /** 현지 시각(0~1439분). */
     val minuteOfDay: Int = 0,
     val sunsetMinute: Int? = null,
@@ -235,6 +245,14 @@ data class DriveSummary(
     val suggestedSituation: SituationId?,
     /** LLM 없이도 읽을 3문장. */
     val ruleBasedReview: List<String>,
+    /** 과속 구간 수(제한 +10km/h를 5초 넘게). 말하지 않은 것도 센다(명세 6.4). */
+    val speedingCount: Int = 0,
+    /** 가장 길었던 과속 구간(초). */
+    val longestSpeedingSec: Int = 0,
+    /** 어린이 보호구역 통과 수. */
+    val schoolZonePasses: Int = 0,
+    /** 보호구역 안에서의 최고 속도(km/h). 통과가 없거나 속도를 모르면 null. */
+    val schoolZoneMaxKmh: Int? = null,
 )
 
 // ---------- 미니게임 ----------

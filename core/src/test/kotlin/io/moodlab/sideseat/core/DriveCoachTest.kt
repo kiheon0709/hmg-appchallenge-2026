@@ -328,4 +328,130 @@ class DriveCoachTest {
         d.run(3 * min + 1_000)
         assertEquals(2, d.said.size)
     }
+
+    // ---------- 위치 연계(명세 6.4) ----------
+
+    private val zoneLat = 37.4200
+    private val zoneLon = 127.0947
+    private val zones = SchoolZoneIndex(listOf(SchoolZone("z1", "시흥초등학교", zoneLat, zoneLon)))
+
+    /** 남쪽 [startM]에서 북쪽으로 [kmh]로 1초마다 좌표를 넣는다. */
+    private class GeoDrive(val coach: DriveCoach, base: VehicleState, startM: Double, val lat0: Double, val lon: Double) {
+        var now = 0L
+        var posM = startM
+        var state = base
+        val said = mutableListOf<CoachUtterance>()
+
+        init {
+            coach.onDriveStart(0)
+        }
+
+        fun drive(seconds: Int, kmh: Double, limit: Int? = null) {
+            repeat(seconds) {
+                now += 1_000
+                posM += kmh / 3.6
+                state = state.copy(
+                    latitude = lat0 + posM / M_PER_DEG_LAT, longitude = lon, locationTimeMs = now,
+                    speedLimitKmh = limit ?: state.speedLimitKmh, timestampMs = now,
+                )
+                coach.tick(state, now)?.let { said += it }
+            }
+        }
+    }
+
+    private fun geo(startM: Double = -1_000.0, config: CoachConfig = CoachConfig()) =
+        GeoDrive(DefaultDriveCoach(config, zones), day, startM, zoneLat, zoneLon)
+
+    @Test
+    fun `location numbers follow the spec`() {
+        val c = CoachConfig()
+        assertEquals(10f, c.k12OverKmh)
+        assertEquals(5_000, c.k12HoldMs)
+        assertEquals(3 * min, c.k12CooldownMs)
+        assertEquals(300, SchoolZone("a", "a", 0.0, 0.0).radiusM)
+        assertEquals(30, SchoolZone("a", "a", 0.0, 0.0).limitKmh)
+    }
+
+    @Test
+    fun `K11 on entering a school zone, once per zone, wording by speed`() {
+        val fast = geo()
+        fast.drive(60, 45.0) // 남쪽 1km에서 45km/h → 약 700m 지점에서 반경 300m 진입
+        val k11 = fast.said.filter { it.ruleId == "K11" }
+        assertEquals(1, k11.size)
+        assertEquals("어린이 보호구역이에요. 30 아래로 가요.", k11[0].text)
+        assertTrue(k11[0].urgent)
+        // 구역을 지나 나갔다가 되돌아와 같은 구역에 다시 들어와도 다시 말하지 않는다(통과 수는 센다)
+        fast.drive(60, 45.0)
+        fast.drive(90, -25.0)
+        assertEquals(1, fast.said.count { it.ruleId == "K11" })
+        val s = fast.coach.onDriveEnd(fast.now)
+        assertEquals(2, s.schoolZonePasses)
+        assertEquals(45, s.schoolZoneMaxKmh)
+
+        val slow = geo()
+        slow.drive(150, 25.0)
+        assertEquals("어린이 보호구역이에요.", slow.said.single { it.ruleId == "K11" }.text)
+    }
+
+    @Test
+    fun `K11 and K12 are outside the 30 minute quota`() {
+        // 말수 제한을 다 쓴 뒤에도 보호구역 안내는 나온다
+        val c = CoachConfig(maxUtterancesPerWindow = 0)
+        val d = GeoDrive(DefaultDriveCoach(c, zones), day.copy(highBeamOn = true), -1_000.0, zoneLat, zoneLon)
+        d.drive(240, 15.0)
+        assertEquals(listOf("K11"), d.said.map { it.ruleId })
+    }
+
+    @Test
+    fun `K12 after five seconds over limit plus ten, then every three minutes`() {
+        val d = geo(startM = -50_000.0) // 보호구역에서 멀리
+        d.drive(10, 68.0, limit = 60) // +8 → 아님
+        assertTrue(d.said.isEmpty())
+        d.drive(4, 75.0) // 속도가 중앙값으로 올라가는 데 1~2초, 5초 미만
+        assertTrue(d.said.isEmpty())
+        d.drive(4, 75.0)
+        assertEquals("제한속도가 60이에요. 조금 줄여요.", d.said.single().text)
+        assertEquals(false, d.said.single().urgent)
+        d.drive(120, 75.0)
+        assertEquals(1, d.said.size, "3분 안에는 다시 말하지 않는다")
+        d.drive(70, 75.0)
+        assertEquals(2, d.said.size)
+        // 제한속도를 모르면 판정하지 않는다
+        val unknown = geo(startM = -50_000.0)
+        unknown.drive(60, 120.0)
+        assertTrue(unknown.said.isEmpty())
+    }
+
+    @Test
+    fun `K12 can be turned off but is still counted for the review`() {
+        val d = geo(-50_000.0, CoachConfig(disabledRules = setOf("K07", "K10", "K12")))
+        d.drive(20, 80.0, limit = 50)
+        d.drive(20, 40.0)
+        d.drive(9, 80.0)
+        d.drive(10, 40.0)
+        assertTrue(d.said.isEmpty())
+        val s = d.coach.onDriveEnd(d.now)
+        assertEquals(2, s.speedingCount)
+        assertTrue(s.longestSpeedingSec in 17..20, "longest=${s.longestSpeedingSec}")
+        assertEquals("과속이 2번 있었어요. 가장 길게 ${s.longestSpeedingSec}초예요. 제한속도를 한 번 더 봐요.", s.ruleBasedReview[1])
+    }
+
+    @Test
+    fun `school zone uses its own 30 limit for speeding and review`() {
+        val d = geo()
+        d.drive(90, 40.0, limit = 60) // 도로 제한 60이어도 구역 안에서는 30 기준 → 40 = +10, 넘지 않음
+        d.drive(30, 45.0)
+        val s = d.coach.onDriveEnd(d.now)
+        assertTrue(d.said.any { it.ruleId == "K12" && it.text == "제한속도가 30이에요. 조금 줄여요." })
+        assertEquals("어린이 보호구역에서 최고 45km/h였어요. 다음엔 30 아래로 지나가요.", s.ruleBasedReview[1])
+    }
+
+    @Test
+    fun `slow pass through a school zone is praised`() {
+        val d = geo()
+        d.drive(200, 25.0)
+        val s = d.coach.onDriveEnd(d.now)
+        assertEquals(1, s.schoolZonePasses)
+        assertEquals("어린이 보호구역 1곳을 천천히 지났어요.", s.ruleBasedReview[0])
+    }
 }

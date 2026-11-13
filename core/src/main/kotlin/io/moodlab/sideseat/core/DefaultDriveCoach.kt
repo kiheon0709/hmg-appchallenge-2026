@@ -34,8 +34,21 @@ data class CoachConfig(
     val defaultSunriseMinute: Int = 6 * 60 + 30,
     /** 두 신호 사이 시간이 이보다 길면 끊긴 것으로 보고 누적하지 않는다. */
     val maxTickGapMs: Long = 5_000,
-    /** 끈 규칙. 안개등·경고등은 일반 앱이 읽을 수 없어 기본으로 끈다(명세 6.2 실측 반영). */
+    /**
+     * 끈 규칙. 안개등·경고등은 일반 앱이 읽을 수 없어 기본으로 끈다(명세 6.2 실측 반영).
+     * 순정 내비가 제한속도를 말하는 실차에서는 "K12"를 넣어 과속 안내를 끈다(명세 6.4).
+     */
     val disabledRules: Set<String> = setOf("K07", "K10"),
+    /** K11: 구역 반경을 이만큼 더 벗어나야 나간 것으로 본다(경계에서 GPS가 흔들려도 한 번만 세려고). */
+    val k11ExitMarginM: Double = 50.0,
+    /** K12: 제한속도보다 이만큼 넘게. */
+    val k12OverKmh: Float = 10f,
+    /** K12: 이 시간 넘게 이어지면. */
+    val k12HoldMs: Long = 5_000,
+    /** K12: 다시 말하기까지. */
+    val k12CooldownMs: Long = 3 * MIN,
+    /** 과속이 이 시간 넘게 풀려 있으면 한 구간이 끝난 것으로 본다. */
+    val speedingEndMs: Long = 3_000,
 ) {
     companion object {
         const val MIN = 60_000L
@@ -48,15 +61,20 @@ data class CoachConfig(
  */
 class DefaultDriveCoach(
     private val config: CoachConfig = CoachConfig(),
+    /** 어린이 보호구역(K11). 앱이 assets/zones에서 읽어 넘긴다. */
+    private val zones: SchoolZoneIndex = SchoolZoneIndex.EMPTY,
     private val practiced: () -> Set<SituationId> = { emptySet() },
 ) : DriveCoach {
 
-    private class Rule(val id: String, val safety: Boolean, val urgent: Boolean)
+    /** @param exempt 30분당 말수 제한·말 간격에서 빼고, 자기 규칙(구역당 1번, 3분에 1번)으로만 제한한다. */
+    private class Rule(val id: String, val safety: Boolean, val urgent: Boolean, val exempt: Boolean = false)
 
     private val rules = listOf(
         Rule("K10", safety = true, urgent = true),
+        Rule("K11", safety = true, urgent = true, exempt = true),
         Rule("K01", safety = true, urgent = true),
         Rule("K02", safety = true, urgent = true),
+        Rule("K12", safety = true, urgent = false, exempt = true),
         Rule("K05", safety = true, urgent = false),
         Rule("K06", safety = true, urgent = false),
         Rule("K03", safety = false, urgent = false),
@@ -85,6 +103,23 @@ class DefaultDriveCoach(
     private var lastHardBrakeMs: Long? = null
     private var firstTick = true
 
+    // 위치 연계(명세 6.4)
+    private val track = LocationTrack()
+    private var speedKmh: Float? = null
+    private var zone: SchoolZone? = null
+    private var zoneToAnnounce: SchoolZone? = null
+    private val announcedZones = mutableSetOf<String>()
+    private var zonePasses = 0
+    private var zoneMaxKmh: Float? = null
+    private var zoneOverLimit: Pair<Float, Int>? = null
+    private var effectiveLimit: Int? = null
+    private var speedingStart: Long? = null
+    private var lastOverMs = 0L
+    private var speedingCounted = false
+    private var speedingCount = 0
+    private var longestSpeedingMs = 0L
+    private var lastK12Ms: Long? = null
+
     override fun onDriveStart(nowMs: Long) {
         driveStartMs = nowMs
         lastTickMs = null
@@ -105,6 +140,21 @@ class DefaultDriveCoach(
         speedSamples.clear()
         lastHardBrakeMs = null
         firstTick = true
+        track.clear()
+        speedKmh = null
+        zone = null
+        zoneToAnnounce = null
+        announcedZones.clear()
+        zonePasses = 0
+        zoneMaxKmh = null
+        zoneOverLimit = null
+        effectiveLimit = null
+        speedingStart = null
+        lastOverMs = 0
+        speedingCounted = false
+        speedingCount = 0
+        longestSpeedingMs = 0
+        lastK12Ms = null
     }
 
     override fun tick(state: VehicleState, nowMs: Long): CoachUtterance? {
@@ -112,6 +162,7 @@ class DefaultDriveCoach(
         lastTickMs = nowMs
         if (state.wiperOn()) rainMs += dt
         if (isNight(state)) nightMs += dt
+        updateLocation(state, nowMs)
         observe(state, nowMs)
 
         val newTelltale = newWarningTelltale(state)
@@ -123,8 +174,17 @@ class DefaultDriveCoach(
         val u = utter(rule, state, newTelltale)
         if (rule.id == "K10" && newTelltale != null) announcedTelltales += newTelltale.first
         spokenAt.getOrPut(rule.id) { mutableListOf() } += nowMs
-        utteranceTimes += nowMs
-        lastSpokenMs = nowMs
+        when (rule.id) {
+            "K11" -> zoneToAnnounce?.let {
+                announcedZones += it.id
+                zoneToAnnounce = null
+            }
+            "K12" -> lastK12Ms = nowMs
+        }
+        if (!rule.exempt) {
+            utteranceTimes += nowMs
+            lastSpokenMs = nowMs
+        }
         utterances += u
         return u
     }
@@ -148,6 +208,10 @@ class DefaultDriveCoach(
             observations = obs,
             suggestedSituation = suggestion,
             ruleBasedReview = review(durationMin, rainMin, nightMin, obs, suggestion),
+            speedingCount = speedingCount,
+            longestSpeedingSec = (longestSpeedingMs / 1000).toInt(),
+            schoolZonePasses = zonePasses,
+            schoolZoneMaxKmh = zoneMaxKmh?.let { Math.round(it) },
         )
     }
 
@@ -188,12 +252,19 @@ class DefaultDriveCoach(
             "K07" -> lasted("fogOnly", config.k07FogMs)
             "K08" -> driving >= config.k08DrivingMs
             "K10" -> newTelltale != null
+            "K11" -> zoneToAnnounce?.let { it.id !in announcedZones } == true
+            "K12" -> {
+                val start = speedingStart
+                start != null && nowMs - start >= config.k12HoldMs && lastOverMs == nowMs &&
+                    lastK12Ms?.let { nowMs - it >= config.k12CooldownMs } != false
+            }
             else -> false
         }
     }
 
     /** 말수 제한(6.1). 같은 규칙은 한 번, 안전 규칙은 10분 뒤 한 번 더. K10은 경고등마다. */
     private fun canSpeak(rule: Rule, nowMs: Long): Boolean {
+        if (rule.exempt) return true
         val times = spokenAt[rule.id].orEmpty()
         if (rule.id != "K10") {
             val allowed = if (rule.safety) 2 else 1
@@ -219,6 +290,12 @@ class DefaultDriveCoach(
             "K06" -> "깜빡이가 계속 켜져 있어요."
             "K07" -> "안개등이 켜져 있어요. 맑으면 꺼 주세요."
             "K08" -> "두 시간 가까이 달렸어요. 다음 휴게소에서 쉬어 갈까요?"
+            "K11" -> {
+                val limit = zoneToAnnounce?.limitKmh ?: 30
+                val v = speedKmh
+                if (v != null && v <= limit) "어린이 보호구역이에요." else "어린이 보호구역이에요. $limit 아래로 가요."
+            }
+            "K12" -> "제한속도가 ${effectiveLimit}이에요. 조금 줄여요."
             // 경고등 색깔 일반 규칙은 공식 근거가 없어 쓰지 않는다(safety-sources.md 8절).
             "K10" -> if (newTelltale?.first == "TPMS") {
                 "타이어 공기압 경고등이 켜졌어요. 속도를 줄이고 가까운 곳에서 공기압을 확인해 주세요."
@@ -254,6 +331,66 @@ class DefaultDriveCoach(
         return fresh?.let { it.key to it.value }
     }
 
+    // ---------- 위치 연계: 속도, 보호구역, 과속 구간(명세 6.4) ----------
+
+    private fun updateLocation(s: VehicleState, nowMs: Long) {
+        val lat = s.latitude
+        val lon = s.longitude
+        if (lat != null && lon != null) {
+            track.add(lat, lon, s.locationTimeMs ?: nowMs)
+            speedKmh = track.speedKmh()
+        } else {
+            speedKmh = s.speedKmhEstimate
+        }
+        val v = speedKmh
+
+        // 보호구역: 반경 안이면 진입, 반경 + 여유를 벗어나면 나감.
+        if (lat != null && lon != null) {
+            val current = zone
+            if (current != null) {
+                val d = GeoMath.distanceMeters(lat, lon, current.latitude, current.longitude)
+                if (d > current.radiusM + config.k11ExitMarginM) {
+                    zone = null
+                    if (zoneToAnnounce == current) zoneToAnnounce = null
+                }
+            }
+            if (zone == null) {
+                zones.nearestWithin(lat, lon)?.first?.let { z ->
+                    zone = z
+                    zonePasses++
+                    if (z.id !in announcedZones) zoneToAnnounce = z
+                }
+            }
+            zone?.let { z ->
+                if (v != null) {
+                    zoneMaxKmh = maxOf(zoneMaxKmh ?: 0f, v)
+                    if (v > z.limitKmh && (zoneOverLimit?.first ?: 0f) < v) zoneOverLimit = v to z.limitKmh
+                }
+            }
+        }
+
+        // 과속: 보호구역 안이면 구역 제한, 아니면 도로 제한.
+        val limit = zone?.limitKmh ?: s.speedLimitKmh
+        effectiveLimit = limit
+        val over = v != null && limit != null && v > limit + config.k12OverKmh
+        if (over) {
+            if (speedingStart == null) {
+                speedingStart = nowMs
+                speedingCounted = false
+            }
+            lastOverMs = nowMs
+            val start = speedingStart!!
+            if (!speedingCounted && nowMs - start >= config.k12HoldMs) {
+                speedingCounted = true
+                speedingCount++
+            }
+            if (speedingCounted) longestSpeedingMs = maxOf(longestSpeedingMs, nowMs - start)
+        } else if (speedingStart != null && nowMs - lastOverMs >= config.speedingEndMs) {
+            speedingStart = null
+            speedingCounted = false
+        }
+    }
+
     // ---------- 관찰(말하지 않음) ----------
 
     private fun observe(s: VehicleState, nowMs: Long) {
@@ -267,7 +404,7 @@ class DefaultDriveCoach(
                 if (!signalled) count("NO_SIGNAL_TURN")
             }
         }
-        s.speedKmhEstimate?.let { v ->
+        speedKmh?.let { v ->
             speedSamples.addLast(nowMs to v)
             while (speedSamples.isNotEmpty() && nowMs - speedSamples.first().first > config.o2WindowMs) speedSamples.removeFirst()
             val peak = speedSamples.maxOf { it.second }
@@ -305,6 +442,8 @@ class DefaultDriveCoach(
     private fun review(durationMin: Int, rainMin: Int, nightMin: Int, obs: Map<String, Int>, suggestion: SituationId?): List<String> {
         val said = utterances.map { it.ruleId }.toSet()
         val good = when {
+            zonePasses > 0 && zoneOverLimit == null && zoneMaxKmh != null ->
+                "어린이 보호구역 ${zonePasses}곳을 천천히 지났어요."
             rainMin > 0 && "K01" !in said -> "비 오는 길에서도 전조등을 잘 챙겼어요."
             nightMin > 0 && "K02" !in said -> "어두워지자 전조등을 바로 켰어요."
             utterances.isEmpty() -> "오늘은 제가 한 번도 끼어들 일이 없었어요."
@@ -313,6 +452,10 @@ class DefaultDriveCoach(
         val noSignal = obs["NO_SIGNAL_TURN"] ?: 0
         val hardBrake = obs["HARD_BRAKE"] ?: 0
         val fix = when {
+            zoneOverLimit != null -> zoneOverLimit!!.let { (v, limit) ->
+                "어린이 보호구역에서 최고 ${Math.round(v)}km/h였어요. 다음엔 $limit 아래로 지나가요."
+            }
+            speedingCount > 0 -> "과속이 ${speedingCount}번 있었어요. 가장 길게 ${longestSpeedingMs / 1000}초예요. 제한속도를 한 번 더 봐요."
             noSignal > 0 -> "깜빡이 없이 크게 돈 게 ${noSignal}번 있었어요. 돌기 전에 먼저 켜 봐요."
             hardBrake > 0 -> "급하게 밟은 브레이크가 ${hardBrake}번 있었어요. 앞차와 거리를 조금 더 둬 봐요."
             "K01" in said -> "비가 오면 와이퍼와 전조등을 같이 켜는 습관을 들여 봐요."

@@ -2,6 +2,7 @@ package io.moodlab.sideseat.vehicle
 
 import io.moodlab.sideseat.core.AmbientMood
 import io.moodlab.sideseat.core.Seat
+import io.moodlab.sideseat.core.SpeedLimitSource
 import io.moodlab.sideseat.core.TelltaleColor
 import io.moodlab.sideseat.core.TurnSignal
 import io.moodlab.sideseat.core.VehicleState
@@ -120,6 +121,12 @@ class DebugVehicleGateway : VehicleGateway {
         it.copy(activeTelltales = if (color == null) it.activeTelltales - type else it.activeTelltales + (type to color))
     }
     fun setSpeed(kmh: Float?) = update { it.copy(speedKmhEstimate = kmh) }
+
+    /** 위치 한 점(코치가 좌표로 속도·보호구역을 계산한다). */
+    fun setLocation(latitude: Double, longitude: Double, timeMs: Long = System.currentTimeMillis()) =
+        update { it.copy(latitude = latitude, longitude = longitude, locationTimeMs = timeMs) }
+    fun setSpeedLimit(kmh: Int?, source: SpeedLimitSource? = kmh?.let { SpeedLimitSource.MAP }) =
+        update { it.copy(speedLimitKmh = kmh, speedLimitSource = source) }
     fun setMinuteOfDay(minute: Int?) {
         minuteOverride = minute
         update { it }

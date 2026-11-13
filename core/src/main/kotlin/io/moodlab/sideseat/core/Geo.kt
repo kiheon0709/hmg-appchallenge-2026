@@ -2,10 +2,8 @@ package io.moodlab.sideseat.core
 
 import kotlin.math.PI
 import kotlin.math.acos
-import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.sqrt
 import kotlin.math.tan
 
 /** 위치로 일출·일몰 시각을 계산한다(NOAA 근사식, 오차 수 분). K02 "일몰 이후" 판단에 쓴다. */
@@ -30,47 +28,4 @@ object SolarTimes {
     }
 
     private fun wrap(min: Double): Int = ((Math.round(min).toInt() % 1440) + 1440) % 1440
-}
-
-/** 위치 두 점 사이 거리로 속도를 추정한다. 차속은 공개 SDK에 없어서 O2(급감속) 관찰에만 쓴다. */
-class SpeedEstimator(
-    /** 이보다 가까운 두 점은 잡음이 커서 쓰지 않는다. */
-    private val minIntervalMs: Long = 500,
-    /** 이보다 먼 두 점은 끊긴 것으로 본다. */
-    private val maxIntervalMs: Long = 10_000,
-    /** 지수 평활 가중치(새 값 쪽). */
-    private val alpha: Float = 0.6f,
-) {
-    private var last: Triple<Double, Double, Long>? = null
-    private var smoothed: Float? = null
-
-    /** 새 위치를 넣고 추정 속도(km/h)를 돌려준다. 아직 모르면 null. */
-    fun add(latitude: Double, longitude: Double, timestampMs: Long): Float? {
-        val prev = last
-        if (prev == null) {
-            last = Triple(latitude, longitude, timestampMs)
-            return smoothed
-        }
-        val dt = timestampMs - prev.third
-        if (dt < minIntervalMs) return smoothed
-        last = Triple(latitude, longitude, timestampMs)
-        if (dt > maxIntervalMs) {
-            smoothed = null
-            return null
-        }
-        val kmh = (distanceMeters(prev.first, prev.second, latitude, longitude) / (dt / 1000.0) * 3.6).toFloat()
-        smoothed = smoothed?.let { it + alpha * (kmh - it) } ?: kmh
-        return smoothed
-    }
-
-    companion object {
-        fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-            val r = 6_371_000.0
-            val dLat = Math.toRadians(lat2 - lat1)
-            val dLon = Math.toRadians(lon2 - lon1)
-            val a = sin(dLat / 2) * sin(dLat / 2) +
-                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2) * sin(dLon / 2)
-            return 2 * r * asin(sqrt(a))
-        }
-    }
 }
