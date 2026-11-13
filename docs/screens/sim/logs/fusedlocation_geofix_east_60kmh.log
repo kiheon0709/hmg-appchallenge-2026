@@ -1,0 +1,74 @@
+         1794548186.742 22708 22708 I SideSeatMeasure: app debug cmd=loc arg=start
+         1794548186.742 22708 22708 I SideSeatMeasure: loc probe supported=true
+         1794548186.779 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=start
+         1794548186.779 22708 22708 I SideSeatMeasure: navi probe cmd 'start' done
+         1794548186.780 22708 22708 I SideSeatMeasure: navi probe connected
+         1794548187.015 22708 23253 I SideSeatMeasure: t=27895553 navi onCurrentRoadSpeedLimit #161 gap=13999ms 0
+         1794548187.081 22708 23253 I SideSeatMeasure: t=27895619 loc #159 gap=14058ms lat=37.426921666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548187079 calcKmh=17.0
+         1794548188.020 22708 23238 I SideSeatMeasure: t=27896558 navi onCurrentRoadSpeedLimit #162 gap=1005ms 0
+         1794548188.085 22708 23238 I SideSeatMeasure: t=27896624 loc #160 gap=1005ms lat=37.426921666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548188084 calcKmh=0.0
+         1794548189.007 22708 23238 I SideSeatMeasure: t=27897546 navi onCurrentRoadSpeedLimit #163 gap=988ms 0
+         1794548189.086 22708 23238 I SideSeatMeasure: t=27897624 loc #161 gap=1000ms lat=37.426298333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548189085 calcKmh=248.8
+         1794548190.008 22708 23253 I SideSeatMeasure: t=27898547 navi onCurrentRoadSpeedLimit #164 gap=1001ms 0
+         1794548190.090 22708 23253 I SideSeatMeasure: t=27898628 loc #162 gap=1004ms lat=37.426298333333335 lon=127.09488833333333 alt=0.0 heading=0.0 conf=5.0 ts=1794548190087 calcKmh=59.9
+         1794548191.019 22708 23238 I SideSeatMeasure: t=27899558 navi onCurrentRoadSpeedLimit #165 gap=1011ms 0
+         1794548191.094 22708 23238 I SideSeatMeasure: t=27899632 loc #163 gap=1004ms lat=37.426298333333335 lon=127.09507666666667 alt=0.0 heading=0.0 conf=5.0 ts=1794548191092 calcKmh=59.7
+         1794548192.005 22708 23253 I SideSeatMeasure: t=27900544 navi onCurrentRoadSpeedLimit #166 gap=986ms 0
+         1794548192.097 22708 23253 I SideSeatMeasure: t=27900636 loc #164 gap=1004ms lat=37.426298333333335 lon=127.095265 alt=0.0 heading=0.0 conf=5.0 ts=1794548192096 calcKmh=59.8
+         1794548193.008 22708 23253 I SideSeatMeasure: t=27901546 navi onCurrentRoadSpeedLimit #167 gap=1002ms 0
+         1794548193.099 22708 23253 I SideSeatMeasure: t=27901638 loc #165 gap=1002ms lat=37.426298333333335 lon=127.09545333333334 alt=0.0 heading=0.0 conf=5.0 ts=1794548193097 calcKmh=60.0
+         1794548194.008 22708 23253 I SideSeatMeasure: t=27902546 navi onCurrentRoadSpeedLimit #168 gap=1000ms 0
+         1794548194.100 22708 23253 I SideSeatMeasure: t=27902639 loc #166 gap=1001ms lat=37.426298333333335 lon=127.09564166666667 alt=0.0 heading=0.0 conf=5.0 ts=1794548194098 calcKmh=60.0
+         1794548195.010 22708 23238 I SideSeatMeasure: t=27903549 navi onCurrentRoadSpeedLimit #169 gap=1003ms 0
+         1794548195.103 22708 23238 I SideSeatMeasure: t=27903641 loc #167 gap=1002ms lat=37.426298333333335 lon=127.09583 alt=0.0 heading=0.0 conf=5.0 ts=1794548195102 calcKmh=59.8
+         1794548196.017 22708 23253 I SideSeatMeasure: t=27904555 navi onCurrentRoadSpeedLimit #170 gap=1006ms 0
+         1794548196.107 22708 23253 I SideSeatMeasure: t=27904645 loc #168 gap=1004ms lat=37.426298333333335 lon=127.09583 alt=0.0 heading=0.0 conf=5.0 ts=1794548196105 calcKmh=0.0
+         1794548197.002 22708 23238 I SideSeatMeasure: t=27905541 navi onCurrentRoadSpeedLimit #171 gap=986ms 0
+         1794548197.112 22708 23238 I SideSeatMeasure: t=27905650 loc #169 gap=1005ms lat=37.426298333333335 lon=127.09601833333333 alt=0.0 heading=0.0 conf=5.0 ts=1794548197110 calcKmh=59.7
+         1794548198.010 22708 23253 I SideSeatMeasure: t=27906548 navi onCurrentRoadSpeedLimit #172 gap=1007ms 0
+         1794548198.115 22708 23253 I SideSeatMeasure: t=27906653 loc #170 gap=1003ms lat=37.426298333333335 lon=127.09620833333334 alt=0.0 heading=0.0 conf=5.0 ts=1794548198113 calcKmh=60.4
+         1794548199.012 22708 23238 I SideSeatMeasure: t=27907550 navi onCurrentRoadSpeedLimit #173 gap=1002ms 0
+         1794548199.119 22708 23238 I SideSeatMeasure: t=27907658 loc #171 gap=1005ms lat=37.426298333333335 lon=127.09639666666666 alt=0.0 heading=0.0 conf=5.0 ts=1794548199117 calcKmh=59.8
+         1794548199.275 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=get
+         1794548199.276 22708 22708 I SideSeatMeasure: navi probe cmd 'get' done
+         1794548199.290 22708 23237 I SideSeatMeasure: t=27907828 navi onCurrentLocationInfo #1 gap=-ms CurrentLocationInfo(latitude=37.4127212, longitude=127.094681, heading=0.0, address=수정구 시흥동, routeId=, currentRouteIndex=0)
+         1794548199.300 22708 23237 I SideSeatMeasure: t=27907839 navi onTBTInfo #1 gap=-ms []
+         1794548199.305 22708 23053 I SideSeatMeasure: t=27907844 navi onDestinationInfo #1 gap=-ms DestinationInfo(latitude=0.0, longitude=0.0, displayLatitude=null, displayLongitude=null, name=, address=, remainDistance=0, remainTime=0, tollFare=0, poiId=, poiSubId=null, poiProvider=)
+         1794548199.313 22708 23053 I SideSeatMeasure: t=27907850 navi onRouteStateInfo #1 gap=-ms RouteStateInfo(termsAgreement=true, naviMode=SAFE_GUIDING, isRouting=false, routeOption=RECOMMENDED, remainDestinationChargingInt=0, remainWaypointChargingInt=[0, 0], trafficStatus=TrafficStatus(summary=TrafficCongestionSummary(totalCongestionDist=1300.0, totalCongestionTime=240, totalCongestionAvrSpeed=17.44214808541092), congestionItemList=[TrafficCongestionInfo(offset=400.0, distance=100.0, trafficCongestionTime=60, trafficCongestionType=HEAVY, avrSpeed=30.09080035800002, roadName=대왕판교로, startCrossName=, endCrossName=금토동삼거리), TrafficCongestionInfo(offset=500.0, distance=100.0, trafficConges
+         1794548200.006 22708 23053 I SideSeatMeasure: t=27908544 navi onCurrentRoadSpeedLimit #174 gap=994ms 0
+         1794548200.120 22708 23053 I SideSeatMeasure: t=27908658 loc #172 gap=1000ms lat=37.426298333333335 lon=127.096585 alt=0.0 heading=0.0 conf=5.0 ts=1794548200118 calcKmh=60.0
+         1794548201.011 22708 23073 I SideSeatMeasure: t=27909550 navi onCurrentRoadSpeedLimit #175 gap=1006ms 0
+         1794548201.123 22708 23073 I SideSeatMeasure: t=27909662 loc #173 gap=1004ms lat=37.426298333333335 lon=127.09677333333333 alt=0.0 heading=0.0 conf=5.0 ts=1794548201122 calcKmh=59.8
+         1794548202.015 22708 23073 I SideSeatMeasure: t=27910553 navi onCurrentRoadSpeedLimit #176 gap=1003ms 0
+         1794548202.126 22708 23073 I SideSeatMeasure: t=27910664 loc #174 gap=1002ms lat=37.426298333333335 lon=127.09696166666667 alt=0.0 heading=0.0 conf=5.0 ts=1794548202125 calcKmh=59.8
+         1794548203.018 22708 23073 I SideSeatMeasure: t=27911557 navi onCurrentRoadSpeedLimit #177 gap=1004ms 0
+         1794548203.130 22708 23073 I SideSeatMeasure: t=27911669 loc #175 gap=1005ms lat=37.426298333333335 lon=127.09715 alt=0.0 heading=0.0 conf=5.0 ts=1794548203129 calcKmh=59.8
+         1794548204.020 22708 23053 I SideSeatMeasure: t=27912559 navi onCurrentRoadSpeedLimit #178 gap=1002ms 0
+         1794548204.135 22708 23053 I SideSeatMeasure: t=27912674 loc #176 gap=1005ms lat=37.426298333333335 lon=127.09733833333334 alt=0.0 heading=0.0 conf=5.0 ts=1794548204134 calcKmh=59.7
+         1794548205.002 22708 23073 I SideSeatMeasure: t=27913540 navi onCurrentRoadSpeedLimit #179 gap=981ms 0
+         1794548205.141 22708 23073 I SideSeatMeasure: t=27913679 loc #177 gap=1005ms lat=37.426298333333335 lon=127.09752833333333 alt=0.0 heading=0.0 conf=5.0 ts=1794548205139 calcKmh=60.2
+         1794548206.007 22708 23073 I SideSeatMeasure: t=27914545 navi onCurrentRoadSpeedLimit #180 gap=1005ms 0
+         1794548206.147 22708 23073 I SideSeatMeasure: t=27914685 loc #178 gap=1006ms lat=37.426298333333335 lon=127.09771666666667 alt=0.0 heading=0.0 conf=5.0 ts=1794548206143 calcKmh=59.8
+         1794548207.008 22708 23053 I SideSeatMeasure: t=27915547 navi onCurrentRoadSpeedLimit #181 gap=1002ms 0
+         1794548207.148 22708 23053 I SideSeatMeasure: t=27915687 loc #179 gap=1002ms lat=37.426298333333335 lon=127.097905 alt=0.0 heading=0.0 conf=5.0 ts=1794548207147 calcKmh=59.8
+         1794548208.015 22708 23073 I SideSeatMeasure: t=27916553 navi onCurrentRoadSpeedLimit #182 gap=1006ms 0
+         1794548208.151 22708 23073 I SideSeatMeasure: t=27916690 loc #180 gap=1003ms lat=37.426298333333335 lon=127.09809333333334 alt=0.0 heading=0.0 conf=5.0 ts=1794548208150 calcKmh=59.8
+         1794548209.021 22708 23053 I SideSeatMeasure: t=27917560 navi onCurrentRoadSpeedLimit #183 gap=1007ms 0
+         1794548209.157 22708 23053 I SideSeatMeasure: t=27917695 loc #181 gap=1005ms lat=37.426298333333335 lon=127.09828166666667 alt=0.0 heading=0.0 conf=5.0 ts=1794548209155 calcKmh=59.7
+         1794548210.006 22708 23053 I SideSeatMeasure: t=27918544 navi onCurrentRoadSpeedLimit #184 gap=984ms 0
+         1794548210.162 22708 23053 I SideSeatMeasure: t=27918700 loc #182 gap=1005ms lat=37.426298333333335 lon=127.09847 alt=0.0 heading=0.0 conf=5.0 ts=1794548210160 calcKmh=59.7
+         1794548210.754 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=get
+         1794548210.754 22708 22708 I SideSeatMeasure: navi probe cmd 'get' done
+         1794548210.763 22708 23237 I SideSeatMeasure: t=27919301 navi onRouteStateInfo #2 gap=11451ms RouteStateInfo(termsAgreement=true, naviMode=SAFE_GUIDING, isRouting=false, routeOption=RECOMMENDED, remainDestinationChargingInt=0, remainWaypointChargingInt=[0, 0], trafficStatus=TrafficStatus(summary=TrafficCongestionSummary(totalCongestionDist=1300.0, totalCongestionTime=240, totalCongestionAvrSpeed=17.44214808541092), congestionItemList=[TrafficCongestionInfo(offset=400.0, distance=100.0, trafficCongestionTime=60, trafficCongestionType=HEAVY, avrSpeed=30.09080035800002, roadName=대왕판교로, startCrossName=, endCrossName=금토동삼거리), TrafficCongestionInfo(offset=500.0, distance=100.0, trafficConges
+         1794548210.764 22708 23238 I SideSeatMeasure: t=27919302 navi onCurrentLocationInfo #2 gap=11474ms CurrentLocationInfo(latitude=37.4127212, longitude=127.094681, heading=0.0, address=수정구 시흥동, routeId=, currentRouteIndex=0)
+         1794548210.768 22708 23073 I SideSeatMeasure: t=27919306 navi onTBTInfo #2 gap=11467ms []
+         1794548210.768 22708 23073 I SideSeatMeasure: t=27919307 navi onDestinationInfo #2 gap=11463ms DestinationInfo(latitude=0.0, longitude=0.0, displayLatitude=null, displayLongitude=null, name=, address=, remainDistance=0, remainTime=0, tollFare=0, poiId=, poiSubId=null, poiProvider=)
+         1794548211.014 22708 23073 I SideSeatMeasure: t=27919552 navi onCurrentRoadSpeedLimit #185 gap=1008ms 0
+         1794548211.166 22708 23073 I SideSeatMeasure: t=27919704 loc #183 gap=1004ms lat=37.426298333333335 lon=127.09847 alt=0.0 heading=0.0 conf=5.0 ts=1794548211164 calcKmh=0.0
+         1794548212.002 22708 23073 I SideSeatMeasure: t=27920541 navi onCurrentRoadSpeedLimit #186 gap=989ms 0
+         1794548212.174 22708 23073 I SideSeatMeasure: t=27920712 loc #184 gap=1008ms lat=37.426298333333335 lon=127.09847 alt=0.0 heading=0.0 conf=5.0 ts=1794548212169 calcKmh=0.0
+         1794548212.798 22708 22708 I SideSeatMeasure: app debug cmd=loc arg=stop
+         1794548212.799 22708 22708 I SideSeatMeasure: loc probe count=184
+         1794548212.832 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=stop
+         1794548212.834 22708 22708 I SideSeatMeasure: navi probe counts={onCurrentRoadSpeedLimit=186, onCurrentLocationInfo=2, onTBTInfo=2, onDestinationInfo=2, onRouteStateInfo=2}
+         1794548212.834 22708 22708 I SideSeatMeasure: navi probe cmd 'stop' done

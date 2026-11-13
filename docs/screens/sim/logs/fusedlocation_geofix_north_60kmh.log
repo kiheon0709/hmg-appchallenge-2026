@@ -1,0 +1,328 @@
+         1794548013.099 22708 22708 I SideSeatMeasure: app debug cmd=loc arg=start
+         1794548013.100 22708 22708 I SideSeatMeasure: loc probe supported=true
+         1794548013.133 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=start
+         1794548013.134 22708 22708 I SideSeatMeasure: navi probe cmd 'start' done
+         1794548013.135 22708 22708 I SideSeatMeasure: navi probe connected
+         1794548013.543 22708 23253 I SideSeatMeasure: t=27722081 loc #1 gap=-ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548013542 calcKmh=-
+         1794548014.007 22708 23238 I SideSeatMeasure: t=27722545 navi onCurrentRoadSpeedLimit #1 gap=-ms 0
+         1794548014.547 22708 23238 I SideSeatMeasure: t=27723085 loc #2 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548014545 calcKmh=0.0
+         1794548015.011 22708 23253 I SideSeatMeasure: t=27723549 navi onCurrentRoadSpeedLimit #2 gap=1004ms 0
+         1794548015.551 22708 23253 I SideSeatMeasure: t=27724090 loc #3 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548015550 calcKmh=0.0
+         1794548016.017 22708 23253 I SideSeatMeasure: t=27724556 navi onCurrentRoadSpeedLimit #3 gap=1007ms 0
+         1794548016.554 22708 23253 I SideSeatMeasure: t=27725092 loc #4 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548016553 calcKmh=0.0
+         1794548017.021 22708 23253 I SideSeatMeasure: t=27725559 navi onCurrentRoadSpeedLimit #4 gap=1003ms 0
+         1794548017.560 22708 23253 I SideSeatMeasure: t=27726098 loc #5 gap=1006ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548017558 calcKmh=0.0
+         1794548018.007 22708 23253 I SideSeatMeasure: t=27726545 navi onCurrentRoadSpeedLimit #5 gap=986ms 0
+         1794548018.563 22708 23253 I SideSeatMeasure: t=27727101 loc #6 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548018561 calcKmh=0.0
+         1794548019.009 22708 23253 I SideSeatMeasure: t=27727547 navi onCurrentRoadSpeedLimit #6 gap=1002ms 0
+         1794548020.013 22708 23253 I SideSeatMeasure: t=27728552 navi onCurrentRoadSpeedLimit #7 gap=1005ms 0
+         1794548020.564 22708 23253 I SideSeatMeasure: t=27729102 loc #7 gap=2001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548020562 calcKmh=0.0
+         1794548021.017 22708 23253 I SideSeatMeasure: t=27729556 navi onCurrentRoadSpeedLimit #8 gap=1004ms 0
+         1794548021.568 22708 23238 I SideSeatMeasure: t=27730106 loc #8 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548021567 calcKmh=0.0
+         1794548022.001 22708 23238 I SideSeatMeasure: t=27730540 navi onCurrentRoadSpeedLimit #9 gap=984ms 0
+         1794548022.572 22708 23238 I SideSeatMeasure: t=27731110 loc #9 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548022570 calcKmh=0.0
+         1794548023.006 22708 23253 I SideSeatMeasure: t=27731544 navi onCurrentRoadSpeedLimit #10 gap=1004ms 0
+         1794548023.572 22708 23253 I SideSeatMeasure: t=27732110 loc #10 gap=1000ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548023570 calcKmh=0.0
+         1794548024.012 22708 23253 I SideSeatMeasure: t=27732550 navi onCurrentRoadSpeedLimit #11 gap=1006ms 0
+         1794548024.578 22708 23253 I SideSeatMeasure: t=27733116 loc #11 gap=1006ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548024575 calcKmh=0.0
+         1794548025.015 22708 23253 I SideSeatMeasure: t=27733554 navi onCurrentRoadSpeedLimit #12 gap=1004ms 0
+         1794548025.582 22708 23253 I SideSeatMeasure: t=27734120 loc #12 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548025580 calcKmh=0.0
+         1794548026.017 22708 23253 I SideSeatMeasure: t=27734556 navi onCurrentRoadSpeedLimit #13 gap=1002ms 0
+         1794548026.582 22708 23253 I SideSeatMeasure: t=27735120 loc #13 gap=1000ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548026580 calcKmh=0.0
+         1794548027.004 22708 23238 I SideSeatMeasure: t=27735542 navi onCurrentRoadSpeedLimit #14 gap=986ms 0
+         1794548027.586 22708 23238 I SideSeatMeasure: t=27736124 loc #14 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548027584 calcKmh=0.0
+         1794548028.007 22708 23238 I SideSeatMeasure: t=27736545 navi onCurrentRoadSpeedLimit #15 gap=1003ms 0
+         1794548028.590 22708 23238 I SideSeatMeasure: t=27737128 loc #15 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548028588 calcKmh=0.0
+         1794548029.009 22708 23253 I SideSeatMeasure: t=27737547 navi onCurrentRoadSpeedLimit #16 gap=1002ms 0
+         1794548029.595 22708 23253 I SideSeatMeasure: t=27738133 loc #16 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548029594 calcKmh=0.0
+         1794548030.014 22708 23253 I SideSeatMeasure: t=27738552 navi onCurrentRoadSpeedLimit #17 gap=1005ms 0
+         1794548030.599 22708 23253 I SideSeatMeasure: t=27739137 loc #17 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548030597 calcKmh=0.0
+         1794548031.016 22708 23253 I SideSeatMeasure: t=27739554 navi onCurrentRoadSpeedLimit #18 gap=1002ms 0
+         1794548031.601 22708 23253 I SideSeatMeasure: t=27740140 loc #18 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548031600 calcKmh=0.0
+         1794548032.003 22708 23253 I SideSeatMeasure: t=27740541 navi onCurrentRoadSpeedLimit #19 gap=987ms 0
+         1794548032.604 22708 23253 I SideSeatMeasure: t=27741142 loc #19 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548032602 calcKmh=0.0
+         1794548033.008 22708 23253 I SideSeatMeasure: t=27741547 navi onCurrentRoadSpeedLimit #20 gap=1006ms 0
+         1794548033.608 22708 23253 I SideSeatMeasure: t=27742147 loc #20 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548033606 calcKmh=0.0
+         1794548034.012 22708 23253 I SideSeatMeasure: t=27742550 navi onCurrentRoadSpeedLimit #21 gap=1003ms 0
+         1794548034.613 22708 23253 I SideSeatMeasure: t=27743152 loc #21 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548034611 calcKmh=0.0
+         1794548035.017 22708 23253 I SideSeatMeasure: t=27743555 navi onCurrentRoadSpeedLimit #22 gap=1005ms 0
+         1794548035.614 22708 23253 I SideSeatMeasure: t=27744153 loc #22 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548035613 calcKmh=0.0
+         1794548036.020 22708 23253 I SideSeatMeasure: t=27744558 navi onCurrentRoadSpeedLimit #23 gap=1003ms 0
+         1794548036.616 22708 23253 I SideSeatMeasure: t=27745154 loc #23 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548036614 calcKmh=0.0
+         1794548037.001 22708 23253 I SideSeatMeasure: t=27745540 navi onCurrentRoadSpeedLimit #24 gap=982ms 0
+         1794548037.619 22708 23253 I SideSeatMeasure: t=27746157 loc #24 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548037617 calcKmh=0.0
+         1794548038.003 22708 23253 I SideSeatMeasure: t=27746542 navi onCurrentRoadSpeedLimit #25 gap=1002ms 0
+         1794548038.621 22708 23253 I SideSeatMeasure: t=27747160 loc #25 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548038620 calcKmh=0.0
+         1794548039.003 22708 23253 I SideSeatMeasure: t=27747541 navi onCurrentRoadSpeedLimit #26 gap=999ms 0
+         1794548039.629 22708 23253 I SideSeatMeasure: t=27748168 loc #26 gap=1008ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548039625 calcKmh=0.0
+         1794548040.001 22708 23253 I SideSeatMeasure: t=27748540 navi onCurrentRoadSpeedLimit #27 gap=999ms 0
+         1794548040.628 22708 23253 I SideSeatMeasure: t=27749166 loc #27 gap=998ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548040626 calcKmh=0.0
+         1794548041.007 22708 23253 I SideSeatMeasure: t=27749546 navi onCurrentRoadSpeedLimit #28 gap=1006ms 0
+         1794548041.629 22708 23253 I SideSeatMeasure: t=27750167 loc #28 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548041628 calcKmh=0.0
+         1794548042.011 22708 23238 I SideSeatMeasure: t=27750550 navi onCurrentRoadSpeedLimit #29 gap=1004ms 0
+         1794548042.631 22708 23238 I SideSeatMeasure: t=27751169 loc #29 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548042629 calcKmh=0.0
+         1794548043.017 22708 23238 I SideSeatMeasure: t=27751555 navi onCurrentRoadSpeedLimit #30 gap=1005ms 0
+         1794548043.632 22708 23238 I SideSeatMeasure: t=27752170 loc #30 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548043630 calcKmh=0.0
+         1794548044.021 22708 23238 I SideSeatMeasure: t=27752559 navi onCurrentRoadSpeedLimit #31 gap=1004ms 0
+         1794548044.635 22708 23238 I SideSeatMeasure: t=27753173 loc #31 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548044634 calcKmh=0.0
+         1794548045.000 22708 23238 I SideSeatMeasure: t=27753539 navi onCurrentRoadSpeedLimit #32 gap=980ms 0
+         1794548045.637 22708 23238 I SideSeatMeasure: t=27754175 loc #32 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548045635 calcKmh=0.0
+         1794548046.006 22708 23238 I SideSeatMeasure: t=27754544 navi onCurrentRoadSpeedLimit #33 gap=1005ms 0
+         1794548046.642 22708 23238 I SideSeatMeasure: t=27755180 loc #33 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548046641 calcKmh=0.0
+         1794548047.011 22708 23238 I SideSeatMeasure: t=27755550 navi onCurrentRoadSpeedLimit #34 gap=1006ms 0
+         1794548047.647 22708 23238 I SideSeatMeasure: t=27756186 loc #34 gap=1006ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548047645 calcKmh=0.0
+         1794548048.018 22708 23238 I SideSeatMeasure: t=27756557 navi onCurrentRoadSpeedLimit #35 gap=1007ms 0
+         1794548048.651 22708 23238 I SideSeatMeasure: t=27757190 loc #35 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548048650 calcKmh=0.0
+         1794548049.002 22708 23238 I SideSeatMeasure: t=27757540 navi onCurrentRoadSpeedLimit #36 gap=983ms 0
+         1794548049.656 22708 23238 I SideSeatMeasure: t=27758194 loc #36 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548049654 calcKmh=0.0
+         1794548050.009 22708 23238 I SideSeatMeasure: t=27758548 navi onCurrentRoadSpeedLimit #37 gap=1008ms 0
+         1794548050.660 22708 23238 I SideSeatMeasure: t=27759198 loc #37 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548050658 calcKmh=0.0
+         1794548051.001 22708 23238 I SideSeatMeasure: t=27759540 navi onCurrentRoadSpeedLimit #38 gap=992ms 0
+         1794548051.664 22708 23238 I SideSeatMeasure: t=27760202 loc #38 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548051662 calcKmh=0.0
+         1794548052.007 22708 23238 I SideSeatMeasure: t=27760546 navi onCurrentRoadSpeedLimit #39 gap=1006ms 0
+         1794548052.664 22708 23238 I SideSeatMeasure: t=27761203 loc #39 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548052663 calcKmh=0.0
+         1794548053.018 22708 23238 I SideSeatMeasure: t=27761556 navi onCurrentRoadSpeedLimit #40 gap=1010ms 0
+         1794548053.664 22708 23238 I SideSeatMeasure: t=27762203 loc #40 gap=1000ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548053663 calcKmh=0.0
+         1794548054.009 22708 23238 I SideSeatMeasure: t=27762548 navi onCurrentRoadSpeedLimit #41 gap=992ms 0
+         1794548054.668 22708 23238 I SideSeatMeasure: t=27763206 loc #41 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548054666 calcKmh=0.0
+         1794548055.018 22708 23238 I SideSeatMeasure: t=27763557 navi onCurrentRoadSpeedLimit #42 gap=1009ms 0
+         1794548055.670 22708 23238 I SideSeatMeasure: t=27764208 loc #42 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548055668 calcKmh=0.0
+         1794548056.004 22708 23238 I SideSeatMeasure: t=27764543 navi onCurrentRoadSpeedLimit #43 gap=986ms 0
+         1794548056.673 22708 23238 I SideSeatMeasure: t=27765211 loc #43 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548056671 calcKmh=0.0
+         1794548057.011 22708 23253 I SideSeatMeasure: t=27765550 navi onCurrentRoadSpeedLimit #44 gap=1007ms 0
+         1794548057.672 22708 23253 I SideSeatMeasure: t=27766211 loc #44 gap=1000ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548057671 calcKmh=0.0
+         1794548058.001 22708 23253 I SideSeatMeasure: t=27766539 navi onCurrentRoadSpeedLimit #45 gap=989ms 0
+         1794548058.676 22708 23238 I SideSeatMeasure: t=27767214 loc #45 gap=1003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548058673 calcKmh=0.0
+         1794548059.007 22708 23253 I SideSeatMeasure: t=27767545 navi onCurrentRoadSpeedLimit #46 gap=1006ms 0
+         1794548059.680 22708 23253 I SideSeatMeasure: t=27768219 loc #46 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548059678 calcKmh=0.0
+         1794548060.012 22708 23253 I SideSeatMeasure: t=27768550 navi onCurrentRoadSpeedLimit #47 gap=1005ms 0
+         1794548060.684 22708 23253 I SideSeatMeasure: t=27769223 loc #47 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548060683 calcKmh=0.0
+         1794548061.019 22708 23253 I SideSeatMeasure: t=27769558 navi onCurrentRoadSpeedLimit #48 gap=1008ms 0
+         1794548061.687 22708 23253 I SideSeatMeasure: t=27770225 loc #48 gap=1002ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548061685 calcKmh=0.0
+         1794548062.003 22708 23253 I SideSeatMeasure: t=27770541 navi onCurrentRoadSpeedLimit #49 gap=983ms 0
+         1794548062.687 22708 23253 I SideSeatMeasure: t=27771225 loc #49 gap=1000ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548062686 calcKmh=0.0
+         1794548063.007 22708 23253 I SideSeatMeasure: t=27771545 navi onCurrentRoadSpeedLimit #50 gap=1004ms 0
+         1794548063.691 22708 23253 I SideSeatMeasure: t=27772230 loc #50 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548063689 calcKmh=0.0
+         1794548064.018 22708 23253 I SideSeatMeasure: t=27772557 navi onCurrentRoadSpeedLimit #51 gap=1012ms 0
+         1794548064.696 22708 23253 I SideSeatMeasure: t=27773234 loc #51 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548064694 calcKmh=0.0
+         1794548065.007 22708 23253 I SideSeatMeasure: t=27773545 navi onCurrentRoadSpeedLimit #52 gap=988ms 0
+         1794548065.697 22708 23253 I SideSeatMeasure: t=27774235 loc #52 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548065695 calcKmh=0.0
+         1794548066.011 22708 23253 I SideSeatMeasure: t=27774549 navi onCurrentRoadSpeedLimit #53 gap=1004ms 0
+         1794548066.702 22708 23253 I SideSeatMeasure: t=27775240 loc #53 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548066700 calcKmh=0.0
+         1794548067.017 22708 23253 I SideSeatMeasure: t=27775556 navi onCurrentRoadSpeedLimit #54 gap=1007ms 0
+         1794548067.706 22708 23253 I SideSeatMeasure: t=27776244 loc #54 gap=1004ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548067704 calcKmh=0.0
+         1794548068.004 22708 23253 I SideSeatMeasure: t=27776543 navi onCurrentRoadSpeedLimit #55 gap=987ms 0
+         1794548068.706 22708 23253 I SideSeatMeasure: t=27777245 loc #55 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548068704 calcKmh=0.0
+         1794548069.006 22708 23253 I SideSeatMeasure: t=27777545 navi onCurrentRoadSpeedLimit #56 gap=1002ms 0
+         1794548069.711 22708 23253 I SideSeatMeasure: t=27778250 loc #56 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548069708 calcKmh=0.0
+         1794548070.014 22708 23253 I SideSeatMeasure: t=27778552 navi onCurrentRoadSpeedLimit #57 gap=1007ms 0
+         1794548071.020 22708 23253 I SideSeatMeasure: t=27779559 navi onCurrentRoadSpeedLimit #58 gap=1007ms 0
+         1794548071.715 22708 23253 I SideSeatMeasure: t=27780253 loc #57 gap=2003ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548071713 calcKmh=0.0
+         1794548072.021 22708 23253 I SideSeatMeasure: t=27780559 navi onCurrentRoadSpeedLimit #59 gap=1000ms 0
+         1794548072.715 22708 23253 I SideSeatMeasure: t=27781254 loc #58 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548072713 calcKmh=0.0
+         1794548073.006 22708 23253 I SideSeatMeasure: t=27781545 navi onCurrentRoadSpeedLimit #60 gap=986ms 0
+         1794548073.717 22708 23253 I SideSeatMeasure: t=27782255 loc #59 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548073715 calcKmh=0.0
+         1794548074.012 22708 23253 I SideSeatMeasure: t=27782550 navi onCurrentRoadSpeedLimit #61 gap=1005ms 0
+         1794548074.722 22708 23253 I SideSeatMeasure: t=27783260 loc #60 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548074720 calcKmh=0.0
+         1794548075.015 22708 23253 I SideSeatMeasure: t=27783554 navi onCurrentRoadSpeedLimit #62 gap=1004ms 0
+         1794548075.727 22708 23253 I SideSeatMeasure: t=27784265 loc #61 gap=1005ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548075725 calcKmh=0.0
+         1794548076.017 22708 23253 I SideSeatMeasure: t=27784555 navi onCurrentRoadSpeedLimit #63 gap=1001ms 0
+         1794548076.727 22708 23253 I SideSeatMeasure: t=27785266 loc #62 gap=1001ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548076725 calcKmh=0.0
+         1794548077.017 22708 23253 I SideSeatMeasure: t=27785555 navi onCurrentRoadSpeedLimit #64 gap=1000ms 0
+         1794548077.727 22708 23253 I SideSeatMeasure: t=27786265 loc #63 gap=999ms lat=37.4127 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548077725 calcKmh=0.0
+         1794548078.021 22708 23253 I SideSeatMeasure: t=27786559 navi onCurrentRoadSpeedLimit #65 gap=1004ms 0
+         1794548078.728 22708 23253 I SideSeatMeasure: t=27787266 loc #64 gap=1001ms lat=37.412848333333336 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548078727 calcKmh=59.1
+         1794548079.004 22708 23238 I SideSeatMeasure: t=27787543 navi onCurrentRoadSpeedLimit #66 gap=984ms 0
+         1794548079.730 22708 23238 I SideSeatMeasure: t=27788268 loc #65 gap=1002ms lat=37.412998333333334 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548079728 calcKmh=59.9
+         1794548080.012 22708 23238 I SideSeatMeasure: t=27788551 navi onCurrentRoadSpeedLimit #67 gap=1008ms 0
+         1794548080.735 22708 23238 I SideSeatMeasure: t=27789274 loc #66 gap=1006ms lat=37.41314833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548080734 calcKmh=59.6
+         1794548081.015 22708 23253 I SideSeatMeasure: t=27789553 navi onCurrentRoadSpeedLimit #68 gap=1002ms 0
+         1794548081.735 22708 23253 I SideSeatMeasure: t=27790274 loc #67 gap=1000ms lat=37.41329833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548081734 calcKmh=59.9
+         1794548082.019 22708 23238 I SideSeatMeasure: t=27790558 navi onCurrentRoadSpeedLimit #69 gap=1005ms 0
+         1794548082.740 22708 23238 I SideSeatMeasure: t=27791279 loc #68 gap=1005ms lat=37.413448333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548082739 calcKmh=59.6
+         1794548083.004 22708 23238 I SideSeatMeasure: t=27791543 navi onCurrentRoadSpeedLimit #70 gap=985ms 0
+         1794548083.741 22708 23238 I SideSeatMeasure: t=27792279 loc #69 gap=1000ms lat=37.41359666666666 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548083739 calcKmh=59.3
+         1794548084.008 22708 23253 I SideSeatMeasure: t=27792547 navi onCurrentRoadSpeedLimit #71 gap=1004ms 0
+         1794548084.741 22708 23253 I SideSeatMeasure: t=27793279 loc #70 gap=1000ms lat=37.41374666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548084740 calcKmh=59.9
+         1794548085.011 22708 23238 I SideSeatMeasure: t=27793550 navi onCurrentRoadSpeedLimit #72 gap=1003ms 0
+         1794548085.744 22708 23238 I SideSeatMeasure: t=27794282 loc #71 gap=1003ms lat=37.413896666666666 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548085742 calcKmh=59.8
+         1794548086.016 22708 23238 I SideSeatMeasure: t=27794555 navi onCurrentRoadSpeedLimit #73 gap=1005ms 0
+         1794548086.747 22708 23238 I SideSeatMeasure: t=27795285 loc #72 gap=1003ms lat=37.414046666666664 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548086746 calcKmh=59.7
+         1794548087.019 22708 23238 I SideSeatMeasure: t=27795558 navi onCurrentRoadSpeedLimit #74 gap=1003ms 0
+         1794548087.749 22708 23238 I SideSeatMeasure: t=27796287 loc #73 gap=1002ms lat=37.41419666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548087748 calcKmh=59.8
+         1794548088.020 22708 23238 I SideSeatMeasure: t=27796558 navi onCurrentRoadSpeedLimit #75 gap=1000ms 0
+         1794548088.750 22708 23238 I SideSeatMeasure: t=27797289 loc #74 gap=1002ms lat=37.41434666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548088749 calcKmh=59.9
+         1794548089.001 22708 23238 I SideSeatMeasure: t=27797540 navi onCurrentRoadSpeedLimit #76 gap=982ms 0
+         1794548089.750 22708 23238 I SideSeatMeasure: t=27798289 loc #75 gap=1000ms lat=37.414495 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548089749 calcKmh=59.3
+         1794548090.007 22708 23238 I SideSeatMeasure: t=27798545 navi onCurrentRoadSpeedLimit #77 gap=1005ms 0
+         1794548090.755 22708 23238 I SideSeatMeasure: t=27799294 loc #76 gap=1005ms lat=37.414645 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548090754 calcKmh=59.6
+         1794548091.014 22708 23238 I SideSeatMeasure: t=27799553 navi onCurrentRoadSpeedLimit #78 gap=1008ms 0
+         1794548091.762 22708 23238 I SideSeatMeasure: t=27800300 loc #77 gap=1006ms lat=37.414795 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548091759 calcKmh=59.6
+         1794548092.018 22708 23253 I SideSeatMeasure: t=27800556 navi onCurrentRoadSpeedLimit #79 gap=1003ms 0
+         1794548092.763 22708 23253 I SideSeatMeasure: t=27801301 loc #78 gap=1001ms lat=37.414795 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548092761 calcKmh=0.0
+         1794548093.003 22708 23238 I SideSeatMeasure: t=27801541 navi onCurrentRoadSpeedLimit #80 gap=985ms 0
+         1794548093.767 22708 23238 I SideSeatMeasure: t=27802305 loc #79 gap=1004ms lat=37.414945 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548093765 calcKmh=59.7
+         1794548094.007 22708 23253 I SideSeatMeasure: t=27802546 navi onCurrentRoadSpeedLimit #81 gap=1005ms 0
+         1794548094.767 22708 23253 I SideSeatMeasure: t=27803305 loc #80 gap=1000ms lat=37.415095 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548094766 calcKmh=59.9
+         1794548095.008 22708 23238 I SideSeatMeasure: t=27803547 navi onCurrentRoadSpeedLimit #82 gap=1001ms 0
+         1794548095.767 22708 23238 I SideSeatMeasure: t=27804306 loc #81 gap=1001ms lat=37.415245 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548095766 calcKmh=59.9
+         1794548096.014 22708 23253 I SideSeatMeasure: t=27804553 navi onCurrentRoadSpeedLimit #83 gap=1006ms 0
+         1794548096.772 22708 23253 I SideSeatMeasure: t=27805311 loc #82 gap=1005ms lat=37.415393333333334 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548096771 calcKmh=59.0
+         1794548097.019 22708 23238 I SideSeatMeasure: t=27805558 navi onCurrentRoadSpeedLimit #84 gap=1005ms 0
+         1794548097.774 22708 23238 I SideSeatMeasure: t=27806313 loc #83 gap=1002ms lat=37.41554333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548097772 calcKmh=59.9
+         1794548098.003 22708 23253 I SideSeatMeasure: t=27806541 navi onCurrentRoadSpeedLimit #85 gap=983ms 0
+         1794548098.778 22708 23253 I SideSeatMeasure: t=27807317 loc #84 gap=1004ms lat=37.41569333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548098777 calcKmh=59.6
+         1794548099.004 22708 23253 I SideSeatMeasure: t=27807543 navi onCurrentRoadSpeedLimit #86 gap=1002ms 0
+         1794548099.784 22708 23253 I SideSeatMeasure: t=27808322 loc #85 gap=1005ms lat=37.415843333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548099782 calcKmh=59.6
+         1794548100.011 22708 23253 I SideSeatMeasure: t=27808550 navi onCurrentRoadSpeedLimit #87 gap=1007ms 0
+         1794548100.788 22708 23253 I SideSeatMeasure: t=27809326 loc #86 gap=1004ms lat=37.41599333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548100787 calcKmh=59.6
+         1794548101.001 22708 23253 I SideSeatMeasure: t=27809539 navi onCurrentRoadSpeedLimit #88 gap=989ms 0
+         1794548101.791 22708 23253 I SideSeatMeasure: t=27810329 loc #87 gap=1003ms lat=37.41614333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548101790 calcKmh=59.8
+         1794548102.000 22708 23253 I SideSeatMeasure: t=27810538 navi onCurrentRoadSpeedLimit #89 gap=999ms 0
+         1794548102.796 22708 23253 I SideSeatMeasure: t=27811334 loc #88 gap=1005ms lat=37.416291666666666 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548102795 calcKmh=59.0
+         1794548103.001 22708 23238 I SideSeatMeasure: t=27811539 navi onCurrentRoadSpeedLimit #90 gap=1001ms 0
+         1794548103.797 22708 23238 I SideSeatMeasure: t=27812335 loc #89 gap=1001ms lat=37.416441666666664 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548103795 calcKmh=59.9
+         1794548104.006 22708 23253 I SideSeatMeasure: t=27812544 navi onCurrentRoadSpeedLimit #91 gap=1005ms 0
+         1794548104.798 22708 23253 I SideSeatMeasure: t=27813336 loc #90 gap=1001ms lat=37.41659166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548104796 calcKmh=59.9
+         1794548105.010 22708 23253 I SideSeatMeasure: t=27813548 navi onCurrentRoadSpeedLimit #92 gap=1004ms 0
+         1794548105.802 22708 23253 I SideSeatMeasure: t=27814340 loc #91 gap=1004ms lat=37.41674166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548105800 calcKmh=59.7
+         1794548106.001 22708 23238 I SideSeatMeasure: t=27814539 navi onCurrentRoadSpeedLimit #93 gap=991ms 0
+         1794548106.803 22708 23238 I SideSeatMeasure: t=27815341 loc #92 gap=1001ms lat=37.416891666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548106801 calcKmh=59.9
+         1794548107.011 22708 23238 I SideSeatMeasure: t=27815550 navi onCurrentRoadSpeedLimit #94 gap=1011ms 0
+         1794548107.808 22708 23238 I SideSeatMeasure: t=27816346 loc #93 gap=1005ms lat=37.41704166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548107806 calcKmh=59.6
+         1794548108.013 22708 23238 I SideSeatMeasure: t=27816552 navi onCurrentRoadSpeedLimit #95 gap=1002ms 0
+         1794548108.812 22708 23238 I SideSeatMeasure: t=27817350 loc #94 gap=1004ms lat=37.41719 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548108811 calcKmh=59.0
+         1794548109.012 22708 23253 I SideSeatMeasure: t=27817550 navi onCurrentRoadSpeedLimit #96 gap=998ms 0
+         1794548109.816 22708 23253 I SideSeatMeasure: t=27818354 loc #95 gap=1004ms lat=37.41734 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548109814 calcKmh=59.8
+         1794548110.013 22708 23238 I SideSeatMeasure: t=27818552 navi onCurrentRoadSpeedLimit #97 gap=1002ms 0
+         1794548110.818 22708 23238 I SideSeatMeasure: t=27819356 loc #96 gap=1002ms lat=37.41749 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548110816 calcKmh=59.8
+         1794548111.015 22708 23238 I SideSeatMeasure: t=27819553 navi onCurrentRoadSpeedLimit #98 gap=1001ms 0
+         1794548111.819 22708 23238 I SideSeatMeasure: t=27820357 loc #97 gap=1001ms lat=37.41764 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548111817 calcKmh=59.9
+         1794548112.016 22708 23238 I SideSeatMeasure: t=27820555 navi onCurrentRoadSpeedLimit #99 gap=1002ms 0
+         1794548112.824 22708 23253 I SideSeatMeasure: t=27821362 loc #98 gap=1005ms lat=37.41779 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548112822 calcKmh=59.6
+         1794548113.017 22708 23238 I SideSeatMeasure: t=27821555 navi onCurrentRoadSpeedLimit #100 gap=1000ms 0
+         1794548113.828 22708 23238 I SideSeatMeasure: t=27822367 loc #99 gap=1005ms lat=37.41794 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548113825 calcKmh=59.8
+         1794548114.003 22708 23238 I SideSeatMeasure: t=27822541 navi onCurrentRoadSpeedLimit #101 gap=986ms 0
+         1794548114.829 22708 23238 I SideSeatMeasure: t=27823367 loc #100 gap=1000ms lat=37.41808833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548114828 calcKmh=59.1
+         1794548115.005 22708 23253 I SideSeatMeasure: t=27823544 navi onCurrentRoadSpeedLimit #102 gap=1003ms 0
+         1794548115.832 22708 23253 I SideSeatMeasure: t=27824371 loc #101 gap=1004ms lat=37.418238333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548115830 calcKmh=59.8
+         1794548116.013 22708 23253 I SideSeatMeasure: t=27824552 navi onCurrentRoadSpeedLimit #103 gap=1008ms 0
+         1794548116.837 22708 23253 I SideSeatMeasure: t=27825375 loc #102 gap=1004ms lat=37.41838833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548116835 calcKmh=59.6
+         1794548117.015 22708 23238 I SideSeatMeasure: t=27825554 navi onCurrentRoadSpeedLimit #104 gap=1002ms 0
+         1794548117.842 22708 23238 I SideSeatMeasure: t=27826381 loc #103 gap=1006ms lat=37.41838833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548117840 calcKmh=0.0
+         1794548118.015 22708 23253 I SideSeatMeasure: t=27826554 navi onCurrentRoadSpeedLimit #105 gap=1000ms 0
+         1794548118.843 22708 23253 I SideSeatMeasure: t=27827381 loc #104 gap=1000ms lat=37.41853833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548118841 calcKmh=59.9
+         1794548119.005 22708 23238 I SideSeatMeasure: t=27827544 navi onCurrentRoadSpeedLimit #106 gap=990ms 0
+         1794548119.844 22708 23238 I SideSeatMeasure: t=27828383 loc #105 gap=1002ms lat=37.418688333333336 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548119842 calcKmh=59.9
+         1794548120.012 22708 23253 I SideSeatMeasure: t=27828550 navi onCurrentRoadSpeedLimit #107 gap=1006ms 0
+         1794548120.847 22708 23253 I SideSeatMeasure: t=27829385 loc #106 gap=1002ms lat=37.41883833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548120845 calcKmh=59.8
+         1794548121.011 22708 23253 I SideSeatMeasure: t=27829550 navi onCurrentRoadSpeedLimit #108 gap=1000ms 0
+         1794548121.847 22708 23253 I SideSeatMeasure: t=27830385 loc #107 gap=1000ms lat=37.41898666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548121845 calcKmh=59.3
+         1794548122.012 22708 23238 I SideSeatMeasure: t=27830551 navi onCurrentRoadSpeedLimit #109 gap=1001ms 0
+         1794548122.847 22708 23238 I SideSeatMeasure: t=27831386 loc #108 gap=1001ms lat=37.41913666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548122846 calcKmh=59.9
+         1794548123.015 22708 23238 I SideSeatMeasure: t=27831554 navi onCurrentRoadSpeedLimit #110 gap=1003ms 0
+         1794548123.851 22708 23238 I SideSeatMeasure: t=27832389 loc #109 gap=1003ms lat=37.419286666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548123849 calcKmh=59.8
+         1794548124.020 22708 23238 I SideSeatMeasure: t=27832558 navi onCurrentRoadSpeedLimit #111 gap=1004ms 0
+         1794548124.855 22708 23238 I SideSeatMeasure: t=27833393 loc #110 gap=1004ms lat=37.41943666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548124854 calcKmh=59.6
+         1794548125.004 22708 23238 I SideSeatMeasure: t=27833543 navi onCurrentRoadSpeedLimit #112 gap=985ms 0
+         1794548125.862 22708 23238 I SideSeatMeasure: t=27834400 loc #111 gap=1007ms lat=37.41958666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548125858 calcKmh=59.7
+         1794548126.006 22708 23253 I SideSeatMeasure: t=27834544 navi onCurrentRoadSpeedLimit #113 gap=1001ms 0
+         1794548126.865 22708 23253 I SideSeatMeasure: t=27835403 loc #112 gap=1003ms lat=37.419736666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548126863 calcKmh=59.6
+         1794548127.009 22708 23253 I SideSeatMeasure: t=27835548 navi onCurrentRoadSpeedLimit #114 gap=1004ms 0
+         1794548127.871 22708 23253 I SideSeatMeasure: t=27836409 loc #113 gap=1006ms lat=37.419885 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548127868 calcKmh=59.0
+         1794548128.012 22708 23238 I SideSeatMeasure: t=27836550 navi onCurrentRoadSpeedLimit #115 gap=1002ms 0
+         1794548128.875 22708 23238 I SideSeatMeasure: t=27837413 loc #114 gap=1004ms lat=37.420035 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548128873 calcKmh=59.6
+         1794548129.013 22708 23238 I SideSeatMeasure: t=27837552 navi onCurrentRoadSpeedLimit #116 gap=1002ms 0
+         1794548129.878 22708 23238 I SideSeatMeasure: t=27838417 loc #115 gap=1004ms lat=37.420185 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548129875 calcKmh=59.8
+         1794548130.020 22708 23253 I SideSeatMeasure: t=27838558 navi onCurrentRoadSpeedLimit #117 gap=1006ms 0
+         1794548130.878 22708 23253 I SideSeatMeasure: t=27839416 loc #116 gap=999ms lat=37.420335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548130876 calcKmh=59.9
+         1794548131.001 22708 23253 I SideSeatMeasure: t=27839540 navi onCurrentRoadSpeedLimit #118 gap=982ms 0
+         1794548131.882 22708 23238 I SideSeatMeasure: t=27840421 loc #117 gap=1005ms lat=37.420485 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548131879 calcKmh=59.8
+         1794548132.006 22708 23053 I SideSeatMeasure: t=27840545 navi onCurrentRoadSpeedLimit #119 gap=1005ms 0
+         1794548132.885 22708 23053 I SideSeatMeasure: t=27841423 loc #118 gap=1002ms lat=37.420635 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548132883 calcKmh=59.7
+         1794548133.008 22708 23053 I SideSeatMeasure: t=27841547 navi onCurrentRoadSpeedLimit #120 gap=1002ms 0
+         1794548133.890 22708 23053 I SideSeatMeasure: t=27842428 loc #119 gap=1005ms lat=37.42078333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548133888 calcKmh=59.0
+         1794548134.008 22708 23238 I SideSeatMeasure: t=27842547 navi onCurrentRoadSpeedLimit #121 gap=1000ms 0
+         1794548134.893 22708 23238 I SideSeatMeasure: t=27843432 loc #120 gap=1004ms lat=37.42093333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548134892 calcKmh=59.7
+         1794548135.013 22708 23053 I SideSeatMeasure: t=27843552 navi onCurrentRoadSpeedLimit #122 gap=1005ms 0
+         1794548135.898 22708 23053 I SideSeatMeasure: t=27844436 loc #121 gap=1004ms lat=37.421083333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548135896 calcKmh=59.7
+         1794548136.004 22708 23053 I SideSeatMeasure: t=27844542 navi onCurrentRoadSpeedLimit #123 gap=990ms 0
+         1794548136.903 22708 23053 I SideSeatMeasure: t=27845441 loc #122 gap=1005ms lat=37.42123333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548136901 calcKmh=59.6
+         1794548137.008 22708 23238 I SideSeatMeasure: t=27845546 navi onCurrentRoadSpeedLimit #124 gap=1004ms 0
+         1794548137.906 22708 23238 I SideSeatMeasure: t=27846445 loc #123 gap=1004ms lat=37.42138333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548137905 calcKmh=59.7
+         1794548138.012 22708 23053 I SideSeatMeasure: t=27846550 navi onCurrentRoadSpeedLimit #125 gap=1004ms 0
+         1794548138.912 22708 23053 I SideSeatMeasure: t=27847450 loc #124 gap=1005ms lat=37.421533333333336 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548138910 calcKmh=59.6
+         1794548139.013 22708 23238 I SideSeatMeasure: t=27847552 navi onCurrentRoadSpeedLimit #126 gap=1002ms 0
+         1794548139.915 22708 23238 I SideSeatMeasure: t=27848454 loc #125 gap=1004ms lat=37.421681666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548139913 calcKmh=59.1
+         1794548140.028 22708 23053 I SideSeatMeasure: t=27848566 navi onCurrentRoadSpeedLimit #127 gap=1014ms 0
+         1794548140.917 22708 23238 I SideSeatMeasure: t=27849455 loc #126 gap=1001ms lat=37.42183166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548140915 calcKmh=59.8
+         1794548141.020 22708 23053 I SideSeatMeasure: t=27849558 navi onCurrentRoadSpeedLimit #128 gap=992ms 0
+         1794548141.918 22708 23053 I SideSeatMeasure: t=27850456 loc #127 gap=1001ms lat=37.42198166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548141917 calcKmh=59.8
+         1794548142.003 22708 23053 I SideSeatMeasure: t=27850541 navi onCurrentRoadSpeedLimit #129 gap=983ms 0
+         1794548142.926 22708 23053 I SideSeatMeasure: t=27851464 loc #128 gap=1008ms lat=37.42198166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548142924 calcKmh=0.0
+         1794548143.007 22708 23053 I SideSeatMeasure: t=27851546 navi onCurrentRoadSpeedLimit #130 gap=1005ms 0
+         1794548143.927 22708 23053 I SideSeatMeasure: t=27852465 loc #129 gap=1001ms lat=37.422131666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548143925 calcKmh=59.9
+         1794548144.010 22708 23053 I SideSeatMeasure: t=27852548 navi onCurrentRoadSpeedLimit #131 gap=1002ms 0
+         1794548144.928 22708 23053 I SideSeatMeasure: t=27853466 loc #130 gap=1001ms lat=37.42228166666666 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548144925 calcKmh=59.9
+         1794548145.012 22708 23053 I SideSeatMeasure: t=27853550 navi onCurrentRoadSpeedLimit #132 gap=1002ms 0
+         1794548145.931 22708 23053 I SideSeatMeasure: t=27854469 loc #131 gap=1003ms lat=37.42243166666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548145930 calcKmh=59.6
+         1794548146.012 22708 23053 I SideSeatMeasure: t=27854551 navi onCurrentRoadSpeedLimit #133 gap=1001ms 0
+         1794548146.934 22708 23053 I SideSeatMeasure: t=27855472 loc #132 gap=1003ms lat=37.42258 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548146932 calcKmh=59.1
+         1794548147.013 22708 23238 I SideSeatMeasure: t=27855551 navi onCurrentRoadSpeedLimit #134 gap=1000ms 0
+         1794548147.938 22708 23238 I SideSeatMeasure: t=27856476 loc #133 gap=1004ms lat=37.42273 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548147937 calcKmh=59.6
+         1794548148.019 22708 23238 I SideSeatMeasure: t=27856558 navi onCurrentRoadSpeedLimit #135 gap=1007ms 0
+         1794548148.945 22708 23238 I SideSeatMeasure: t=27857483 loc #134 gap=1007ms lat=37.42288 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548148942 calcKmh=59.6
+         1794548149.003 22708 23238 I SideSeatMeasure: t=27857541 navi onCurrentRoadSpeedLimit #136 gap=983ms 0
+         1794548149.949 22708 23053 I SideSeatMeasure: t=27858487 loc #135 gap=1004ms lat=37.42303 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548149947 calcKmh=59.6
+         1794548150.008 22708 23053 I SideSeatMeasure: t=27858547 navi onCurrentRoadSpeedLimit #137 gap=1006ms 0
+         1794548150.952 22708 23053 I SideSeatMeasure: t=27859490 loc #136 gap=1003ms lat=37.42318 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548150950 calcKmh=59.8
+         1794548151.016 22708 23053 I SideSeatMeasure: t=27859554 navi onCurrentRoadSpeedLimit #138 gap=1007ms 0
+         1794548151.956 22708 23238 I SideSeatMeasure: t=27860495 loc #137 gap=1005ms lat=37.42332833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548151955 calcKmh=59.0
+         1794548152.019 22708 23238 I SideSeatMeasure: t=27860557 navi onCurrentRoadSpeedLimit #139 gap=1003ms 0
+         1794548152.961 22708 23238 I SideSeatMeasure: t=27861500 loc #138 gap=1005ms lat=37.423478333333335 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548152960 calcKmh=59.6
+         1794548153.020 22708 23238 I SideSeatMeasure: t=27861559 navi onCurrentRoadSpeedLimit #140 gap=1002ms 0
+         1794548153.963 22708 23238 I SideSeatMeasure: t=27862502 loc #139 gap=1002ms lat=37.42362833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548153961 calcKmh=59.9
+         1794548154.003 22708 23238 I SideSeatMeasure: t=27862542 navi onCurrentRoadSpeedLimit #141 gap=983ms 0
+         1794548154.968 22708 23238 I SideSeatMeasure: t=27863507 loc #140 gap=1005ms lat=37.42377833333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548154967 calcKmh=59.6
+         1794548155.008 22708 23238 I SideSeatMeasure: t=27863547 navi onCurrentRoadSpeedLimit #142 gap=1005ms 0
+         1794548155.973 22708 23238 I SideSeatMeasure: t=27864511 loc #141 gap=1004ms lat=37.423928333333336 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548155971 calcKmh=59.7
+         1794548156.010 22708 23238 I SideSeatMeasure: t=27864549 navi onCurrentRoadSpeedLimit #143 gap=1002ms 0
+         1794548156.975 22708 23238 I SideSeatMeasure: t=27865514 loc #142 gap=1003ms lat=37.424078333333334 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548156974 calcKmh=59.8
+         1794548157.011 22708 23238 I SideSeatMeasure: t=27865549 navi onCurrentRoadSpeedLimit #144 gap=1000ms 0
+         1794548157.978 22708 23238 I SideSeatMeasure: t=27866516 loc #143 gap=1002ms lat=37.42422666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548157976 calcKmh=59.1
+         1794548158.017 22708 23253 I SideSeatMeasure: t=27866555 navi onCurrentRoadSpeedLimit #145 gap=1006ms 0
+         1794548158.982 22708 23253 I SideSeatMeasure: t=27867521 loc #144 gap=1005ms lat=37.42437666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548158981 calcKmh=59.6
+         1794548159.019 22708 23238 I SideSeatMeasure: t=27867557 navi onCurrentRoadSpeedLimit #146 gap=1002ms 0
+         1794548159.985 22708 23238 I SideSeatMeasure: t=27868524 loc #145 gap=1003ms lat=37.424526666666665 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548159984 calcKmh=59.8
+         1794548160.001 22708 23238 I SideSeatMeasure: t=27868540 navi onCurrentRoadSpeedLimit #147 gap=983ms 0
+         1794548160.988 22708 23238 I SideSeatMeasure: t=27869526 loc #146 gap=1002ms lat=37.42467666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548160986 calcKmh=59.8
+         1794548161.003 22708 23253 I SideSeatMeasure: t=27869542 navi onCurrentRoadSpeedLimit #148 gap=1002ms 0
+         1794548161.988 22708 23253 I SideSeatMeasure: t=27870526 loc #147 gap=1000ms lat=37.42482666666667 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548161987 calcKmh=59.9
+         1794548162.006 22708 23238 I SideSeatMeasure: t=27870545 navi onCurrentRoadSpeedLimit #149 gap=1003ms 0
+         1794548162.994 22708 23238 I SideSeatMeasure: t=27871532 loc #148 gap=1006ms lat=37.424976666666666 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548162992 calcKmh=59.6
+         1794548163.011 22708 23238 I SideSeatMeasure: t=27871549 navi onCurrentRoadSpeedLimit #150 gap=1004ms 0
+         1794548163.996 22708 23238 I SideSeatMeasure: t=27872534 loc #149 gap=1002ms lat=37.425126666666664 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548163994 calcKmh=59.8
+         1794548164.017 22708 23253 I SideSeatMeasure: t=27872556 navi onCurrentRoadSpeedLimit #151 gap=1007ms 0
+         1794548164.997 22708 23238 I SideSeatMeasure: t=27873536 loc #150 gap=1002ms lat=37.425275 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548164996 calcKmh=59.1
+         1794548165.002 22708 23238 I SideSeatMeasure: t=27873540 navi onCurrentRoadSpeedLimit #152 gap=984ms 0
+         1794548166.003 22708 23238 I SideSeatMeasure: t=27874541 loc #151 gap=1005ms lat=37.425425 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548166001 calcKmh=59.6
+         1794548166.008 22708 23238 I SideSeatMeasure: t=27874547 navi onCurrentRoadSpeedLimit #153 gap=1007ms 0
+         1794548167.006 22708 23238 I SideSeatMeasure: t=27875544 loc #152 gap=1003ms lat=37.425425 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548167004 calcKmh=0.0
+         1794548167.012 22708 23253 I SideSeatMeasure: t=27875550 navi onCurrentRoadSpeedLimit #154 gap=1003ms 0
+         1794548168.006 22708 23253 I SideSeatMeasure: t=27876545 loc #153 gap=1001ms lat=37.425575 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548168005 calcKmh=59.9
+         1794548168.018 22708 23253 I SideSeatMeasure: t=27876556 navi onCurrentRoadSpeedLimit #155 gap=1006ms 0
+         1794548169.000 22708 23253 I SideSeatMeasure: t=27877539 navi onCurrentRoadSpeedLimit #156 gap=983ms 0
+         1794548169.011 22708 23253 I SideSeatMeasure: t=27877550 loc #154 gap=1005ms lat=37.425725 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548169010 calcKmh=59.6
+         1794548170.003 22708 23253 I SideSeatMeasure: t=27878542 navi onCurrentRoadSpeedLimit #157 gap=1003ms 0
+         1794548170.014 22708 23253 I SideSeatMeasure: t=27878552 loc #155 gap=1002ms lat=37.425875 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548170012 calcKmh=59.8
+         1794548171.007 22708 23238 I SideSeatMeasure: t=27879546 navi onCurrentRoadSpeedLimit #158 gap=1004ms 0
+         1794548171.019 22708 23238 I SideSeatMeasure: t=27879557 loc #156 gap=1005ms lat=37.426025 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548171017 calcKmh=59.6
+         1794548172.010 22708 23253 I SideSeatMeasure: t=27880547 navi onCurrentRoadSpeedLimit #159 gap=1001ms 0
+         1794548172.021 22708 23253 I SideSeatMeasure: t=27880559 loc #157 gap=1002ms lat=37.42617333333333 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548172020 calcKmh=59.1
+         1794548173.015 22708 23253 I SideSeatMeasure: t=27881554 navi onCurrentRoadSpeedLimit #160 gap=1007ms 0
+         1794548173.022 22708 23253 I SideSeatMeasure: t=27881561 loc #158 gap=1002ms lat=37.426323333333336 lon=127.0947 alt=0.0 heading=0.0 conf=5.0 ts=1794548173021 calcKmh=59.9
+         1794548173.805 22708 22708 I SideSeatMeasure: app debug cmd=loc arg=stop
+         1794548173.806 22708 22708 I SideSeatMeasure: loc probe count=158
+         1794548173.841 22708 22708 I SideSeatMeasure: app debug cmd=navi arg=stop
+         1794548173.844 22708 22708 I SideSeatMeasure: navi probe counts={onCurrentRoadSpeedLimit=160}
+         1794548173.844 22708 22708 I SideSeatMeasure: navi probe cmd 'stop' done
