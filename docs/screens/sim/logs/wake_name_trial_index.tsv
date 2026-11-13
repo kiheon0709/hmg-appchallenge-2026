@@ -374,3 +374,123 @@ n27_solo_F180.pcm	wake	써니	solo	F180	써니야
 n27_solo_F210.pcm	wake	써니	solo	F210	써니야
 n27_solo_M180.pcm	wake	써니	solo	M180	써니야
 n27_solo_M210.pcm	wake	써니	solo	M210	써니야
+n28_q1_F180.pcm	wake	카이	q1	F180	카이야, 와이퍼 어디 있어?
+n28_q1_F210.pcm	wake	카이	q1	F210	카이야, 와이퍼 어디 있어?
+n28_q1_M180.pcm	wake	카이	q1	M180	카이야, 와이퍼 어디 있어?
+n28_q1_M210.pcm	wake	카이	q1	M210	카이야, 와이퍼 어디 있어?
+n28_q2_F180.pcm	wake	카이	q2	F180	카이야, 앞유리가 뿌예
+n28_q2_F210.pcm	wake	카이	q2	F210	카이야, 앞유리가 뿌예
+n28_q2_M180.pcm	wake	카이	q2	M180	카이야, 앞유리가 뿌예
+n28_q2_M210.pcm	wake	카이	q2	M210	카이야, 앞유리가 뿌예
+n28_solo_F180.pcm	wake	카이	solo	F180	카이야
+n28_solo_F210.pcm	wake	카이	solo	F210	카이야
+n28_solo_M180.pcm	wake	카이	solo	M180	카이야
+n28_solo_M210.pcm	wake	카이	solo	M210	카이야
+n29_q1_F180.pcm	wake	마일로	q1	F180	마일로야, 와이퍼 어디 있어?
+n29_q1_F210.pcm	wake	마일로	q1	F210	마일로야, 와이퍼 어디 있어?
+n29_q1_M180.pcm	wake	마일로	q1	M180	마일로야, 와이퍼 어디 있어?
+n29_q1_M210.pcm	wake	마일로	q1	M210	마일로야, 와이퍼 어디 있어?
+n29_q2_F180.pcm	wake	마일로	q2	F180	마일로야, 앞유리가 뿌예
+n29_q2_F210.pcm	wake	마일로	q2	F210	마일로야, 앞유리가 뿌예
+n29_q2_M180.pcm	wake	마일로	q2	M180	마일로야, 앞유리가 뿌예
+n29_q2_M210.pcm	wake	마일로	q2	M210	마일로야, 앞유리가 뿌예
+n29_solo_F180.pcm	wake	마일로	solo	F180	마일로야
+n29_solo_F210.pcm	wake	마일로	solo	F210	마일로야
+n29_solo_M180.pcm	wake	마일로	solo	M180	마일로야
+n29_solo_M210.pcm	wake	마일로	solo	M210	마일로야
+n30_q1_F180.pcm	wake	루미	q1	F180	루미야, 와이퍼 어디 있어?
+n30_q1_F210.pcm	wake	루미	q1	F210	루미야, 와이퍼 어디 있어?
+n30_q1_M180.pcm	wake	루미	q1	M180	루미야, 와이퍼 어디 있어?
+n30_q1_M210.pcm	wake	루미	q1	M210	루미야, 와이퍼 어디 있어?
+n30_q2_F180.pcm	wake	루미	q2	F180	루미야, 앞유리가 뿌예
+n30_q2_F210.pcm	wake	루미	q2	F210	루미야, 앞유리가 뿌예
+n30_q2_M180.pcm	wake	루미	q2	M180	루미야, 앞유리가 뿌예
+n30_q2_M210.pcm	wake	루미	q2	M210	루미야, 앞유리가 뿌예
+n30_solo_F180.pcm	wake	루미	solo	F180	루미야
+n30_solo_F210.pcm	wake	루미	solo	F210	루미야
+n30_solo_M180.pcm	wake	루미	solo	M180	루미야
+n30_solo_M210.pcm	wake	루미	solo	M210	루미야
+n31_q1_F180.pcm	wake	테오	q1	F180	테오야, 와이퍼 어디 있어?
+n31_q1_F210.pcm	wake	테오	q1	F210	테오야, 와이퍼 어디 있어?
+n31_q1_M180.pcm	wake	테오	q1	M180	테오야, 와이퍼 어디 있어?
+n31_q1_M210.pcm	wake	테오	q1	M210	테오야, 와이퍼 어디 있어?
+n31_q2_F180.pcm	wake	테오	q2	F180	테오야, 앞유리가 뿌예
+n31_q2_F210.pcm	wake	테오	q2	F210	테오야, 앞유리가 뿌예
+n31_q2_M180.pcm	wake	테오	q2	M180	테오야, 앞유리가 뿌예
+n31_q2_M210.pcm	wake	테오	q2	M210	테오야, 앞유리가 뿌예
+n31_solo_F180.pcm	wake	테오	solo	F180	테오야
+n31_solo_F210.pcm	wake	테오	solo	F210	테오야
+n31_solo_M180.pcm	wake	테오	solo	M180	테오야
+n31_solo_M210.pcm	wake	테오	solo	M210	테오야
+n32_q1_F180.pcm	wake	니코	q1	F180	니코야, 와이퍼 어디 있어?
+n32_q1_F210.pcm	wake	니코	q1	F210	니코야, 와이퍼 어디 있어?
+n32_q1_M180.pcm	wake	니코	q1	M180	니코야, 와이퍼 어디 있어?
+n32_q1_M210.pcm	wake	니코	q1	M210	니코야, 와이퍼 어디 있어?
+n32_q2_F180.pcm	wake	니코	q2	F180	니코야, 앞유리가 뿌예
+n32_q2_F210.pcm	wake	니코	q2	F210	니코야, 앞유리가 뿌예
+n32_q2_M180.pcm	wake	니코	q2	M180	니코야, 앞유리가 뿌예
+n32_q2_M210.pcm	wake	니코	q2	M210	니코야, 앞유리가 뿌예
+n32_solo_F180.pcm	wake	니코	solo	F180	니코야
+n32_solo_F210.pcm	wake	니코	solo	F210	니코야
+n32_solo_M180.pcm	wake	니코	solo	M180	니코야
+n32_solo_M210.pcm	wake	니코	solo	M210	니코야
+n33_q1_F180.pcm	wake	노바	q1	F180	노바야, 와이퍼 어디 있어?
+n33_q1_F210.pcm	wake	노바	q1	F210	노바야, 와이퍼 어디 있어?
+n33_q1_M180.pcm	wake	노바	q1	M180	노바야, 와이퍼 어디 있어?
+n33_q1_M210.pcm	wake	노바	q1	M210	노바야, 와이퍼 어디 있어?
+n33_q2_F180.pcm	wake	노바	q2	F180	노바야, 앞유리가 뿌예
+n33_q2_F210.pcm	wake	노바	q2	F210	노바야, 앞유리가 뿌예
+n33_q2_M180.pcm	wake	노바	q2	M180	노바야, 앞유리가 뿌예
+n33_q2_M210.pcm	wake	노바	q2	M210	노바야, 앞유리가 뿌예
+n33_solo_F180.pcm	wake	노바	solo	F180	노바야
+n33_solo_F210.pcm	wake	노바	solo	F210	노바야
+n33_solo_M180.pcm	wake	노바	solo	M180	노바야
+n33_solo_M210.pcm	wake	노바	solo	M210	노바야
+n34_q1_F180.pcm	wake	로이	q1	F180	로이야, 와이퍼 어디 있어?
+n34_q1_F210.pcm	wake	로이	q1	F210	로이야, 와이퍼 어디 있어?
+n34_q1_M180.pcm	wake	로이	q1	M180	로이야, 와이퍼 어디 있어?
+n34_q1_M210.pcm	wake	로이	q1	M210	로이야, 와이퍼 어디 있어?
+n34_q2_F180.pcm	wake	로이	q2	F180	로이야, 앞유리가 뿌예
+n34_q2_F210.pcm	wake	로이	q2	F210	로이야, 앞유리가 뿌예
+n34_q2_M180.pcm	wake	로이	q2	M180	로이야, 앞유리가 뿌예
+n34_q2_M210.pcm	wake	로이	q2	M210	로이야, 앞유리가 뿌예
+n34_solo_F180.pcm	wake	로이	solo	F180	로이야
+n34_solo_F210.pcm	wake	로이	solo	F210	로이야
+n34_solo_M180.pcm	wake	로이	solo	M180	로이야
+n34_solo_M210.pcm	wake	로이	solo	M210	로이야
+n35_q1_F180.pcm	wake	루트	q1	F180	루트야, 와이퍼 어디 있어?
+n35_q1_F210.pcm	wake	루트	q1	F210	루트야, 와이퍼 어디 있어?
+n35_q1_M180.pcm	wake	루트	q1	M180	루트야, 와이퍼 어디 있어?
+n35_q1_M210.pcm	wake	루트	q1	M210	루트야, 와이퍼 어디 있어?
+n35_q2_F180.pcm	wake	루트	q2	F180	루트야, 앞유리가 뿌예
+n35_q2_F210.pcm	wake	루트	q2	F210	루트야, 앞유리가 뿌예
+n35_q2_M180.pcm	wake	루트	q2	M180	루트야, 앞유리가 뿌예
+n35_q2_M210.pcm	wake	루트	q2	M210	루트야, 앞유리가 뿌예
+n35_solo_F180.pcm	wake	루트	solo	F180	루트야
+n35_solo_F210.pcm	wake	루트	solo	F210	루트야
+n35_solo_M180.pcm	wake	루트	solo	M180	루트야
+n35_solo_M210.pcm	wake	루트	solo	M210	루트야
+n36_q1_F180.pcm	wake	제이	q1	F180	제이야, 와이퍼 어디 있어?
+n36_q1_F210.pcm	wake	제이	q1	F210	제이야, 와이퍼 어디 있어?
+n36_q1_M180.pcm	wake	제이	q1	M180	제이야, 와이퍼 어디 있어?
+n36_q1_M210.pcm	wake	제이	q1	M210	제이야, 와이퍼 어디 있어?
+n36_q2_F180.pcm	wake	제이	q2	F180	제이야, 앞유리가 뿌예
+n36_q2_F210.pcm	wake	제이	q2	F210	제이야, 앞유리가 뿌예
+n36_q2_M180.pcm	wake	제이	q2	M180	제이야, 앞유리가 뿌예
+n36_q2_M210.pcm	wake	제이	q2	M210	제이야, 앞유리가 뿌예
+n36_solo_F180.pcm	wake	제이	solo	F180	제이야
+n36_solo_F210.pcm	wake	제이	solo	F210	제이야
+n36_solo_M180.pcm	wake	제이	solo	M180	제이야
+n36_solo_M210.pcm	wake	제이	solo	M210	제이야
+n37_q1_F180.pcm	wake	하루	q1	F180	하루야, 와이퍼 어디 있어?
+n37_q1_F210.pcm	wake	하루	q1	F210	하루야, 와이퍼 어디 있어?
+n37_q1_M180.pcm	wake	하루	q1	M180	하루야, 와이퍼 어디 있어?
+n37_q1_M210.pcm	wake	하루	q1	M210	하루야, 와이퍼 어디 있어?
+n37_q2_F180.pcm	wake	하루	q2	F180	하루야, 앞유리가 뿌예
+n37_q2_F210.pcm	wake	하루	q2	F210	하루야, 앞유리가 뿌예
+n37_q2_M180.pcm	wake	하루	q2	M180	하루야, 앞유리가 뿌예
+n37_q2_M210.pcm	wake	하루	q2	M210	하루야, 앞유리가 뿌예
+n37_solo_F180.pcm	wake	하루	solo	F180	하루야
+n37_solo_F210.pcm	wake	하루	solo	F210	하루야
+n37_solo_M180.pcm	wake	하루	solo	M180	하루야
+n37_solo_M210.pcm	wake	하루	solo	M210	하루야
