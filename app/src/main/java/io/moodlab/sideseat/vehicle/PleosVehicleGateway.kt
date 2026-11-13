@@ -176,6 +176,8 @@ class PleosVehicleGateway(
     private var navi: NaviHelper? = null
     private var fused: FusedLocation? = null
     private val track = LocationTrack()
+    private var lastFixCallbackMs: Long? = null
+    private var lastFixStampMs: Long? = null
     private val mapCells = object : LinkedHashMap<Pair<Int, Int>, List<RoadWay>>(32, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Pair<Int, Int>, List<RoadWay>>?) = size > 48
     }
@@ -588,11 +590,22 @@ class PleosVehicleGateway(
         val cal = Calendar.getInstance()
         val offset = TimeZone.getDefault().getOffset(cal.timeInMillis) / 60_000
         val sun = SolarTimes.sunriseSunset(loc.latitude, loc.longitude, cal.get(Calendar.DAY_OF_YEAR), offset)
-        val t = loc.timestampMillis.takeIf { it > 0 } ?: System.currentTimeMillis()
+        // 속도 계산 시각은 콜백이 온 시각으로 한다. 콜백 간격은 1002~1008ms로 고르게 실측됐고,
+        // LocationData.timestampMillis의 뜻(측위 시각인지, 단위·해상도)은 문서에 없다. 둘 다 로그로 남긴다.
+        val t = System.currentTimeMillis()
         val (speed, heading) = synchronized(lock) {
             track.add(loc.latitude, loc.longitude, t)
             track.speedKmh() to track.headingDeg()
         }
+        val prevCb = lastFixCallbackMs
+        val prevFix = lastFixStampMs
+        lastFixCallbackMs = t
+        lastFixStampMs = loc.timestampMillis
+        log(
+            "sig loc ${"%.6f".format(java.util.Locale.ROOT, loc.latitude)},${"%.6f".format(java.util.Locale.ROOT, loc.longitude)} " +
+                "dtCb=${prevCb?.let { t - it }} dtFix=${prevFix?.let { loc.timestampMillis - it }} " +
+                "v=${speed?.let { "%.1f".format(java.util.Locale.ROOT, it) }} hd=${heading?.toInt()}",
+        )
         val changedSun = sun?.first != raw.sunrise || sun?.second != raw.sunset
         if (changedSun) log("sig sun rise=${sun?.first} set=${sun?.second}")
         val mapLimit = if (config.useMapSpeedLimit) mapLimitAt(loc.latitude, loc.longitude, heading) else null

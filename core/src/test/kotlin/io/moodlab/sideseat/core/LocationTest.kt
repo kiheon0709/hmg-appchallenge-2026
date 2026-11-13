@@ -33,6 +33,21 @@ class LocationTest {
     }
 
     @Test
+    fun `skipped or late fixes do not double the speed`() {
+        // 36km/h(초당 10m). 전달이 한 번 밀려 같은 점이 두 번 오고, 다음에 두 칸을 한 번에 따라잡는 경우
+        val step = 10.0 / M_PER_DEG_LAT
+        val positions = listOf(0, 1, 2, 3, 3, 5, 6, 7, 7, 9, 10)
+        val t = LocationTrack()
+        val speeds = positions.mapIndexed { i, k -> t.add(baseLat + k * step, baseLon, i * 1_000L); t.speedKmh() }.drop(3)
+        assertTrue(speeds.all { it!! <= 40f }, "speeds=$speeds")
+        // 전달 시각이 흔들려(0.5초·1.5초) 한 구간이 72km/h로 계산돼도
+        val j = LocationTrack()
+        val times = listOf(0L, 1_000, 2_000, 3_000, 3_500, 5_000, 6_000, 7_000, 7_500, 9_000, 10_000)
+        val jittered = times.mapIndexed { i, tm -> j.add(baseLat + i * step, baseLon, tm); j.speedKmh() }.drop(3)
+        assertTrue(jittered.all { it!! <= 40f }, "jittered=$jittered")
+    }
+
+    @Test
     fun `heading follows movement east and ignores standing still`() {
         val t = LocationTrack()
         val dLon = 16.667 / (M_PER_DEG_LAT * kotlin.math.cos(Math.toRadians(baseLat)))

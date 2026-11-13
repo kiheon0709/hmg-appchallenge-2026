@@ -106,6 +106,9 @@ class DefaultDriveCoach(
     // 위치 연계(명세 6.4)
     private val track = LocationTrack()
     private var speedKmh: Float? = null
+    /** 직전 위치 갱신 때의 속도. 보호구역 최고 속도는 두 번 연속 본 값(둘 중 작은 값)으로만 올린다. */
+    private var prevSpeedKmh: Float? = null
+    private var lastFixMs: Long? = null
     private var zone: SchoolZone? = null
     private var zoneToAnnounce: SchoolZone? = null
     private val announcedZones = mutableSetOf<String>()
@@ -142,6 +145,8 @@ class DefaultDriveCoach(
         firstTick = true
         track.clear()
         speedKmh = null
+        prevSpeedKmh = null
+        lastFixMs = null
         zone = null
         zoneToAnnounce = null
         announcedZones.clear()
@@ -336,13 +341,22 @@ class DefaultDriveCoach(
     private fun updateLocation(s: VehicleState, nowMs: Long) {
         val lat = s.latitude
         val lon = s.longitude
+        val fixMs = s.locationTimeMs ?: nowMs
+        val newFix = lat != null && lon != null && fixMs != lastFixMs
         if (lat != null && lon != null) {
-            track.add(lat, lon, s.locationTimeMs ?: nowMs)
-            speedKmh = track.speedKmh()
+            if (newFix) {
+                track.add(lat, lon, fixMs)
+                lastFixMs = fixMs
+                prevSpeedKmh = speedKmh
+                speedKmh = track.speedKmh()
+            }
         } else {
+            prevSpeedKmh = speedKmh
             speedKmh = s.speedKmhEstimate
         }
         val v = speedKmh
+        // 한 번 튄 값으로 "최고 72km/h"가 남지 않게 두 번 연속 본 값만 쓴다.
+        val confirmed = v?.let { cur -> prevSpeedKmh?.let { minOf(it, cur) } }
 
         // 보호구역: 반경 안이면 진입, 반경 + 여유를 벗어나면 나감.
         if (lat != null && lon != null) {
@@ -362,9 +376,9 @@ class DefaultDriveCoach(
                 }
             }
             zone?.let { z ->
-                if (v != null) {
-                    zoneMaxKmh = maxOf(zoneMaxKmh ?: 0f, v)
-                    if (v > z.limitKmh && (zoneOverLimit?.first ?: 0f) < v) zoneOverLimit = v to z.limitKmh
+                if (confirmed != null) {
+                    zoneMaxKmh = maxOf(zoneMaxKmh ?: 0f, confirmed)
+                    if (confirmed > z.limitKmh && (zoneOverLimit?.first ?: 0f) < confirmed) zoneOverLimit = confirmed to z.limitKmh
                 }
             }
         }

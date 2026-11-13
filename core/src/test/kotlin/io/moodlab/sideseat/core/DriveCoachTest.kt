@@ -452,6 +452,21 @@ class DriveCoachTest {
     }
 
     @Test
+    fun `a single speed spike in a school zone does not become the top speed`() {
+        val d = geo()
+        d.drive(80, 36.0) // 남쪽 200m, 보호구역(반경 300m) 안
+        // 전달이 밀려 같은 점이 한 번 더 오고(0m) 다음에 두 칸(20m)을 한 번에 따라잡음
+        d.drive(1, 0.0)
+        d.drive(1, 72.0)
+        d.drive(20, 36.0)
+        // 한 번만 두 칸을 건넘
+        d.drive(1, 72.0)
+        d.drive(30, 36.0)
+        val s = d.coach.onDriveEnd(d.now)
+        assertTrue(s.schoolZoneMaxKmh!! <= 40, "zoneMax=${s.schoolZoneMaxKmh}")
+    }
+
+    @Test
     fun `slow pass through a school zone is praised`() {
         val d = geo()
         d.drive(200, 25.0)
