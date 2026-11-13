@@ -209,3 +209,33 @@ package io.moodlab.sideseat.ui
 2. 그동안 dev-sim-ui는 `DebugVehicleGateway` 없이도 볼 수 있게 미리보기용 가짜 `TrainingView`로 주행 화면부터 만든다. dev-voice-ai는 voice 패키지를 독립적으로 만든다. dev-integration은 빌드 설정·매니페스트·앱 뼈대를 만든다.
 3. 타입이 올라오면 각자 연결. dev-integration이 묶어서 에뮬레이터에 올리고 실측한다.
 4. 실측 결과에 따라 각 세션이 고친다. 끝까지 반복.
+
+## 6. 위치 연계 코치 추가 (11-13, dev-vehicle-core, 명세 6.4)
+
+담당 경로 추가: dev-vehicle-core가 `app/src/main/assets/zones/**`, `tools/zones/**`를 맡는다.
+
+core 타입 추가(기존 생성자와 호환, 모두 기본값 있음):
+
+```kotlin
+enum class SpeedLimitSource { NAVI, MAP }
+data class VehicleState(
+    ...,
+    val latitude: Double? = null, val longitude: Double? = null, val locationTimeMs: Long? = null,
+    val speedLimitKmh: Int? = null,              // 내비 값 → 없으면 OSM maxspeed. null이면 과속 판정 안 함
+    val speedLimitSource: SpeedLimitSource? = null,
+)
+data class DriveSummary(
+    ...,
+    val speedingCount: Int = 0,                  // 과속 구간 수(제한 +10km/h를 5초 넘게). 말하지 않은 것도 셈
+    val longestSpeedingSec: Int = 0,
+    val schoolZonePasses: Int = 0,
+    val schoolZoneMaxKmh: Int? = null,           // 보호구역 안 최고 속도
+)
+class DefaultDriveCoach(config: CoachConfig = CoachConfig(), zones: SchoolZoneIndex = SchoolZoneIndex.EMPTY, practiced: () -> Set<SituationId> = { emptySet() })
+```
+
+- 생성자 순서가 바뀌었다: 두 번째 인자가 `zones`. 앱은 `DefaultDriveCoach(config, SchoolZoneAssets.load(context)) { practiced }`.
+- K12를 끄려면 `CoachConfig(disabledRules = setOf("K07", "K10", "K12"))`. 끄더라도 요약의 과속 수는 센다.
+- 새 CoachUtterance ruleId: `K11`(urgent=true), `K12`(urgent=false). 둘 다 30분당 말수 제한 밖.
+- `speedKmhEstimate`는 이제 좌표 3초 중앙값(게이트웨이와 코치가 같은 `LocationTrack`을 쓴다).
+- DebugVehicleGateway: `setLocation(lat, lon)`, `setSpeedLimit(kmh)` 추가.
