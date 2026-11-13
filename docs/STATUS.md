@@ -1,6 +1,6 @@
 # 진행 상황
 
-> **최종 빌드 (2026-11-13 14:24, dev-integration)**: 소스 기준 `74a4b92`(voice 10d9624 호출어 규칙·a76254b 듣기 루프 수정, ui 1ac9909 코치 호출어 상태·세로 힌트, knowledge c9120ef 차종 위치 문구, core a81e0a0 이후). `./gradlew :core:test` 78개·`:app:testDebugUnitTest` 106개 통과. `apk/MoodLab_SideSeat_release.apk` 22,961,664바이트(23.0 MB), LLM 키 없음(APK 안 `sk-ant-` 0건). release 스모크(새로 설치, 크래시 0 — 그사이 난 크래시 2건은 가상 디스플레이를 붙였다 뗄 때의 시스템 키보드 `ai.umos.inputmethod`): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 8.1초에 열림(`v5_release_*.jpg`). 이번 회차 실측: 호출어 연속 청취 CPU 앱 0.23 %·서비스 0.63 %(debug), 마이크 공백 3.1 %, 호출어 17/20·오인식 0/20(10d9624), 이름 후보 28개 비교, 차종별 위치 답 4차종 확인, v4·v5 재촬영, 반응 0.25초 안·60 fps. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
+> **최종 빌드 (2026-11-13 15:45, dev-integration)**: 소스 기준 이 커밋(vehicle d662f2e·b62ee6d 위치 연계 코치 K11·K12 연결, 74a4b92 이후). `./gradlew :core:test` 91개·`:app:testDebugUnitTest` 108개 통과. `apk/MoodLab_SideSeat_release.apk` 23,040,246바이트(23.0 MB), LLM 키 없음(`sk-ant-` 0건), `assets/zones/` 두 파일 포함. release 스모크(새로 설치, 크래시 0): 홈 "오늘의 추천" → C1 폭우 ★3·김서림 ★3·급정거 ★1 → D단 코치 K01 → P단 규칙 기반 리뷰(첫 문장 1.6초) → 홈 → 금고 다이얼 7.8초. 시연 경로 재생(release): K11 경로 199초·K12 364초, 리뷰 요약 과속 1번 31초·보호구역 최고 37 km/h, 앱 CPU 평균 0.13 %. 에뮬레이터는 `-allow-host-audio -crash-report-mode never`.
 
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
@@ -129,6 +129,25 @@
 설계 참고(코드 확인): 녹음 콜백은 우리 STT도 Pleos 서비스가 녹음해 구별이 안 되므로 "우리가 쉬는 사이"의 녹음만 다른 앱으로 본다. 위 ②대로 쉬는 시간이 3 %라 다른 앱 녹음은 대부분 감지되지 않을 수 있다.
 
 **⑦ 되묻기 창 오인식** — 답한 뒤 6초 되묻기 창(호출어 없이 받음)에서 방 소리가 질문으로 들어갔다: "한숨만", "지금 요즘으로", "시원한"(호출어 답 9번 뒤 되묻기로 받은 3번이 모두 방 소리). 실차에서도 동승자 말·라디오가 같은 길로 들어올 수 있어 되묻기 창의 최소 글자 수(지금 2자)나 문장 꼴 조건을 음성 세션이 볼 필요가 있다.
+
+### 위치 연계 코치 K11(어린이 보호구역)·K12(과속) 연결·실측 (2026-11-13 15:25~15:50, vehicle d662f2e·b62ee6d)
+
+연결: `SideSeatController(zones = SchoolZoneAssets.load(context))` → `DefaultDriveCoach(zones = …)`. 저장용 `StoredSummary`에 `speedingCount`·`longestSpeedingSec`·`schoolZonePasses`·`schoolZoneMaxKmh`(기본값 있어 이전 파일도 읽힘). 리뷰 로그에 이 값과 규칙 기반 3문장을 함께 남김.
+
+방법: Gear D 코치 모드에서 `tools/zones/replay_geo.sh demo_route_k11_k12.csv 160`(1초마다 `geo fix`, 보호구역 직전부터 455초까지) → 끝나면 Gear P. 기기 시각과 호스트 시각 차(−172.1초)를 보정해 발화를 경로 초와 맞춤. debug 1회(LLM 리뷰), release 1회(키 없음 → 규칙 기반 리뷰). 원본: `docs/screens/sim/logs/k11_k12_replay_*.log`, `cpu_k11_k12_replay_*.csv`.
+
+| 확인 | 결과 |
+| --- | --- |
+| 시작 로그 | `road limits preloaded ways=204 cells=119`, `school zones loaded=2820` (debug·release 모두) |
+| K11 | 경로 **199초**(보호구역, 36 km/h)에 "어린이 보호구역이에요. 30 아래로 가요."(urgent) |
+| 지도 제한속도 | 경로 332초 `sig map speedLimit=80`, 413초에 잠깐 null → 420초 다시 80 |
+| K12 | 경로 **364초**(80 구간을 100 km/h)에 "제한속도가 80이에요. 조금 줄여요." |
+| 리뷰 요약(release) | `speeding=1/31s zonePasses=1 zoneMax=37`, 규칙 기반 총평 "5분 동안 침착하게 잘 왔어요. / 어린이 보호구역에서 최고 37km/h였어요. 다음엔 30 아래로 지나가요. / 다음에 세웠을 때 돌발 모드로 감을 유지해 봐요." — 과속 1번은 요약 숫자에는 있으나 3문장에는 안 나옴 |
+| 리뷰 화면 | "달리면서 한 말"에 K11·K12 두 줄, debug(LLM)는 "어린이 보호구역에서 최고 37킬로미터까지…"(`v6_day_landscape_review_llm.jpg`) |
+| 앱 CPU(전체 4코어 기준) | **release 평균 0.13 %·최대 0.93 %, PSS 61 MB**(287초) / debug 평균 0.30 %·최대 1.12 %, 103 MB. 기준선(release 0.05 %)보다 조금 높지만 1 % 안 |
+| 외부 조회 | 시연 지역은 미리 읽은 제한속도만 써서 Overpass 요청 없음(로그에 조회 없음) |
+
+캡처: `v6_day_landscape_coach_k11.jpg`, `v6_day_landscape_coach_k12.jpg`, `v6_day_landscape_review_llm.jpg`, `v6_release_review_rule_based.jpg`. 남은 일: OSM(ODbL) "© OpenStreetMap contributors" 표시를 앱 화면 어딘가에 넣어야 함(ui 세션에 요청).
 
 ### FusedLocation이 에뮬레이터 위치 주입을 받는지 (2026-11-13 14:40, 디버그 실측 도구 `LocationProbe`)
 

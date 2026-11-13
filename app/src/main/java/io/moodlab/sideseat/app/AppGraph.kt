@@ -46,7 +46,10 @@ object AppGraph {
                 wake = debugWakeConfig(app),
             ),
         )
-        val c = SideSeatController(scope, flow, voice, sfx, instructor, ProgressStore(app), wake = VoiceModule.wake)
+        val c = SideSeatController(
+            scope, flow, voice, sfx, instructor, ProgressStore(app), wake = VoiceModule.wake,
+            zones = io.moodlab.sideseat.vehicle.SchoolZoneAssets.load(app),
+        )
         gatewayFlowRef = flow
         c.start()
         // 차종 키(VIN 앞자리)가 바뀌면 음성 모듈의 차종별 위치 안내·지식을 바꾼다.

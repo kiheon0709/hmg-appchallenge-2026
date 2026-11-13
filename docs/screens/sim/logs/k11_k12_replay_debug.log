@@ -1,0 +1,129 @@
+--------- beginning of main
+         1794551538.769 30280 30280 I SideSeatMeasure: t=31247308 FAIL telltales unavailable: java.lang.SecurityException: registerTelltales need Permission
+         1794551538.789 30280 30280 I SideSeatMeasure: t=31247327 sig ux=requiresDO=false active=0x0
+         1794551538.789 30280 30280 I SideSeatMeasure: t=31247327 sig parked=true via=UX_RESTRICTIONS inputs=ParkedInputs(uxRestricted=false, pleosGearPark=null, aaosGearPark=null, parkingBrakeOn=null)
+         1794551538.900 30280 30280 I SideSeatMeasure: t=31247439 road limits preloaded ways=204 cells=119
+         1794551538.903 30280 30280 I SideSeatMeasure: t=31247441 gateway started config=GatewayConfig(wiperPollMs=200, invertSteering=true, invertOccupancy=true, parkedOrder=[UX_RESTRICTIONS, PARKING_BRAKE], useMapSpeedLimit=true, overpassUrl=https://overpass-api.de/api/interpreter, mapCellDeg=0.005, mapMinIntervalMs=10000, mapRetryMs=60000, mapTimeoutMs=6000, naviLimitFreshMs=3000)
+         1794551538.904 30280 30280 I SideSeatMeasure: voice module create VoiceConfig(llmEnabled=true, provider=anthropic, fastModel=claude-haiku-5-5, reviewModel=claude-opus-5-5, bargeIn=false, chunkedTts=false, speculative=true)
+         1794551538.986 30280 30280 I SideSeatMeasure: knowledge entries=32 chars=9434 vehicles=[avante_cn7, avante_cn8, casper_ax, grandeur_gn7, pleos_default, ray_tam, seltos_sp2]
+         1794551539.008 30280 30280 I SideSeatMeasure: sfx loading [alarm, breath, buzzer, chime, click, engine, engine_rise, fail, hazard, rain, success, thunder, tick, tire, unlock, wake, wind, wiper, yawn]
+         1794551539.012 30280 30280 I SideSeatMeasure: llm prewarm route=FAST x2
+         1794551539.415 30280 30280 I SideSeatMeasure: school zones loaded=2820
+         1794551539.423 30280 30280 I SideSeatMeasure: app first vehicle state parked=true
+         1794551539.426 30280 30280 I SideSeatMeasure: app graph ready debug=true llm=true
+         1794551539.427 30280 30280 I SideSeatMeasure: app coach service started
+         1794551539.756 30280 30348 I SideSeatMeasure: llm prewarm route=FAST conn=new connect=743ms
+         1794551539.770 30280 30347 I SideSeatMeasure: llm prewarm route=FAST conn=new connect=755ms
+         1794551539.791 30280 30597 I SideSeatMeasure: llm prewarm route=REVIEW conn=new connect=775ms
+         1794551539.870 30280 30280 I SideSeatMeasure: tts initialized attempt=1
+         1794551539.871 30280 30280 I SideSeatMeasure: stt initialized attempt=1
+         1794551539.933 30280 30308 I SideSeatMeasure: t=31248472 sig wiperState=OFF
+         1794551539.934 30280 30308 I SideSeatMeasure: t=31248473 FAIL cap rearFog a: ERROR_NOT_SUPPORTED_PROPERTY
+         1794551539.935 30280 30308 I SideSeatMeasure: t=31248474 cap steering=CapabilityConfig(accessType=READ) bounds=-470.0..500.0
+         1794551539.936 30280 30309 I SideSeatMeasure: t=31248475 sig wiperState=OFF
+         1794551539.940 30280 30302 I SideSeatMeasure: t=31248479 FAIL cap frontFog a: ERROR_NOT_SUPPORTED_PROPERTY
+         1794551539.941 30280 30302 I SideSeatMeasure: t=31248479 cap window areas=[[ROW_1_LEFT]:0..10, [ROW_1_RIGHT]:0..10, [ROW_2_LEFT]:0..10, [ROW_2_RIGHT]:0..10]
+         1794551539.949 30280 30665 I SideSeatMeasure: t=31248487 cap ambient=CapabilityConfig(accessType=READ_WRITE) areas=[[ROW_1_LEFT, ROW_1_RIGHT, ROW_2_LEFT, ROW_2_CENTER, ROW_2_RIGHT]]
+         1794551539.950 30280 30639 I SideSeatMeasure: t=31248488 sig steering=0.0
+         1794551539.963 30280 30733 I SideSeatMeasure: t=31248502 sig maxDefrost=false
+         1794551539.965 30280 30733 I SideSeatMeasure: t=31248503 sig maxDefrost=false
+         1794551539.970 30280 30845 I SideSeatMeasure: t=31248509 sig highBeam=OFF
+         1794551539.971 30280 30845 I SideSeatMeasure: t=31248510 sig highBeam=OFF
+         1794551539.972 30280 30845 I SideSeatMeasure: t=31248510 sig defroster=false
+         1794551539.972 30280 30845 I SideSeatMeasure: t=31248511 sig defroster=false
+         1794551539.973 30280 30733 I SideSeatMeasure: t=31248512 sig modelKey="INVALID
+         1794551539.974 30280 30850 I SideSeatMeasure: t=31248512 sig lowBeam=OFF
+         1794551539.975 30280 30850 I SideSeatMeasure: t=31248514 sig lowBeam=OFF
+         1794551539.977 30280 30850 I SideSeatMeasure: t=31248515 sig brake=false
+         1794551539.978 30280 30845 I SideSeatMeasure: t=31248517 sig ac=false
+         1794551539.978 30280 30850 I SideSeatMeasure: t=31248517 sig brake=false
+         1794551539.979 30280 30845 I SideSeatMeasure: t=31248517 sig window[PASSENGER]=0→0%
+         1794551539.979 30280 30845 I SideSeatMeasure: t=31248517 sig window[REAR_LEFT]=0→0%
+         1794551539.979 30280 30845 I SideSeatMeasure: t=31248518 sig window[REAR_RIGHT]=0→0%
+         1794551539.979 30280 30302 I SideSeatMeasure: t=31248518 sig window[DRIVER]=0→0%
+         1794551539.980 30280 30665 I SideSeatMeasure: t=31248519 sig window[PASSENGER]=0→0%
+         1794551539.980 30280 30850 I SideSeatMeasure: t=31248519 sig ac=false
+         1794551539.981 30280 30850 I SideSeatMeasure: t=31248519 sig window[PASSENGER]=0→0%
+         1794551539.981 30280 30850 I SideSeatMeasure: t=31248520 sig window[DRIVER]=0→0%
+         1794551539.983 30280 30850 I SideSeatMeasure: t=31248521 sig turnSignal=OFF
+         1794551539.983 30280 30850 I SideSeatMeasure: t=31248522 sig window[REAR_LEFT]=0→0%
+         1794551539.984 30280 30850 I SideSeatMeasure: t=31248522 sig turnSignal=OFF
+         1794551539.984 30280 30850 I SideSeatMeasure: t=31248522 sig window[REAR_LEFT]=0→0%
+         1794551539.984 30280 30850 I SideSeatMeasure: t=31248523 sig window[REAR_RIGHT]=0→0%
+         1794551539.985 30280 30850 I SideSeatMeasure: t=31248523 sig window[REAR_RIGHT]=0→0%
+         1794551539.985 30280 30850 I SideSeatMeasure: t=31248523 ambient original color=fffff1dc
+         1794551539.986 30280 30845 I SideSeatMeasure: t=31248525 sig recirc=true
+         1794551539.986 30280 30850 I SideSeatMeasure: t=31248525 ambient original brightness=35
+         1794551539.987 30280 30850 I SideSeatMeasure: t=31248525 sig recirc=true
+         1794551539.987 30280 30850 I SideSeatMeasure: t=31248526 sig occupied[REAR_LEFT]=false
+         1794551539.989 30280 30850 I SideSeatMeasure: t=31248527 sig occupied[REAR_RIGHT]=false
+         1794551539.989 30280 30302 I SideSeatMeasure: t=31248528 sig occupied[REAR_LEFT]=false
+         1794551539.990 30280 30302 I SideSeatMeasure: t=31248528 sig occupied[DRIVER]=true
+         1794551539.990 30280 30302 I SideSeatMeasure: t=31248529 sig occupied[PASSENGER]=false
+         1794551539.990 30280 30302 I SideSeatMeasure: t=31248529 sig occupied[REAR_CENTER]=false
+         1794551539.990 30280 30665 I SideSeatMeasure: t=31248529 sig occupied[REAR_RIGHT]=false
+         1794551539.990 30280 30733 I SideSeatMeasure: t=31248529 sig occupied[REAR_RIGHT]=false
+         1794551539.991 30280 30850 I SideSeatMeasure: t=31248529 sig occupied[REAR_CENTER]=false
+         1794551539.991 30280 30850 I SideSeatMeasure: t=31248530 sig occupied[REAR_CENTER]=false
+         1794551539.991 30280 30850 I SideSeatMeasure: t=31248530 sig occupied[DRIVER]=true
+         1794551539.994 30280 30845 I SideSeatMeasure: t=31248533 sig occupied[PASSENGER]=false
+         1794551539.994 30280 30850 I SideSeatMeasure: t=31248533 sig occupied[DRIVER]=true
+         1794551539.995 30280 30850 I SideSeatMeasure: t=31248533 sig occupied[PASSENGER]=false
+         1794551540.001 30280 30280 I SideSeatMeasure: vehicle detected=unknown
+         1794551540.511 30280 30347 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=0 cacheWrite=11060 input=9 at=1495ms
+         1794551540.514 30280 30597 I SideSeatMeasure: llm prewarm route=REVIEW model=claude-opus-5-5 http=200 cacheRead=11061 cacheWrite=0 input=9 at=1498ms
+         1794551540.515 30280 30348 I SideSeatMeasure: llm prewarm route=FAST model=claude-haiku-5-5 http=200 cacheRead=0 cacheWrite=11060 input=9 at=1502ms
+         1794551541.115 30280 30850 I SideSeatMeasure: t=31249654 sig sun rise=428 set=1044
+         1794551549.513 30280 30280 I SideSeatMeasure: t=31258051 sig ux=requiresDO=true active=0x50
+         1794551549.513 30280 30280 I SideSeatMeasure: t=31258051 sig parked=false via=UX_RESTRICTIONS inputs=ParkedInputs(uxRestricted=true, pleosGearPark=null, aaosGearPark=null, parkingBrakeOn=null)
+         1794551549.513 30280 30280 I SideSeatMeasure: app mode HOME -> COACH
+         1794551549.518 30280 30280 I SideSeatMeasure: wake start words=선배
+         1794551549.524 30280 30850 I SideSeatMeasure: t=31258062 set ambient OFF ok value=fffff1dc took=3ms
+         1794551549.552 30280 30280 I SideSeatMeasure: app ambient OFF ok=true took=32ms
+         1794551593.552 30280 30280 I SideSeatMeasure: app coach say rule=K11 urgent=true '어린이 보호구역이에요. 30 아래로 가요.'
+         1794551593.555 30280 30280 I SideSeatMeasure: focus[tts] request result=GRANTED
+         1794551593.555 30280 30280 I SideSeatMeasure: tts speak chars=23
+         1794551593.556 30280 30280 I SideSeatMeasure: sfx duck=0.32
+         1794551593.572 30280 30280 I SideSeatMeasure: tts start
+         1794551596.511 30280 30280 I SideSeatMeasure: tts done
+         1794551596.512 30280 30280 I SideSeatMeasure: sfx duck=1.0
+         1794551596.513 30280 30280 I SideSeatMeasure: focus[tts] abandon
+         1794551726.124 30280 30845 I SideSeatMeasure: t=31434663 sig map speedLimit=80
+         1794551757.664 30280 30280 I SideSeatMeasure: app coach say rule=K12 urgent=false '제한속도가 80이에요. 조금 줄여요.'
+         1794551757.667 30280 30280 I SideSeatMeasure: focus[tts] request result=GRANTED
+         1794551757.667 30280 30280 I SideSeatMeasure: tts speak chars=20
+         1794551757.667 30280 30280 I SideSeatMeasure: sfx duck=0.32
+         1794551757.670 30280 30280 I SideSeatMeasure: tts start
+         1794551760.634 30280 30280 I SideSeatMeasure: tts done
+         1794551760.634 30280 30280 I SideSeatMeasure: sfx duck=1.0
+         1794551760.636 30280 30280 I SideSeatMeasure: focus[tts] abandon
+         1794551806.644 30280 30850 I SideSeatMeasure: t=31515183 sig map speedLimit=null
+         1794551813.676 30280 30850 I SideSeatMeasure: t=31522214 sig map speedLimit=80
+         1794551842.827 30280 30850 I SideSeatMeasure: t=31551365 sig sun rise=429 set=1044
+         1794551852.573 30280 30280 I SideSeatMeasure: t=31561112 sig ux=requiresDO=false active=0x0
+         1794551852.573 30280 30280 I SideSeatMeasure: t=31561112 sig parked=true via=UX_RESTRICTIONS inputs=ParkedInputs(uxRestricted=false, pleosGearPark=null, aaosGearPark=null, parkingBrakeOn=null)
+         1794551852.574 30280 30280 I SideSeatMeasure: wake stop state=OFF cycles=25 restarts=24 wakes=0 followUps=0 followUpRejected=0 gleo=0 interference=0 errors=0 backoffLeft=0ms
+         1794551852.576 30280 30280 I SideSeatMeasure: app review summary min=5 rain=0 night=0 said=2 obs={}
+         1794551852.576 30280 30280 I SideSeatMeasure: app mode COACH -> REVIEW
+         1794551852.582 30280 30280 I SideSeatMeasure: focus[tts] request result=GRANTED
+         1794551852.583 30280 30845 I SideSeatMeasure: t=31561121 set ambient CALM ok value=fffff1dc took=3ms
+         1794551852.583 30280 30280 I SideSeatMeasure: sfx duck=0.32
+         1794551852.661 30280 30280 I SideSeatMeasure: app ambient CALM ok=true took=81ms
+         1794551853.285 30280 30280 I SideSeatMeasure: app review first sentence after=704ms
+         1794551853.285 30280 30280 I SideSeatMeasure: tts speak(seq) chars=16
+         1794551853.289 30280 30280 I SideSeatMeasure: tts start
+         1794551853.397 30280 30347 I SideSeatMeasure: llm#1 route=REVIEW conn=new connect=813ms
+         1794551853.407 30280 30347 I SideSeatMeasure: llm#1 sent at=823ms
+         1794551855.508 30280 30280 I SideSeatMeasure: tts done
+         1794551857.339 30280 30347 I SideSeatMeasure: llm#1 headers route=REVIEW model=claude-opus-5-5 at=4755ms
+         1794551857.340 30280 30347 I SideSeatMeasure: llm#1 start route=REVIEW served=claude-opus-5-5 input=526 cacheRead=0 cacheWrite=11061 at=4755ms
+         1794551857.340 30280 30347 I SideSeatMeasure: llm#1 first text route=REVIEW at=4756ms
+         1794551857.697 30280 30280 I SideSeatMeasure: tts speak(seq) chars=17
+         1794551857.699 30280 30280 I SideSeatMeasure: tts start
+         1794551858.029 30280 30347 I SideSeatMeasure: llm#1 stop=end_turn out=98 at=5444ms
+         1794551860.100 30280 30280 I SideSeatMeasure: tts done
+         1794551860.100 30280 30280 I SideSeatMeasure: tts speak(seq) chars=45
+         1794551860.103 30280 30280 I SideSeatMeasure: tts start
+         1794551865.809 30280 30280 I SideSeatMeasure: tts done
+         1794551865.810 30280 30280 I SideSeatMeasure: tts speak(seq) chars=27
+         1794551865.812 30280 30280 I SideSeatMeasure: tts start

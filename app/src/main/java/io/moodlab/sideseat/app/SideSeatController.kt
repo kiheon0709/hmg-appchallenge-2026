@@ -13,6 +13,7 @@ import io.moodlab.sideseat.core.DefaultWindowBuzzerGame
 import io.moodlab.sideseat.core.DriveCoach
 import io.moodlab.sideseat.core.DriveSummary
 import io.moodlab.sideseat.core.ReplyKind
+import io.moodlab.sideseat.core.SchoolZoneIndex
 import io.moodlab.sideseat.core.SituationId
 import io.moodlab.sideseat.core.TrainingEngine
 import io.moodlab.sideseat.core.TrainingPhase
@@ -62,10 +63,12 @@ class SideSeatController(
     private val now: () -> Long = SystemClock::elapsedRealtime,
     /** 주행 중 호출어("선배") 연속 청취. 코치 모드에서만 켠다. 없으면 버튼으로만 질문. */
     private val wake: WakeListening? = null,
+    /** 어린이 보호구역(K11). 비면 K11은 꺼진 채로 돈다. */
+    zones: SchoolZoneIndex = SchoolZoneIndex.EMPTY,
 ) {
     private val engine: TrainingEngine = DefaultTrainingEngine()
     private var progress: TrainingProgress = store.loadProgress().also { engine.restore(it) }
-    private val coach: DriveCoach = DefaultDriveCoach(practiced = ::practicedSituations)
+    private val coach: DriveCoach = DefaultDriveCoach(zones = zones, practiced = ::practicedSituations)
     private val safeDial = DefaultSafeDialGame()
     private val turnGame = DefaultTurnSignalGame()
     private val windowGame = DefaultWindowBuzzerGame()
@@ -208,7 +211,8 @@ class SideSeatController(
         val previous = lastDrive
         lastDrive = summary
         store.saveLastDrive(summary)
-        Log.i(TAG, "app review summary min=${summary.durationMin} rain=${summary.rainMin} night=${summary.nightMin} said=${summary.utterances.size} obs=${summary.observations}")
+        Log.i(TAG, "app review summary min=${summary.durationMin} rain=${summary.rainMin} night=${summary.nightMin} said=${summary.utterances.size} obs=${summary.observations} " +
+            "speeding=${summary.speedingCount}/${summary.longestSpeedingSec}s zonePasses=${summary.schoolZonePasses} zoneMax=${summary.schoolZoneMaxKmh} review=${summary.ruleBasedReview}")
         val suggested = summary.suggestedSituation
         _ui.update {
             it.copy(review = ReviewUi(summary = summary, previous = previous, reviewStreaming = true,

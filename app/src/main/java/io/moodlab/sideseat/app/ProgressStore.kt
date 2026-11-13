@@ -46,6 +46,11 @@ class ProgressStore(context: Context) {
         val observations: Map<String, Int>,
         val suggestedSituation: String?,
         val ruleBasedReview: List<String>,
+        // 위치 연계 코치(명세 6.4). 이전 파일에는 없으므로 기본값을 둔다.
+        val speedingCount: Int = 0,
+        val longestSpeedingSec: Int = 0,
+        val schoolZonePasses: Int = 0,
+        val schoolZoneMaxKmh: Int? = null,
     ) {
         fun toSummary() = DriveSummary(
             durationMin, rainMin, nightMin,
@@ -53,6 +58,7 @@ class ProgressStore(context: Context) {
             observations,
             suggestedSituation?.let { runCatching { SituationId.valueOf(it) }.getOrNull() },
             ruleBasedReview,
+            speedingCount, longestSpeedingSec, schoolZonePasses, schoolZoneMaxKmh,
         )
 
         companion object {
@@ -60,6 +66,7 @@ class ProgressStore(context: Context) {
                 s.durationMin, s.rainMin, s.nightMin,
                 s.utterances.map { StoredUtterance(it.ruleId, it.text, it.urgent) },
                 s.observations, s.suggestedSituation?.name, s.ruleBasedReview,
+                s.speedingCount, s.longestSpeedingSec, s.schoolZonePasses, s.schoolZoneMaxKmh,
             )
         }
     }
