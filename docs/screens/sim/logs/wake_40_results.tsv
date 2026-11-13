@@ -1,0 +1,40 @@
+w00	wake	Yuna-r160	선배, 안개등 어떻게 켜?	선택 안개등 어떻게 켜?	-	
+w01	wake	Yuna-r180	선배 앞유리가 뿌예	선배 아큐리가 부의	WAKE	app wake question '아큐리가 부의'
+w02	wake	Yuna-r200	선배님 와이퍼 어디 있어?	선배님 와이퍼 어디에 있어?	WAKE	app wake question '와이퍼 어'
+w03	wake	Yuna-r220	저기 선배, 졸려	저기 근데 졸려	-	
+w04	wake	Yuna-r160	선배 타이어 경고등이 떴어	300 타이어 경고등이 떴어	-	
+w05	wake	Yuna-r180	선배, 외기는 왜 바꿔야 돼?	선택 -기는 왜 바꿔야 돼?	-	
+w06	wake	Yuna-r200	선배 비상등 버튼 어디야	선배 비상등 버튼 어디야	WAKE	app wake question '비상등 버튼 어'
+w07	wake	Yuna-r220	야 선배, 전조등 켰어?	대학생 때 전조등 교성	-	
+w08	wake	Yuna-r160	선배님, 김서림 어떻게 없애?	선배님 김서림 어떻게 없	WAKE	app wake question '김서림 어떻게'
+w09	wake	Yuna-r180	선배 다음 휴게소까지 얼마나 남았어?	선배 다음 휴게소까지 얼마나 남았어?	WAKE	app wake question '다음 휴게소까지 얼마나'
+w10	wake	Yuna-r200	선배, 상향등 언제 써?	선택 상향 등 언제 써	WAKE	app wake question '선택 상향 등 언제 써?'
+w11	wake	Yuna-r220	선배 터널에서는 뭐 켜야 돼?	300 터널에서는 무역 계약을	-	
+w12	wake	Yuna-r160	선배님 에어컨 켜도 돼?	선배님 에어컨 켜도 돼?	WAKE	app wake question '에어컨 켜도 돼?'
+w13	wake	Yuna-r180	선배, 깜빡이 끄는 거 맞지?	선택 깜빡이 끄는 거 맞지	-	
+w14	wake	Yuna-r200	선배 비 오는데 속도 줄여야 해?	선배 비 오는데 속도 줄여야 해	WAKE	app wake question '비 오는데'
+w15	wake	Yuna-r220	선배, 성에 제거 버튼 어디 있어?	선택 성인 제거 버튼 어디에 있어?	-	
+w16	wake	Yuna-r160	선배님 주차 브레이크 어떻게 채워?	선배님 주차 브레이크 어떻게 채워	-	
+w17	wake	Yuna-r180	선배 지금 뭐 하면 돼?	선배 지금 뭘 하면 되	WAKE	app wake question '주차 브레이크 어떻게'
+w18	wake	Yuna-r200	선배, 내기 순환 끌까?	선택 내기순환 끌까	-	
+w19	wake	Yuna-r220	저기 선배님, 이 경고등 뭐야?	저기 선배님 이 경고등 뭐야	WAKE	app wake question '이 경고등 뭐야'
+p00	plain	Yuna-r160	오늘 날씨 진짜 좋다	오늘 날씨 진짜 좋다	-	
+p01	plain	Yuna-r180	배고픈데 뭐 먹을까	배고픈데 뭐 먹을까	-	
+p02	plain	Yuna-r200	음악 좀 틀어 줘	음악 좀 틀어줘	-	
+p03	plain	Yuna-r220	엄마한테 전화해야 하는데	엄마한테 전화해야 하는데	-	
+p04	plain	Yuna-r160	이 길 처음 와 보네	이 길 처음으로 보내	-	
+p05	plain	Yuna-r180	어제 선배랑 밥 먹었어	어제 선배랑 밥 먹었어	-	
+p06	plain	Yuna-r200	주말에 바다 가고 싶다	주말에 바다 가고 싶다	-	
+p07	plain	Yuna-r220	커피 한 잔 마시고 싶어	커피 한 잔 마시고 싶어	-	
+p08	plain	Yuna-r160	내일 회의가 몇 시였지	내일 회의가 몇 시였지	-	
+p09	plain	Yuna-r180	차가 좀 막히네	차가 좀 막히네	-	
+p10	plain	Yuna-r200	라디오에서 좋은 노래 나온다	라디오에서 좋은 노래 나온다	-	
+p11	plain	Yuna-r220	창밖 경치 예쁘다	생닭 경치 예쁘다	-	
+p12	plain	Yuna-r160	도착하면 연락할게	도착하면 연락할게	-	
+p13	plain	Yuna-r180	휴게소 들를까 말까	휴게소 들릴까 말까	-	
+p14	plain	Yuna-r200	친구가 선배 얘기를 하더라	친구가 선배 얘기를 하더라	-	
+p15	plain	Yuna-r220	시험 공부 해야 하는데	시험 공부해야 하는데	-	
+p16	plain	Yuna-r160	저녁에 영화 볼래	저녁에 영화 볼래	-	
+p17	plain	Yuna-r180	에어컨 바람이 좀 세다	에어컨 바람이 좀 세다	-	
+p18	plain	Yuna-r200	오늘 하루 길었다	오늘 하루 길었다	-	
+p19	plain	Yuna-r220	집에 가면 바로 잘 거야	집에 가면 바로 잘 거	-	

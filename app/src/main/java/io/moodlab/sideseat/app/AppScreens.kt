@@ -13,6 +13,9 @@ import io.moodlab.sideseat.ui.TurnSignalGameScreen
 import io.moodlab.sideseat.ui.WindowBuzzerScreen
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import io.moodlab.sideseat.ui.LocalSwitchLocation
+import io.moodlab.sideseat.voice.VoiceModule
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import io.moodlab.sideseat.ui.CoachScreen
@@ -27,6 +30,14 @@ import io.moodlab.sideseat.ui.UiAction
 /** 모드에 맞는 화면 하나를 고른다. 화면은 ui 패키지(dev-sim-ui)가 그린다. */
 @Composable
 fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((VehicleState) -> Unit)? = null) {
+    // 이 차의 스위치 위치 문장(차종별 지식 파일). 화면은 음성 모듈을 직접 만지지 않는다.
+    CompositionLocalProvider(LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) }) {
+        AppScreensBody(ui, onAction, onDebugChange)
+    }
+}
+
+@Composable
+private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((VehicleState) -> Unit)?) {
     Box(Modifier.fillMaxSize().background(Sc.bg)) {
         when (ui.mode) {
             AppMode.HOME -> HomeScreen(ui.home, onAction)

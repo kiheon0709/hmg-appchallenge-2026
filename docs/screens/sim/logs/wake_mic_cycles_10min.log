@@ -1,0 +1,200 @@
+         1794541966.023  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794541966.023  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@e7bed37
+         1794541966.153  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794541966.166  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794541978.023  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794541978.023  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@c94f2a4
+         1794541978.384  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794541978.392  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794541990.325  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794541990.325  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@c31780d
+         1794541990.708  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794541990.716  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542002.630  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542002.630  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@ab243c2
+         1794542003.012  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542003.020  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542014.933  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542014.933  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@89825d3
+         1794542015.296  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542015.302  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542027.235  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542027.235  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@8809510
+         1794542027.599  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542027.606  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542039.538  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542039.538  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@68a8809
+         1794542039.905  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542039.921  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542051.840  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542051.840  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@e64da0e
+         1794542052.203  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542052.210  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542064.143  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542064.143  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@354c2f
+         1794542064.508  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542064.519  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542076.446  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542076.446  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@f41f23c
+         1794542076.814  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542076.818  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542088.748  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542088.748  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@d4a9bc5
+         1794542089.112  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542089.118  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542101.050  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542101.050  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@398891a
+         1794542101.418  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542101.425  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542113.354  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542113.354  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@5d47c4b
+         1794542113.718  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542113.723  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542125.553  2693 22662 I [GAAS]AudioRecorderImpl: [DefaultDispatcher-worker-4]Session.stop(io.moodlab.sideseat) session=1
+         1794542125.553  2693 22662 I [GAAS]AudioRecorderImpl: [DefaultDispatcher-worker-4]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@659f628
+         1794542125.936  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542125.949  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542137.878  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542137.879  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@83e2f41
+         1794542138.269  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542138.276  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542150.181  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542150.181  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@2261ce6
+         1794542150.543  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542150.553  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542162.483  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542162.483  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@6ec9227
+         1794542162.851  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542162.859  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542174.785  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542174.785  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@86c4cd4
+         1794542175.149  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542175.154  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542187.087  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542187.087  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@57d7e7d
+         1794542187.459  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542187.467  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542199.390  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542199.390  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@4a72172
+         1794542199.750  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542199.757  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542211.692  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542211.692  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@78629c3
+         1794542212.205  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542212.212  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542223.995  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542223.995  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@4ab6240
+         1794542224.366  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542224.371  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542236.297  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542236.297  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@2688579
+         1794542236.668  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542236.675  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542248.599  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542248.599  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@3c1e2be
+         1794542248.963  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542248.969  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542260.902  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542260.902  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@9979f1f
+         1794542261.273  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542261.278  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542273.203  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542273.203  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@904626c
+         1794542273.577  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542273.583  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542285.506  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542285.506  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@8630035
+         1794542285.877  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542285.883  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542297.807  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542297.807  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@a356cca
+         1794542298.188  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542298.196  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542310.112  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542310.112  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@e210e3b
+         1794542310.492  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542310.500  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542322.412  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542322.412  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@30b3958
+         1794542322.779  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542322.787  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542334.714  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542334.714  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@9506ab1
+         1794542335.083  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542335.091  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542347.016  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542347.016  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@da58b96
+         1794542347.399  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542347.407  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542359.318  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542359.318  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@c085317
+         1794542359.692  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542359.701  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542371.619  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542371.619  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@3a69304
+         1794542371.996  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542372.004  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542383.922  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542383.922  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@7d000ed
+         1794542384.289  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542384.294  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542396.225  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542396.225  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@826cb22
+         1794542396.602  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542396.613  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542408.528  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542408.528  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@8b509b3
+         1794542408.889  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542408.897  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542420.830  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542420.830  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@17bdb70
+         1794542421.196  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542421.199  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542433.134  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542433.134  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@738bee9
+         1794542433.507  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542433.515  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542445.436  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542445.436  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@e8a776e
+         1794542445.812  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542445.816  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542457.739  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542457.739  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@e6c8e0f
+         1794542458.102  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542458.107  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542470.044  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542470.044  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@61b3e9c
+         1794542470.412  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542470.417  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542482.345  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542482.346  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@f5560a5
+         1794542482.710  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542482.716  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542494.647  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542494.647  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@f6a9c7a
+         1794542495.024  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542495.029  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542506.949  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542506.950  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@c6dfc2b
+         1794542507.319  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542507.325  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542519.251  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542519.251  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@1eba888
+         1794542519.765  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542519.773  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542531.553  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542531.553  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@fe06221
+         1794542531.917  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542531.924  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542543.854  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542543.854  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@6f60646
+         1794542544.217  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542544.225  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542556.156  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542556.156  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@cce3007
+         1794542556.522  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542556.530  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200
+         1794542568.457  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]Session.stop(io.moodlab.sideseat) session=1
+         1794542568.457  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@2d6c534
+         1794542568.828  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542568.835  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]createAudioRecord(io.moodlab.sideseat) sessionId=1 sampleRate=16000 bufferSize=3200

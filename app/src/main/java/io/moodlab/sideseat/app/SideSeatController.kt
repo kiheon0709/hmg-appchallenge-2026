@@ -26,6 +26,7 @@ import io.moodlab.sideseat.ui.UiAction
 import io.moodlab.sideseat.vehicle.VehicleGateway
 import io.moodlab.sideseat.voice.Instructor
 import io.moodlab.sideseat.voice.PleosVoice
+import io.moodlab.sideseat.voice.WakeListening
 import io.moodlab.sideseat.voice.Sfx
 import io.moodlab.sideseat.voice.Voice
 import kotlinx.coroutines.CoroutineScope
@@ -57,6 +58,8 @@ class SideSeatController(
     private val instructor: Instructor,
     private val store: ProgressStore,
     private val now: () -> Long = SystemClock::elapsedRealtime,
+    /** 주행 중 호출어("선배") 연속 청취. 코치 모드에서만 켠다. 없으면 버튼으로만 질문. */
+    private val wake: WakeListening? = null,
 ) {
     private val engine: TrainingEngine = DefaultTrainingEngine()
     private var progress: TrainingProgress = store.loadProgress().also { engine.restore(it) }
@@ -145,6 +148,7 @@ class SideSeatController(
         }
         setMode(AppMode.COACH)
         coach.onDriveStart(t)
+        wake?.start { q -> answerWakeQuestion(q) }
         startLoop(periodMs = 1_000) { coachTick() }
     }
 
@@ -170,7 +174,21 @@ class SideSeatController(
     }
 
     /** 다시 P: 주행 요약을 만들고 선배가 총평한다(명세 7장). */
+    /** 호출어로 들어온 질문에 주행 중 답(1~2문장). 말이 끝날 때까지 기다려야 다음 청취가 이어진다. */
+    private suspend fun answerWakeQuestion(q: String) {
+        Log.i(TAG, "app wake question '$q'")
+        updateTalk { it.copy(partialText = q, thinking = true, answerText = null) }
+        val context = questionContext()
+        instructor.prepareQuestion(false, context)
+        voice.sayStreaming(instructor.answer(q, false, context).onEach { line ->
+            updateTalk { it.copy(thinking = false, answerText = listOfNotNull(it.answerText, line).joinToString(" ")) }
+            _ui.update { s -> s.copy(coach = s.coach.copy(lastLine = coachLine(line))) }
+        })
+        updateTalk { it.copy(thinking = false) }
+    }
+
     private fun enterReview() {
+        wake?.stop()
         stopLoop()
         talkJob?.cancel()
         val summary = coach.onDriveEnd(now())

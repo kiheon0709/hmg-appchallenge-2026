@@ -13,6 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /**
  * 프로세스에 하나뿐인 부품 묶음(간단한 DI). 화면(MainActivity)과 코치 서비스가 같은 컨트롤러를 본다.
@@ -40,11 +43,16 @@ object AppGraph {
                 fastModel = BuildConfig.LLM_MODEL_FAST,
                 reviewModel = BuildConfig.LLM_MODEL_REVIEW,
                 provider = BuildConfig.LLM_PROVIDER,
+                wake = debugWakeConfig(app),
             ),
         )
-        val c = SideSeatController(scope, flow, voice, sfx, instructor, ProgressStore(app))
+        val c = SideSeatController(scope, flow, voice, sfx, instructor, ProgressStore(app), wake = VoiceModule.wake)
         gatewayFlowRef = flow
         c.start()
+        // 차종 키(VIN 앞자리)가 바뀌면 음성 모듈의 차종별 위치 안내·지식을 바꾼다.
+        scope.launch {
+            c.ui.map { it.vehicle.vehicleModelKey }.distinctUntilChanged().collect { VoiceModule.setVehicle(it) }
+        }
         if (BuildConfig.DEBUG) DebugCommands(app, c).register()
         controller = c
         Log.i("SideSeatMeasure", "app graph ready debug=${BuildConfig.DEBUG} llm=${BuildConfig.LLM_API_KEY.isNotBlank()}")
@@ -52,6 +60,22 @@ object AppGraph {
     }
 
     private var gatewayFlowRef: MutableStateFlow<VehicleGateway>? = null
+
+    /**
+     * 디버그 빌드 실측용: files/wake_config.txt(`cycleMaxMs=12000`, `restartGapMs=300` 줄)가 있으면 연속 청취 설정을 바꾼다.
+     * release는 항상 기본값.
+     */
+    private fun debugWakeConfig(app: Context): io.moodlab.sideseat.voice.WakeConfig {
+        val base = io.moodlab.sideseat.voice.WakeConfig()
+        if (!BuildConfig.DEBUG) return base
+        val f = java.io.File(app.filesDir, "wake_config.txt")
+        if (!f.exists()) return base
+        val kv = f.readLines().mapNotNull { it.split("=").takeIf { p -> p.size == 2 }?.let { p -> p[0].trim() to p[1].trim().toLongOrNull() } }.toMap()
+        return base.copy(
+            cycleMaxMs = kv["cycleMaxMs"] ?: base.cycleMaxMs,
+            restartGapMs = kv["restartGapMs"] ?: base.restartGapMs,
+        ).also { Log.i("SideSeatMeasure", "app debug wake config $it") }
+    }
 
     /** 디버그 빌드: 화면 패널로 값을 바꾸는 가짜 차로 전환한다(Virtual Console 없이 UI 확인용). */
     fun debugGateway(): DebugVehicleGateway? = debug

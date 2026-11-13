@@ -1,0 +1,27 @@
+         1794542602.518  4072  4072 I SideSeatMeasure: wake pcm queued bytes=76698
+         1794542605.364  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@c13c5a3
+         1794542606.593  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(헤이글)
+         1794542606.996  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(헤이 클레어)
+         1794542607.402  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(헤이 클레어 오늘)
+         1794542607.804  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(헤이 클레어 오늘 날씨 어)
+         1794542608.107  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=663) Final Result!! = 헤이 클레어 오늘 날씨 어때
+         1794542625.966  2693  2719 I [GAAS]OnDeviceSttBinder: [binder:2693_2]request(io.moodlab.sideseat) version=4.2.10-coral-aosp, speechSdkVersion=1.17.1, systemVrdbVersion=
+         1794542626.188  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542627.565  4072  4072 I SideSeatMeasure: wake pcm queued bytes=62506
+         1794542637.967  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@9b500a0
+         1794542639.195  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(클레오)
+         1794542639.196  4072  4072 I SideSeatMeasure: wake gleo heard, back off
+         1794542649.197  2693  2719 I [GAAS]OnDeviceSttBinder: [binder:2693_2]request(io.moodlab.sideseat) version=4.2.10-coral-aosp, speechSdkVersion=1.17.1, systemVrdbVersion=
+         1794542649.260  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]start(io.moodlab.sideseat) session=1
+         1794542652.612  4072  4072 I SideSeatMeasure: wake pcm queued bytes=95554
+         1794542661.198  2693 24356 I [GAAS]AudioRecorderImpl: [ondevice-stt-input-channel]releaseRecord(io.moodlab.sideseat) state=1 android.media.AudioRecord@4023459
+         1794542662.122  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(선)
+         1794542662.525  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(선배님)
+         1794542662.931  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(선배님 와이퍼 어)
+         1794542663.335  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(선배님 와이퍼 어디에 있)
+         1794542663.744  2693 22662 I [GAAS]a : [DefaultDispatcher-worker-4]update cmd(UpdateSttResult) id(io.moodlab.sideseat) data(선배님 와이퍼 어디에 있어?)
+         1794542663.843  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=671) Final Result!! = 선배님 와이퍼 어디에 있어?
+         1794542681.499  4072  4072 I SideSeatMeasure: wake word questionChars=5
+         1794542681.499  4072  4072 I SideSeatMeasure: app wake question '와이퍼 어'
+         1794542681.517  4072  4072 I SideSeatMeasure: app debug wake status state=SPEAKING cycles=57 restarts=54 wakes=1 followUps=0 gleo=1 interference=0 errors=0 backoffLeft=0ms pendingPcm=0
+         1794542681.529  4072  4072 I SideSeatMeasure: tts start

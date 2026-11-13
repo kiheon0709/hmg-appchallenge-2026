@@ -1,0 +1,91 @@
+         1794540294.157 29389 29389 I SideSeatMeasure: wake pcm queued bytes=108890
+         1794540306.985  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=318) Final Result!! = 선택 안개등 어떻게 켜?
+         1794540324.248 29389 29389 I SideSeatMeasure: wake pcm queued bytes=87714
+         1794540326.685  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=321) Final Result!! = 선배 아큐리가 부의
+         1794540326.687 29389 29389 I SideSeatMeasure: app wake question '아큐리가 부의'
+         1794540352.286 29389 29389 I SideSeatMeasure: wake pcm queued bytes=95554
+         1794540358.360  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=326) Final Result!! = 선배님 와이퍼 어디에 있어?
+         1794540376.015 29389 29389 I SideSeatMeasure: app wake question '와이퍼 어'
+         1794540380.324 29389 29389 I SideSeatMeasure: wake pcm queued bytes=81686
+         1794540383.633  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=329) Final Result!! = 저기 근데 졸려
+         1794540408.362 29389 29389 I SideSeatMeasure: wake pcm queued bytes=111862
+         1794540423.447  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=336) Final Result!! = 300 타이어 경고등이 떴어
+         1794540440.604 29389 29389 I SideSeatMeasure: wake pcm queued bytes=110376
+         1794540443.746  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=339) Final Result!! = 선택 -기는 왜 바꿔야 돼?
+         1794540468.642 29389 29389 I SideSeatMeasure: wake pcm queued bytes=98154
+         1794540471.098  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=344) Final Result!! = 선배 비상등 버튼 어디야
+         1794540488.653 29389 29389 I SideSeatMeasure: app wake question '비상등 버튼 어'
+         1794540496.679 29389 29389 I SideSeatMeasure: wake pcm queued bytes=95620
+         1794540503.421  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=349) Final Result!! = 대학생 때 전조등 교성
+         1794540524.718 29389 29389 I SideSeatMeasure: wake pcm queued bytes=119292
+         1794540531.376  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=354) Final Result!! = 선배님 김서림 어떻게 없애?
+         1794540548.328 29389 29389 I SideSeatMeasure: app wake question '김서림 어떻게'
+         1794540552.757 29389 29389 I SideSeatMeasure: wake pcm queued bytes=132296
+         1794540561.868  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=359) Final Result!! = 선배 다음 휴게소까지 얼마나 남았어?
+         1794540578.321 29389 29389 I SideSeatMeasure: app wake question '다음 휴게소까지 얼마나'
+         1794540580.796 29389 29389 I SideSeatMeasure: wake pcm queued bytes=100012
+         1794540585.147  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=362) Final Result!! = 선택 상향 등 언제 써?
+         1794540585.148 29389 29389 I SideSeatMeasure: app wake question '선택 상향 등 언제 써?'
+         1794540608.834 29389 29389 I SideSeatMeasure: wake pcm queued bytes=95598
+         1794540622.716  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=369) Final Result!! = 300 터널에서는 무역 계약을
+         1794540636.875 29389 29389 I SideSeatMeasure: wake pcm queued bytes=94772
+         1794540649.961  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=374) Final Result!! = 선배님 에어컨 켜도 돼?
+         1794540649.964 29389 29389 I SideSeatMeasure: app wake question '에어컨 켜도 돼?'
+         1794540664.913 29389 29389 I SideSeatMeasure: wake pcm queued bytes=115950
+         1794540676.124  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=379) Final Result!! = 선택 깜빡이 끄는 거 맞지?
+         1794540693.084 29389 29389 I SideSeatMeasure: wake pcm queued bytes=100012
+         1794540695.922  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=382) Final Result!! = 선배 비 오는데 속도 줄여야 해?
+         1794540713.385 29389 29389 I SideSeatMeasure: app wake question '비 오는데'
+         1794540721.123 29389 29389 I SideSeatMeasure: wake pcm queued bytes=113430
+         1794540730.324  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=387) Final Result!! = 선택 성인 제거 버튼 어디에 있어?
+         1794540749.158 29389 29389 I SideSeatMeasure: wake pcm queued bytes=121894
+         1794540763.129  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=392) Final Result!! = 선배님 주차 브레이크 어떻게 채워
+         1794540779.985 29389 29389 I SideSeatMeasure: app wake question '주차 브레이크 어떻게'
+         1794540779.995 29389 29389 I SideSeatMeasure: wake pcm queued bytes=94402
+         1794540787.868  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=395) Final Result!! = 선배 지금 뭘 하면 돼?
+         1794540799.532 29389 29389 I SideSeatMeasure: app wake question '지'
+         1794540808.031 29389 29389 I SideSeatMeasure: wake pcm queued bytes=97782
+         1794540815.340  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=400) Final Result!! = 선택 내기순환 끌까?
+         1794540836.069 29389 29389 I SideSeatMeasure: wake pcm queued bytes=102864
+         1794540842.884  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=405) Final Result!! = 저기 선배님 이 경고등 뭐야?
+         1794540860.246 29389 29389 I SideSeatMeasure: app wake question '이 경고등 뭐야'
+         1794540864.106 29389 29389 I SideSeatMeasure: wake pcm queued bytes=95172
+         1794540868.346  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=408) Final Result!! = 오늘 날씨 진짜 좋다
+         1794540892.140 29389 29389 I SideSeatMeasure: wake pcm queued bytes=93756
+         1794540894.850  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=413) Final Result!! = 배고픈데 뭐 먹을까
+         1794540920.178 29389 29389 I SideSeatMeasure: wake pcm queued bytes=76642
+         1794540926.951  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=418) Final Result!! = 음악 좀 틀어줘
+         1794540948.217 29389 29389 I SideSeatMeasure: wake pcm queued bytes=88186
+         1794540959.961  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=423) Final Result!! = 엄마한테 전화해야 하는데
+         1794540977.821 29389 29389 I SideSeatMeasure: wake pcm queued bytes=88100
+         1794540980.259  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=426) Final Result!! = 이 길 처음으로 보내
+         1794541005.861 29389 29389 I SideSeatMeasure: wake pcm queued bytes=99998
+         1794541013.173  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=431) Final Result!! = 어제 선배랑 밥 먹었어
+         1794541033.899 29389 29389 I SideSeatMeasure: wake pcm queued bytes=87456
+         1794541045.469  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=436) Final Result!! = 주말에 바다 가고 싶다
+         1794541063.331 29389 29389 I SideSeatMeasure: wake pcm queued bytes=87516
+         1794541065.764  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=439) Final Result!! = 커피 한 잔 마시고 싶어
+         1794541091.370 29389 29389 I SideSeatMeasure: wake pcm queued bytes=94416
+         1794541098.571  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=444) Final Result!! = 내일 회의가 몇 시였지
+         1794541119.407 29389 29389 I SideSeatMeasure: wake pcm queued bytes=78618
+         1794541130.669  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=449) Final Result!! = 차가 좀 막히네
+         1794541147.446 29389 29389 I SideSeatMeasure: wake pcm queued bytes=100422
+         1794541158.115  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=454) Final Result!! = 라디오에서 좋은 노래 나온다
+         1794541175.578 29389 29389 I SideSeatMeasure: wake pcm queued bytes=81430
+         1794541177.814  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=457) Final Result!! = 생닭 경치 예쁘다
+         1794541203.617 29389 29389 I SideSeatMeasure: wake pcm queued bytes=100870
+         1794541217.560  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=464) Final Result!! = 도착하면 연락할게
+         1794541235.023 29389 29389 I SideSeatMeasure: wake pcm queued bytes=93248
+         1794541237.557  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=467) Final Result!! = 휴게소 들릴까 말까
+         1794541263.060 29389 29389 I SideSeatMeasure: wake pcm queued bytes=96486
+         1794541270.262  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=472) Final Result!! = 친구가 선배 얘기를 하더라
+         1794541291.096 29389 29389 I SideSeatMeasure: wake pcm queued bytes=82222
+         1794541302.466  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=477) Final Result!! = 시험 공부해야 하는데
+         1794541319.137 29389 29389 I SideSeatMeasure: wake pcm queued bytes=85550
+         1794541329.407  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=482) Final Result!! = 저녁에 영화 볼래
+         1794541347.173 29389 29389 I SideSeatMeasure: wake pcm queued bytes=95548
+         1794541356.648  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=487) Final Result!! = 에어컨 바람이 좀 세다
+         1794541375.211 29389 29389 I SideSeatMeasure: wake pcm queued bytes=76650
+         1794541383.284  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=492) Final Result!! = 오늘 하루 길었다
+         1794541403.249 29389 29389 I SideSeatMeasure: wake pcm queued bytes=90646
+         1794541416.396  2693 24356 I [GAAS]OnDeviceSttManagerImpl: [ondevice-stt-input-channel](jobId=497) Final Result!! = 집에 가면 바로 잘 거야
