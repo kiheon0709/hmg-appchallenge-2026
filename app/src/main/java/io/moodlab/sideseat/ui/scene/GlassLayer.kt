@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 
 /** 앞유리 층: 물막, 물방울, 김서림, 이물질, 와이퍼. */
@@ -174,9 +175,10 @@ internal class GlassLayer {
             if (sim.wsFogGrowing) {
                 if (open > 0.05f) punch(w * 0.5f, sim.dashY * 0.52f, w * 0.9f * (open - 0.05f), sim.dashY * 0.95f * (open - 0.05f))
             } else if (open > 0.01f) {
-                val k = open * (2f - open)
-                punch(w * 0.3f, glassBottom, w * 0.52f * k, sim.dashY * 1.35f * k)
-                punch(w * 0.7f, glassBottom, w * 0.52f * k, sim.dashY * 1.35f * k)
+                // 걷히기 시작하면 송풍구 위에 작은 맑은 자리가 바로 생기고, 그 뒤로는 김이 줄어든 만큼만 넓어진다
+                val k = 0.1f * minOf(1f, open * 8f) + 0.9f * open.pow(1.4f)
+                punch(w * 0.3f, glassBottom, w * 0.58f * k, sim.dashY * 1.45f * k)
+                punch(w * 0.7f, glassBottom, w * 0.58f * k, sim.dashY * 1.45f * k)
             }
             canvas.restore()
         }

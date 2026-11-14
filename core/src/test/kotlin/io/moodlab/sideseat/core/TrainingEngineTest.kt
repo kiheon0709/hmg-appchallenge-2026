@@ -332,10 +332,17 @@ class TrainingEngineTest {
         fogged.set { it.copy(defrostFrontOn = true) }
         fogged.advance(2_000)
         val withDefrost = fogged.view.scene.windshieldFog
-        assertTrue(withDefrost < noAction - 0.2f, "성에 제거로 걷힌다: $noAction → $withDefrost")
+        // 성에 제거만으로는 천천히 걷힌다(2초에 0.07쯤). 실제 김서림은 몇 초 만에 사라지지 않는다
+        val slow = noAction - withDefrost
+        assertTrue(slow in 0.04f..0.12f, "성에 제거만으로는 천천히 걷힌다: $noAction → $withDefrost")
+        // 에어컨과 외기를 더하면 눈에 띄게 빨라진다(세 조작을 다 해야 하는 이유)
         fogged.set { it.copy(acOn = true, recirculationOn = false) }
-        fogged.advance(3_000)
-        assertTrue(fogged.view.scene.windshieldFog < withDefrost)
+        fogged.advance(2_000)
+        val fast = withDefrost - fogged.view.scene.windshieldFog
+        assertTrue(fast > slow * 2f, "에어컨·외기를 더하면 빨라진다: 느릴 때 $slow, 다 켰을 때 $fast")
+        // 다 켠 뒤 10초쯤이면 다 걷힌다
+        fogged.advance(9_000)
+        assertTrue(fogged.view.scene.windshieldFog < 0.05f, "다 켜고 11초 뒤: ${fogged.view.scene.windshieldFog}")
 
         val stop = driver()
         stop.engine.inject(SituationId.SUDDEN_STOP, stop.now)

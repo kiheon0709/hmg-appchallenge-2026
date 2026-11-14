@@ -7,6 +7,15 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 챕터 소개 문구·김서림 속도(v11)와 release APK 재갱신 (2026-11-14 19:50, 화면 품질 세션)
+
+`apk/MoodLab_SideSeat_release.apk`를 이 변경까지 넣어 다시 만들었다: 27,082,404 바이트(크기는 v10과 같음, 이전 23,056,630 대비 +4.0 MB), `sk-ant-` 0건. `./gradlew :core:test` 94개·`:app:testDebugUnitTest` 114개 통과. 이 빌드로 한 확인: 덮어 설치 → 홈 → C1 폭우 성공 → 김서림 단계별 → 급정거 시작까지, 크래시 0. 리소스는 v10 release 값 그대로 쓴다(바뀐 것이 문구·속도값·걷히는 모양뿐이라 다시 재지 않음).
+
+- **챕터 소개 문구**(`core/TrainingConfig.kt`): C1 "밤에 비가 오기 시작했어요.", C2 "밤 고속도로를 달리는 중이에요.", C4 "주차를 마쳤어요. 내리기 전에 확인해요."(C3 그대로). 같은 사연이 박힌 곳은 코드·지식 파일·테스트에 더 없었다(`v11_release_home_chapter_stories.jpg`).
+- **김서림(S02) 걷히는 속도**: 성에 제거가 켜져야 걷히기 시작하고, 에어컨·외기가 속도를 더한다. `TrainingConfig`의 `fogClearDefrostPerSec` 0.035, `fogClearAcPerSec` 0.03, `fogClearFreshAirPerSec` 0.03(김 0~1에서 초당 줄어드는 양). 가득 낀 상태에서 다 걷히기까지 성에 제거만 약 27초, 에어컨까지 약 15초, 셋 다 약 10초(이전: 성에 제거만 약 8초, 셋 다 약 4초). 제한 시간(10초)과 별 판정은 조작 완료 기준 그대로다. 화면도 걷힌 넓이가 남은 김의 양을 따라가게 고쳤다(이전에는 김이 30 % 남았을 때 이미 다 걷혀 보였다).
+- 에뮬레이터 캡처(release): 조작 전 `v11_release_fog_0_before.jpg` → 성에 제거만 5초 `…fog_1_defrost_only_5s.jpg`(송풍구 위만 조금) → 셋 다 켜고 3초 `…fog_2_all_three_3s.jpg`(아래 절반) → 6초 `…fog_3_all_three_6s.jpg`(위쪽 가장자리만 남음) → 9초 `…fog_4_all_three_9s.jpg`(다 걷힘). 모아 보기 `v11_release_fog_sheet.jpg`.
+- **넣지 않은 것 — 첫 단계 "비상등 켜고 속도 줄이기"**: 주행 중 앞유리 김서림(시야 상실)에서 비상등을 켜고 감속하라는 공식 출처를 찾지 못해 넣지 않았다(`safety-sources.md`도 그대로). 찾아본 것: `safety-sources.md` 2절(현대차 취급설명서는 성에 제거·에어컨·외기만 다룸)·5절(안개: 등화와 50 % 감속만 법령 근거), 웹 검색 3회. 나온 것은 언론 기사·블로그와 한국도로공사 설계 실무지침의 "안개 발생 시 전방 가변전광판에 비상등 점등 유도 문구 표출"(도로의 안개 구간 운영 지침이고 검색 발췌만 확인)뿐이다.
+
 ## release APK 갱신과 화면 v10 (2026-11-14 19:27~19:35, 화면 품질 세션)
 
 `apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,082,404 바이트(27.1 MB)**, 이전(23,056,630) 대비 **+4,025,774 바이트(+4.0 MB)**. 늘어난 것은 실사 배경 소재(`assets/scene/` 5개 파일, 3.9 MB)와 코드. APK 전체를 풀어 `sk-ant-`를 찾은 결과 0건(LLM 키 없음), release 서명 확인(`apksigner verify`). 서명 키와 `local.properties`는 커밋하지 않았다. `./gradlew :core:test` 94개·`:app:testDebugUnitTest` 114개 통과.

@@ -599,8 +599,11 @@ internal class SceneSim(private val config: TrainingConfig) {
         rain = if (on(SituationId.HEAVY_RAIN)) approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt) else approach(rain, 0f, 0.1f, dt)
         fogOutside = if (on(SituationId.DENSE_FOG)) approach(fogOutside, 0.85f, 0.6f, dt) else approach(fogOutside, 0f, 0.15f, dt)
 
-        val clearRate = (if (state.defrostFrontOn == true) 0.12f else 0f) +
-            (if (state.acOn == true) 0.06f else 0f) + (if (state.recirculationOn == false) 0.05f else 0f)
+        // 성에 제거가 켜져 있어야 걷히기 시작하고, 에어컨·외기가 속도를 더한다
+        val clearRate = if (state.defrostFrontOn == true) {
+            config.fogClearDefrostPerSec + (if (state.acOn == true) config.fogClearAcPerSec else 0f) +
+                (if (state.recirculationOn == false) config.fogClearFreshAirPerSec else 0f)
+        } else 0f
         windshieldFog = when {
             on(SituationId.FOGGED_WINDSHIELD) && briefing -> approach(windshieldFog, 0.85f, 0.6f, dt)
             on(SituationId.FOGGED_WINDSHIELD) && active && clearRate == 0f -> approach(windshieldFog, 1f, 0.06f, dt)

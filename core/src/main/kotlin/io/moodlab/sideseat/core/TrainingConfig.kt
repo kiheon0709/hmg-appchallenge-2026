@@ -31,6 +31,13 @@ data class TrainingConfig(
     val brakeHoldMs: Long = 3_000,
     /** S05 감속 기준: 가상 속도를 평소의 이 비율 이하로(시행규칙 제19조 50% 감속). */
     val fogSlowFraction: Float = 0.5f,
+    /**
+     * S02 앞유리 김이 걷히는 속도(초당 줄어드는 양, 김은 0~1). 성에 제거만으로는 느리고(다 걷히는 데 약 27초),
+     * 에어컨을 더하면 약 15초, 외기까지 바꾸면 약 10초다. 화면 연출이고 판정(조작 완료)과는 무관하다.
+     */
+    val fogClearDefrostPerSec: Float = 0.035f,
+    val fogClearAcPerSec: Float = 0.03f,
+    val fogClearFreshAirPerSec: Float = 0.03f,
     /** S12 급브레이크: 상황 뒤 이 시간 안에 밟아 이만큼 유지. */
     val hardBrakeWindowMs: Long = 1_000,
     val hardBrakeHoldMs: Long = 1_000,
@@ -78,18 +85,18 @@ data class ChapterDef(val id: String, val title: String, val story: String, val 
 object ChapterCatalog {
     val chapters: List<ChapterDef> = listOf(
         ChapterDef(
-            "C1", "첫 빗길", "금요일 밤, 친구 넷을 태우고 강릉 엠티 가는 길이에요.",
+            "C1", "첫 빗길", "밤에 비가 오기 시작했어요.",
             listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.SUDDEN_STOP), 3,
         ),
         ChapterDef(
-            "C2", "밤 고속도로", "새벽에 혼자 돌아오는 길이에요.",
+            "C2", "밤 고속도로", "밤 고속도로를 달리는 중이에요.",
             listOf(SituationId.TUNNEL, SituationId.ONCOMING_GLARE, SituationId.DENSE_FOG, SituationId.DROWSY), 4,
         ),
         ChapterDef(
             "C3", "멈춰야 할 때", "차가 말을 안 들을 때예요. 침착하게 해 봐요.",
             listOf(SituationId.WARNING_LIGHT, SituationId.BREAKDOWN, SituationId.UNINTENDED_ACCEL), 4,
         ),
-        ChapterDef("C4", "내리기 전에", "부모님 차를 돌려드리기 전이에요.", listOf(SituationId.BEFORE_EXIT), 1),
+        ChapterDef("C4", "내리기 전에", "주차를 마쳤어요. 내리기 전에 확인해요.", listOf(SituationId.BEFORE_EXIT), 1),
     )
 
     const val SURPRISE = "SURPRISE"
