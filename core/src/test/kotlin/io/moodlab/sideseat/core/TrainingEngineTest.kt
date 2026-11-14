@@ -21,11 +21,13 @@ class TrainingEngineTest {
     @Test
     fun `default numbers follow the spec`() {
         val c = TrainingConfig()
-        assertEquals(14_000, c.limitOf(SituationId.HEAVY_RAIN))
-        assertEquals(16_000, c.limitOf(SituationId.FOGGED_WINDSHIELD))
+        assertEquals(16_000, c.limitOf(SituationId.HEAVY_RAIN))
+        assertEquals(18_000, c.limitOf(SituationId.FOGGED_WINDSHIELD))
         assertEquals(listOf(700L, 1_000L, 1_500L), c.suddenStopStarsMs)
         assertEquals(6_000, c.limitOf(SituationId.TUNNEL))
-        assertEquals(12_000, c.limitOf(SituationId.DENSE_FOG))
+        assertEquals(14_000, c.limitOf(SituationId.DENSE_FOG))
+        assertTrue(c.lowVisibilityHazardStep) // 감속 다음 비상등 확인(사용자 결정)
+        assertEquals(14f, c.brakeDecelKmhPerSec)
         assertEquals(5_000, c.limitOf(SituationId.ONCOMING_GLARE))
         assertEquals(0, c.limitOf(SituationId.WARNING_LIGHT)) // 말로 답하는 상황은 틀린 횟수로
         assertEquals(0, c.limitOf(SituationId.BREAKDOWN))
@@ -101,7 +103,7 @@ class TrainingEngineTest {
         d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
-        assertEquals(listOf("slow_down", "defrost_on", "fresh_air"), d.view.steps.map { it.id })
+        assertEquals(listOf("slow_down", "hazard_confirm", "defrost_on", "fresh_air"), d.view.steps.map { it.id })
     }
 
     @Test
@@ -117,11 +119,11 @@ class TrainingEngineTest {
         val f = driver(state = emu)
         f.engine.inject(SituationId.DENSE_FOG, f.now)
         f.untilActive(SituationId.DENSE_FOG)
-        assertEquals(listOf("slow_down", "low_beam_on"), f.view.steps.map { it.id })
+        assertEquals(listOf("slow_down", "hazard_confirm", "low_beam_on"), f.view.steps.map { it.id })
         f.set { it.copy(lowBeamOn = true) }
         f.advance(1_000)
-        assertEquals(listOf(false, true), f.view.steps.map { it.done })
-        f.set { it.copy(brakePressed = true) }
+        assertEquals(listOf(false, false, true), f.view.steps.map { it.done })
+        f.slowDownFirst()
         f.until { it.phase == TrainingPhase.SUCCESS }
         assertTrue(f.view.virtualSpeedKmh <= 40f)
         assertEquals(3, f.view.lastResult?.stars)
@@ -143,41 +145,45 @@ class TrainingEngineTest {
         assertEquals(TrainingPhase.CRUISE, d.tick().phase)
         assertTrue(d.says().first().startsWith("첫 빗길."))
 
-        // S01 폭우: 먼저 감속, 그다음 와이퍼 High + 전조등을 2초에 → 제한 14초의 절반 안 → ★3
+        // S01 폭우: 먼저 감속과 비상등 확인, 그다음 와이퍼 High + 전조등을 4초에 → 제한 16초의 절반 안 → ★3
         d.untilActive(SituationId.HEAVY_RAIN)
         assertTrue(d.events.contains(CoachEvent.Sfx("rain", loop = true)))
         assertTrue(d.events.contains(CoachEvent.Ambient(AmbientMood.ALERT)))
-        assertTrue("비가 쏟아져요. 앞이 안 보여요! 먼저 속도부터 줄여요." in d.says())
+        assertTrue("비가 쏟아져요. 앞이 안 보여요! 먼저 브레이크를 나눠서 지그시 밟아 속도를 줄여요." in d.says())
         val rainStart = d.now
         d.slowDownFirst()
         assertTrue(d.view.virtualSpeedKmh <= 40f)
         d.set { it.copy(wiper = WiperLevel.HIGH) }
-        assertEquals(listOf(true, true, false), d.view.steps.map { it.done })
-        d.advance(2_000 - (d.now - rainStart))
+        assertEquals(listOf(true, true, true, false), d.view.steps.map { it.done })
+        d.advance(4_000 - (d.now - rainStart))
         d.set { it.copy(lowBeamOn = true) }
         assertEquals(TrainingPhase.SUCCESS, d.view.phase)
         assertEquals(3, d.view.lastResult?.stars)
-        assertEquals(2_000L, d.view.lastResult?.reactionMs)
+        assertEquals(4_000L, d.view.lastResult?.reactionMs)
         assertTrue(d.events.contains(CoachEvent.StopSfx("rain")))
         assertTrue(d.events.contains(CoachEvent.Ambient(AmbientMood.SUCCESS)))
-        assertTrue("완벽해요. 2.0초 걸렸어요." in d.says())
+        assertTrue("완벽해요. 4.0초 걸렸어요." in d.says())
 
         // 평온 구간에서 방금 것을 짚는다
         d.until { it.phase == TrainingPhase.CRUISE }
         assertTrue(SituationCatalog.all().first { it.id == SituationId.HEAVY_RAIN }.lesson in d.says())
 
-        // S02 김서림: 감속 뒤 9초에 세 조작 → 절반(8초) 넘김 → ★2
+        // S02 김서림: 감속 뒤 10초에 세 조작 → 절반(9초) 넘김 → ★2
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
         val fogStart = d.now
         d.slowDownFirst()
-        d.advance(9_000 - (d.now - fogStart))
+        d.advance(10_000 - (d.now - fogStart))
         d.set { it.copy(defrostFrontOn = true, acOn = true, recirculationOn = false) }
         assertEquals(2, d.view.lastResult?.stars)
 
-        // S03 급정거: 0.6초에 브레이크 → ★3
+        // S03 급정거: 0.6초에 브레이크 → ★3. 멈춘 뒤 비상등 확인은 시간에 쫓기지 않는다
         d.untilActive(SituationId.SUDDEN_STOP)
         d.advance(600)
         d.set { it.copy(brakePressed = true) }
+        assertEquals("비상등 켰나요?", d.view.choice?.question)
+        d.advance(5_000)
+        assertEquals(TrainingPhase.ACTIVE, d.view.phase)
+        d.confirmHazard()
         assertEquals(3, d.view.lastResult?.stars)
 
         val done = d.until { it.phase == TrainingPhase.CHAPTER_DONE }
@@ -209,7 +215,7 @@ class TrainingEngineTest {
         val d = driver(state = baseState.copy(lowBeamOn = true))
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
-        assertEquals(listOf(false, false, true), d.view.steps.map { it.done })
+        assertEquals(listOf(false, false, false, true), d.view.steps.map { it.done })
         val start = d.now
         d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH) }
@@ -222,12 +228,12 @@ class TrainingEngineTest {
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
         d.clearEvents()
-        d.advance(6_900)
+        d.advance(7_900)
         assertEquals(TrainingPhase.ACTIVE, d.view.phase)
         d.advance(200)
         assertEquals(TrainingPhase.HINT, d.view.phase)
         // 아직 안 한 첫 단계(감속)를 말한다
-        assertTrue("브레이크를 밟아 속도를 절반으로 줄여요." in d.says())
+        assertTrue("브레이크를 급하게 밟지 말고 나눠서 지그시 밟아 속도를 절반으로 줄여요." in d.says())
     }
 
     @Test
@@ -235,7 +241,7 @@ class TrainingEngineTest {
         val d = driver()
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
-        d.advance(15_000)
+        d.advance(17_000)
         d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         assertEquals(1, d.view.lastResult?.stars)
@@ -247,10 +253,10 @@ class TrainingEngineTest {
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
         d.until { it.phase == TrainingPhase.FAIL }
-        assertTrue(d.view.elapsedMs in 28_000L..28_050L, "제한 14초 + 초과 14초 뒤 실패: ${d.view.elapsedMs}")
+        assertTrue(d.view.elapsedMs in 32_000L..32_050L, "제한 16초 + 초과 16초 뒤 실패: ${d.view.elapsedMs}")
         val failed = assertNotNull(d.view.lastResult)
         assertEquals(0, failed.stars)
-        assertEquals(listOf("slow_down", "wiper_fast", "low_beam_on"), failed.missedStepIds)
+        assertEquals(listOf("slow_down", "hazard_confirm", "wiper_fast", "low_beam_on"), failed.missedStepIds)
         assertTrue(d.events.contains(CoachEvent.Sfx("fail")))
         assertTrue(d.says().last().endsWith("한 번 더 해 볼까요?"))
 
@@ -295,6 +301,7 @@ class TrainingEngineTest {
         if (reactMs != null) {
             d.advance(reactMs - (if (steer) 100 else 0))
             d.set { it.copy(brakePressed = true) }
+            d.confirmHazard()
         } else {
             d.until { it.phase == TrainingPhase.FAIL }
         }
@@ -592,6 +599,7 @@ class TrainingEngineTest {
         d.set { it.copy(defrostFrontOn = true, acOn = true, recirculationOn = false) }
         d.untilActive(SituationId.SUDDEN_STOP)
         d.set { it.copy(brakePressed = true) }
+        d.confirmHazard()
         val done = d.until { it.phase == TrainingPhase.CHAPTER_DONE }
         assertEquals(
             listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.SUDDEN_STOP),
@@ -627,6 +635,7 @@ class TrainingEngineTest {
         d.untilActive(SituationId.SUDDEN_STOP)
         d.advance(900)
         d.set { it.copy(brakePressed = true) }
+        d.confirmHazard()
         assertEquals(650L, d.engine.progress().bestReactionMs["SUDDEN_STOP"])
         assertEquals(5, d.engine.progress().surpriseBest)
         assertEquals(2, d.engine.progress().bestStars["SUDDEN_STOP"])

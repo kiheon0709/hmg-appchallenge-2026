@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
  * `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd <cmd> [--es arg <arg>]`
  * - `ask_pcm <앱 files 안 파일 이름>`: 마이크 대신 PCM(16kHz 16bit mono)으로 "질문하기"
  * - `frames on|off`: 주행 화면 프레임 로그
+ * - `scene 3d|video`: 훈련 장면을 3D로 그릴지 영상으로 그릴지, `scene_js <JS>`: 떠 있는 3D 장면에서 JS 실행(결과는 로그), `scene_fps <n>`: 운전석 층 프레임 상한(장면은 `scene_js sim.set({fpsCap:n})`)
  * - `action <UiAction 이름>`: 예) OpenSafeDial, ToggleDebugPanel, GoHome, ShowResult, StartSurprise, StartVersus
  * - `answer <문장>`: 선택지 답(화면 터치·말 대신)
  * - `chapter <id>`: 챕터 시작, `inject <SituationId>`: 교관 대결로 상황 던지기
@@ -46,6 +47,9 @@ class DebugCommands(private val context: Context, private val controller: SideSe
                 .onSuccess { controller.askQuestion(it) }
                 .onFailure { Log.w("SideSeatMeasure", "app debug pcm read failed: $it") }
             "frames" -> SideSeatUiDebug.logFrames = arg == "on"
+            "scene_fps" -> io.moodlab.sideseat.ui.scene.SceneRender.fpsCap = arg.toIntOrNull() ?: 0
+            "scene_js" -> io.moodlab.sideseat.uivideo.Scene3dDebug.eval?.invoke(arg)
+            "scene" -> { io.moodlab.sideseat.ui.scene.SceneRender.use3d = arg == "3d"; io.moodlab.sideseat.ui.scene.SceneRender.failed = false }
             "action" -> uiAction(arg)?.let(controller::onAction)
             "chapter" -> controller.onAction(UiAction.StartChapter(arg))
             "answer" -> controller.onAction(UiAction.Answer(arg))

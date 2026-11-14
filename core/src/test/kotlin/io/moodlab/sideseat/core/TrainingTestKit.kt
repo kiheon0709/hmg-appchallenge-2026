@@ -68,9 +68,20 @@ class TrainingDriver(val engine: TrainingEngine, var state: VehicleState = baseS
     fun clearEvents() = events.clear()
 }
 
-/** 앞이 안 보이는 상황의 첫 단계: 브레이크로 화면 속 속도를 절반 아래로 줄인 뒤 발을 뗀다(약 1.6초). */
-fun TrainingDriver.slowDownFirst() {
+/**
+ * 앞이 안 보이는 상황의 첫 단계: 브레이크로 화면 속 속도를 절반 아래로 줄인 뒤 발을 뗀다(약 2.9초).
+ * 이어서 나오는 "비상등 켰나요?"에도 답한다([confirmHazard]가 false면 질문을 그대로 둔다).
+ */
+fun TrainingDriver.slowDownFirst(confirmHazard: Boolean = true) {
     set { it.copy(brakePressed = true) }
     until { v -> v.steps.firstOrNull { it.id == "slow_down" }?.done == true }
     set { it.copy(brakePressed = false) }
+    if (confirmHazard) confirmHazard()
+}
+
+/** "비상등 켰나요?"가 떠 있으면 "응"이라고 답한다. */
+fun TrainingDriver.confirmHazard() {
+    if (view.choice?.question != "비상등 켰나요?") return
+    engine.answer("응", now)
+    tick()
 }

@@ -49,6 +49,8 @@ import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.scene.DriveScene
+import io.moodlab.sideseat.ui.scene.SceneRender
+import io.moodlab.sideseat.ui.scene.latchToSceneFrame
 import io.moodlab.sideseat.voice.Persona
 
 /**
@@ -56,14 +58,27 @@ import io.moodlab.sideseat.voice.Persona
  * 세로는 위가 주행 화면, 아래가 체크리스트다.
  */
 @Composable
-fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiAction) -> Unit) {
-    SideSeatFrame { sz ->
+fun TrainingScreen(liveView: TrainingView, liveVehicle: VehicleState, onAction: (UiAction) -> Unit) {
+    // 3D 장면은 이 화면 아래 층에 깔린다. 그때는 바탕을 칠하지 않고, 세로 화면의 아래 판만 따로 칠한다
+    val seeThrough = SceneRender.seeThrough(liveView)
+    // 3D 장면을 쓰는 동안에는 화면이 장면 프레임에 맞춰서만 바뀐다(창을 다시 그리는 횟수 = 장면 장수)
+    val view = latchToSceneFrame(liveView, seeThrough)
+    val vehicle = latchToSceneFrame(liveVehicle, seeThrough)
+    SideSeatFrame(paintBackground = !seeThrough) { sz ->
         val pulse by rememberInfiniteTransition(label = "alert").animateFloat(
             0f, 1f, infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "pulse",
         )
         val success = view.phase == TrainingPhase.SUCCESS
         val glowColor = if (success) Sc.ok else if (view.scene.alert > 0.05f) Sc.danger else Color(0xFFBFD4FF)
-        val glow = { if (success) 0.6f else if (view.scene.alert > 0.05f) view.scene.alert * (0.45f + 0.3f * pulse) else 0f }
+        val glow = {
+            // 3D 장면 위에서는 빛 띠의 깜빡임도 장면 프레임에 맞춘다(같은 0.9초 왕복)
+            val p = if (seeThrough) {
+                @Suppress("UNUSED_EXPRESSION") SceneRender.frameTick
+                val t = (System.nanoTime() / 1_000_000L % 1_800L) / 900f
+                if (t <= 1f) t else 2f - t
+            } else pulse
+            if (success) 0.6f else if (view.scene.alert > 0.05f) view.scene.alert * (0.45f + 0.3f * p) else 0f
+        }
 
         if (sz.wide) {
             Box(Modifier.fillMaxSize()) {
@@ -97,7 +112,7 @@ fun TrainingScreen(view: TrainingView, vehicle: VehicleState, onAction: (UiActio
                     // 세로에서는 아래 판이 길어져도 항상 보이게 주행 화면 위에 둔다
                     BigButton("그만하기", Modifier.align(Alignment.TopEnd).padding(sz.gap)) { onAction(UiAction.AbortTraining) }
                 }
-                Box(Modifier.fillMaxWidth().weight(0.5f)) {
+                Box(Modifier.fillMaxWidth().weight(0.5f).background(Sc.bg)) {
                     Column(
                         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.gap),
                         verticalArrangement = Arrangement.spacedBy(sz.dp(10f)),

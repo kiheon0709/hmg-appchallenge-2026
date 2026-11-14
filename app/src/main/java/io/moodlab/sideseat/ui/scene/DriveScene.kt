@@ -30,7 +30,42 @@ import io.moodlab.sideseat.ui.SideSeatUiDebug
  */
 @Composable
 fun DriveScene(view: TrainingView, vehicle: VehicleState, modifier: Modifier = Modifier) {
+    val host3d = LocalScene3d.current
+    if (host3d != null && SceneRender.use3dFor(view)) {
+        DriveScene3d(host3d, view, vehicle, modifier)
+        return
+    }
     DriveScene(view.scene, vehicle, view.virtualSpeedKmh, modifier, success = view.phase == TrainingPhase.SUCCESS)
+}
+
+/** 3D 장면 위에 운전석 틀(대시보드·계기판·핸들·경고등)만 얹는다. 비·김서림·와이퍼·앞차는 3D 장면이 그린다. */
+@Composable
+private fun DriveScene3d(host: Scene3dHost, view: TrainingView, vehicle: VehicleState, modifier: Modifier) {
+    val input = remember { SceneInput() }
+    input.set(view, vehicle)
+    input.sign = null // 횡단보도·요금소는 3D 장면에 있어 표지 판을 띄우지 않는다
+    val sim = remember { SceneSim().also { it.photo = true; it.lowDetail = true } }
+    val cockpit = remember { CockpitLayer() }
+    val meter = remember { FrameMeter("scene3d-overlay") }
+    val measurer = rememberTextMeasurer(cacheSize = 0)
+    val clock = remember { LongArray(1) }
+    LaunchedEffect(Unit) { SceneRender.keepTicking() }
+    Box(modifier) {
+        host.Layer(Scene3dCommand.build(view, vehicle), Modifier.fillMaxSize())
+        Canvas(Modifier.fillMaxSize()) {
+            // 장면이 한 장 그릴 때마다 같이 다시 그린다(따로 프레임 루프를 돌리지 않는다)
+            @Suppress("UNUSED_EXPRESSION") SceneRender.frameTick
+            val t0 = System.nanoTime()
+            if (clock[0] != 0L) {
+                sim.step((t0 - clock[0]) / 1e9f, input)
+                meter.frame(t0 - clock[0])
+            }
+            clock[0] = t0
+            sim.setSize(size.width, size.height)
+            cockpit.draw(this, sim, input, measurer)
+            meter.draw(System.nanoTime() - t0)
+        }
+    }
 }
 
 @Composable

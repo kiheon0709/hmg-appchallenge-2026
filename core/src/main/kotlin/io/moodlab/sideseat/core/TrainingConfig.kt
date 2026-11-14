@@ -41,12 +41,18 @@ data class TrainingConfig(
     val fogClearAcPerSec: Float = 0.03f,
     val fogClearFreshAirPerSec: Float = 0.03f,
     /**
-     * 앞이 안 보이는 상황(폭우·김서림·짙은 안개)에서 감속 다음에 "비상등 켰나요?"를 묻는다.
+     * 앞이 안 보이는 상황(폭우·김서림·짙은 안개)과 앞차 급정거에서 감속 다음에 "비상등 켰나요?"를 묻는다.
      * 비상등 신호는 읽을 수 없어 말·화면 선택으로 확인한다.
-     * 2026-11-14 조사에서 폭우·김서림은 공식 안내를 찾지 못했고 안개는 오래된 자료뿐이라 꺼 두었다(safety-sources.md 16번).
-     * 켜면 이 세 상황에 고르기 단계가 생겨 돌발 모드에는 나오지 않는다.
+     * 법령 근거는 없고 뒤차 추돌을 막기 위한 통상 권고다. 사용자 결정으로 켰다(2026-11-14, safety-sources.md 16번).
+     * 돌발 모드에서는 이 확인 단계를 빼고 스위치·페달 조작만 본다.
      */
-    val lowVisibilityHazardStep: Boolean = false,
+    val lowVisibilityHazardStep: Boolean = true,
+    /**
+     * 브레이크를 밟고 있는 동안 화면 속 속도가 줄어드는 빠르기(km/h per 초). 브레이크 신호가 밟음/안 밟음뿐이라
+     * 세기는 판정하지 않고, 나눠서 지그시 밟는 정도의 완만한 감속으로 보여 준다. 앞차 급정거만 급제동으로 본다.
+     */
+    val brakeDecelKmhPerSec: Float = 14f,
+    val suddenStopDecelKmhPerSec: Float = 25f,
     /** 합류: 깜빡이를 이만큼 켜 둔 뒤에 조향을 인정한다(게임 규칙. 법의 기준은 고속도로 100m 이전). */
     val mergeSignalHoldMs: Long = 3_000,
     /** 합류: 이 각도 이상 왼쪽으로 돌리면 통과. 세워 둔 차라 작게 잡는다. */
@@ -79,13 +85,22 @@ data class TrainingConfig(
     fun limitOf(id: SituationId): Long = limitsMs[id] ?: 10_000
 
     companion object {
+        /**
+         * 훈련 장면을 그리는 방식. true면 3D 장면(assets/scene3d, WebView + WebGL2), false면 실사 영상 위에 효과를 얹는 방식.
+         * 3D를 못 띄우는 기기에서는 앱이 스스로 영상 방식으로 바꾼다. 주차장 장면(C4)은 어느 쪽이든 사진이다.
+         */
+        const val SCENE_3D: Boolean = true
+
+        /** 3D 장면을 초당 몇 장 그릴지. 0이면 화면 주사율 그대로(에뮬레이터에서 CPU가 기준을 넘는다, STATUS.md v13). */
+        const val SCENE_3D_FPS: Int = 30
+
         val DEFAULT_LIMITS: Map<SituationId, Long> = mapOf(
-            // 앞이 안 보이는 상황은 감속(+비상등 확인)이 먼저라 시간을 넉넉히 준다(11-14).
-            SituationId.HEAVY_RAIN to 14_000,
-            SituationId.FOGGED_WINDSHIELD to 16_000,
+            // 앞이 안 보이는 상황은 감속과 비상등 확인이 먼저라 시간을 넉넉히 준다(11-14, 완만한 감속에 맞춰 2초씩 더).
+            SituationId.HEAVY_RAIN to 16_000,
+            SituationId.FOGGED_WINDSHIELD to 18_000,
             SituationId.SUDDEN_STOP to 1_500,
             SituationId.TUNNEL to 6_000,
-            SituationId.DENSE_FOG to 12_000,
+            SituationId.DENSE_FOG to 14_000,
             SituationId.ONCOMING_GLARE to 5_000,
             // 말로 답하는 상황은 시간 대신 틀린 횟수로 별을 준다(decisions.md).
             SituationId.BREAKDOWN to 0,
@@ -94,7 +109,8 @@ data class TrainingConfig(
             SituationId.UNINTENDED_ACCEL to 8_000,
             SituationId.BEFORE_EXIT to 0, // 시간 제한 없음
             SituationId.WIPER_DEBRIS to 8_000,
-            SituationId.RIGHT_TURN_CROSSWALK to 5_000,
+            // 나눠서 지그시 밟아 멈추는 데 3초쯤 걸려 넉넉히 준다
+            SituationId.RIGHT_TURN_CROSSWALK to 8_000,
             SituationId.HIGHWAY_MERGE to 10_000,
             SituationId.HYDROPLANING to 8_000,
             SituationId.HIPASS_WRONG_LANE to 0, // 말로 답하는 상황

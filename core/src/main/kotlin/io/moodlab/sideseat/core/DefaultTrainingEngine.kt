@@ -44,7 +44,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
         /** 이 시간이 지나면 실패. null이면 시간 제한 없음. */
         fun deadlineMs(): Long? = when {
-            def.id == SituationId.SUDDEN_STOP -> config.suddenStopStarsMs.last()
+            // 밟은 뒤의 비상등 확인은 시간에 쫓기지 않는다
+            def.id == SituationId.SUDDEN_STOP -> if ("brake" in doneAt) null else config.suddenStopStarsMs.last()
             limitMs <= 0 -> null
             else -> limitMs + (limitMs * config.overtimeFraction).toLong()
         }
@@ -230,7 +231,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private fun nextSituation(): SituationId? = when (mode) {
         Mode.SURPRISE -> {
             val pool = SituationId.entries.filter {
-                it !in config.surpriseExclude && isPlayable(it, lastState) && defs.getValue(it).steps.none { s -> s.choice != null }
+                // 말로 푸는 상황은 빼고, 확인만 하는 단계(비상등 켰나요?)는 enterBriefing에서 뺀다
+                it !in config.surpriseExclude && isPlayable(it, lastState) && defs.getValue(it).steps.none { s -> s.choice != null && !s.choice.penaltyFree }
             }
             val choices = pool.filter { it != lastSituation }.ifEmpty { pool }
             if (choices.isEmpty()) null else choices[config.random.nextInt(choices.size)]
@@ -243,7 +245,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val def = defs[id] ?: return false
         if (!isPlayable(id, lastState)) return false
         val state = lastState
-        val steps = def.steps.filter { state == null || it.available(state) }
+        val steps = def.steps.filter { (state == null || it.available(state)) && !(mode == Mode.SURPRISE && it.choice != null) }
         run = Run(def, steps, attempt)
         lastSituation = id
         phase = TrainingPhase.BRIEFING
@@ -686,10 +688,12 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.BREAKDOWN) && !briefing -> approach(speed, 0f, 20f, dt)
             on(SituationId.UNINTENDED_ACCEL) && active ->
                 if (braking) (speed - (18f + if (state.epbOn()) 12f else 0f) * dt).coerceAtLeast(0f) else (speed + 10f * dt).coerceAtMost(170f)
-            braking -> (speed - 25f * dt).coerceAtLeast(0f)
+            braking -> (speed - (if (on(SituationId.SUDDEN_STOP)) config.suddenStopDecelKmhPerSec else config.brakeDecelKmhPerSec) * dt).coerceAtLeast(0f)
             // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
+            // 앞이 안 보여 속도를 줄였으면 그 상황이 끝날 때까지 줄인 속도로 간다
+            inSit && "slow_down" in doneSteps -> speed
             // 물 위에 뜬 동안은 발을 떼면 속도가 천천히 준다
             on(SituationId.HYDROPLANING) && active -> approach(speed, config.cruiseSpeedKmh * 0.6f, 5f, dt)
             else -> approach(speed, config.cruiseSpeedKmh, 6f, dt)

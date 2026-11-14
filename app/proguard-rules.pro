@@ -26,3 +26,8 @@
 -keep class * extends com.google.gson.reflect.TypeToken
 -keep class com.google.gson.** { *; }
 -dontwarn com.google.gson.**
+
+# 3D 장면(WebView)이 부르는 SideSeatBridge.onSimEvent
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

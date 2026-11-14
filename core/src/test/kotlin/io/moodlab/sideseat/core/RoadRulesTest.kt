@@ -78,23 +78,33 @@ class RoadRulesTest {
         assertEquals(TrainingPhase.SUCCESS, d.view.phase)
         assertEquals(3, d.view.lastResult?.stars)
         assertNull(d.view.lastResult?.reactionMs) // 버티는 상황은 걸린 시간을 재지 않는다
-        assertTrue("잘 버텼어요. 급하게 밟거나 꺾지 않는 게 먼저예요." in d.says())
+        assertTrue("잘 버텼어요. 급하게 밟지 않고 핸들을 곧게 잡는 게 먼저예요." in d.says())
+        assertTrue(d.says().any { it.endsWith("급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요.") })
     }
 
     @Test
-    fun `braking or steering while hydroplaning restarts the hold and costs stars`() {
+    fun `braking while hydroplaning costs stars but is not a failure and steering restarts the hold`() {
+        // 세기를 읽을 수 없어 밟으면 감점만 한다. 버티는 시간은 그대로 센다
         val d = active(SituationId.HYDROPLANING)
         d.advance(2_000)
         d.clearEvents()
         d.set { it.copy(brakePressed = true) }
-        assertTrue("급하게 밟으면 더 미끄러져요. 발을 떼고 버텨요." in d.says())
+        assertTrue("급하게 밟지 말고 발을 떼요. 핸들은 곧게 잡아요." in d.says())
         d.advance(500)
         d.set { it.copy(brakePressed = false) }
-        d.advance(3_900)
-        assertEquals(TrainingPhase.ACTIVE, d.view.phase) // 버티는 시간을 처음부터 다시 센다
-        d.until { it.phase == TrainingPhase.SUCCESS }
+        d.advance(1_400)
+        assertEquals(TrainingPhase.ACTIVE, d.view.phase)
+        d.advance(200)
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
         assertEquals(listOf("HYDRO_BRAKE"), d.view.lastResult?.penalties)
         assertEquals(1, d.view.lastResult?.stars)
+
+        // 끝까지 밟고 있어도 실패(★0)가 아니라 감점(★1)이다
+        val held = active(SituationId.HYDROPLANING)
+        held.set { it.copy(brakePressed = true) }
+        held.until { it.phase == TrainingPhase.SUCCESS || it.phase == TrainingPhase.FAIL }
+        assertEquals(TrainingPhase.SUCCESS, held.view.phase)
+        assertEquals(1, held.view.lastResult?.stars)
 
         val s = active(SituationId.HYDROPLANING)
         s.set { it.copy(steeringAngleDeg = 25f) }
@@ -166,7 +176,7 @@ class RoadRulesTest {
         for (id in listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.DENSE_FOG)) {
             val d = active(id)
             assertEquals("slow_down", d.view.steps.first().id, "$id")
-            assertTrue(d.says().last().endsWith("먼저 속도부터 줄여요."), "$id ${d.says().last()}")
+            assertTrue(d.says().last().endsWith("먼저 브레이크를 나눠서 지그시 밟아 속도를 줄여요."), "$id ${d.says().last()}")
             d.slowDownFirst()
             assertTrue(d.view.steps.first().done)
             // 폭우·안개는 절반(시행규칙 제19조), 김서림은 줄이기만
@@ -177,14 +187,14 @@ class RoadRulesTest {
     }
 
     @Test
-    fun `hazard confirmation is asked right after slowing down when enabled`() {
-        val d = active(SituationId.HEAVY_RAIN, TrainingConfig(lowVisibilityHazardStep = true))
+    fun `hazard confirmation is asked right after slowing down`() {
+        val d = active(SituationId.HEAVY_RAIN)
         assertEquals(listOf("slow_down", "hazard_confirm", "wiper_fast", "low_beam_on"), d.view.steps.map { it.id })
         assertNull(d.view.choice) // 감속이 먼저다
         // 순서를 건너뛰어 와이퍼부터 켜도 그 단계는 인정된다
         d.set { it.copy(wiper = WiperLevel.HIGH) }
         assertEquals(listOf(false, false, true, false), d.view.steps.map { it.done })
-        d.slowDownFirst()
+        d.slowDownFirst(confirmHazard = false)
         assertEquals("비상등 켰나요?", d.view.choice?.question)
         d.engine.answer("아직이요", d.now)
         d.tick()
@@ -196,5 +206,66 @@ class RoadRulesTest {
         d.set { it.copy(lowBeamOn = true) }
         assertEquals(TrainingPhase.SUCCESS, d.view.phase)
         assertEquals(emptyList(), d.view.lastResult?.penalties) // "아직이요"는 감점하지 않는다
+    }
+
+    @Test
+    fun `fogged windshield, dense fog and sudden stop also ask for the hazard lights after slowing`() {
+        for (id in listOf(SituationId.FOGGED_WINDSHIELD, SituationId.DENSE_FOG)) {
+            val d = active(id)
+            assertEquals(listOf("slow_down", "hazard_confirm"), d.view.steps.take(2).map { it.id }, "$id")
+        }
+        val s = active(SituationId.SUDDEN_STOP)
+        assertEquals(listOf("brake", "hazard_confirm"), s.view.steps.map { it.id })
+        assertNull(s.view.choice)
+        s.advance(600)
+        s.set { it.copy(brakePressed = true) }
+        assertEquals("비상등 켰나요?", s.view.choice?.question)
+        // 밟은 뒤에는 1.5초 제한이 풀린다. 별은 브레이크 반응 시간으로만 매긴다
+        s.advance(8_000)
+        assertEquals(TrainingPhase.ACTIVE, s.view.phase)
+        s.confirmHazard()
+        assertEquals(TrainingPhase.SUCCESS, s.view.phase)
+        assertEquals(3, s.view.lastResult?.stars)
+        assertEquals(600L, s.view.lastResult?.reactionMs)
+    }
+
+    @Test
+    fun `hazard step can be switched off in one place`() {
+        val off = TrainingConfig(lowVisibilityHazardStep = false)
+        assertEquals(listOf("slow_down", "wiper_fast", "low_beam_on"), active(SituationId.HEAVY_RAIN, off).view.steps.map { it.id })
+        assertEquals(listOf("brake"), active(SituationId.SUDDEN_STOP, off).view.steps.map { it.id })
+    }
+
+    @Test
+    fun `surprise mode keeps these situations but drops the spoken hazard check`() {
+        val d = driver(TrainingConfig(random = kotlin.random.Random(3), cruiseMs = 100, firstCruiseMs = 100))
+        d.engine.startSurprise(d.now)
+        val seen = mutableSetOf<SituationId>()
+        repeat(40) {
+            val v = d.until { it.phase == TrainingPhase.BRIEFING }
+            val id = v.situation!!
+            seen += id
+            d.set { setupFor(id, baseState) }
+            d.untilActive(id)
+            assertTrue(d.view.steps.none { it.id == "hazard_confirm" }, "$id")
+            d.set { solveAll(it, id) }
+            d.until { it.phase == TrainingPhase.CRUISE }
+        }
+        assertTrue(seen.containsAll(listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.DENSE_FOG, SituationId.SUDDEN_STOP)), "$seen")
+    }
+
+    @Test
+    fun `braking slows the virtual speed gently except on a sudden stop`() {
+        val d = active(SituationId.TUNNEL)
+        val v0 = d.view.virtualSpeedKmh
+        d.set { it.copy(brakePressed = true) }
+        d.advance(1_000)
+        assertEquals(14f, v0 - d.view.virtualSpeedKmh, 0.8f)
+
+        val s = active(SituationId.SUDDEN_STOP)
+        val s0 = s.view.virtualSpeedKmh
+        s.set { it.copy(brakePressed = true) }
+        s.advance(1_000)
+        assertEquals(25f, s0 - s.view.virtualSpeedKmh, 1.3f)
     }
 }

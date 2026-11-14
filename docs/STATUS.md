@@ -7,6 +7,66 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 훈련 장면을 3D로(v13), 비상등 단계·수막 감점·완만한 감속, release APK 재갱신 (2026-11-14 23:00~11-15 00:30, 3D 장면 세션)
+
+`apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,328,027 바이트**(v12 27,099,640 대비 +228,387), `sk-ant-` 0건, release 서명(v2) 확인. `./gradlew :core:test` **108개**(이전 104)·`:app:testDebugUnitTest` **119개**(이전 115) 통과.
+
+**기본값은 3D 장면이다.** 스위치는 `core/TrainingConfig.kt`의 `SCENE_3D`(true = 3D, false = 영상) 한 줄이고, 프레임 상한은 그 아래 `SCENE_3D_FPS`(30). 영상 방식 코드는 그대로 있다. 디버그 빌드에서는 `scene 3d|video` 명령으로 바로 바꿔 볼 수 있다(영상으로 바꿨다가 3D로 되돌리는 것까지 확인, `v13_video_fallback_tunnel`·`v13_back_to_3d`).
+
+**A. 3D 장면 (`app/src/main/assets/scene3d/`)**
+- `index.html`(시제품 `tools/scene3d/index.html`을 옮겨 고친 것, 70KB)과 `three.module.min.js`(three.js 0.170.0, MIT, 691,648바이트. 출처는 `docs/assets-sources.md`). 그 밖의 외부 파일은 없다. 앱 안 파일만 읽고 다른 주소는 전부 막는다.
+- 판정은 지금처럼 core가 한다. 앱이 33ms마다 엔진 상태와 실제 스위치 신호를 `sim.set({...})`으로 넘기고(`ui/scene/Scene3d.kt`의 `Scene3dCommand`), 장면은 따라가기만 한다. 장면 이벤트는 `SideSeatBridge.onSimEvent`(`uivideo/Scene3dWebView.kt`)로 받아 로그로 남기고, `ready`·`unsupported`만 동작에 쓴다. WebGL2가 없거나 그리기 문맥을 잃으면 앱이 스스로 영상 방식으로 바꾼다.
+- 브레이크: 장면 속도가 엔진의 화면 속 속도를 그대로 따라간다(밟는 동안 초당 14km/h씩 줄고 앞으로 숙여짐). 앞차 급정거: 30m 앞에서 시작해 밟지 않으면 1.5초 뒤 1m 앞까지 와서 화면이 흔들리고 어두워진다(`v13_sudden_stop_closing_no_brake`·`_fail_crash`). 밟으면 속도가 줄수록 더 다가가 앞차 바로 뒤에 선다(`v13_c1_sudden_stop_stopped_hazard_question`). 핸들: 각도만큼 차로 안에서 옆으로 움직이고 풀면 가운데로 돌아온다(`v13_steer_left_lane_position`·`_right_`).
+- 새로 그린 것: 우회전 횡단보도(얼룩무늬·정지선·건너는 보행자 둘, 설 수 있는 거리보다 가까워지지 않게 다가옴), 하이패스 요금소(지붕·부스·"하이패스/일반" 표지·파란 유도선, "그대로 지나간다"를 고를 때까지 22m 앞에서 기다리다가 고르면 통과). 합류는 오른쪽 차로에서 시작해 핸들을 돌리면 가운데 차로로 넘어간다.
+- 다듬은 것: 앞차(차체 색·허리선·범퍼 구분), 와이퍼(팔·관절·블레이드·고무날), 물방울(크기와 모양이 고르지 않게, 큰 방울 층 추가), 보닛 선.
+- 대시보드·계기판·핸들·힌트 판·초시계·경고등·빛 띠는 기존 Compose 층 그대로 위에 있다. 주차장(C4)은 사진 방식 그대로다. 홈 화면 미리보기도 영상 그대로다.
+- **Pleos 에뮬레이터에서 알게 된 것 두 가지**
+  - WebView를 Compose 안(`AndroidView`)에 넣으면 장면은 돌아가는데(WebGL 2.0, 픽셀 읽기 정상) 화면에는 아무것도 그려지지 않는다. 같은 에뮬레이터의 WebView 시험 앱은 정상이다. 그래서 액티비티 창의 Compose 화면 **아래**에 WebView를 직접 붙이고, 훈련 화면은 그 자리의 바탕을 칠하지 않는다. 실차에서도 같은지는 모른다.
+  - 창을 한 번 다시 그릴 때마다 앱의 RenderThread가 코어 하나를 거의 다 쓴다(해상도·품질과 무관, 60장이면 앱 CPU 24.6%). 그래서 장면을 초당 30장으로 묶고, 그 위 Compose 층(운전석·초시계·빛 띠)도 장면이 한 장 그릴 때만 같이 다시 그리게 했다(`SceneRender.frameTick`). 30장에서 기준 안으로 들어왔다.
+
+**B. 훈련 절차 변경 (사용자 결정)**
+- **비상등 단계를 켰다**(`TrainingConfig.lowVisibilityHazardStep = true`). 폭우·앞유리 김서림·짙은 안개는 "감속 → 비상등 켰나요?(말·터치) → 나머지 조작", 앞차 급정거는 "브레이크 → 비상등 켰나요?". 법령 근거는 없고 뒤차 추돌을 막기 위한 통상 권고라는 점을 `docs/plan/safety-sources.md` 16번에 적었다.
+  - 급정거의 별은 지금처럼 브레이크 반응 시간으로만 매긴다. 밟은 뒤의 비상등 확인은 1.5초 제한을 받지 않는다.
+  - "고속도로 급정체" 상황은 따로 없어서 앞차 급정거의 마무리 대사에 "고속도로에서 앞이 갑자기 막히면 비상등으로 뒤차에 알려요"를 넣었다.
+  - 돌발 모드는 말로 답하는 단계를 못 쓰므로 이 확인 단계만 빼고 네 상황을 그대로 낸다(이전 설명대로면 네 상황이 돌발 모드에서 빠졌을 것).
+- **수막현상**: 브레이크를 밟아도 실패가 아니라 감점(★1)이다. 버티는 4초도 그대로 센다. 안내는 "급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요". 핸들을 꺾으면 이전처럼 감점하고 처음부터 센다.
+- **감속 단계**: 세기를 읽을 수 없어 판정에는 넣지 않았다. 안내에 "급하게 밟지 말고 나눠서 지그시"를 넣었다(시작 대사, 힌트, 마무리 대사). 화면 속 속도는 밟는 동안 초당 14km/h씩 준다(`brakeDecelKmhPerSec`, 이전 25). 앞차 급정거만 25 그대로다. 주행 코치(`DefaultDriveCoach`)는 건드리지 않았다.
+- 따라 바꾼 값: 감속에 시간이 더 걸려 제한 시간을 폭우 14→16초, 김서림 16→18초, 짙은 안개 12→14초, 우회전 횡단보도 5→8초로 늘렸다. 감속을 마치면 그 상황이 끝날 때까지 줄인 속도로 간다(이전에는 발을 떼면 다시 80으로 올라갔다).
+
+**C. 에뮬레이터 확인(Pleos_Connect_v2.1, 확인 뒤 종료)**
+- debug: C1~C5를 Virtual Console 신호와 디버그 명령으로 끝까지. C1 ★2·★2·★2, C2 ★2 넷, C3 ★3 셋, C4 ★3, C5 ★2·★2·★3·★3. 크래시 0.
+- release(신호 + 화면 터치): 차종 고르기 → 홈 → C1(폭우 ★3, 김서림 ★2, 급정거 0.6초 ★3, 비상등 질문은 화면의 "네, 켰어요"를 눌러 답함) → D단 코치 → P단 리뷰. 크래시 0.
+
+| release 실측 | v13 (3D, 30장) | v12 (영상) | 기준 |
+| --- | --- | --- | --- |
+| 훈련(C1 폭우, 조작 없이 40초) CPU, 4코어 기준 | 앱 평균 15.94%·최대 17.96%, WebView 렌더러 평균 1.25%·최대 1.70%, **합 평균 17.19%·최대 19.17%** | 평균 9.12%, 최대 10.92% | 25% 미만 |
+| 훈련 프레임 | 장면 30fps(29~30), 창 41초에 1,286장, 50%ile 32ms·90%ile 32ms | 약 63fps | – |
+| 훈련 PSS | 앱 130.6 MB + 렌더러 95.5 MB = **226.1 MB** | 68.5 MB | 400 MB 미만 |
+| 주행(코치) CPU | 평균 0.11%, 최대 0.25%(WebView 렌더러 프로세스 없음) | 평균 0.14% | 5% 미만 |
+| 주행 PSS | 158.8 MB | 82.9 MB | 400 MB 미만 |
+
+- 60장으로 둔 첫 측정은 합 평균 25.83%·최대 27.18%로 기준을 넘었다(품질을 낮춰도 같음). 30장으로 묶은 뒤의 값이 위 표다.
+- 장면 품질은 1(4배 안티에일리어싱, 1683×1210) 그대로다. 프레임이 24장 아래로 2초 넘게 떨어지면 장면이 스스로 품질을 낮춘다.
+- 원본: `docs/screens/sim/logs/v13_release_train_c1_3d.csv`, `v13_release_coach.csv`(1초마다 앱·렌더러 따로).
+
+**남은 약점**
+- 실차 WebView에서의 동작과 성능은 재지 못했다(WebGL2 필요). 안 되면 자동으로 영상 방식이 된다.
+- 우회전인데 차가 직진으로 횡단보도에 다가간다(꺾는 움직임 없음). 배경도 고속도로 그대로라 교차로처럼 보이지 않는다. 보행자는 상자 몸이다.
+- 합류는 오른쪽 차로가 가속차로처럼 따로 그려져 있지 않다. 본선의 차는 앞차 한 대뿐이다.
+- 맞은편 눈부심은 맞은편 차가 지나가는 동안만 보인다(약 9초). 졸음은 장면이 흐려지는 정도가 약하다.
+- 훈련을 시작하고 장면이 뜰 때까지 1초쯤 검다. 훈련 중 30장이라 60장이던 v12보다 덜 매끄럽다.
+- 방향지시등을 켜면 에뮬레이터 시스템의 측방 카메라 창이 왼쪽 위를 가리는 것은 그대로다.
+- 타비 질문 답(`assets/knowledge/procedures.md`)은 공식 출처만 쓰는 곳이라 비상등·수막 문구를 넣지 않았다.
+- 시제품 `tools/scene3d/`는 커밋하지 않고 그대로 뒀다(앱에 들어간 것은 `assets/scene3d/`).
+
+**캡처** (`docs/screens/sim/v13_*.jpg` 59장, 1600×900)
+- C1: `v13_c1_cruise`, `_rain_start`·`_rain_braking`·`_rain_hazard_question`·`_rain_wiped_lights_off`·`_rain_success`, `_fogged_start`·`_fogged_clearing`·`_fogged_success`, `_sudden_stop_before`·`_braking`·`_stopped_hazard_question`·`_success`, `_chapter_done`
+- C2: `v13_c2_tunnel_approach`·`_tunnel_dark`·`_tunnel_lights_on`, `_glare_high_beam`·`_glare_low_beam_success`, `_dense_fog_start`·`_slowed`·`_success`, `_drowsy`·`_drowsy_success`, `_chapter_done`
+- C3·C4: `v13_c3_warning_light`, `_breakdown`, `_accel_speeding`·`_accel_braking`, `_chapter_done`, `v13_c4_before_exit_photo`(사진 방식), `_chapter_done`
+- C5: `v13_c5_right_turn_approach`·`_braking`·`_stopped`, `_merge_right_lane`·`_signal_held`·`_moving_over`·`_success`, `_hydro_active`·`_success`, `_hipass_question1`·`_passing`·`_success`, `_chapter_done`
+- 그 밖: `v13_sudden_stop_closing_no_brake`·`_fail_crash`, `v13_steer_left_lane_position`·`_right_`, `v13_video_fallback_tunnel`, `v13_back_to_3d`
+- release: `v13_release_home`, `_training_rain`, `_rain_success`, `_fogged_clearing`, `_sudden_stop_stopped`, `_chapter_c1_done`, `_coach`, `_review`
+
 ## 감속 먼저·새 상황 4개(C5)·급정거와 조향 연출(v12), release APK 재갱신 (2026-11-14 20:00~20:22, 화면 품질 세션)
 
 `apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,099,640 바이트**(v11 27,082,404 대비 +17,236), `sk-ant-` 0건, release 서명 확인. `./gradlew :core:test` **104개**(이전 94)·`:app:testDebugUnitTest` **115개**(이전 114) 통과. 출처 조사 결과는 `docs/plan/safety-sources.md` 16~20번. 법령 조문(시행규칙 제19조·별표 2, 법 제27조·제37조·제38조·제65조, 시행령 제19조·별표 2)은 law.go.kr 점검 때문에 대법원 종합법률정보에서 원문으로 확인했다(20:50 추가).

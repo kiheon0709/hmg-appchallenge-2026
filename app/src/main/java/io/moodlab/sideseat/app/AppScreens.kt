@@ -16,7 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import io.moodlab.sideseat.ui.LocalSwitchLocation
 import io.moodlab.sideseat.ui.scene.LocalSceneBackdrop
+import io.moodlab.sideseat.ui.scene.LocalScene3d
+import io.moodlab.sideseat.ui.scene.SceneRender
 import io.moodlab.sideseat.uivideo.VideoSceneBackdrop
+import io.moodlab.sideseat.uivideo.WebViewScene3d
 import androidx.compose.runtime.remember
 import io.moodlab.sideseat.voice.VoiceModule
 import androidx.compose.ui.Alignment
@@ -39,9 +42,12 @@ fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((Vehicle
     // 이 차의 스위치 위치 문장(차종별 지식 파일). 화면은 음성 모듈을 직접 만지지 않는다.
     // 정차 화면의 주행 장면은 실사 영상을 배경으로 쓴다(재생기는 화면이 사라지면 같이 풀린다)
     val backdrop = remember { VideoSceneBackdrop() }
+    // 훈련 장면은 3D(WebView)로 그린다. 못 띄우는 기기와 주차장 장면은 위의 영상·사진 방식으로 돌아간다
+    val scene3d = remember { WebViewScene3d() }
     CompositionLocalProvider(
         LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) },
         LocalSceneBackdrop provides backdrop,
+        LocalScene3d provides scene3d,
     ) {
         AppScreensBody(ui, onAction, onDebugChange)
     }
@@ -49,7 +55,8 @@ fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((Vehicle
 
 @Composable
 private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((VehicleState) -> Unit)?) {
-    Box(Modifier.fillMaxSize().background(Sc.bg)) {
+    val seeThrough = ui.mode == AppMode.TRAINING && SceneRender.seeThrough(ui.training)
+    Box(if (seeThrough) Modifier.fillMaxSize() else Modifier.fillMaxSize().background(Sc.bg)) {
         when (ui.mode) {
             AppMode.HOME -> HomeScreen(ui.home, onAction)
             AppMode.TRAINING -> ui.training?.let { TrainingScreen(it, ui.vehicle, onAction) } ?: Waiting()

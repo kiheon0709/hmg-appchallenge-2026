@@ -118,7 +118,7 @@ val LocalSz = staticCompositionLocalOf { Sz(1f, true, 1280.dp, 800.dp) }
 
 /** 모든 화면의 바깥 틀: 테마와 치수를 정하고, 가로(창 2칸)·세로(창 1칸)를 구분해 준다. */
 @Composable
-fun SideSeatFrame(modifier: Modifier = Modifier, content: @Composable BoxWithConstraintsScope.(Sz) -> Unit) {
+fun SideSeatFrame(modifier: Modifier = Modifier, paintBackground: Boolean = true, content: @Composable BoxWithConstraintsScope.(Sz) -> Unit) {
     val dark = SideSeatUiDebug.forceDark ?: isSystemInDarkTheme()
     val p = remember(dark) { (if (dark) NightPalette else DayPalette).also { Sc.palette = it } }
     MaterialTheme(
@@ -135,7 +135,7 @@ fun SideSeatFrame(modifier: Modifier = Modifier, content: @Composable BoxWithCon
         },
     ) {
         // 바탕색은 여기서 칠한다(팔레트를 정한 뒤라 테마가 바뀌어도 어긋나지 않는다)
-        BoxWithConstraints(modifier.fillMaxSize().background(p.bg)) {
+        BoxWithConstraints(if (paintBackground) modifier.fillMaxSize().background(p.bg) else modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight * 1.08f
             val short = if (maxWidth < maxHeight) maxWidth else maxHeight
             // 세로(창 1칸)는 폭이 좁아도 글자가 가로 화면과 비슷한 크기가 되게 폭 640dp를 기준으로 잡는다
