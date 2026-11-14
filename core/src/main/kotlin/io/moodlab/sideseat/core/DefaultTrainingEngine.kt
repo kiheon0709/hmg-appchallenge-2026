@@ -592,6 +592,8 @@ internal class SceneSim(private val config: TrainingConfig) {
     private var parkingLot = false
     private var sign: String? = null
     private var slip = 0f
+    private var place = ScenePlace.HIGHWAY
+    private var placedFor: SituationId? = null
 
     fun update(
         dtMs: Long,
@@ -606,6 +608,14 @@ internal class SceneSim(private val config: TrainingConfig) {
         val active = phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT
         val briefing = phase == TrainingPhase.BRIEFING
         fun on(id: SituationId) = inSit && situation == id
+
+        // 장소는 상황이 시작될 때 한 번 고르고, 다음 상황이 시작될 때까지 그대로 둔다
+        val current = situation.takeIf { inSit }
+        if (current != null && current != placedFor) {
+            val options = config.places[current].orEmpty()
+            place = if (options.isEmpty()) ScenePlace.HIGHWAY else options[config.placeRandom.nextInt(options.size)]
+        }
+        placedFor = current
 
         rain = when {
             on(SituationId.HEAVY_RAIN) -> approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt)
@@ -623,6 +633,8 @@ internal class SceneSim(private val config: TrainingConfig) {
         sign = when {
             on(SituationId.RIGHT_TURN_CROSSWALK) -> "CROSSWALK"
             on(SituationId.HIPASS_WRONG_LANE) -> "HIPASS"
+            on(SituationId.ROUNDABOUT_ENTRY) -> "ROUNDABOUT"
+            on(SituationId.SCHOOL_ZONE) -> "SCHOOL"
             else -> null
         }
         fogOutside = if (on(SituationId.DENSE_FOG)) approach(fogOutside, 0.85f, 0.6f, dt) else approach(fogOutside, 0f, 0.15f, dt)
@@ -692,6 +704,10 @@ internal class SceneSim(private val config: TrainingConfig) {
             // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
+            // 회전교차로: 천천히 다가가고, 양보하려고 줄였으면 그 속도로 기다린다
+            on(SituationId.ROUNDABOUT_ENTRY) -> if ("yield_slow" in doneSteps) speed else approach(speed, config.slowApproachKmh, 25f, dt)
+            // 보호구역: 시속 50으로 들어서고, 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
+            on(SituationId.SCHOOL_ZONE) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.schoolApproachKmh, 25f, dt)
             // 앞이 안 보여 속도를 줄였으면 그 상황이 끝날 때까지 줄인 속도로 간다
             inSit && "slow_down" in doneSteps -> speed
             // 물 위에 뜬 동안은 발을 떼면 속도가 천천히 준다
@@ -725,6 +741,7 @@ internal class SceneSim(private val config: TrainingConfig) {
         drowsyBlur = drowsy,
         sign = sign,
         slip = slip,
+        place = place,
     )
 
     private fun approach(cur: Float, target: Float, ratePerSec: Float, dt: Float): Float {

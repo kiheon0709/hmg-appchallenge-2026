@@ -72,6 +72,8 @@ enum class SituationId {
     BREAKDOWN, WARNING_LIGHT, DROWSY, UNINTENDED_ACCEL, BEFORE_EXIT, WIPER_DEBRIS,
     // 길 위의 규칙(11-14 추가). 기록은 이름으로 저장하므로 뒤에 붙여도 이전 기록과 호환된다.
     RIGHT_TURN_CROSSWALK, HIGHWAY_MERGE, HYDROPLANING, HIPASS_WRONG_LANE,
+    // 장소가 다른 상황(11-15 추가): 회전교차로 진입, 어린이 보호구역의 신호등 없는 횡단보도.
+    ROUNDABOUT_ENTRY, SCHOOL_ZONE,
 }
 
 data class StepView(val id: String, val label: String, val done: Boolean)
@@ -123,10 +125,12 @@ data class SceneParams(
     val parkingLot: Boolean = false,
     /** 졸음 흐림(S09). */
     val drowsyBlur: Float = 0f,
-    /** 화면에 띄울 도로 표지 키. "CROSSWALK"(횡단보도), "HIPASS"(하이패스 차로). 없으면 null. */
+    /** 화면에 띄울 도로 표지 키. "CROSSWALK"(횡단보도), "HIPASS"(하이패스 차로), "ROUNDABOUT"(회전교차로), "SCHOOL"(보호구역 횡단보도). 없으면 null. */
     val sign: String? = null,
     /** 차가 미끄러지는 정도(수막현상). 화면이 좌우로 흔들린다. */
     val slip: Float = 0f,
+    /** 장소([ScenePlace]의 이름). 문제 상황과 따로 정해져 "장소 × 상황"으로 조합된다. 3D 장면만 쓴다. */
+    val place: String = ScenePlace.HIGHWAY,
 )
 
 data class SituationResult(
@@ -324,3 +328,11 @@ data class WindowBuzzerView(
     val lastCorrect: Boolean?,
     val scores: Map<Seat, Int>,
 )
+
+/** 훈련 장면의 장소. 같은 문제 상황(비, 안개, 앞차 급정거 등)도 장소를 바꿔 낼 수 있다. */
+object ScenePlace {
+    const val HIGHWAY = "HIGHWAY"
+    const val CITY = "CITY"
+    const val SCHOOL = "SCHOOL"
+    const val DOWNHILL = "DOWNHILL"
+}

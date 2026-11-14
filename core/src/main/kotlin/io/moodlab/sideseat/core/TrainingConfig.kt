@@ -81,6 +81,15 @@ data class TrainingConfig(
     /** 면허 챕터 통과 기준(모든 상황 이 별 이상). */
     val licenseMinStars: Int = 2,
     val random: Random = Random.Default,
+    /** 상황마다 나올 수 있는 장소. 상황이 시작될 때 이 가운데 하나를 고른다. 없는 상황은 고속도로다. */
+    val places: Map<SituationId, List<String>> = DEFAULT_PLACES,
+    /** 장소를 고르는 난수(상황 고르기와 섞이지 않게 따로 둔다). */
+    val placeRandom: Random = Random.Default,
+    /** 회전교차로: 이 속도 이하로 줄이면 "서행하거나 일시정지"로 본다. */
+    val roundaboutYieldKmh: Float = 10f,
+    /** 어린이 보호구역: 들어설 때의 화면 속 속도와 지켜야 할 속도(표지의 제한속도, 통상 시속 30km). */
+    val schoolApproachKmh: Float = 50f,
+    val schoolLimitKmh: Float = 30f,
 ) {
     fun limitOf(id: SituationId): Long = limitsMs[id] ?: 10_000
 
@@ -93,6 +102,21 @@ data class TrainingConfig(
 
         /** 3D 장면을 초당 몇 장 그릴지. 0이면 화면 주사율 그대로(에뮬레이터에서 CPU가 기준을 넘는다, STATUS.md v13). */
         const val SCENE_3D_FPS: Int = 30
+
+        /** 장소 × 상황. 첫 번째가 그 상황의 기본 장소다. 전조등·터널처럼 장소가 정해진 상황은 넣지 않는다. */
+        val DEFAULT_PLACES: Map<SituationId, List<String>> = mapOf(
+            SituationId.HEAVY_RAIN to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY, ScenePlace.DOWNHILL),
+            SituationId.FOGGED_WINDSHIELD to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY),
+            SituationId.SUDDEN_STOP to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY, ScenePlace.DOWNHILL),
+            SituationId.DENSE_FOG to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY),
+            SituationId.ONCOMING_GLARE to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY),
+            SituationId.WARNING_LIGHT to listOf(ScenePlace.HIGHWAY, ScenePlace.CITY),
+            SituationId.UNINTENDED_ACCEL to listOf(ScenePlace.HIGHWAY, ScenePlace.DOWNHILL),
+            SituationId.HYDROPLANING to listOf(ScenePlace.HIGHWAY, ScenePlace.DOWNHILL),
+            SituationId.RIGHT_TURN_CROSSWALK to listOf(ScenePlace.CITY),
+            SituationId.ROUNDABOUT_ENTRY to listOf(ScenePlace.CITY),
+            SituationId.SCHOOL_ZONE to listOf(ScenePlace.SCHOOL),
+        )
 
         val DEFAULT_LIMITS: Map<SituationId, Long> = mapOf(
             // 앞이 안 보이는 상황은 감속과 비상등 확인이 먼저라 시간을 넉넉히 준다(11-14, 완만한 감속에 맞춰 2초씩 더).
@@ -114,6 +138,8 @@ data class TrainingConfig(
             SituationId.HIGHWAY_MERGE to 10_000,
             SituationId.HYDROPLANING to 8_000,
             SituationId.HIPASS_WRONG_LANE to 0, // 말로 답하는 상황
+            SituationId.ROUNDABOUT_ENTRY to 10_000,
+            SituationId.SCHOOL_ZONE to 10_000,
         )
     }
 }
@@ -138,7 +164,10 @@ object ChapterCatalog {
         ChapterDef("C4", "내리기 전에", "주차를 마쳤어요. 내리기 전에 확인해요.", listOf(SituationId.BEFORE_EXIT), 1),
         ChapterDef(
             "C5", "길 위의 규칙", "알고 있으면 덜 당황하는 것들이에요.",
-            listOf(SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE), 4,
+            listOf(
+                SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
+            ), 6,
         ),
     )
 

@@ -117,6 +117,8 @@ object UiSamples {
                 steeringAngleDeg = if (reacted) -14f * ramp(r, 0.6f) else 0f,
             )
             SituationId.HYDROPLANING -> { scene = scene.copy(rain = 0.7f, slip = if (live) 0.5f else 0f); speed = 80f - 6f * a.coerceAtMost(4f) }
+            SituationId.ROUNDABOUT_ENTRY -> { scene = scene.copy(sign = "ROUNDABOUT", place = io.moodlab.sideseat.core.ScenePlace.CITY); speed = if (reacted) 8f else 30f }
+            SituationId.SCHOOL_ZONE -> { scene = scene.copy(sign = "SCHOOL", place = io.moodlab.sideseat.core.ScenePlace.SCHOOL); speed = if (reacted) 0f else 50f }
             SituationId.HIPASS_WRONG_LANE -> {
                 scene = scene.copy(sign = "HIPASS")
                 speed = 30f

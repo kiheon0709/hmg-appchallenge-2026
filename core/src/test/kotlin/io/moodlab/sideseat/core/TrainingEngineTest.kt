@@ -70,7 +70,10 @@ class TrainingEngineTest {
         val ch = e.chapters()
         assertEquals(listOf("C1", "C2", "C3", "C4", "C5"), ch.map { it.id })
         assertEquals(
-            listOf(SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE),
+            listOf(
+                SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
+            ),
             ch[4].situations,
         )
         assertEquals(
@@ -687,4 +690,6 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.HIGHWAY_MERGE -> s.copy(turnSignal = TurnSignal.LEFT, steeringAngleDeg = -15f)
     SituationId.HYDROPLANING -> s
     SituationId.HIPASS_WRONG_LANE -> s
+    SituationId.ROUNDABOUT_ENTRY -> s.copy(turnSignal = TurnSignal.LEFT, brakePressed = true)
+    SituationId.SCHOOL_ZONE -> s.copy(brakePressed = true)
 }

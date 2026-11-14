@@ -31,7 +31,9 @@ const DEFAULTS = { speed: 100, brake: 0, steer: 0, turn: 'off', rain: 0, wiper: 
   fog: 0, headlights: 1, tunnel: false, leadBrake: false, gap: 32, leadSpeed: null, lead: true, hydroplane: 0, curve: 1, paused: false,
   // 앱(호스트)이 주는 값: 판정은 core가 하고 장면은 따라가기만 한다. null이면 장면이 스스로 계산한다
   hostSpeed: null, hostGap: null, crash: false, lane: 0, landmark: null, hold: true, blur: 0, tunnelDist: 180,
-  fpsCap: +Q.get('fps_cap') || 0 }; // fpsCap: 초당 그릴 장수의 상한(0이면 화면 주사율 그대로)
+  fpsCap: +Q.get('fps_cap') || 0,
+  // place: 장소(highway 고속도로, city 도심, school 어린이 보호구역, downhill 내리막). 문제 상황(비·안개·앞차 등)과 따로 고른다
+  place: 'highway' }; // fpsCap: 초당 그릴 장수의 상한(0이면 화면 주사율 그대로)
 const P = Object.assign({}, DEFAULTS, { quality: Q.get('q') === '0' ? 0 : 1, bloom: Q.get('q') !== '0' });
 const S = {};
 function resetState() {
@@ -40,7 +42,7 @@ function resetState() {
     low: 1, high: 0, fogGlass: 0, fogD: 0, rainS: 0, wPhase: 0, wRun: false, wA: 0, wB: 0, wAp: 0, wBp: 0,
     entW: null, exitW: null, inTunnel: false, glareZ: null, glareI: 0, opp: 0, far1: -190, far2: -280,
     hydro: false, hydroPh: 0, edge: 0, timers: [], rainOff: [0, 0, 0], wetReset: true, steerS: 0,
-    laneX: 0, lmW: null, lmKind: null, lmZ: -5000, pedX: 5.6 });
+    laneX: 0, lmW: null, lmKind: null, lmZ: -5000, pedX: 5.6, placeId: 0, grade: 0, gradeS: 0, cutT: -1, cutFn: null, cutDone: false, rbA: 0 });
 }
 resetState();
 
@@ -206,6 +208,7 @@ void main(){
   float z = mod(iPos.z + uDist + 500., 600.) - 500.;
   vec3 wp = position*iScale + vec3(iPos.x, iPos.y, z);
   float show = iData.a > 3.5 ? inTun(z) : 1. - inTun(z);
+  if (uMark.z > 0.5 && iPos.x > 8.2 && iPos.x < 8.3) show = 0.; // 도심에는 가드레일 기둥이 없다
   vP = wp; vN = normal; vUv = uv; vA = iData; vL = position;
   gl_Position = show > 0.5 ? projectionMatrix * viewMatrix * vec4(bend(wp), 1.) : vec4(2., 2., 2., 1.);
 }`;
@@ -326,26 +329,48 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   float l3 = 1. - smoothstep(.075 - aw, .075 + aw, abs(u + 5.4));
   float wear = 0.5 + 0.5*smoothstep(0.3, 0.55, n1.g + (n3.g - .5)*0.5);
   float wl = clamp(l1 + l2, 0., 1.) * wear, yl = l3 * wear;
-  float bl = 0., gateL = 0.;
-  if (uMark.y > 0.5) { // 횡단보도(1) · 하이패스 차로 유도선(2). uMark.x는 그 자리의 z
+  float bl = 0., gateL = 0., ycw = 0., cross = 0., rb = 0.;
+  float city = step(0.5, uMark.z), school = step(1.5, uMark.z);   // uMark.z: 장소(0 고속도로, 1 도심, 2 어린이 보호구역)
+  if (uMark.y > 0.5) { // 횡단보도(1) · 하이패스 차로(2) · 보호구역 노란 횡단보도(3) · 회전교차로(4). uMark.x는 그 자리의 z
     float dzm = P.z - uMark.x;
-    if (uMark.y < 1.5) {
+    if (uMark.y < 1.5 || (uMark.y > 2.5 && uMark.y < 3.5)) {
       float cw = step(abs(dzm), 2.0) * step(abs(x), 5.3) * step(0.45, fract(x/1.1 + 0.2));
       float sl = step(abs(dzm - 3.3), 0.2) * step(abs(x), 5.3);
-      wl = max(wl, max(cw, sl) * (0.6 + 0.4*wear));
-    } else {
+      if (uMark.y < 1.5) { wl = max(wl, max(cw, sl) * (0.6 + 0.4*wear)); cross = city * step(-20., dzm) * step(dzm, -6.); }
+      else { ycw = cw * (0.6 + 0.4*wear); wl = max(wl, sl * (0.6 + 0.4*wear)); }
+    } else if (uMark.y < 2.5) {
       gateL = smoothstep(9., 3., abs(dzm)) * step(abs(x - 1.1), 8.6);
       bl = (1. - smoothstep(.09 - aw, .09 + aw, abs(abs(x) - 1.5))) * step(-14., dzm) * step(dzm, 90.) * (0.6 + 0.4*wear);
+    } else {
+      // 회전교차로: 가운데가 dzm = -19, 바깥 반지름 17.5. 안에서는 차선을 지우고 둘레선·양보선만 그린다
+      float r = length(vec2(x, dzm + 19.));
+      rb = step(r, 17.5);
+      wl *= 1. - rb; yl *= 1. - rb;
+      float ring = (1. - smoothstep(.09, .13, abs(r - 17.1))) * step(5.5, abs(x)) + (1. - smoothstep(.09, .13, abs(r - 8.35)));
+      float yieldL = step(abs(dzm - 0.6), 0.2) * step(abs(x), 5.3) * step(0.5, fract(x/0.9));
+      wl = max(wl, max(ring, yieldL) * (0.6 + 0.4*wear));
     }
   }
+  wl *= 1. - cross; yl *= 1. - cross;
+  col = mix(col, vec3(0.15, 0.045, 0.035) * (0.7 + 0.6*n1.g), school * lane * 0.85);   // 보호구역의 붉은 포장
+  col = mix(col, vec3(0.62, 0.47, 0.05), ycw);
   col = mix(col, vec3(0.60, 0.60, 0.58), wl);
   col = mix(col, vec3(0.05, 0.20, 0.72), bl);
   col = mix(col, vec3(0.60, 0.44, 0.08), yl);
   retro = (wl + yl + bl) * 0.012;
   float rum = smoothstep(5.6, 5.64, u)*smoothstep(5.94, 5.9, u) * clamp(0.08/az, 0., 1.);
-  col *= 1. - 0.35*rum*step(0.5, fract(wz/0.3));
-  float verge = max(smoothstep(8.25, 8.45, u), step(u, -5.95)*step(-6.6, x));
-  col = mix(col, vec3(0.020, 0.026, 0.014)*(0.5 + n1.g), smoothstep(8.25, 8.45, u));
+  col *= 1. - 0.35*rum*step(0.5, fract(wz/0.3))*(1. - city);
+  float verge = max(smoothstep(8.25, 8.45, u), step(u, -5.95)*step(-6.6, x)) * (1. - city);
+  col = mix(col, vec3(0.020, 0.026, 0.014)*(0.5 + n1.g), smoothstep(8.25, 8.45, u) * (1. - city));
+  if (city > 0.5) { // 도심: 갓길 대신 연석과 보도. 가로지르는 길과 회전교차로에서는 열린다
+    float open = max(cross, rb);
+    float walk = smoothstep(5.86, 5.94, u) * (1. - open);
+    vec2 tg = abs(fract(vec2(u, wz)/0.6) - .5);
+    vec3 pave = vec3(0.085, 0.082, 0.078) * (0.75 + 0.35*n1.b) * (1. - 0.3*step(0.46, max(tg.x, tg.y)));
+    pave = mix(pave, vec3(0.20, 0.195, 0.185), step(u, 6.08));
+    col = mix(col, pave, walk);
+    verge = walk;
+  }
   float wet = uEnv.x * (1. - tun) * (1. - verge);
   float pud = wet * smoothstep(0.42, 0.82, n3.b + 0.3*uEnv.w + lane*0.14*rut);
   col *= mix(1., 0.5, wet);
@@ -367,10 +392,35 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   b.ribbon([[-5.74, 0], [-5.80, 0.08], [-5.98, 0.33], [-6.06, 0.9], [-6.34, 0.9], [-6.42, 0.33], [-6.60, 0.08], [-6.66, 0]], ZS, 0);
   b.ribbon([[8.17, 0.44], [8.09, 0.50], [8.14, 0.575], [8.09, 0.65], [8.17, 0.71]], ZS, 1);
   b.ribbon([[19, -0.5], [17, 13]], ZS, 3); b.ribbon([[-27, -0.5], [-25, 13]], ZS, 3);
+  b.ribbon([[11.4, -0.2], [11.4, 15]], ZS, 4); b.ribbon([[-23.8, -0.2], [-23.8, 15]], ZS, 4); // 도심의 건물 벽
   add(new THREE.Mesh(b.geo(), lit(/* glsl */`
 void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
   float wz = P.z - uDist; float m = vA.x;
-  if (m < 1.5 && inTun(P.z) > 0.5) discard;
+  float city = step(0.5, uMark.z);
+  if (m < 1.5 && (inTun(P.z) > 0.5 || city > 0.5)) discard;
+  if (m > 3.5) {
+    // 건물: 필지마다 높이와 색이 다르고 창에 불이 드문드문 켜져 있다. 1층은 가게
+    if (city < 0.5) discard;
+    float dzm = P.z - uMark.x;
+    if (uMark.y > 0.5 && uMark.y < 1.5 && dzm > -20. && dzm < -6.) discard;
+    if (uMark.y > 3.5 && length(vec2(P.x, dzm + 19.)) < 24.) discard;
+    float bw = 15., id = floor(wz/bw), fx = fract(wz/bw), y = vUv.x - 0.2;
+    vec4 h = textureLod(tNoise, (vec2(mod(id, 200.), 21. + step(0., P.x)*9.) + .5)/256., 0.);
+    float ht = uMark.z > 1.5 ? 4. + 4.5*h.r : 6.5 + 8.*h.r;
+    if (y > ht || fx < 0.025) discard;
+    vec4 n = texture2D(tNoise, vec2(wz*0.3, y*0.3));
+    alb = mix(vec3(0.060, 0.056, 0.052), vec3(0.095, 0.078, 0.062), h.g) * (0.75 + 0.4*n.b);
+    vec2 wuv = vec2(fx*bw/2.4, y/3.1), wi = floor(wuv), wf = fract(wuv);
+    vec4 wh = textureLod(tNoise, (mod(wi + vec2(id*13., id*7.), 256.) + .5)/256., 0.);
+    float win = step(0.2, wf.x)*step(wf.x, 0.8)*step(0.32, wf.y)*step(wf.y, 0.8)*step(0.5, wi.y)*step(y, ht - 0.6);
+    if (win > 0.5) { alb = vec3(0.018, 0.022, 0.028); spec = 0.5; gloss = 200.;
+      emis = step(0.6, wh.r) * mix(vec3(1., 0.78, 0.48), vec3(0.72, 0.84, 1.), step(0.6, wh.g)) * (0.05 + 0.12*wh.b); }
+    if (y < 3.1) { float shop = step(0.07, fx)*step(fx, 0.93)*step(0.45, y)*step(y, 2.55);
+      if (shop > 0.5) { alb = vec3(0.02); emis = mix(vec3(1., 0.85, 0.6), vec3(0.8, 0.9, 1.), h.b) * 0.075 * step(0.35, h.a) * (0.6 + 0.4*n.g); spec = 0.5; gloss = 200.; }
+      else if (y > 2.62 && y < 3.05) { alb = mix(vec3(0.20, 0.04, 0.03), vec3(0.03, 0.10, 0.20), step(0.5, h.b)) * (0.6 + 0.8*h.g); emis = alb * 0.5 * step(0.35, h.a); } }
+    return;
+  }
+  if (m > 2.5 && city > 0.5) discard;
   if (m < 0.5) {
     vec4 n = texture2D(tNoise, vec2(wz*0.25, P.y*0.5 + P.x));
     float joint = smoothstep(0.03, 0.0, abs(fract(wz/4.) - .5) - 0.47) ;
@@ -614,6 +664,85 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   m.visible = false; return m;
 })();
 
+// ---------------------------------------------------------------- city landmarks: traffic signal, school-zone signs, roundabout
+const signalMast = (() => {
+  const b = new Builder();
+  b.loft([tubeRing(6.5, 0, -4.5, 0.13, 0.13, 8), tubeRing(6.5, 6.2, -4.5, 0.09, 0.09, 8)], 0);
+  b.box(0.2, 6.5, 5.72, 5.86, -4.56, -4.44, 0);
+  b.box(0.3, 2.3, 5.3, 5.95, -4.62, -4.38, 1);                                   // 차량 신호등(가로 3구)
+  [[0.65, 2], [1.3, 3], [1.95, 4]].forEach(([x, m]) => b.rect([x - 0.2, 5.42, -4.37], [x + 0.2, 5.42, -4.37], [x - 0.2, 5.82, -4.37], [x + 0.2, 5.82, -4.37], m));
+  b.box(6.28, 6.72, 2.3, 3.2, -4.3, -4.1, 1);                                    // 보행 신호등
+  b.rect([6.33, 2.78, -4.09], [6.67, 2.78, -4.09], [6.33, 3.14, -4.09], [6.67, 3.14, -4.09], 4);
+  b.rect([6.33, 2.36, -4.09], [6.67, 2.36, -4.09], [6.33, 2.72, -4.09], [6.67, 2.72, -4.09], 5);
+  const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
+void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
+  float m = vA.x; float d = length(vUv - .5);
+  if (m < 0.5) { alb = vec3(0.07, 0.072, 0.075); spec = 0.2; gloss = 30.; }
+  else if (m < 1.5) alb = vec3(0.012);
+  else if (m < 2.5) { alb = vec3(0.02); emis = vec3(1., 0.06, 0.03) * 9. * smoothstep(0.48, 0.38, d); }
+  else if (m < 3.5) { alb = vec3(0.05, 0.035, 0.004) * smoothstep(0.48, 0.38, d); }
+  else if (m < 4.5) { alb = vec3(0.004, 0.035, 0.012) * smoothstep(0.48, 0.38, d); }
+  else { alb = vec3(0.01); emis = vec3(0.1, 1., 0.35) * 3. * smoothstep(0.42, 0.3, max(abs(vUv.x - .5)*1.6, abs(vUv.y - .5))); }
+}`, { defines: { BEND: 1, SPEC: 1 } })), 2);
+  m.visible = false; return m;
+})();
+function makeSchoolSign() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 384; const g = c.getContext('2d');
+  const F = '"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.fillStyle = '#f2c500'; g.fillRect(0, 0, 256, 384); g.strokeStyle = '#111'; g.lineWidth = 8; g.strokeRect(6, 6, 244, 372);
+  g.fillStyle = '#111'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 50px ' + F; g.fillText('어린이', 128, 56); g.fillText('보호구역', 128, 116);
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(128, 262, 96, 0, 7); g.fill(); g.strokeStyle = '#d5151b'; g.lineWidth = 22; g.beginPath(); g.arc(128, 262, 82, 0, 7); g.stroke();
+  g.fillStyle = '#111'; g.font = 'bold 96px ' + F; g.fillText('30', 128, 268);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+const schoolSigns = (() => {
+  const b = new Builder();
+  for (const x of [-6.5, 6.5]) {
+    b.loft([tubeRing(x, 0, 6, 0.06, 0.06, 8), tubeRing(x, 3.4, 6, 0.06, 0.06, 8)], 0);
+    b.rect([x - 0.5, 1.9, 6.07], [x + 0.5, 1.9, 6.07], [x - 0.5, 3.4, 6.07], [x + 0.5, 3.4, 6.07], 1);
+    for (let k = 0; k < 9; k++) b.loft([tubeRing(x * 0.955, 0, 1 - k * 2.2, 0.035, 0.035, 6), tubeRing(x * 0.955, 0.95, 1 - k * 2.2, 0.035, 0.035, 6)], 2); // 보도의 노란 울타리 기둥
+    b.box(x * 0.955 - 0.025, x * 0.955 + 0.025, 0.86, 0.92, -16.6, 1, 2); b.box(x * 0.955 - 0.025, x * 0.955 + 0.025, 0.45, 0.5, -16.6, 1, 2);
+  }
+  b.box(-5.3, 5.3, 0, 0.06, 5.0, 5.9, 3);                                         // 과속방지턱
+  const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
+uniform sampler2D tSign;
+void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
+  float m = vA.x;
+  if (m < 0.5) { alb = vec3(0.08); spec = 0.2; gloss = 30.; }
+  else if (m < 1.5) { vec3 t = texture2D(tSign, vUv).rgb; alb = t*0.5; retro = 0.5; }
+  else if (m < 2.5) { alb = vec3(0.42, 0.32, 0.02); retro = 0.15; }
+  else { alb = mix(vec3(0.5, 0.38, 0.03), vec3(0.45), step(0.5, fract(vL.x*0.8 + vL.z*0.8))); retro = 0.3; }
+}`, { defines: { BEND: 1 }, uniforms: { tSign: { value: makeSchoolSign() } } })), 2);
+  m.visible = false; return m;
+})();
+function makeChevron() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d');
+  g.fillStyle = '#0a3aa8'; g.fillRect(0, 0, 512, 96); g.strokeStyle = '#fff'; g.lineWidth = 16; g.lineJoin = 'miter';
+  for (let x = 30; x < 500; x += 62) { g.beginPath(); g.moveTo(x, 12); g.lineTo(x + 30, 48); g.lineTo(x, 84); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+const island = (() => {
+  const b = new Builder(), N = 40;
+  b.loft([tubeRing(0, 0, 0, 8.2, 8.2, N), tubeRing(0, 0.28, 0, 8.2, 8.2, N), tubeRing(0, 0.28, 0, 7.6, 7.6, N), tubeRing(0, 0.9, 0, 4.5, 4.5, N), tubeRing(0, 1.25, 0, 0.6, 0.6, N)], 0);
+  b.cap(tubeRing(0, 1.25, 0, 0.6, 0.6, N), 0, false);
+  b.loft([tubeRing(0, 1.2, 0, 0.11, 0.11, 8), tubeRing(0, 7.2, 0, 0.08, 0.08, 8)], 1); b.box(-0.9, 0.9, 7.15, 7.3, -0.25, 0.25, 3); // 가운데 가로등
+  for (const a of [-0.5, 0, 0.5]) { const x = Math.sin(a) * 7.9, z = Math.cos(a) * 7.9, tx = Math.cos(a) * 1.4, tz = -Math.sin(a) * 1.4;      // 우리 쪽을 보는 방향 표지
+    b.rect([x - tx, 0.75, z - tz], [x + tx, 0.75, z + tz], [x - tx, 1.3, z - tz], [x + tx, 1.3, z + tz], 2);
+    b.loft([tubeRing(x, 0.28, z - 0.03, 0.04, 0.04, 6), tubeRing(x, 0.75, z - 0.03, 0.04, 0.04, 6)], 1); }
+  const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
+uniform sampler2D tSign;
+void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
+  float m = vA.x; vec4 n = texture2D(tNoise, vL.xz*0.4);
+  if (m < 0.5) { alb = vL.y < 0.3 ? vec3(0.19, 0.185, 0.175) * (0.7 + 0.4*n.b) : vec3(0.022, 0.040, 0.016) * (0.5 + 1.1*n.g); }
+  else if (m < 1.5) { alb = vec3(0.07); spec = 0.2; gloss = 30.; }
+  else if (m < 2.5) { vec3 t = texture2D(tSign, vUv).rgb; alb = t*0.5; retro = 0.7; }
+  else { alb = vec3(0.1); if (N.y < -0.5) emis = SL_COL * 0.035; }
+  emis += alb * SL_COL * 0.0016 * smoothstep(9., 2., length(vL.xz));
+}`, { defines: { BEND: 1 }, uniforms: { tSign: { value: makeChevron() } } })), 2);
+  m.visible = false; return m;
+})();
+const ringCars = [0, 1].map(() => { const c = car.clone(); add(c, 2); c.visible = false; return c; });
+
 // ---------------------------------------------------------------- hood and dashboard (children of the camera)
 const grid = (nx, nz, fn, m) => { const b = new Builder(), id = []; for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) id.push(b.vert(...fn(i / nx, j / nz), i / nx, j / nz, m)); for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i; b.quad(id[a], id[a + 1], id[a + nx + 1], id[a + nx + 2]); } return b.geo(); };
 const hood = new THREE.Mesh(grid(48, 28, (u, v) => { const xc = lerp(-0.96, 0.96, u), z = lerp(-1.0, -2.42, v), e = Math.abs(xc) / 0.96;
@@ -650,6 +779,7 @@ void main(){
     vis *= smoothstep(-500., -420., z);
     if (kind > 3.5) vis *= inTun(z); else vis *= 1. - inTun(z);
     if (kind > 1.5 && kind < 2.5) vis *= uOppOn;
+    if (kind > 0.5 && kind < 1.5 && uMark.z > 0.5) vis = 0.;
   }
   vec3 wp = vec3(aPos.x, aPos.y, z);
   float inten = aInfo.z;
@@ -845,8 +975,13 @@ function set(o) {
       case 'blur': P.blur = clamp(+v, 0, 1); break;
       case 'fpsCap': P.fpsCap = clamp(+v, 0, 240); break;
       case 'tunnelDist': P.tunnelDist = clamp(+v, 30, 400); break;
-      case 'landmark': { const kind = v === 'crosswalk' || v === 'tollgate' ? v : null;
-        if (kind !== P.landmark) { P.landmark = kind; if (kind) { S.lmKind = kind; S.lmW = -(kind === 'tollgate' ? 80 : 42) - S.dist; S.pedX = 5.6; emit('landmark', { kind }); } } break; }
+      case 'landmark': { const kind = LM_DIST[v] ? v : null;
+        if (kind !== P.landmark) { P.landmark = kind;
+          if (kind) { S.lmKind = kind; S.lmW = -LM_DIST[kind] - S.dist; S.pedX = 5.6; S.rbA = -1.9; emit('landmark', { kind }); }
+          else if (S.lmKind === 'roundabout' && S.lmW !== null) cut(() => { S.lmW = null; S.lmZ = -5000; }); // 회전교차로는 지나가는 대신 장면을 넘긴다
+        } break; }
+      case 'place': { const pl = PLACE_ID[v] !== undefined ? v : 'highway';
+        if (pl !== P.place) { P.place = pl; if (S.time < 0.5) applyPlace(); else cut(applyPlace); } break; }
       case 'speedNow': S.v = Math.max(0, +v / 3.6); break;
       case 'leadSpeedNow': S.lv = Math.max(0, +v / 3.6); break;
       case 'leadLane': S.leadLane = +v; break;
@@ -863,6 +998,11 @@ function set(o) {
     }
   }
 }
+const LM_DIST = { crosswalk: 42, tollgate: 80, school: 42, roundabout: 60 };
+const PLACE_ID = { highway: 0, downhill: 0, city: 1, school: 2 };
+function applyPlace() { S.placeId = PLACE_ID[P.place] || 0; S.grade = P.place === 'downhill' ? 1 : 0; emit('place', { place: P.place }); }
+// 장면 넘기기: 잠깐 어두워진 사이에 fn을 하고 다시 밝아진다(0.6초)
+function cut(fn) { if (S.cutT >= 0 && !S.cutDone && S.cutFn) S.cutFn(); S.cutFn = fn; S.cutT = 0; S.cutDone = false; }
 const SCENARIOS = {
   cruise() {},
   rain() { set({ rain: 0.8, speed: 90, speedNow: 90, leadSpeedNow: 90 }); },
@@ -876,7 +1016,7 @@ const SCENARIOS = {
 };
 function scenario(name) {
   if (!SCENARIOS[name]) { console.warn('sim.scenario: unknown', name); return false; }
-  Object.assign(P, DEFAULTS); resetState(); U.uTun.value.set(-1e5, -1e5 - 1); tube.visible = portal.visible = false;
+  Object.assign(P, DEFAULTS); resetState(); applyPlace(); U.uTun.value.set(-1e5, -1e5 - 1); tube.visible = portal.visible = false;
   SCENARIOS[name](); emit('scenario', { name }); return true;
 }
 
@@ -939,11 +1079,15 @@ function update(dt) {
   // landmark (crosswalk, toll gate): rides with the road; while held it never comes nearer than the car can still stop / the gate waits
   if (S.lmW !== null) {
     let z = S.lmW + S.dist;
-    if (P.landmark && P.hold) { const lim = -(S.lmKind === 'tollgate' ? 27 : 10.5 + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
+    if (P.landmark && P.hold) { const lim = -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
     S.lmZ = z;
-    if (S.lmKind === 'crosswalk' && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
+    if (S.lmKind === 'roundabout') S.rbA += dt * 0.5;
+    if ((S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
     if (z > 16) { S.lmW = null; S.lmZ = -5000; emit('landmarkPassed', { kind: S.lmKind }); }
   }
+
+  if (S.cutT >= 0) { S.cutT += dt; if (S.cutT >= 0.3 && !S.cutDone) { S.cutDone = true; if (S.cutFn) S.cutFn(); S.cutFn = null; } if (S.cutT >= 0.6) S.cutT = -1; }
+  S.gradeS = ease(S.gradeS, S.grade, 1.5, dt);
 
   // lamps, fogging, wetness, wipers
   S.low = ease(S.low, P.headlights >= 1 ? 1 : 0, 14, dt); S.high = ease(S.high, P.headlights === 2 ? 1 : 0, 14, dt);
@@ -988,7 +1132,7 @@ const tmpV = new THREE.Vector3();
 function render() {
   const t = S.time, v = S.v;
   const curve = P.curve * 1.0;
-  const cx = curve * (Math.sin(S.dist / 420) * 0.00042 + Math.sin(S.dist / 173 + 1) * 0.00012), cy = curve * (Math.sin(S.dist / 260 + 2) * 0.00009);
+  const cx = curve * (Math.sin(S.dist / 420) * 0.00042 + Math.sin(S.dist / 173 + 1) * 0.00012), cy = curve * (Math.sin(S.dist / 260 + 2) * 0.00009) - 0.00042 * S.gradeS;
   U.uCurve.value.set(cx, cy); U.uDist.value = S.dist % 2400; U.uTime.value = t % 1000; U.uOpp.value = S.opp % 600; U.uSpeed.value = v;
   U.uTun.value.set(clamp(S.entL, -1e5, 1e5), clamp(S.exitL, -1e5 - 1, 1e5));
   const tunVis = S.entL > -720 && S.exitL < 20; tube.visible = tunVis; portal.visible = tunVis && S.entL < 14; portal.position.z = S.entL;
@@ -1012,13 +1156,18 @@ function render() {
   // camera
   const vib = v > 1 ? 1 : 0, sh = S.shake;
   camera.position.set(carX + EYE_X, EYE_Y + vib * (Math.sin(t * 31) * 0.0012 + Math.sin(t * 17.3) * 0.0016) + sh * Math.sin(t * 63) * 0.03, 0);
-  camera.rotation.set(S.pitch + 0.012 + sh * Math.sin(t * 47) * 0.02, -S.yaw, S.roll + sh * Math.sin(t * 55) * 0.012);
+  camera.rotation.set(S.pitch + 0.012 - 0.03 * S.gradeS + sh * Math.sin(t * 47) * 0.02, -S.yaw, S.roll + sh * Math.sin(t * 55) * 0.012);
   camera.updateMatrixWorld();
 
   // landmarks
   const lmOn = S.lmW !== null;
-  U.uMark.value.set(S.lmZ, lmOn ? (S.lmKind === 'tollgate' ? 2 : 1) : 0, 0);
-  peds.visible = lmOn && S.lmKind === 'crosswalk' && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.cos(UP.uWalk.value)) * 0.022, S.lmZ);
+  U.uMark.value.set(S.lmZ, lmOn ? ({ crosswalk: 1, tollgate: 2, school: 3, roundabout: 4 })[S.lmKind] : 0, S.placeId);
+  signalMast.visible = lmOn && S.lmKind === 'crosswalk' && S.placeId === 1; signalMast.position.set(0, 0, S.lmZ);
+  schoolSigns.visible = lmOn && S.lmKind === 'school'; schoolSigns.position.set(0, 0, S.lmZ);
+  const rbOn = lmOn && S.lmKind === 'roundabout';
+  island.visible = rbOn; island.position.set(0, 0, S.lmZ - 19);
+  ringCars.forEach((c, i) => { const a = S.rbA + i * 2.6; c.visible = rbOn; c.position.set(Math.sin(a) * 12.6, 0, S.lmZ - 19 + Math.cos(a) * 12.6); c.rotation.y = a - Math.PI / 2; });
+  peds.visible = lmOn && (S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.cos(UP.uWalk.value)) * 0.022, S.lmZ);
   toll.visible = lmOn && S.lmKind === 'tollgate'; toll.position.set(0, 0, S.lmZ);
 
   // dynamic sprites
@@ -1042,7 +1191,7 @@ function render() {
   renderer.info.reset();
   renderer.setRenderTarget(rt); renderer.render(scene, camera);
   CU.tScene.value = rt.texture; CU.tWet.value = wetA.texture; CU.uFilm.value = clamp(S.rainS * 1.25, 0, 1); CU.uFogG.value = S.fogGlass; CU.uWipVis.value = S.wRun ? 1 : 0;
-  CU.uDim.value = S.crashed || P.crash ? 0.25 : 0; CU.uBlur.value = P.blur;
+  CU.uDim.value = Math.max(S.crashed || P.crash ? 0.25 : 0, S.cutT < 0 ? 0 : S.cutT < 0.3 ? S.cutT / 0.3 : (0.6 - S.cutT) / 0.3); CU.uBlur.value = P.blur;
   quad.material = compMat; renderer.setRenderTarget(null); renderer.render(quadScene, quadCam);
 }
 
@@ -1110,7 +1259,7 @@ window.addEventListener('keyup', (e) => { const k = e.key; if (k === ' ') set({ 
 const sim = window.sim = {
   set, scenario, onEvent: null, scenarios: names,
   get: () => ({ params: Object.assign({}, P), speedNow: +(S.v * 3.6).toFixed(1), leadSpeedNow: +(S.lv * 3.6).toFixed(1), gap: +S.gap.toFixed(2), lateral: +S.x.toFixed(2), fogging: +S.fogGlass.toFixed(3), inTunnel: S.inTunnel, crashed: S.crashed, time: +S.time.toFixed(2),
-    landmarkZ: +S.lmZ.toFixed(1), pedX: +S.pedX.toFixed(2), laneX: +S.laneX.toFixed(2),
+    place: P.place, landmarkZ: +S.lmZ.toFixed(1), pedX: +S.pedX.toFixed(2), laneX: +S.laneX.toFixed(2),
     fps: +fpsNow.toFixed(1), cpuMs: +msNow.toFixed(2), calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, target: [rt.width, rt.height] }),
   step(seconds, dt = 1 / 60) { for (let t = 0; t < seconds - 1e-9; t += dt) update(dt); render(); },
   snapshot(type = 'image/png', q) { render(); return canvas.toDataURL(type, q); },

@@ -414,6 +414,48 @@ object SituationCatalog {
             ),
         ),
         SituationDef(
+            // 출처: 도로교통법 제25조의2 제2항(회전교차로에 진입하려면 서행하거나 일시정지, 이미 진행하는 차에 진로 양보),
+            // 제38조 제1항·시행령 별표 2 제7호(진입하려는 때 30미터 전부터 왼쪽 방향지시기), 제8호(진출하려는 때 오른쪽). safety-sources.md 21번.
+            id = SituationId.ROUNDABOUT_ENTRY, title = "회전교차로",
+            intro = "회전교차로예요. 왼쪽 깜빡이를 켜고, 속도를 줄여 돌고 있는 차에 먼저 양보해요.",
+            lesson = "회전교차로에 들어갈 땐 천천히 가거나 멈춰서, 이미 돌고 있는 차에 양보해요. 들어갈 땐 왼쪽, 나갈 땐 오른쪽 깜빡이예요.",
+            steps = listOf(
+                StepDef(
+                    id = "signal_left", label = "왼쪽 깜빡이 켜기",
+                    hint = "왼쪽 깜빡이를 켜요.", setup = "깜빡이를 꺼 두세요",
+                    available = { it.turnSignal != null }, done = { it.turnSignal == TurnSignal.LEFT },
+                ),
+                StepDef(
+                    id = "yield_slow", label = "속도 줄여 양보하기", essential = true,
+                    hint = "$GENTLE_BRAKE 돌고 있는 차가 지나갈 때까지 기다려요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= config.roundaboutYieldKmh },
+                ),
+            ),
+        ),
+        SituationDef(
+            // 출처: 도로교통법 제12조 제1항·제3항(어린이 보호구역 통행속도 시속 30킬로미터 이내로 제한할 수 있음, 운전자는 그 조치를 준수),
+            // 제27조 제7항(보호구역 안 신호기 없는 횡단보도 앞에서는 보행자 횡단 여부와 관계없이 일시정지). safety-sources.md 22번.
+            // 30은 일률 의무가 아니라 표지로 정하는 상한이라 대사에서 "표지의 제한속도, 보통 시속 30"이라고 말한다.
+            id = SituationId.SCHOOL_ZONE, title = "어린이 보호구역",
+            intro = "어린이 보호구역이에요. 신호등 없는 횡단보도가 있어요. 속도를 줄이고 일단 멈춰요.",
+            lesson = "어린이 보호구역에서는 표지의 제한속도를 지켜요. 보통 시속 30킬로미터예요. 신호등 없는 횡단보도 앞에서는 건너는 사람이 없어도 일단 멈춰요.",
+            steps = listOf(
+                StepDef(
+                    id = "school_slow", label = "시속 30 이하로",
+                    hint = "$GENTLE_BRAKE 시속 30 아래로 줄여요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= config.schoolLimitKmh },
+                ),
+                StepDef(
+                    id = "full_stop", label = "횡단보도 앞에서 멈추기", essential = true,
+                    hint = "브레이크를 밟아 횡단보도 앞에서 완전히 멈춰요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= 0.5f },
+                ),
+            ),
+        ),
+        SituationDef(
             // 출처: 도로교통법 제65조(고속도로 진입 시 본선 차 우선), 제38조·시행령 별표 2(진로 변경 신호: 고속도로 100m 이전).
             // 깜빡이 유지 시간은 게임 규칙이고, 대사에서는 "몇 초"라고 말하지 않는다.
             id = SituationId.HIGHWAY_MERGE, title = "고속도로 합류",

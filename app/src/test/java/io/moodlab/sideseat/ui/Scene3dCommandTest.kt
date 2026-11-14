@@ -77,4 +77,15 @@ class Scene3dCommandTest {
         val after = Scene3dCommand.build(view(TrainingPhase.SUCCESS, SituationId.HIGHWAY_MERGE, steps = steps.map { it.copy(done = true) }), car)
         assertEquals(0f, num(after, "lane"), 0f)
     }
+
+    @Test
+    fun `place and the new landmarks are passed to the scene`() {
+        val rb = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.ROUNDABOUT_ENTRY, SceneParams(sign = "ROUNDABOUT", place = "CITY"), 30f), car)
+        assertTrue(rb, "\"place\":\"city\"" in rb && "\"landmark\":\"roundabout\",\"hold\":true" in rb)
+        assertEquals(400f, num(rb, "hostGap"), 0f)
+        val school = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.SCHOOL_ZONE, SceneParams(sign = "SCHOOL", place = "SCHOOL"), 50f), car)
+        assertTrue(school, "\"place\":\"school\"" in school && "\"landmark\":\"school\"" in school)
+        val rain = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.HEAVY_RAIN, SceneParams(rain = 1f, place = "DOWNHILL")), car)
+        assertTrue(rain, "\"place\":\"downhill\"" in rain && "\"landmark\":null" in rain)
+    }
 }

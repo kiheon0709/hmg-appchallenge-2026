@@ -151,11 +151,14 @@ class RoadRulesTest {
         }
         val res = assertNotNull(d.view.chapterResult)
         assertEquals(
-            listOf(SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE),
+            listOf(
+                SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
+            ),
             res.results.map { it.id },
         )
         assertTrue(res.results.all { it.stars == 3 }, "${res.results}")
-        assertEquals(12, d.engine.progress().chapterBestStars["C5"])
+        assertEquals(18, d.engine.progress().chapterBestStars["C5"])
         assertFalse(d.engine.progress().licenseFor("avante").licensed)
         assertTrue(d.engine.progress().licenseFor("avante").clearedChapters.isEmpty())
     }
@@ -267,5 +270,65 @@ class RoadRulesTest {
         s.set { it.copy(brakePressed = true) }
         s.advance(1_000)
         assertEquals(25f, s0 - s.view.virtualSpeedKmh, 1.3f)
+    }
+
+    // ---------- 장소가 다른 상황과 "장소 × 상황" ----------
+
+    @Test
+    fun `entering a roundabout needs the left signal and slowing down to give way`() {
+        val d = active(SituationId.ROUNDABOUT_ENTRY)
+        assertEquals("ROUNDABOUT", d.view.scene.sign)
+        assertEquals(ScenePlace.CITY, d.view.scene.place)
+        assertEquals(listOf("signal_left", "yield_slow"), d.view.steps.map { it.id })
+        d.advance(1_000)
+        assertEquals(TrainingConfig().slowApproachKmh, d.view.virtualSpeedKmh, 1f)
+        d.set { it.copy(turnSignal = TurnSignal.LEFT) }
+        assertEquals(listOf(true, false), d.view.steps.map { it.done })
+        d.set { it.copy(brakePressed = true) }
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        assertTrue(d.view.virtualSpeedKmh <= TrainingConfig().roundaboutYieldKmh)
+        assertEquals(3, d.view.lastResult?.stars)
+        // 줄인 뒤 발을 떼도 상황이 끝날 때까지 다시 빨라지지 않는다
+        val slow = d.view.virtualSpeedKmh
+        d.set { it.copy(brakePressed = false) }
+        d.advance(1_000)
+        assertEquals(slow, d.view.virtualSpeedKmh)
+    }
+
+    @Test
+    fun `school zone needs slowing under the limit and a full stop at the unsignalled crosswalk`() {
+        val d = active(SituationId.SCHOOL_ZONE)
+        assertEquals("SCHOOL", d.view.scene.sign)
+        assertEquals(ScenePlace.SCHOOL, d.view.scene.place)
+        assertEquals(listOf("school_slow", "full_stop"), d.view.steps.map { it.id })
+        d.advance(1_000)
+        assertEquals(TrainingPhase.ACTIVE, d.view.phase) // 건너는 사람이 없어도 멈춰야 끝난다
+        d.set { it.copy(brakePressed = true) }
+        d.until { v -> v.steps.first().done }
+        assertTrue(d.view.virtualSpeedKmh <= 30f)
+        assertFalse(d.view.steps[1].done)
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+        assertTrue(SituationCatalog.all().first { it.id == SituationId.SCHOOL_ZONE }.lesson.contains("건너는 사람이 없어도"))
+    }
+
+    @Test
+    fun `the place is picked per situation and kept until the next one starts`() {
+        // 장소가 정해진 상황은 늘 그 장소다
+        assertEquals(ScenePlace.CITY, active(SituationId.RIGHT_TURN_CROSSWALK).view.scene.place)
+        assertEquals(ScenePlace.HIGHWAY, active(SituationId.TUNNEL).view.scene.place)
+        // 같은 상황도 장소가 바뀐다: 폭우는 고속도로·도심·내리막
+        val seen = mutableSetOf<String>()
+        for (seed in 0 until 12) {
+            val d = active(SituationId.HEAVY_RAIN, TrainingConfig(placeRandom = kotlin.random.Random(seed)))
+            val place = d.view.scene.place
+            seen += place
+            d.advance(3_000)
+            assertEquals(place, d.view.scene.place) // 상황 도중에는 바뀌지 않는다
+        }
+        assertEquals(setOf(ScenePlace.HIGHWAY, ScenePlace.CITY, ScenePlace.DOWNHILL), seen)
+        // 한 곳으로 고정할 수도 있다
+        val fixed = TrainingConfig(places = mapOf(SituationId.HEAVY_RAIN to listOf(ScenePlace.DOWNHILL)))
+        assertEquals(ScenePlace.DOWNHILL, active(SituationId.HEAVY_RAIN, fixed).view.scene.place)
     }
 }

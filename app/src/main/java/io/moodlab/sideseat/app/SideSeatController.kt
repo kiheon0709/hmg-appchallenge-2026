@@ -593,4 +593,6 @@ fun situationTitle(id: SituationId): String = when (id) {
     SituationId.HIGHWAY_MERGE -> "고속도로 합류"
     SituationId.HYDROPLANING -> "수막현상"
     SituationId.HIPASS_WRONG_LANE -> "하이패스 차로 오진입"
+    SituationId.ROUNDABOUT_ENTRY -> "회전교차로"
+    SituationId.SCHOOL_ZONE -> "어린이 보호구역"
 }

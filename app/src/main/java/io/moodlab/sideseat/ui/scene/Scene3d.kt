@@ -94,7 +94,10 @@ fun <T> latchToSceneFrame(value: T, enabled: Boolean): T {
 /** 훈련 상태와 실제 스위치 신호를 3D 장면의 `sim.set` 값으로 옮긴다. */
 object Scene3dCommand {
     /** 앞차가 없는 상황(교차로·요금소·멈춰 선 차)에서는 앞차를 멀리 보낸다. */
-    private val NO_LEAD = setOf(SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIPASS_WRONG_LANE, SituationId.BREAKDOWN)
+    private val NO_LEAD = setOf(
+        SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIPASS_WRONG_LANE, SituationId.BREAKDOWN,
+        SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
+    )
     private const val CRUISE_GAP_M = 55f
     private const val FAR_GAP_M = 400f
     private const val TUNNEL_AHEAD_M = 70
@@ -119,6 +122,8 @@ object Scene3dCommand {
         val landmark = when (s.sign) {
             "CROSSWALK" -> "\"crosswalk\""
             "HIPASS" -> "\"tollgate\""
+            "ROUNDABOUT" -> "\"roundabout\""
+            "SCHOOL" -> "\"school\""
             else -> "null"
         }
         // 요금소는 "그대로 지나간다"를 고를 때까지 앞에서 기다리고, 횡단보도는 설 수 있는 거리보다 가까워지지 않는다
@@ -152,6 +157,7 @@ object Scene3dCommand {
         sb.append(",\"hydroplane\":").append(f2(if (s.slip > 0.05f) s.slip else 0f))
         sb.append(",\"tunnelDist\":").append(TUNNEL_AHEAD_M)
         sb.append(",\"tunnel\":").append(s.tunnel)
+        sb.append(",\"place\":\"").append(s.place.lowercase(Locale.ROOT)).append('"')
         sb.append(",\"landmark\":").append(landmark)
         sb.append(",\"hold\":").append(hold)
         sb.append(",\"lane\":").append(lane)
