@@ -7,6 +7,44 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 주행(D) 때 코치 화면이 가려지는 문제(v18) — 원인은 첫 실행 권한 대화상자, release APK 재갱신 (2026-11-15 04:15~05:10, 3D 장면 세션)
+
+**주의: Gear D에서의 확인((a)~(d))은 하지 못했다.** 이번 부팅에서 에뮬레이터의 차량 신호(Virtual Console)가 꺼져 있어 D를 만들 수 없었다(아래 "에뮬레이터"). 원인은 QA 세션이 남긴 시스템 로그로 확인했고, 수정이 원인 조건(홈 화면이 태스크를 권한 화면으로 기억하는 것)을 없애는 것까지만 에뮬레이터에서 확인했다. **차량 신호가 되는 부팅에서 "새로 설치 → 권한 허용 → D"를 한 번 꼭 확인해야 한다.**
+
+**원인 — 3D 장면(WebView)이 아니다**
+- 새로 설치한 뒤 첫 실행에서 앱이 `onCreate`에 권한(마이크·위치·알림)을 묻는다. 권한 대화상자(`com.android.permissioncontroller/.GrantPermissionsActivity`)는 우리 태스크 위에 뜬다. Pleos 홈 화면(`ai.umos.homescreen`, 로그 태그 `HOME_SCREEN`)은 이때 우리 태스크 칸(`TaskViewContainer`)을 **권한 화면으로 기억하고, 대화상자를 닫아도 되돌리지 않는다**. 그 태스크는 주행 제한이 걸릴 때마다 칸 전체가 "주행 중에는 사용할 수 없습니다."로 가려진다(`updateDrivingRestrictionRegion : 1682 x 1210`). 가리는 것은 홈 화면이라 앱 화면 구조(uiautomator)는 그대로 남는다.
+- 근거(QA 세션의 시스템 로그, 11/15 02:57~04:11):
+
+| 태스크 | 첫 실행 때 권한 대화상자 | 홈 화면이 기억한 이름 | D가 됐을 때 |
+| --- | --- | --- | --- |
+| 1000243 (02:57 시작, 3D 훈련 여러 번) | 떴음 | `GrantPermissionsActivity` (03:51까지 그대로) | 03:31·03:51 두 번 모두 제한 영역 씌움. 03:31:19 캡처가 차단 화면(`docs/qa/shots/G1_coach.jpg`) |
+| 1000267 (03:55 시작) | 안 뜸 | `MainActivity` | 03:57 제한 영역 기록 없음 |
+| 1000268 (03:58 시작, 3D 훈련 5초 뒤 D) | 안 뜸 | `MainActivity` | 04:03 제한 영역 기록 없음 |
+
+- 3D 훈련을 한 태스크(1000268)도 대화상자가 없었으면 가려지지 않았으므로 WebView는 원인이 아니다. v12와 v13 사이에 매니페스트는 같다(`distractionOptimized=true` 그대로). 달라진 것은 설치 방법이다: v12까지는 `install -r`(권한이 남아 대화상자가 안 뜸), v13부터는 debug와 release를 오갈 때 지우고 새로 설치(대화상자가 뜸).
+- **`v13_release_coach.jpg`, `v14_release_coach.jpg`, `v17_release_coach.jpg`는 코치 화면이 아니라 이 차단 화면이다**(찍고 열어 보지 않았다). 그때 적은 "코치 CPU"도 차단 화면 상태의 값이다. `v12_release_coach.jpg`까지는 정상이다.
+- 참고: 같은 로그에 `CarPackageManagerService: io.moodlab.sideseat not installed from permitted sources NULL`도 있다(adb로 설치한 앱은 AAOS의 주행 중 허용 목록에 들지 않음). 그런데도 대화상자가 없던 태스크는 가려지지 않았으니, 이 에뮬레이터에서 화면을 가리는 것은 홈 화면의 판단이다. 실차·심사 환경에서 이 항목이 어떻게 작용하는지는 모른다.
+
+**수정** (`app/.../app/MainActivity.kt`만)
+- 권한 대화상자가 우리 태스크 위에 떴다가 닫히면(허용이든 거절이든) 태스크를 지우고(`finishAndRemoveTask`) 새 태스크로 다시 연다. 새 태스크에서는 권한을 다시 묻지 않는다(한 프로세스에서 한 번만). 대화상자가 안 뜨면 아무것도 하지 않는다.
+- 3D 훈련 코드와 다른 화면은 건드리지 않았다.
+
+**에뮬레이터에서 확인한 것 (release, 새로 설치)**
+- 수정 전 APK: 첫 실행 → 대화상자 → 닫은 뒤에도 홈 화면 기록이 `GrantPermissionsActivity`로 남음(QA 로그와 같은 현상 재현).
+- 수정본, 모두 허용: 대화상자 2개(마이크·알림, 위치는 함께 허용됨)를 닫으면 태스크 1000296이 지워지고 1000297이 새로 뜸. 홈 화면 기록은 `MainActivity`, 다시 열림은 한 번뿐. 차종 고르기 → 홈 → C1 훈련 3D 장면 정상(`v18_first_run_after_permissions.jpg`, `v18_training_after_relaunch.jpg`).
+- 수정본, 모두 거절: 한 번 다시 열리고(1000299 → 1000300) 다시 묻지 않음, 반복 없음.
+- 수정본, 강제 종료 뒤 다시 실행(권한 있음): 대화상자도 다시 열림도 없음.
+- 훈련 실측(C1 폭우, 40초): CPU 평균 14.1%·최대 16.8%(앱 13.1 + 렌더러 1.1, 4코어=100%), PSS 앱 137MB + 렌더러 99MB.
+- 하지 못한 것: (a) 홈 → D 코치 화면, (b) 훈련 도중 D, (c) D → P → 훈련, (d) K01 한 줄. 캡처도 없다.
+- 테스트 core 121·app 123 통과. `apk/MoodLab_TABI_release.apk` 27,424,893바이트, `sk-ant-` 0건.
+
+**에뮬레이터 — 차량 신호가 꺼진 이유와 해 본 것**
+- 증상: `POST /browser/session`이 `active:false`, `/vehicle/state`가 `bridge_ready:false`, 모든 PUT이 `emulator_inactive`. 1초 심장박동을 계속 보내도 같다.
+- 차량 HAL(`sdv_vhal_rust`)이 `network eth0 is not ready yet`를 되풀이하고, Pleos 서비스들이 `SDVOS_LIBDAL: Participant was not created`로 죽었다 살아나기를 반복한다. DDS 설정(`/vendor/etc/automotive/vhalconfig/dds/vhal-cyclonedds.xml`)이 `10.0.2.15`에 묶여 있는데, 이번 부팅들에서는 eth0에 IPv4가 없고(IPv6만) wlan0만 `10.0.2.16`을 받는다.
+- 해 본 것: 에뮬레이터 완전 종료 뒤 cold boot 2번, `adb reboot` 2번, 에뮬레이터 안 Wi‑Fi 끄기·켜기. 모두 같다. user 빌드라 셸로 eth0 주소를 줄 수 없고(`ctl.restart` 거부), `cmd car_service emulate-driving-state`도 거부된다.
+- 맥이 IPv6 전용 망(en0 `192.0.0.2`, 휴대폰 핫스팟으로 보임)에 붙어 있는 것이 달라진 점이지만, 이것이 원인인지는 확인하지 못했다. 맥 시스템 설정은 바꾸지 않았다.
+- 끝난 뒤 에뮬레이터는 껐다. 수정본 release가 새로 설치돼 있다(앱 데이터 없음, 첫 실행에서 권한을 묻는다).
+
 ## release APK 파일 이름을 타비(TABI)로 (2026-11-15 04:05, 3D 장면 세션)
 
 - 앱 이름이 "옆자리"에서 "타비(TABI)"로 바뀌어 release APK를 **`apk/MoodLab_TABI_release.apk`**로 낸다. 이전 `apk/MoodLab_SideSeat_release.apk`는 저장소에서 지웠다(`git mv`). 패키지 이름(`io.moodlab.sideseat`)은 그대로다.
