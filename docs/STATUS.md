@@ -7,6 +7,22 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 화면 v7(벡터 다시 그림, 32957d6) 에뮬레이터 실측 (2026-11-14 17:54, 화면 품질 세션)
+
+빌드: 디버그 APK(32957d6), Pleos Connect Emulator 2.1.0, 가로 창. CPU는 `/proc/<pid>/stat`을 1초마다(아래 "주행 중 CPU·메모리 기준선"과 같은 방법), 프레임은 `frame scene` 로그와 `dumpsys gfxinfo`. 원본: `docs/screens/sim/logs/cpu_train_c1_v7_debug_40s.csv`, `cpu_coach_v7_debug_45s.csv`. 캡처: `v7_emulator_training_rain_fail.jpg`, `v7_emulator_coach_follow_up.jpg`.
+
+| 항목 | 이전(a25a667, 통합 뒤 실측) | v7(32957d6) | 기준 |
+| --- | --- | --- | --- |
+| 훈련 장면 프레임(C1 40초) | 58~60 fps | 57.5~60.0 fps(22구간 중 18구간 59.5 이상), 33 ms 넘는 프레임 2/2,640, 저사양 모드 안 켜짐 | 30 fps 이상 |
+| 그리기 기록 시간 | 평균 0.6~1.0 ms, 최대 9 ms | 평균 1.0~1.8 ms, 최대 5.5 ms | – |
+| gfxinfo(40초, 2,543프레임) | – | 50번째 32 ms·90번째 34 ms·99번째 42 ms, GPU 50번째 21 ms·90번째 24 ms(에뮬레이터 소프트웨어 GPU) | – |
+| 정차 훈련 중 앱 CPU | 1코어 기준 50~59 % → 4코어 전체 13~15 % | 1코어 기준 평균 103.7 %·최대 115.7 % → 4코어 전체 **평균 25.9 %·최대 28.9 %** | 정차 25 % 이하 |
+| 정차 훈련 중 메모리 PSS | 113.7 MB | 135.7 MB(RSS 238.6 MB) | 400 MB 이하 |
+| 주행 중 코치 화면 CPU(D단 45초) | debug 평균 0.23~0.31 % | 4코어 전체 평균 0.48 %·최대 2.21 %(호스트 마이크 소리에 한 번 답함) | 5 % 미만 |
+| 주행 중 코치 화면 메모리 PSS | 103 MB(debug) | 111.5 MB | 400 MB 이하 |
+
+판정: v7은 프레임은 유지하지만 정차 훈련 CPU가 약 두 배로 늘어 기준(25 %)에 걸친다(디버그 빌드). 코치 화면은 기준 안. 훈련 연출은 실사 배경 방식으로 다시 만들 예정이라 이 값은 그 전 기준선으로만 쓴다. 가로 실패 화면에서 "괜찮아요" 판과 힌트 판이 겹친다(이전에도 같은 배치).
+
 ## 옆자리(SideSeat) 통합 검증 — 완료 조건 장면 (2026-11-13, dev-integration)
 
 빌드: 디버그 APK(공유 폴더를 복사한 격리 빌드), Pleos Connect Emulator 2.1.0. 조작은 모두 Virtual Console HTTP API(아래 실측 절)로 했고, 시나리오 실행기가 앱 로그(`SideSeatMeasure`)를 보며 다음 조작과 캡처를 했다. 캡처는 `docs/screens/sim/`(파일 이름이 장면 이름).
