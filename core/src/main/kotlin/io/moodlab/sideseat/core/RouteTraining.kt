@@ -29,7 +29,8 @@ object RouteTraining {
     fun matches(f: RouteFeatures): List<RouteMatch> {
         val turns = f.turnTypes
         val out = ArrayList<RouteMatch>()
-        if ("TURN_TOLL" in turns) out += RouteMatch(SituationId.HIPASS_WRONG_LANE, "요금소")
+        // 요금소: 일반 차로로 지나는 법을 먼저, 그다음 하이패스 차로에 잘못 들어갔을 때
+        if ("TURN_TOLL" in turns) { out += RouteMatch(SituationId.TOLL_BOOTH, "요금소"); out += RouteMatch(SituationId.HIPASS_WRONG_LANE, "요금소") }
         if (turns.any { it.startsWith("TURN_ENTER_IC") }) out += RouteMatch(SituationId.HIGHWAY_MERGE, "고속도로 진입로")
         else if ("TURN_DEVIDE_MERGE" in turns) out += RouteMatch(SituationId.HIGHWAY_MERGE, "합류 구간")
         if ("TURN_TUNNEL" in turns) out += RouteMatch(SituationId.TUNNEL, "터널")

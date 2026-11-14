@@ -100,7 +100,7 @@ object Scene3dCommand {
     /** 앞차가 없는 상황(교차로·요금소·멈춰 선 차)에서는 앞차를 멀리 보낸다. */
     private val NO_LEAD = setOf(
         SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIPASS_WRONG_LANE, SituationId.BREAKDOWN,
-        SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
+        SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE, SituationId.TOLL_BOOTH,
     )
     /** 전조등·상향등·터널처럼 어두워야 뜻이 통하는 상황. 이 동안은 낮에도 밤 장면이다. */
     private val NIGHT_ONLY = setOf(
@@ -137,6 +137,7 @@ object Scene3dCommand {
             "HIPASS" -> "\"tollgate\""
             "ROUNDABOUT" -> "\"roundabout\""
             "SCHOOL" -> "\"school\""
+            "TOLLBOOTH" -> "\"tollbooth\""
             else -> "null"
         }
         // 요금소는 "그대로 지나간다"를 고를 때까지 앞에서 기다리고, 횡단보도는 설 수 있는 거리보다 가까워지지 않는다
@@ -177,6 +178,8 @@ object Scene3dCommand {
         sb.append(",\"landmark\":").append(landmark)
         sb.append(",\"hold\":").append(hold)
         sb.append(",\"lane\":").append(lane)
+        // 일반 차로 요금소: 통행권을 받고 창문을 올리면 차단기가 올라간다
+        sb.append(",\"gateOpen\":").append(sit == SituationId.TOLL_BOOTH && (done("window_close") || view.phase == TrainingPhase.SUCCESS))
         // 맞은편 차는 한 번 출발하면 지나갈 때까지 둔다(끄는 값은 보내지 않는다)
         if (sit == SituationId.ONCOMING_GLARE && live) sb.append(",\"glare\":true")
         sb.append('}')

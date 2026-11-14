@@ -119,6 +119,7 @@ object UiSamples {
             SituationId.HYDROPLANING -> { scene = scene.copy(rain = 0.7f, slip = if (live) 0.5f else 0f); speed = 80f - 6f * a.coerceAtMost(4f) }
             SituationId.ROUNDABOUT_ENTRY -> { scene = scene.copy(sign = "ROUNDABOUT", place = io.moodlab.sideseat.core.ScenePlace.CITY); speed = if (reacted) 8f else 30f }
             SituationId.SCHOOL_ZONE -> { scene = scene.copy(sign = "SCHOOL", place = io.moodlab.sideseat.core.ScenePlace.SCHOOL); speed = if (reacted) 0f else 50f }
+            SituationId.TOLL_BOOTH -> { scene = scene.copy(sign = "TOLLBOOTH"); speed = if (reacted) 0f else 30f }
             SituationId.HIPASS_WRONG_LANE -> {
                 scene = scene.copy(sign = "HIPASS")
                 speed = 30f

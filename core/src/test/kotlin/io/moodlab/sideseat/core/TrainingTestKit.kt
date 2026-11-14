@@ -79,6 +79,18 @@ fun TrainingDriver.slowDownFirst(confirmHazard: Boolean = true) {
     if (confirmHazard) confirmHazard()
 }
 
+/**
+ * 선택지는 모두 1번(정답)으로 답하며 성공할 때까지 간다.
+ * 일반 차로 요금소는 통행권을 받은 뒤 창문을 올려야 끝나므로 그 조작도 해 준다.
+ */
+fun TrainingDriver.answerUntilSuccess(id: SituationId) {
+    while (true) {
+        val v = until { it.choice != null || it.phase == TrainingPhase.SUCCESS || (id == SituationId.TOLL_BOOTH && it.steps.any { s -> s.id == "ticket_confirm" && s.done }) }
+        if (v.phase == TrainingPhase.SUCCESS) return
+        if (v.choice != null) { engine.answer("1", now); tick() } else set { it.copy(driverWindowOpenPct = 0) }
+    }
+}
+
 /** "비상등 켰나요?"가 떠 있으면 "응"이라고 답한다. */
 fun TrainingDriver.confirmHazard() {
     if (view.choice?.question != "비상등 켰나요?") return

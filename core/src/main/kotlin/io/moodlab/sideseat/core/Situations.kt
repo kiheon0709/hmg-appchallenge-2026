@@ -509,6 +509,46 @@ object SituationCatalog {
             noHint = true,
         ),
         SituationDef(
+            // 일반 차로 요금소(고속도로에 들어갈 때). 출처: 한국도로공사 「통행료수납」(폐쇄식: 들어갈 때 통행권이 발행되고
+            // 나가는 요금소에서 통행권을 읽어 요금을 받는다). safety-sources.md 23번.
+            // 멈추기·창문 내리기·올리기는 통행권을 받으려면 해야 하는 조작이고, 일반 차로의 속도·정지 수칙은 공식 문장을 찾지 못해 말하지 않는다.
+            id = SituationId.TOLL_BOOTH, title = "일반 차로 요금소",
+            intro = "요금소예요. 일반 차로로 들어가요. 부스 옆에 멈추고 운전석 창문을 내려요.",
+            lesson = "고속도로에 들어갈 땐 통행권을 받고, 나갈 땐 그 통행권을 내고 요금을 내요. 통행권은 잃어버리지 않게 잘 둬요.",
+            steps = listOf(
+                StepDef(
+                    id = "full_stop", label = "부스 옆에 멈추기", essential = true,
+                    hint = "브레이크를 밟아 부스 옆에 멈춰요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= 0.5f },
+                ),
+                StepDef(
+                    id = "window_open", label = "운전석 창문 내리기", after = "full_stop",
+                    hint = "운전석 문 팔걸이 스위치로 창문을 내려요.", setup = "운전석 창문을 닫아 두세요",
+                    available = { it.driverWindowOpenPct != null }, done = { (it.driverWindowOpenPct ?: 0) > 0 },
+                ),
+                StepDef(
+                    id = "ticket_confirm", label = "통행권 받기", hint = "통행권을 받아요.",
+                    choice = ChoiceDef(
+                        question = "통행권을 받아 주세요. 받았나요?",
+                        options = listOf(
+                            ChoiceOption("네, 받았어요", listOf("네", "응", "예", "받았", "그래")),
+                            ChoiceOption("아직이요", listOf("아직", "아니", "안 받", "안받")),
+                        ),
+                        correct = 0,
+                        wrongLine = "창문 밖으로 손을 뻗어 통행권을 받아요. 받았으면 '응'이라고 해 주세요.",
+                        replyKind = ReplyKind.YES_NO,
+                        penaltyFree = true,
+                    ),
+                ),
+                StepDef(
+                    id = "window_close", label = "창문 올리고 출발", after = "ticket_confirm",
+                    hint = "창문을 올려요. 차단기가 올라가면 출발해요.",
+                    available = { it.driverWindowOpenPct != null }, done = { (it.driverWindowOpenPct ?: 0) == 0 },
+                ),
+            ),
+        ),
+        SituationDef(
             // 출처: 정책브리핑 2018-07-20·2019-10-02(들어섰다면 일단 통과, 후진·정지는 큰 사고 위험), 한국도로공사 미납통행료 납부안내.
             id = SituationId.HIPASS_WRONG_LANE, title = "하이패스 차로 오진입",
             intro = "앗, 하이패스 차로로 잘못 들어왔어요. 단말기가 없어요.",

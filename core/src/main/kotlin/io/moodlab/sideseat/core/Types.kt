@@ -74,6 +74,8 @@ enum class SituationId {
     RIGHT_TURN_CROSSWALK, HIGHWAY_MERGE, HYDROPLANING, HIPASS_WRONG_LANE,
     // 장소가 다른 상황(11-15 추가): 회전교차로 진입, 어린이 보호구역의 신호등 없는 횡단보도.
     ROUNDABOUT_ENTRY, SCHOOL_ZONE,
+    // 일반 차로 요금소(11-15 추가): 멈추고, 창문을 내리고, 통행권을 받고, 창문을 올린다.
+    TOLL_BOOTH,
 }
 
 data class StepView(val id: String, val label: String, val done: Boolean)
@@ -125,7 +127,7 @@ data class SceneParams(
     val parkingLot: Boolean = false,
     /** 졸음 흐림(S09). */
     val drowsyBlur: Float = 0f,
-    /** 화면에 띄울 도로 표지 키. "CROSSWALK"(횡단보도), "HIPASS"(하이패스 차로), "ROUNDABOUT"(회전교차로), "SCHOOL"(보호구역 횡단보도). 없으면 null. */
+    /** 화면에 띄울 도로 표지 키. "CROSSWALK"(횡단보도), "HIPASS"(하이패스 차로), "ROUNDABOUT"(회전교차로), "SCHOOL"(보호구역 횡단보도), "TOLLBOOTH"(일반 차로 요금소). 없으면 null. */
     val sign: String? = null,
     /** 차가 미끄러지는 정도(수막현상). 화면이 좌우로 흔들린다. */
     val slip: Float = 0f,

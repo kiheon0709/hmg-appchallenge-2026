@@ -72,7 +72,7 @@ class TrainingEngineTest {
         assertEquals(
             listOf(
                 SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
-                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE,
             ),
             ch[4].situations,
         )
@@ -654,10 +654,7 @@ class TrainingEngineTest {
             d.advance(200)
             d.set { solveAll(it, id) }
             // 말로 답하는 단계는 모두 1번(정답)
-            while (d.until { it.choice != null || it.phase == TrainingPhase.SUCCESS }.choice != null) {
-                d.engine.answer("1", d.now)
-                d.tick()
-            }
+            d.answerUntilSuccess(id)
             assertTrue(d.view.lastResult!!.stars >= 2, "$id stars=${d.view.lastResult}")
             d.until { it.phase != TrainingPhase.SUCCESS }
         }
@@ -692,4 +689,5 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.HIPASS_WRONG_LANE -> s
     SituationId.ROUNDABOUT_ENTRY -> s.copy(turnSignal = TurnSignal.LEFT, brakePressed = true)
     SituationId.SCHOOL_ZONE -> s.copy(brakePressed = true)
+    SituationId.TOLL_BOOTH -> s.copy(brakePressed = true, driverWindowOpenPct = 30)
 }

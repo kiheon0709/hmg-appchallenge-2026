@@ -11,7 +11,7 @@ class RouteTrainingTest {
         RouteTraining.matches(RouteFeatures(turns, cautions, congestion)).map { it.situation }
 
     @Test fun eachRouteFeatureMapsToItsSituation() {
-        assertEquals(listOf(SituationId.HIPASS_WRONG_LANE), situations(turns = setOf("TURN_TOLL")))
+        assertEquals(listOf(SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE), situations(turns = setOf("TURN_TOLL")))
         assertEquals(listOf(SituationId.HIGHWAY_MERGE), situations(turns = setOf("TURN_ENTER_IC_R")))
         assertEquals(listOf(SituationId.HIGHWAY_MERGE), situations(turns = setOf("TURN_DEVIDE_MERGE")))
         assertEquals(listOf(SituationId.TUNNEL), situations(turns = setOf("TURN_TUNNEL")))
@@ -37,7 +37,7 @@ class RouteTrainingTest {
         )
         assertEquals(
             listOf(
-                SituationId.HIPASS_WRONG_LANE, SituationId.HIGHWAY_MERGE, SituationId.TUNNEL, SituationId.DENSE_FOG,
+                SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE, SituationId.HIGHWAY_MERGE, SituationId.TUNNEL, SituationId.DENSE_FOG,
                 SituationId.HYDROPLANING, SituationId.SUDDEN_STOP, SituationId.RIGHT_TURN_CROSSWALK,
             ),
             all,
@@ -47,7 +47,7 @@ class RouteTrainingTest {
     @Test fun recommendationNamesChapterAndSentence() {
         val toll = RouteTraining.recommend(RouteFeatures(turnTypes = setOf("TURN_TOLL", "TURN_TUNNEL")), chapters)!!
         assertEquals("C5", toll.chapterId)
-        assertEquals(SituationId.HIPASS_WRONG_LANE, toll.situation)
+        assertEquals(SituationId.TOLL_BOOTH, toll.situation) // 요금소는 일반 차로로 지나는 법을 먼저 권한다
         assertEquals("가는 길에 요금소가 있어요. 미리 연습해 볼까요?", toll.reason)
 
         val tunnel = RouteTraining.recommend(RouteFeatures(turnTypes = setOf("TURN_TUNNEL")), chapters)!!
@@ -61,11 +61,12 @@ class RouteTrainingTest {
 
     @Test fun unpracticedSituationComesFirst() {
         val f = RouteFeatures(turnTypes = setOf("TURN_TOLL", "TURN_TUNNEL"))
-        assertEquals(SituationId.TUNNEL, RouteTraining.recommend(f, chapters, practiced = setOf(SituationId.HIPASS_WRONG_LANE))!!.situation)
+        assertEquals(SituationId.HIPASS_WRONG_LANE, RouteTraining.recommend(f, chapters, practiced = setOf(SituationId.TOLL_BOOTH))!!.situation)
+        assertEquals(SituationId.TUNNEL, RouteTraining.recommend(f, chapters, practiced = setOf(SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE))!!.situation)
         // 다 해 본 것이면 원래 순서의 첫째
         assertEquals(
-            SituationId.HIPASS_WRONG_LANE,
-            RouteTraining.recommend(f, chapters, practiced = setOf(SituationId.HIPASS_WRONG_LANE, SituationId.TUNNEL))!!.situation,
+            SituationId.TOLL_BOOTH,
+            RouteTraining.recommend(f, chapters, practiced = setOf(SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE, SituationId.TUNNEL))!!.situation,
         )
     }
 

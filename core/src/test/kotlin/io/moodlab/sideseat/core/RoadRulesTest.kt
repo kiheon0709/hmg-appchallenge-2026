@@ -142,10 +142,7 @@ class RoadRulesTest {
             d.set { baseState }
             d.untilActive(id)
             d.set { solveAll(it, id) }
-            while (d.until { it.choice != null || it.phase == TrainingPhase.SUCCESS }.choice != null) {
-                d.engine.answer("1", d.now)
-                d.tick()
-            }
+            d.answerUntilSuccess(id)
             d.until { it.phase != TrainingPhase.SUCCESS }
             check(++guard < 10)
         }
@@ -153,12 +150,12 @@ class RoadRulesTest {
         assertEquals(
             listOf(
                 SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
-                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE,
             ),
             res.results.map { it.id },
         )
         assertTrue(res.results.all { it.stars == 3 }, "${res.results}")
-        assertEquals(18, d.engine.progress().chapterBestStars["C5"])
+        assertEquals(21, d.engine.progress().chapterBestStars["C5"])
         assertFalse(d.engine.progress().licenseFor("avante").licensed)
         assertTrue(d.engine.progress().licenseFor("avante").clearedChapters.isEmpty())
     }
@@ -367,7 +364,7 @@ class RoadRulesTest {
             d.set { setupFor(id, baseState) }
             d.untilActive(id)
             d.set { solveAll(it, id) }
-            while (d.until { it.choice != null || it.phase == TrainingPhase.SUCCESS }.choice != null) { d.engine.answer("1", d.now); d.tick() }
+            d.answerUntilSuccess(id)
             d.until { it.phase != TrainingPhase.SUCCESS }
         }
         assertEquals(listOf(SituationId.DENSE_FOG, SituationId.TUNNEL, SituationId.ONCOMING_GLARE, SituationId.DROWSY), order)
@@ -385,5 +382,34 @@ class RoadRulesTest {
         assertEquals("C2", r.engine.resumableChapter())
         r.engine.start("C2", r.now, SituationId.DROWSY)
         assertEquals(SituationId.DROWSY, r.until { it.phase == TrainingPhase.BRIEFING }.situation)
+    }
+
+    @Test
+    fun `ordinary toll lane is stop, window down, take the ticket, window up`() {
+        val d = active(SituationId.TOLL_BOOTH)
+        assertEquals("TOLLBOOTH", d.view.scene.sign)
+        assertEquals(listOf("full_stop", "window_open", "ticket_confirm", "window_close"), d.view.steps.map { it.id })
+        // 멈추기 전에 내린 창문은 멈춘 뒤에 인정된다
+        d.set { it.copy(driverWindowOpenPct = 40) }
+        assertEquals(listOf(false, false, false, false), d.view.steps.map { it.done })
+        assertNull(d.view.choice)
+        d.set { it.copy(brakePressed = true) }
+        d.until { v -> v.steps[1].done }
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+        assertEquals("통행권을 받아 주세요. 받았나요?", d.view.choice?.question)
+        // 통행권을 받기 전에는 창문을 올려도 끝나지 않는다
+        d.engine.answer("아직이요", d.now); d.tick()
+        assertFalse(d.view.steps[2].done)
+        d.engine.answer("응", d.now); d.tick()
+        assertTrue(d.view.steps[2].done)
+        assertEquals(TrainingPhase.ACTIVE, d.view.phase)
+        d.advance(40_000)
+        assertTrue(d.view.phase == TrainingPhase.ACTIVE || d.view.phase == TrainingPhase.HINT) // 시간 제한이 없다
+        d.set { it.copy(driverWindowOpenPct = 0, brakePressed = false) }
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        assertEquals(3, d.view.lastResult?.stars)
+        assertEquals(emptyList(), d.view.lastResult?.penalties)
+        assertTrue(SituationCatalog.all().first { it.id == SituationId.TOLL_BOOTH }.lesson.contains("들어갈 땐 통행권"))
+        assertTrue(SituationId.TOLL_BOOTH in TrainingConfig().surpriseExclude)
     }
 }

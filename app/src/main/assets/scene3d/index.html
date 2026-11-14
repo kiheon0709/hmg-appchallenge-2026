@@ -34,7 +34,8 @@ const DEFAULTS = { speed: 100, brake: 0, steer: 0, turn: 'off', rain: 0, wiper: 
   fpsCap: +Q.get('fps_cap') || 0,
   // place: 장소(highway 고속도로, city 도심, school 어린이 보호구역, downhill 내리막). 문제 상황(비·안개·앞차 등)과 따로 고른다
   place: 'highway',
-  daylight: 0 }; // daylight: 0 밤, 0.4 해 질 녘, 1 낮 // fpsCap: 초당 그릴 장수의 상한(0이면 화면 주사율 그대로)
+  daylight: 0,
+  gateOpen: false }; // gateOpen: 일반 차로 요금소의 차단봉을 올린다 // daylight: 0 밤, 0.4 해 질 녘, 1 낮 // fpsCap: 초당 그릴 장수의 상한(0이면 화면 주사율 그대로)
 const P = Object.assign({}, DEFAULTS, { quality: Q.get('q') === '0' ? 0 : 1, bloom: Q.get('q') !== '0' });
 const S = {};
 function resetState() {
@@ -43,7 +44,7 @@ function resetState() {
     low: 1, high: 0, fogGlass: 0, fogD: 0, rainS: 0, wPhase: 0, wRun: false, wA: 0, wB: 0, wAp: 0, wBp: 0,
     entW: null, exitW: null, inTunnel: false, glareZ: null, glareI: 0, opp: 0, far1: -190, far2: -280,
     hydro: false, hydroPh: 0, edge: 0, timers: [], rainOff: [0, 0, 0], wetReset: true, steerS: 0,
-    laneX: 0, lmW: null, lmKind: null, lmZ: -5000, pedX: 5.6, placeId: 0, grade: 0, gradeS: 0, cutT: -1, cutFn: null, cutDone: false, rbA: 0, day: P.daylight });
+    laneX: 0, lmW: null, lmKind: null, lmZ: -5000, pedX: 5.6, placeId: 0, grade: 0, gradeS: 0, cutT: -1, cutFn: null, cutDone: false, rbA: 0, day: P.daylight, armA: 0 });
 }
 resetState();
 
@@ -818,10 +819,13 @@ const toll = (() => {
     for (const z of [6.2, 7.6, 9.0]) { tube(x, z, 0.3, 1.0, 0.035, 9); sign(x - 0.07, x + 0.07, 0.78, 0.98, z + 0.04, 15); } // 시선 유도봉
   }
   tube(8.9, 0, 0, 5.55, 0.2, 9);
-  for (const x of [-5.4, 1.8]) {                                                  // 일반 차로의 부스와 내려온 차단봉
+  for (const x of [-5.4, 1.8]) {                                                  // 일반 차로의 부스, 통행권 발행기, 부스 너머의 차단봉
     b.box(x - 0.38, x + 0.38, 0.3, 2.55, -1.5, 1.5, 2); b.box(x - 0.5, x + 0.5, 2.55, 2.68, -1.65, 1.65, 0);
-    b.box(x + 0.38, x + 0.5, 0.3, 1.1, 2.1, 2.3, 9); b.box(x + 0.44, x + 3.1, 0.98, 1.08, 2.16, 2.24, 8);
+    b.box(x + 0.38, x + 0.62, 0.3, 1.5, 0.2, 0.75, 17); b.box(x + 0.62, x + 0.66, 1.05, 1.25, 0.3, 0.65, 18);
+    b.box(x + 0.38, x + 0.5, 0.3, 1.1, -3.5, -3.3, 9);
+    if (x < 0) b.box(x + 0.44, x + 3.1, 0.98, 1.08, -3.44, -3.36, 8);             // 오른쪽 일반 차로의 차단봉은 따로 움직인다(boothArm)
   }
+  b.rect([1.85, 0.012, 3.0], [5.35, 0.012, 3.0], [1.85, 0.012, 2.7], [5.35, 0.012, 2.7], 19); // 일반 차로 정지선
   tube(-1.8, 2.2, 0.3, 1.2, 0.07, 9); b.box(-1.83, -1.77, 1.15, 3.6, 2.17, 2.23, 8); // 하이패스 차로의 올라간 차단봉
   [[-3.6, 11, 13], [0, 10, 12], [3.6, 11, 13]].forEach(([x, m, am]) => {          // 차로 위 표지와 화살표 신호
     b.box(x - 1.6, x + 1.6, 4.28, 5.22, 5.33, 5.42, 9); sign(x - 1.55, x + 1.55, 4.32, 5.18, 5.43, m);
@@ -843,7 +847,7 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   else if (m < 1.5) { alb = vec3(0.17, 0.165, 0.16) * (0.7 + 0.5*n.b); if (vL.y > 0.2 && vL.y < 0.29) alb = mix(alb, vec3(0.5, 0.38, 0.03), 0.8); }
   else if (m < 2.5) { alb = vec3(0.20, 0.21, 0.22);
     bool win = vL.y > 1.25 && vL.y < 2.2 && (abs(N.x) > 0.5 ? abs(vL.z) < 1.3 : true);
-    if (win) { alb = vec3(0.03); emis = vec3(1., 0.9, 0.7) * (0.35 + 0.25*n.b); spec = 0.4; gloss = 120.; }
+    if (win) { alb = vec3(0.03); emis = vec3(1., 0.9, 0.7) * (0.35 + 0.25*n.b) * (0.2 + 0.8*nightK()); spec = 0.4; gloss = 120.; }
     if (vL.y < 0.75) alb = vec3(0.07, 0.08, 0.10); }
   else if (m < 5.5) { alb = vec3(0.55, 0.42, 0.02) * step(0.5, fract(vL.y*3.5 + atan(N.x, N.z)*0.6)) + 0.012; retro = 0.25; }
   else if (m < 6.5) { alb = vec3(0.); emis = TUN_COL * 5.; }
@@ -856,9 +860,22 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   else if (m < 13.5) { vec3 t = signTex(0.75, 0.875); alb = vec3(0.01); emis = t * 0.9; }
   else if (m < 14.5) { vec3 t = signTex(0.875, 1.); alb = t*0.55; retro = 0.6; }
   else if (m < 15.5) { alb = vec3(0.5, 0.35, 0.02); retro = 1.5; }
-  else { alb = vec3(0.); emis = vec3(0.2, 0.5, 1.) * 4.; }
+  else if (m < 16.5) { alb = vec3(0.); emis = vec3(0.2, 0.5, 1.) * 4.; }
+  else if (m < 17.5) { alb = vec3(0.42, 0.33, 0.04); if (vL.y > 1.0 && vL.y < 1.3) { alb = vec3(0.03); emis = vec3(0.2, 1., 0.4) * 0.5; } }
+  else if (m < 18.5) { alb = vec3(0.55, 0.55, 0.5); }
+  else { alb = vec3(0.6, 0.6, 0.58); retro = 0.012; }
   if (m < 9.5) emis += alb * TUN_COL * 1.6 * under;
 }`, { defines: { BEND: 1, SPEC: 1 }, uniforms: { tSign: { value: makeSign() } } })), 2);
+  m.visible = false; return m;
+})();
+
+// 오른쪽 일반 차로의 차단봉: 부스 쪽 끝을 축으로 올라간다
+const boothArm = (() => {
+  const b = new Builder(); b.box(0, 2.66, -0.05, 0.05, -0.04, 0.04, 0);
+  const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
+void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
+  alb = mix(vec3(0.45), vec3(0.45, 0.03, 0.03), step(0.5, fract(vL.x*1.6))); retro = 0.5;
+}`, { defines: { BEND: 1 } })), 2);
   m.visible = false; return m;
 })();
 
@@ -1209,6 +1226,7 @@ function set(o) {
       case 'blur': P.blur = clamp(+v, 0, 1); break;
       case 'fpsCap': P.fpsCap = clamp(+v, 0, 240); break;
       case 'daylight': P.daylight = clamp(+v, 0, 1); break;
+      case 'gateOpen': P.gateOpen = !!v; break;
       case 'tunnelDist': P.tunnelDist = clamp(+v, 30, 400); break;
       case 'landmark': { const kind = LM_DIST[v] ? v : null;
         if (kind !== P.landmark) { P.landmark = kind;
@@ -1233,7 +1251,7 @@ function set(o) {
     }
   }
 }
-const LM_DIST = { crosswalk: 42, tollgate: 80, school: 42, roundabout: 60 };
+const LM_DIST = { crosswalk: 42, tollgate: 80, school: 42, roundabout: 60, tollbooth: 80 };
 const PLACE_ID = { highway: 0, downhill: 0, city: 1, school: 2 };
 function applyPlace() { S.placeId = PLACE_ID[P.place] || 0; S.grade = P.place === 'downhill' ? 1 : 0; emit('place', { place: P.place }); }
 // 장면 넘기기: 잠깐 어두워진 사이에 fn을 하고 다시 밝아진다(0.6초)
@@ -1303,7 +1321,9 @@ function update(dt) {
   S.yaw = ease(S.yaw, yawT, 5, dt);
   S.x += S.v * Math.sin(S.yaw) * dt + (S.hydro ? Math.sin(S.hydroPh * 0.8 + 1) * 0.3 * dt : 0);
   if (P.hostSpeed !== null && Math.abs(S.steerS) < 3 && !S.hydro) S.x = ease(S.x, 0, 0.35, dt); // 핸들을 풀면 차로 가운데로 돌아온다
-  S.laneX = ease(S.laneX, P.lane * 3.6, 0.9, dt);
+  // 일반 차로 요금소가 앞에 있는 동안은 오른쪽 일반 차로로 간다(지나갈 때까지)
+  S.laneX = ease(S.laneX, (S.lmW !== null && S.lmKind === 'tollbooth' ? 1 : P.lane) * 3.6, 0.9, dt);
+  S.armA = ease(S.armA, P.gateOpen ? 1 : 0, 2.5, dt);
   const edge = S.x > 1.25 ? 1 : S.x < -1.25 ? -1 : 0; S.x = clamp(S.x, -1.25, 1.25);
   if (edge && edge !== S.edge) emit('laneEdge', { side: edge > 0 ? 'right' : 'left' }); S.edge = edge;
   S.pitch = ease(S.pitch, -S.acc * 0.0021, 8, dt);
@@ -1314,7 +1334,8 @@ function update(dt) {
   // landmark (crosswalk, toll gate): rides with the road; while held it never comes nearer than the car can still stop / the gate waits
   if (S.lmW !== null) {
     let z = S.lmW + S.dist;
-    if (P.landmark && P.hold) { const lim = -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
+    // 일반 차로 요금소는 운전석이 부스 창 옆에 오는 자리(표지물이 눈보다 조금 뒤)까지 들어가 선다
+    if (P.landmark && P.hold) { const lim = S.lmKind === 'tollbooth' ? 0.9 - S.v * S.v / 7.8 : -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
     S.lmZ = z;
     if (S.lmKind === 'roundabout') S.rbA += dt * 0.5;
     if ((S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
@@ -1402,7 +1423,7 @@ function render() {
 
   // landmarks
   const lmOn = S.lmW !== null;
-  U.uMark.value.set(S.lmZ, lmOn ? ({ crosswalk: 1, tollgate: 2, school: 3, roundabout: 4 })[S.lmKind] : 0, S.placeId);
+  U.uMark.value.set(S.lmZ, lmOn ? ({ crosswalk: 1, tollgate: 2, school: 3, roundabout: 4, tollbooth: 2 })[S.lmKind] : 0, S.placeId);
   signalMast.visible = lmOn && S.lmKind === 'crosswalk' && S.placeId === 1; signalMast.position.set(0, 0, S.lmZ);
   schoolSigns.visible = lmOn && S.lmKind === 'school'; schoolSigns.position.set(0, 0, S.lmZ);
   const rbOn = lmOn && S.lmKind === 'roundabout';
@@ -1417,7 +1438,8 @@ function render() {
   }
   ringCars.forEach((c, i) => { const a = S.rbA + i * 2.6; c.visible = rbOn; c.position.set(Math.sin(a) * 12.6, 0, S.lmZ - 19 + Math.cos(a) * 12.6); c.rotation.y = a - Math.PI / 2; });
   peds.visible = lmOn && (S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.cos(UP.uWalk.value)) * 0.022, S.lmZ);
-  toll.visible = lmOn && S.lmKind === 'tollgate'; toll.position.set(0, 0, S.lmZ);
+  toll.visible = lmOn && (S.lmKind === 'tollgate' || S.lmKind === 'tollbooth'); toll.position.set(0, 0, S.lmZ);
+  boothArm.visible = toll.visible; boothArm.position.set(2.24, 1.03, S.lmZ - 3.4); boothArm.rotation.z = S.armA * 1.45;
 
   // dynamic sprites
   const B = S.leadBrakeVis, L = showLead ? 1 : 0;

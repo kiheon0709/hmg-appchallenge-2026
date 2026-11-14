@@ -75,7 +75,7 @@ data class TrainingConfig(
     val retryMaxStars: Int = 1,
     val cruiseSpeedKmh: Float = 80f,
     /** 돌발 모드에서 뽑지 않는 상황(시간 제한이 없는 것 등). */
-    val surpriseExclude: Set<SituationId> = setOf(SituationId.BEFORE_EXIT),
+    val surpriseExclude: Set<SituationId> = setOf(SituationId.BEFORE_EXIT, SituationId.TOLL_BOOTH),
     /** 면허에 필요한 챕터. */
     val licenseChapters: List<String> = ChapterCatalog.LICENSE_CHAPTERS,
     /** 면허 챕터 통과 기준(모든 상황 이 별 이상). */
@@ -149,6 +149,7 @@ data class TrainingConfig(
             SituationId.HIPASS_WRONG_LANE to 0, // 말로 답하는 상황
             SituationId.ROUNDABOUT_ENTRY to 10_000,
             SituationId.SCHOOL_ZONE to 10_000,
+            SituationId.TOLL_BOOTH to 0, // 시간 제한 없음(차례대로 하는 절차)
         )
     }
 }
@@ -175,8 +176,8 @@ object ChapterCatalog {
             "C5", "길 위의 규칙", "알고 있으면 덜 당황하는 것들이에요.",
             listOf(
                 SituationId.RIGHT_TURN_CROSSWALK, SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
-                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
-            ), 6,
+                SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.TOLL_BOOTH, SituationId.HIPASS_WRONG_LANE,
+            ), 7,
         ),
     )
 

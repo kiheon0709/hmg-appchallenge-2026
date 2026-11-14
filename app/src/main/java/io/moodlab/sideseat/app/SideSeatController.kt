@@ -596,4 +596,5 @@ fun situationTitle(id: SituationId): String = when (id) {
     SituationId.HIPASS_WRONG_LANE -> "하이패스 차로 오진입"
     SituationId.ROUNDABOUT_ENTRY -> "회전교차로"
     SituationId.SCHOOL_ZONE -> "어린이 보호구역"
+    SituationId.TOLL_BOOTH -> "일반 차로 요금소"
 }

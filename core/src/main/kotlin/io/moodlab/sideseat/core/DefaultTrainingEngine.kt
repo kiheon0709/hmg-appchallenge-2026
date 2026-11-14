@@ -645,6 +645,7 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.HIPASS_WRONG_LANE) -> "HIPASS"
             on(SituationId.ROUNDABOUT_ENTRY) -> "ROUNDABOUT"
             on(SituationId.SCHOOL_ZONE) -> "SCHOOL"
+            on(SituationId.TOLL_BOOTH) -> "TOLLBOOTH"
             else -> null
         }
         fogOutside = if (on(SituationId.DENSE_FOG)) approach(fogOutside, 0.85f, 0.6f, dt) else approach(fogOutside, 0f, 0.15f, dt)
@@ -714,6 +715,8 @@ internal class SceneSim(private val config: TrainingConfig) {
             // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
+            // 일반 차로 요금소: 천천히 들어가 멈춘 뒤 상황이 끝날 때까지 서 있는다
+            on(SituationId.TOLL_BOOTH) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             // 회전교차로: 천천히 다가가고, 양보하려고 줄였으면 그 속도로 기다린다
             on(SituationId.ROUNDABOUT_ENTRY) -> if ("yield_slow" in doneSteps) speed else approach(speed, config.slowApproachKmh, 25f, dt)
             // 보호구역: 시속 50으로 들어서고, 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
