@@ -1231,7 +1231,8 @@ function set(o) {
       case 'landmark': { const kind = LM_DIST[v] ? v : null;
         if (kind !== P.landmark) { P.landmark = kind;
           if (kind) { S.lmKind = kind; S.lmW = -LM_DIST[kind] - S.dist; S.pedX = 5.6; S.rbA = -1.9; emit('landmark', { kind }); }
-          else if (S.lmKind === 'roundabout' && S.lmW !== null) cut(() => { S.lmW = null; S.lmZ = -5000; }); // 회전교차로는 지나가는 대신 장면을 넘긴다
+          // 회전교차로는 지나가는 대신 장면을 넘긴다. 그사이 다음 표지물이 놓였으면 그것은 지우지 않는다
+          else if (S.lmKind === 'roundabout' && S.lmW !== null) cut(() => { if (!P.landmark) { S.lmW = null; S.lmZ = -5000; } });
         } break; }
       case 'place': { const pl = PLACE_ID[v] !== undefined ? v : 'highway';
         if (pl !== P.place) { P.place = pl; if (S.time < 0.5) applyPlace(); else cut(applyPlace); } break; }
@@ -1334,8 +1335,8 @@ function update(dt) {
   // landmark (crosswalk, toll gate): rides with the road; while held it never comes nearer than the car can still stop / the gate waits
   if (S.lmW !== null) {
     let z = S.lmW + S.dist;
-    // 일반 차로 요금소는 운전석이 부스 창 옆에 오는 자리(표지물이 눈보다 조금 뒤)까지 들어가 선다
-    if (P.landmark && P.hold) { const lim = S.lmKind === 'tollbooth' ? 0.9 - S.v * S.v / 7.8 : -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
+    // 일반 차로 요금소는 부스 창이 왼쪽 앞에 보이는 자리까지 들어가 선다(차단봉은 5m쯤 앞)
+    if (P.landmark && P.hold) { const lim = S.lmKind === 'tollbooth' ? -1.8 - S.v * S.v / 7.8 : -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
     S.lmZ = z;
     if (S.lmKind === 'roundabout') S.rbA += dt * 0.5;
     if ((S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
