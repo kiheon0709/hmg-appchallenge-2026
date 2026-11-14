@@ -296,7 +296,7 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
 }
 
 /**
- * 앱 표식. 나란히 앉은 두 사람 가운데 옆자리(오른쪽) 사람이 말을 건다: 운전자는 흐리게, 코치는 또렷하게.
+ * 앱 표식. 앱과 코치의 이름이 같은 "타비"라서 표식도 타비다: 운전자(왼쪽, 흐리게) 옆자리에 앉은 둥근 얼굴의 타비.
  * 캐릭터 그림이 정해지면 여기만 바꾼다(홈·코치·리뷰가 같이 쓴다).
  */
 @Composable
@@ -304,30 +304,22 @@ fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f
     val path = remember { Path() }
     Canvas(modifier.size(size)) {
         val s = this.size.minDimension
-        val c = Sc.onAccent
-        drawRoundRect(Sc.accent, size = Size(s, s), cornerRadius = CornerRadius(s * 0.3f))
-        fun person(cx: Float, top: Float, w: Float, color: Color) {
-            val r = w * 0.31f
-            drawCircle(color, r, Offset(cx, top + r))
-            val bodyTop = top + r * 2f + s * 0.035f
-            path.rewind()
-            path.addRoundRect(
-                RoundRect(
-                    Rect(cx - w / 2f, bodyTop, cx + w / 2f, s * 0.84f),
-                    topLeft = CornerRadius(w / 2f), topRight = CornerRadius(w / 2f),
-                    bottomRight = CornerRadius(w * 0.2f), bottomLeft = CornerRadius(w * 0.2f),
-                ),
-            )
-            drawPath(path, color)
-        }
-        // 운전자(왼쪽, 흐리게)와 옆자리 코치(오른쪽)
-        person(s * 0.33f, s * 0.4f, s * 0.24f, c.copy(alpha = 0.45f))
-        person(s * 0.66f, s * 0.36f, s * 0.27f, c)
-        // 코치의 말풍선
+        // 표식 색은 주간·야간에 같다
+        val c = Color.White; val tile = Color(0xFF2563EB)
+        drawRoundRect(tile, size = Size(s, s), cornerRadius = CornerRadius(s * 0.3f))
+        // 운전자: 머리와 어깨
+        val dim = c.copy(alpha = 0.45f)
+        drawCircle(dim, s * 0.075f, Offset(s * 0.25f, s * 0.47f))
         path.rewind()
-        path.addRoundRect(RoundRect(Rect(s * 0.56f, s * 0.13f, s * 0.84f, s * 0.29f), CornerRadius(s * 0.07f)))
-        path.moveTo(s * 0.62f, s * 0.27f); path.lineTo(s * 0.6f, s * 0.35f); path.lineTo(s * 0.7f, s * 0.27f); path.close()
+        path.addRoundRect(RoundRect(Rect(s * 0.13f, s * 0.58f, s * 0.37f, s * 0.84f), topLeft = CornerRadius(s * 0.12f), topRight = CornerRadius(s * 0.12f), bottomRight = CornerRadius(s * 0.05f), bottomLeft = CornerRadius(s * 0.05f)))
+        drawPath(path, dim)
+        // 타비: 둥근 몸에 두 눈과 웃는 입
+        path.rewind()
+        path.addRoundRect(RoundRect(Rect(s * 0.43f, s * 0.2f, s * 0.87f, s * 0.84f), topLeft = CornerRadius(s * 0.22f), topRight = CornerRadius(s * 0.22f), bottomRight = CornerRadius(s * 0.1f), bottomLeft = CornerRadius(s * 0.1f)))
         drawPath(path, c)
+        drawCircle(tile, s * 0.042f, Offset(s * 0.575f, s * 0.44f))
+        drawCircle(tile, s * 0.042f, Offset(s * 0.725f, s * 0.44f))
+        drawArc(tile, 25f, 130f, false, Offset(s * 0.585f, s * 0.47f), Size(s * 0.13f, s * 0.11f), style = Stroke(s * 0.035f, cap = StrokeCap.Round))
         if (speaking) drawRoundRect(c.copy(alpha = 0.7f), Offset(s * 0.04f, s * 0.04f), Size(s * 0.92f, s * 0.92f), CornerRadius(s * 0.26f), style = Stroke(s * 0.035f))
     }
 }

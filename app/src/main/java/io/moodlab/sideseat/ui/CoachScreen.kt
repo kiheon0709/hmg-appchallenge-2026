@@ -90,7 +90,7 @@ private fun Header(state: CoachUi) {
         Spacer(Modifier.width(sz.dp(16f)))
         Column {
             Text(Persona.NAME, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, maxLines = 1)
-            Text("옆자리 · 주행 중", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium, maxLines = 1)
+            Text("옆자리에서 같이 보는 중", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium, maxLines = 1)
         }
     }
 }

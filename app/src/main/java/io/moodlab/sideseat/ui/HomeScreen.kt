@@ -109,7 +109,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
             SeniorBadge(size = sz.dp(60f), speaking = state.talk.speaking)
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
-                Text("옆자리", color = HeroWhite, fontSize = sz.sp(28f), fontWeight = FontWeight.Bold)
+                Text(Persona.NAME, color = HeroWhite, fontSize = sz.sp(28f), fontWeight = FontWeight.Bold)
                 Text(state.vehicleName ?: "옆자리에 ${Persona.NAME}가 앉아요", color = HeroDim, fontSize = sz.caption)
             }
         }

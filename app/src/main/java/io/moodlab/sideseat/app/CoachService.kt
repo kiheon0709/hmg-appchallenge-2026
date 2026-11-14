@@ -30,7 +30,7 @@ class CoachService : Service() {
     override fun onCreate() {
         super.onCreate()
         val nm = getSystemService(NotificationManager::class.java)
-        nm.createNotificationChannel(NotificationChannel(CHANNEL, "옆자리 코치", NotificationManager.IMPORTANCE_LOW))
+        nm.createNotificationChannel(NotificationChannel(CHANNEL, "타비 코치", NotificationManager.IMPORTANCE_LOW))
         startInForeground(textFor(AppMode.HOME))
         val controller = AppGraph.controller(this)
         scope.launch {
@@ -63,7 +63,7 @@ class CoachService : Service() {
         )
         return Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
-            .setContentTitle("옆자리")
+            .setContentTitle("타비")
             .setContentText(text)
             .setContentIntent(open)
             .setOngoing(true)
