@@ -15,6 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import io.moodlab.sideseat.ui.LocalSwitchLocation
+import io.moodlab.sideseat.ui.scene.LocalSceneBackdrop
+import io.moodlab.sideseat.uivideo.VideoSceneBackdrop
+import androidx.compose.runtime.remember
 import io.moodlab.sideseat.voice.VoiceModule
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +37,12 @@ import androidx.compose.runtime.getValue
 @Composable
 fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((VehicleState) -> Unit)? = null) {
     // 이 차의 스위치 위치 문장(차종별 지식 파일). 화면은 음성 모듈을 직접 만지지 않는다.
-    CompositionLocalProvider(LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) }) {
+    // 정차 화면의 주행 장면은 실사 영상을 배경으로 쓴다(재생기는 화면이 사라지면 같이 풀린다)
+    val backdrop = remember { VideoSceneBackdrop() }
+    CompositionLocalProvider(
+        LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) },
+        LocalSceneBackdrop provides backdrop,
+    ) {
         AppScreensBody(ui, onAction, onDebugChange)
     }
 }

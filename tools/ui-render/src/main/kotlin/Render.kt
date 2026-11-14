@@ -10,10 +10,15 @@ import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 
 var simT by mutableFloatStateOf(0f)
+val stillBackdrop = StillSceneBackdrop(File("../../app/src/main/assets"))
 
 fun shoot(name: String, w: Int, h: Int, dark: Boolean, t0: Float, t1: Float, content: @Composable () -> Unit) {
     SideSeatUiDebug.forceDark = dark
-    val scene = ImageComposeScene(w, h, Density(1.25f)) { content() }
+    val scene = ImageComposeScene(w, h, Density(1.25f)) {
+        // 벡터 도로로 보려면 환경 변수 SIDESEAT_VECTOR=1
+        if (System.getenv("SIDESEAT_VECTOR") == "1") content()
+        else androidx.compose.runtime.CompositionLocalProvider(io.moodlab.sideseat.ui.scene.LocalSceneBackdrop provides stillBackdrop) { content() }
+    }
     var t = t0
     var img = scene.render(0)
     val dt = 1f / 30f

@@ -1,6 +1,8 @@
 package io.moodlab.sideseat.ui.scene
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,6 +12,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.rememberTextMeasurer
 import io.moodlab.sideseat.core.SceneParams
 import io.moodlab.sideseat.core.TrainingPhase
@@ -44,6 +49,11 @@ fun DriveScene(
     val cockpit = remember { CockpitLayer() }
     val meter = remember { FrameMeter("scene") }
     val measurer = rememberTextMeasurer(cacheSize = 0)
+    // 실사 배경이 있으면 도로는 영상이 보여 주고, 여기서는 그 위의 효과와 앞유리·운전석만 그린다
+    val backdrop = LocalSceneBackdrop.current
+    val backdropFrame = remember { BackdropFrame() }
+    sim.photo = backdrop != null
+    val blurs = remember { arrayOfNulls<BlurEffect>(BLUR_STEPS + 1) }
     var frame by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(Unit) {
@@ -52,9 +62,10 @@ fun DriveScene(
             withFrameNanos { now ->
                 if (last != 0L) {
                     sim.step((now - last) / 1e9f, input)
+                    if (backdrop != null) sim.direct(backdropFrame, input)
                     meter.frame(now - last)
-                    // 프레임이 모자라면 효과를 줄인다(한번 줄이면 그 화면에서는 유지)
-                    if (!sim.lowDetail && (SideSeatUiDebug.lowDetail || (meter.fps > 0f && meter.fps < 26f))) {
+                    // 프레임이 두 구간(약 4초) 연달아 모자라면 효과를 줄인다(한번 줄이면 그 화면에서는 유지)
+                    if (!sim.lowDetail && (SideSeatUiDebug.lowDetail || meter.slowStreak >= 2)) {
                         sim.lowDetail = true
                         SideSeatUiDebug.lowDetail = true
                         if (SideSeatUiDebug.logFrames) android.util.Log.i("SideSeatMeasure", "frame scene lowDetail=on fps=%.1f".format(meter.fps))
@@ -66,6 +77,29 @@ fun DriveScene(
         }
     }
 
+    if (backdrop != null) {
+        Box(modifier.clipToBounds()) {
+            // 닦이지 않은 빗물·졸음만큼 바깥이 번져 보인다(안드로이드 12 이상에서만 적용된다)
+            backdrop.Layer(
+                backdropFrame,
+                Modifier.fillMaxSize().graphicsLayer {
+                    @Suppress("UNUSED_EXPRESSION") frame
+                    val step = if (sim.lowDetail) 0 else (sim.glassBlur * BLUR_STEPS).toInt().coerceIn(0, BLUR_STEPS)
+                    renderEffect = if (step == 0) null else blurs[step] ?: BlurEffect(step * 1.6f * density, step * 1.6f * density, TileMode.Clamp).also { blurs[step] = it }
+                },
+            )
+            Canvas(Modifier.fillMaxSize()) {
+                @Suppress("UNUSED_EXPRESSION") frame
+                val t0 = System.nanoTime()
+                sim.setSize(size.width, size.height)
+                world.drawOverBackdrop(this, sim, backdropFrame)
+                glass.draw(this, sim)
+                cockpit.draw(this, sim, input, measurer)
+                meter.draw(System.nanoTime() - t0)
+            }
+        }
+        return
+    }
     Canvas(modifier.clipToBounds()) {
         @Suppress("UNUSED_EXPRESSION") frame // 프레임마다 다시 그리게 한다(재구성 없이 그리기 단계만)
         val t0 = System.nanoTime()
@@ -76,3 +110,5 @@ fun DriveScene(
         meter.draw(System.nanoTime() - t0)
     }
 }
+
+private const val BLUR_STEPS = 10

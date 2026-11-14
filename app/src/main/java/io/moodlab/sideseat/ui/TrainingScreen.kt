@@ -291,7 +291,8 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
             }
         }
     }
-    AnimatedVisibility(view.phase == TrainingPhase.FAIL, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
+    // 실패 판은 아래 힌트 판과 겹치지 않게 조금 위에 둔다
+    AnimatedVisibility(view.phase == TrainingPhase.FAIL, Modifier.align(Alignment.Center).padding(bottom = sz.height * 0.24f), enter = enter, exit = exit) {
         AccentPanel(Sc.warn, padding = sz.dp(28f)) {
             Column(modifier = Modifier.widthIn(min = sz.dp(340f), max = sz.dp(620f))) {
                 Text("괜찮아요", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold)

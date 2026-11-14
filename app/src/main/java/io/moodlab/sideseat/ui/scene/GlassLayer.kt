@@ -97,7 +97,7 @@ internal class GlassLayer {
     private fun DrawScope.drawWater(sim: SceneSim) {
         if (sim.ambientWet < 0.01f && sim.rain < 0.01f) return
         val film = mix(Color(0xFF8B98A8), Color(0xFF1B2634), sim.night)
-        val maxA = 0.64f
+        val maxA = if (sim.photo) 0.36f else 0.64f
         val un = sim.ambientWet
         if (un > 0.01f) drawPath(unswept, film, alpha = filmAlpha(un) * maxA)
         for (k in 0 until SceneSim.WIPE_BINS) {
@@ -107,7 +107,7 @@ internal class GlassLayer {
             drawPath(wedgeB[k], film, alpha = a)
         }
         // 물막 너머로 번진 앞차 후미등
-        if (sim.leadA > 0.05f && sim.ambientWet > 0.05f && sim.parking < 0.5f) {
+        if (!sim.photo && sim.leadA > 0.05f && sim.ambientWet > 0.05f && sim.parking < 0.5f) {
             val k = maxOf(sim.leadK, h * 0.012f)
             val a = sim.ambientWet * sim.leadA * (0.45f + 0.55f * sim.leadBrake)
             glow(bokehRed, sim.leadSx - 0.8f * k, sim.leadSy - 0.7f * k, 1.6f * k + h * 0.02f, alpha = a * 0.7f)
@@ -118,7 +118,7 @@ internal class GlassLayer {
         var avg = 0f
         for (k in 0 until SceneSim.WIPE_BINS) avg += sim.wet[k]
         avg /= SceneSim.WIPE_BINS
-        if (avg > 0.05f && sim.night > 0.3f && !sim.lowDetail) {
+        if (!sim.photo && avg > 0.05f && sim.night > 0.3f && !sim.lowDetail) {
             for (k in 0 until BOKEH) {
                 val g = when (k % 3) { 0 -> bokehWarm; 1 -> bokehRed; else -> bokehCool }
                 val wob = sin(sim.t * 0.7f + k) * h * 0.01f
@@ -139,7 +139,7 @@ internal class GlassLayer {
             val run = up * age * (r / (h * 0.012f))
             val x = sim.dropX[n]
             val y = sim.dropY[n] - run
-            drawCircle(lo, r, Offset(x, y), alpha = 0.3f * a)
+            drawCircle(lo, r, Offset(x, y), alpha = (if (sim.photo) 0.42f else 0.3f) * a)
             if (r < big) {
                 drawCircle(hi, r * 0.42f, Offset(x + r * 0.18f, y + r * 0.3f), alpha = 0.34f * a)
             } else {

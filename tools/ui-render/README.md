@@ -13,3 +13,4 @@ python3 tools/ui-render/sheet.py sheet.jpg 2 780 tools/ui-render/out/t_*.png   #
 - `t_*`는 훈련 장면(`UiSamples.trainingAt`의 시연 시각), `c_*`는 코치 화면, `h_home`은 홈.
 - `android.util.Log`와 `voice.Persona`는 `src/main/kotlin`의 대역을 써요. 이름을 바꾸면 대역도 같이 바꿔야 해요.
 - 글꼴·글자 폭은 데스크톱 기본 글꼴이라 실기와 조금 달라요. 프레임 속도·CPU는 여기서 잴 수 없어요.
+- 훈련 장면의 실사 배경은 영상 대신 `app/src/main/assets/scene/`의 정지 그림으로 그려요. 코드로 그린 도로(v7)로 보려면 `SIDESEAT_VECTOR=1`을 붙여요.

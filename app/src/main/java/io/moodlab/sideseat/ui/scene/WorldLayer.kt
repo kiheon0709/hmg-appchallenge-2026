@@ -94,6 +94,7 @@ internal class WorldLayer {
     private var litLow: Brush? = null
     private var litHigh: Brush? = null
     private var sideShade: Brush? = null
+    private var roadShade: Brush? = null
     private var fogGrad: Brush? = null
     private var floorBrush: Brush? = null
     private var fogTintColor = Color.Unspecified
@@ -142,6 +143,7 @@ internal class WorldLayer {
             0f to Color(0xB3000000), 0.3f to Color(0x00000000), 0.7f to Color(0x00000000), 1f to Color(0xB3000000),
             startX = 0f, endX = w,
         )
+        roadShade = Brush.verticalGradient(0f to Color(0x00000000), 0.35f to Color(0x80000000), 1f to Color(0xA6000000), startY = horizon, endY = h)
         fogGrad = Brush.verticalGradient(0f to Color(0xFFFFFFFF), 0.38f to Color(0xFFFFFFFF), 1f to Color(0x00FFFFFF), startY = 0f, endY = h)
         floorBrush = Brush.verticalGradient(0f to Color(0xFF1B1F1F), 1f to Color(0xFF2C3231), startY = h * 0.55f, endY = h)
         buildBackdrop()
@@ -257,6 +259,69 @@ internal class WorldLayer {
         val cut = 1f - abs(2f * sim.parking - 1f)
         if (cut > 0.01f) drawRect(Color.Black, alpha = cut)
 
+        drawFogAndGlare(sim)
+        drawStreaks(sim)
+    }
+
+    /**
+     * 실사 배경 위에 얹는 것: 전조등·터널에 따른 밝기, 앞차 브레이크등 빛, 맞은편 눈부심, 안개, 빗줄기.
+     * 도로·차·터널은 영상이 보여 주므로 그리지 않는다.
+     */
+    fun drawOverBackdrop(scope: DrawScope, sim: SceneSim, f: BackdropFrame) = with(scope) {
+        ensure(size)
+        f.layout(w, h)
+        horizon = h * SceneSim.VANISH_Y
+        val dark = 1f - sim.lowBeam
+        when (f.clip) {
+            BackdropClip.NIGHT_ROAD -> {
+                // 영상은 전조등을 켜고 찍었다. 끄면 전체가 가라앉고, 발밑 노면은 거의 보이지 않는다
+                if (dark > 0.01f) {
+                    drawRect(Color.Black, alpha = (0.4f - 0.12f * sim.rain) * dark)
+                    drawRect(roadShade!!, topLeft = Offset(0f, horizon), size = Size(w, h - horizon), alpha = dark)
+                }
+                if (sim.highBeam > 0.01f) glow(beam, cx, horizon + h * 0.06f, w * 0.5f, h * 0.2f, alpha = sim.highBeam * 0.14f)
+            }
+            BackdropClip.TUNNEL -> if (dark > 0.01f) drawRect(Color.Black, alpha = 0.58f * dark)
+            BackdropClip.PARKING -> {
+                if (dark > 0.01f) drawRect(Color.Black, alpha = 0.34f * dark)
+                // 벽에 닿은 내 전조등
+                if (sim.lowBeam > 0.01f) {
+                    val by = f.viewY(0.64f)
+                    glow(beam, f.viewX(0.27f), by, w * 0.13f, h * 0.085f, alpha = sim.lowBeam * 0.34f)
+                    glow(beam, f.viewX(0.5f), by, w * 0.13f, h * 0.085f, alpha = sim.lowBeam * 0.34f)
+                }
+                if (sim.highBeam > 0.01f) glow(white, f.viewX(0.385f), f.viewY(0.5f), w * 0.4f, h * 0.2f, alpha = sim.highBeam * 0.3f)
+            }
+        }
+        // 앞차 급정거: 브레이크등이 켜지고, 다가갈수록 그 빛이 유리와 젖은 노면에 번진다
+        if (f.clip == BackdropClip.NIGHT_ROAD && (sim.leadBrake > 0.02f || sim.leadZoom > 0.02f)) {
+            val lx = f.viewX(LeadTrack.u(f.positionSec)); val ly = f.viewY(LeadTrack.V)
+            val cw = LeadTrack.width(f.positionSec) * f.dw
+            sim.leadSx = lx; sim.leadSy = ly; sim.leadK = cw / 1.8f
+            val on = sim.leadBrake
+            glow(red, lx - cw * 0.36f, ly, cw * (0.3f + 0.5f * on), alpha = 0.9f * on)
+            glow(red, lx + cw * 0.36f, ly, cw * (0.3f + 0.5f * on), alpha = 0.9f * on)
+            glow(red, lx, ly - cw * 0.5f, cw * 0.22f, cw * 0.07f, alpha = 0.8f * on)
+            val u = sim.leadZoom * (0.35f + 0.65f * on)
+            glow(red, lx, ly, cw * 2.4f, cw * 1.3f, alpha = 0.3f * u)
+            glow(red, lx, ly + cw * 1.1f, cw * 1.1f, cw * 1.6f, alpha = 0.26f * u)
+        }
+        // 맞은편 눈부심: 왼쪽 맞은편 차로에서 전조등이 다가온다
+        if (sim.glare > 0.01f && f.clip != BackdropClip.PARKING) {
+            val g = sim.glare
+            val gx = w * (0.4f - 0.24f * g.pow(1.6f)); val gy = horizon + h * 0.06f * g
+            val r = w * (0.015f + 0.15f * g)
+            val sep = r * 0.42f
+            glow(white, gx - sep, gy, r, alpha = g)
+            glow(white, gx + sep, gy, r, alpha = g)
+            glow(white, gx, gy, r * 4.2f, r * 0.07f, alpha = g * 0.55f)
+            glow(fogBloom, gx, gy, r * 3f, r * 2f, alpha = g * 0.45f)
+        }
+        // 장면이 바뀌는 순간(터널 드나들기, 주차장)은 잠깐 어두워졌다 밝아진다
+        val cut = maxOf(1f - abs(2f * sim.parking - 1f), 1f - abs(2f * sim.tunnelP - 1f))
+        if (cut > 0.01f) drawRect(Color.Black, alpha = cut)
+        if (sim.rain > 0.05f) drawRect(Color(0xFF05070A), alpha = sim.rain * 0.16f)
+        if (sim.flash > 0.01f) drawRect(Color(0xFFCBD3E6), alpha = sim.flash * 0.16f)
         drawFogAndGlare(sim)
         drawStreaks(sim)
     }
@@ -816,7 +881,7 @@ internal class WorldLayer {
         val n = (SceneSim.MAX_STREAKS * (0.25f + 0.75f * rain) * (if (sim.lowDetail) 0.5f else 1f)).toInt()
         val rush = (sim.speed / 30f).coerceIn(0f, 1.3f)
         // 빗줄기는 전조등 빛을 받을 때 가장 잘 보인다
-        val a = (0.07f + 0.16f * rain) * (0.65f + 0.6f * sim.lowBeam) * (1f - 0.7f * sim.tunnelP)
+        val a = (0.07f + 0.16f * rain) * ((if (sim.photo) 0.95f else 0.65f) + 0.6f * sim.lowBeam) * (1f - 0.7f * sim.tunnelP)
         val sw = maxOf(1f, h * 0.0011f)
         val c = Color(0xFFD3DCE8)
         for (k in 0 until n) {

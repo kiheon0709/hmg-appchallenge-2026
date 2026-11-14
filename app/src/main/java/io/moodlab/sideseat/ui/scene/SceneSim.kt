@@ -85,6 +85,13 @@ internal class SceneSim {
     var tunnelP = 0f
     var tunnelEntering = false
     var leadZ = 40f
+    /** 실사 배경을 쓰는 중. 코드로 그리던 번진 불빛은 빼고(영상에 진짜 불빛이 있다) 물막을 옅게 한다. */
+    var photo = false
+    /** 실사 배경을 흐리게 볼 정도(0~1). 닦이지 않은 빗물과 졸음이 앞을 번지게 한다. */
+    var glassBlur = 0f
+    /** 실사 배경에서 앞차 쪽으로 다가간 정도(0~1). */
+    var leadZoom = 0f
+    private var leadWasOn = false
     /** 앞차가 바짝 붙은 정도(0~1). 화면이 긴박해진다. */
     var urgency = 0f
     // 앞차의 화면 위치(물막 너머로 번진 후미등을 그릴 때 쓴다)
@@ -219,12 +226,37 @@ internal class SceneSim {
         leadA = ease(leadA, if (i.parkingLot) 0f else 1f, 3f, dt)
         urgency = ease(urgency, if (d in 0f..0.55f) ((0.55f - d) / 0.35f).coerceAtMost(1f) else 0f, 8f, dt)
         leadBrake = ease(leadBrake, if (i.leadBraking) 1f else 0f, 14f, dt)
+        leadZoom = ease(leadZoom, if (d >= 0f) (1f - d / 0.75f).coerceIn(0f, 1f) else 0f, 5f, dt)
 
         stepWiper(dt, i.wiper)
         stepWater(dt)
         stepStreaks(dt)
         stepLightning(dt)
         stepTraffic(dt)
+    }
+
+    /** 실사 배경이 지금 보여 줄 소재, 재생 속도, 확대와 놓을 자리를 정한다. */
+    fun direct(f: BackdropFrame, i: SceneInput) {
+        val clip = when {
+            parking > 0.5f -> BackdropClip.PARKING
+            tunnelP > 0.5f -> BackdropClip.TUNNEL
+            else -> BackdropClip.NIGHT_ROAD
+        }
+        f.clip = clip
+        // 영상은 시속 85km쯤으로 찍혔다. 화면 속 속도에 맞춰 빨라지고 느려지고, 서면 멈춘다
+        f.rate = if (clip == BackdropClip.PARKING) 0f else (speed * 3.6f / 85f).coerceIn(0f, 2f)
+        val road = clip == BackdropClip.NIGHT_ROAD
+        // 앞차 급정거가 시작되면 앞차가 가장 가까이 보이는 대목으로 옮긴다
+        val leadOn = road && i.leadDistance >= 0f
+        if (leadOn && !leadWasOn) f.seekTo = 0.2f
+        leadWasOn = leadOn
+        val z = if (road) leadZoom else 0f
+        val pull = (z * 2.5f).coerceAtMost(1f)
+        f.zoom = (if (clip == BackdropClip.PARKING) 1f else 1.12f) * (1f + 1.25f * z.pow(1.2f))
+        f.focusU = clip.horizonU + (LeadTrack.u(f.positionSec) - clip.horizonU) * pull
+        f.focusV = clip.horizonV + (LeadTrack.V - clip.horizonV) * pull
+        f.anchorX = 0.5f - playerX * 0.02f
+        f.anchorY = VANISH_Y + 0.04f * pull
     }
 
     private fun stepWiper(dt: Float, level: WiperLevel) {
@@ -266,6 +298,9 @@ internal class SceneSim {
             wet[k] = if (rain > 0.03f) minOf(rain.coerceAtLeast(0.25f), wet[k] + grow) else maxOf(0f, wet[k] - dt * 0.25f)
         }
         ambientWet = if (rain > ambientWet) ease(ambientWet, rain, 1.2f, dt) else ease(ambientWet, rain, 0.35f, dt)
+        var avg = 0f
+        for (k in 0 until WIPE_BINS) avg += wet[k]
+        glassBlur = ease(glassBlur, maxOf(avg / WIPE_BINS, drowsy * 0.8f), 9f, dt)
         if (w <= 0f) return
         dropDebt += rain * rain * 260f * dt + (if (rain > 0.05f) 8f * dt else 0f)
         while (dropDebt >= 1f) {

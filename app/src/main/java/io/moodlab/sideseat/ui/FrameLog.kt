@@ -45,8 +45,13 @@ internal class FrameMeter(private val name: String) {
     var fps = 0f
         private set
 
+    /** 프레임이 모자랐던 구간이 연달아 몇 번인지. 한 번 길게 멈춘 것(시스템이 앱을 잠깐 세운 경우)과 계속 느린 것을 가른다. */
+    var slowStreak = 0
+        private set
+
     private fun flush() {
         fps = frames * 1e9f / sumNs
+        slowStreak = if (fps < 26f) slowStreak + 1 else 0
         SideSeatUiDebug.lastFps = fps
         if (SideSeatUiDebug.logFrames) {
             Log.i(
