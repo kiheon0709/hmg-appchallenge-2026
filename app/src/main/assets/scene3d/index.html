@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>SideSeat scene3d</title>
+<title>TABI scene3d</title>
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
 canvas{display:block;width:100vw;height:100vh}
@@ -1493,7 +1493,7 @@ function frame(now) {
     if (!fpsEl.classList.contains('hidden')) fpsEl.textContent = `${fpsNow.toFixed(0)} fps  cpu ${msNow.toFixed(2)} ms\ncalls ${renderer.info.render.calls}  tris ${renderer.info.render.triangles}\n${rt.width}x${rt.height} q${P.quality}\n${(S.v * 3.6).toFixed(0)} km/h  gap ${S.gap.toFixed(1)} m`; }
 }
 helpEl.textContent = [
-  'SideSeat scene3d spike      H: hide help   F: fps',
+  'TABI scene3d                H: hide help   F: fps',
   '↑/↓ target speed ±10      Space  brake (hold)',
   '←/→ steer (hold)           Q/E/Z  turn left/right/hazard',
   'R rain  W wiper  L headlights  K dense fog',

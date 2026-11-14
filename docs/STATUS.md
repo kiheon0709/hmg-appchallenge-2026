@@ -7,6 +7,13 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## release APK 파일 이름을 타비(TABI)로 (2026-11-15 04:05, 3D 장면 세션)
+
+- 앱 이름이 "옆자리"에서 "타비(TABI)"로 바뀌어 release APK를 **`apk/MoodLab_TABI_release.apk`**로 낸다. 이전 `apk/MoodLab_SideSeat_release.apk`는 저장소에서 지웠다(`git mv`). 패키지 이름(`io.moodlab.sideseat`)은 그대로다.
+- 이 APK는 `e1eb83a`(v17)까지의 코드에 3D 장면 파일의 제목 글자(화면에 보이지 않음)만 "TABI scene3d"로 바꿔 다시 빌드한 것이다: **27,424,893 바이트**, `sk-ant-` 0건, release 서명(v2) 확인, 앱 표시 이름 "타비". `./gradlew :core:test` 121개·`:app:testDebugUnitTest` 123개 통과. 에뮬레이터에서 다시 돌려 보지는 않았다(v17 실측 뒤로 바뀐 것은 그 제목 글자뿐).
+- APK 복사는 빌드 스크립트가 아니라 손으로 한다: `./gradlew :app:assembleRelease` 뒤 `cp app/build/outputs/apk/release/app-release.apk apk/MoodLab_TABI_release.apk`.
+- 3D 장면과 타비 대사에 "옆자리"가 앱 이름으로 쓰인 곳은 없었다("옆자리에서 같이 보는 중" 같은 설명 문장은 그대로 뒀다). 아래 지난 기록의 파일 이름은 고치지 않았다.
+
 ## 낮 장면 품질, 어린이 보호구역 실제처럼, 일반 차로 요금소(v17), release APK 재갱신 (2026-11-15 02:45~03:55, 3D 장면 세션)
 
 `apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,424,893 바이트**, `sk-ant-` 0건. home-ui 세션의 커밋(`862708f` 홈 화면·공용 UI, `845a28d` 앱 이름 타비)이 들어온 뒤에 빌드했다. `./gradlew :core:test` **121개**·`:app:testDebugUnitTest` **123개** 통과. 외부 파일은 새로 받지 않았다. 커밋: `e2d4a72`(1단계), `27b49ab`(2단계), `4ca8d6a`(3단계)와 이 기록.
