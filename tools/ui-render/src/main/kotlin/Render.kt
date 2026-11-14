@@ -3,6 +3,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ImageComposeScene
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.Density
 import io.moodlab.sideseat.core.*
 import io.moodlab.sideseat.ui.*
@@ -11,13 +12,16 @@ import java.io.File
 
 var simT by mutableFloatStateOf(0f)
 val stillBackdrop = StillSceneBackdrop(File("../../app/src/main/assets"))
+val homeArt = org.jetbrains.skia.Image.makeFromEncoded(File("../../app/src/main/assets/home/hero.jpg").readBytes()).toComposeImageBitmap()
 
 fun shoot(name: String, w: Int, h: Int, dark: Boolean, t0: Float, t1: Float, content: @Composable () -> Unit) {
     SideSeatUiDebug.forceDark = dark
     val scene = ImageComposeScene(w, h, Density(1.25f)) {
         // 벡터 도로로 보려면 환경 변수 SIDESEAT_VECTOR=1
-        if (System.getenv("SIDESEAT_VECTOR") == "1") content()
-        else androidx.compose.runtime.CompositionLocalProvider(io.moodlab.sideseat.ui.scene.LocalSceneBackdrop provides stillBackdrop) { content() }
+        androidx.compose.runtime.CompositionLocalProvider(LocalHomeArt provides homeArt) {
+            if (System.getenv("SIDESEAT_VECTOR") == "1") content()
+            else androidx.compose.runtime.CompositionLocalProvider(io.moodlab.sideseat.ui.scene.LocalSceneBackdrop provides stillBackdrop) { content() }
+        }
     }
     var t = t0
     var img = scene.render(0)
@@ -75,7 +79,19 @@ fun main(args: Array<String>) {
         val (v, c) = UiSamples.trainingAt(0.5f)
         TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = UiSamples.chapterResult), c) {}
     }
-    if (want("h_home")) shoot("h_home", W, H, false, 0f, 5f) { HomeScreen(UiSamples.home) {} }
+    if (want("h_home")) shoot("h_home", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
+    if (want("h_home_night")) shoot("h_home_night", W, H, true, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
+    if (want("h_home_portrait")) shoot("h_home_portrait", 835, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
+    if (want("h_home_portrait_night")) shoot("h_home_portrait_night", 835, H, true, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
+    // 가는 길 추천, 대화 없음, 처음 쓰는 상태(v15 캡처와 같은 조건)
+    if (want("h_home_route")) shoot("h_home_route", W, H, false, 0f, 0.3f) {
+        HomeScreen(UiSamples.home.copy(
+            subGreeting = "3분만 같이 해 볼까요?", progress = TrainingProgress(), recommendedChapterId = "C5", recommendLabel = "가는 길 연습",
+            recommendReason = "가는 길에 요금소가 있어요. 미리 연습해 볼까요?", talk = TalkUi(answerText = "전조등을 켜요."),
+        )) {}
+    }
+    if (want("r_result")) shoot("r_result", W, H, false, 0f, 2f) { ResultScreen(UiSamples.chapterResult, UiSamples.progress) {} }
+    if (want("r_review")) shoot("r_review", W, H, false, 0f, 0.3f) { ReviewScreen(UiSamples.review) {} }
     if (want("h_vehicle")) shoot("h_vehicle", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
     val car = VehicleState(0, parked = false, wiper = WiperLevel.LOW, lowBeamOn = false, recirculationOn = true, speedLimitKmh = 80, speedKmhEstimate = 93f)
     fun coach(name: String, dark: Boolean, ui: CoachUi, w: Int = W, h: Int = H) { if (want(name)) shoot(name, w, h, dark, 0f, 0.2f) { CoachShot(ui, car) } }

@@ -176,7 +176,7 @@ private fun Senior(state: ReviewUi, onAction: (UiAction) -> Unit, modifier: Modi
         ) { onAction(UiAction.StartSituation(suggested)) }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
-        TalkButton(state.talk, Modifier.weight(1f), height = sz.dp(96f), onAction = onAction)
+        TalkButton(state.talk, Modifier.weight(1f), height = sz.dp(96f), tonal = true, onAction = onAction)
         BigButton("홈으로", Modifier.width(sz.dp(150f)).height(sz.dp(96f))) { onAction(UiAction.DismissReview) }
     }
 }

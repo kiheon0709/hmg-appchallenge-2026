@@ -140,7 +140,7 @@ private fun SituationResultCard(index: Int, r: SituationResult, progress: Traini
 
 /** "이 차 면허" 진행도: 챕터 C1~C4를 ★2 이상으로 깬 수. */
 @Composable
-internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, vehicleName: String? = null) {
+internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, vehicleName: String? = null, bare: Boolean = false) {
     val sz = LocalSz.current
     val license = if (vehicleModelKey != null || progress.licenses.isEmpty()) {
         progress.licenseFor(vehicleModelKey)
@@ -150,15 +150,15 @@ internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, ve
     // 면허는 이 차의 스위치를 익히는 챕터만 센다
     val total = ChapterCatalog.LICENSE_CHAPTERS.size
     val cleared = license.clearedChapters.size.coerceAtMost(total)
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f))) {
+    val color = if (license.licensed) Sc.ok else Sc.accent
+    // [bare]면 카드 없이 내용만(홈에서는 차종 카드 안에 들어간다)
+    Column(if (bare) Modifier.fillMaxWidth() else Modifier.fillMaxWidth().card().padding(sz.dp(22f)), verticalArrangement = Arrangement.spacedBy(sz.dp(8f))) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                if (license.licensed) "이 차 숙련" else "이 차 면허", color = if (license.licensed) Sc.ok else Sc.text,
-                fontSize = sz.body, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f),
-            )
-            Text("$cleared / $total", color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Medium)
+            Text(if (license.licensed) "이 차 숙련" else "이 차 면허", color = if (license.licensed) Sc.ok else Sc.text, fontSize = sz.label, fontWeight = FontWeight.Bold)
+            ProgressBar(cleared / total.toFloat(), Modifier.weight(1f).padding(horizontal = sz.dp(18f)), color = color)
+            Text("$cleared", color = color, fontSize = sz.body, fontWeight = FontWeight.Bold)
+            Text(" / $total", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
         }
-        ProgressBar(cleared / total.toFloat(), Modifier.fillMaxWidth().padding(vertical = sz.dp(10f)), color = if (license.licensed) Sc.ok else Sc.text)
         Text(
             (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "챕터마다 별 2개 이상이면 면허가 채워져요. 다른 차에서는 다시 따요.",
             color = Sc.textDim, fontSize = sz.caption, lineHeight = sz.caption * 1.4f,

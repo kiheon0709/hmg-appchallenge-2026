@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * 색 묶음. Pleos Connect 시스템 화면(설정 앱)에 맞춘다: 주간은 흰 바탕·검은 글자·검은 선택 상태,
- * 야간은 그 반전. 공개 디자인 문서에는 색 값이 그림으로만 있어서 에뮬레이터 캡처에서 맞췄다(decisions.md).
+ * 색 묶음. Pleos Connect 시스템 화면의 색감을 따른다: 주간은 밝은 중성 바탕 위 흰 카드·검은 글자·검은 선택 상태,
+ * 야간은 검은 바탕 위 어두운 카드. 공개 디자인 문서에는 색 값이 그림으로만 있어서 에뮬레이터 캡처에서 맞췄다(decisions.md).
  * 글자색은 바탕 위에서 대비 4.5:1 이상이다.
  */
 @Immutable
@@ -56,8 +56,8 @@ class Palette(
 
 val DayPalette = Palette(
     dark = false,
-    bg = Color(0xFFFFFFFF), surface = Color(0xFFF3F3F3), surfaceHi = Color(0xFFFFFFFF), outline = Color(0xFFD4D4D4),
-    text = Color(0xFF0A0A0A), textDim = Color(0xFF666666),
+    bg = Color(0xFFF2F3F5), surface = Color(0xFFFFFFFF), surfaceHi = Color(0xFFF2F3F5), outline = Color(0xFFDADDE2),
+    text = Color(0xFF101216), textDim = Color(0xFF5B616B),
     primary = Color(0xFF000000), onPrimary = Color(0xFFFFFFFF),
     accent = Color(0xFF0B57E0), onAccent = Color(0xFFFFFFFF),
     warn = Color(0xFFA85800), danger = Color(0xFFD0252B), ok = Color(0xFF087A38), star = Color(0xFFE39B00),
@@ -66,7 +66,7 @@ val DayPalette = Palette(
 
 val NightPalette = Palette(
     dark = true,
-    bg = Color(0xFF000000), surface = Color(0xFF191919), surfaceHi = Color(0xFF000000), outline = Color(0xFF3D3D3D),
+    bg = Color(0xFF08090B), surface = Color(0xFF1A1C20), surfaceHi = Color(0xFF26292F), outline = Color(0xFF393C43),
     text = Color(0xFFF5F5F5), textDim = Color(0xFFA6A6A6),
     primary = Color(0xFFFFFFFF), onPrimary = Color(0xFF000000),
     accent = Color(0xFF5C9DFF), onAccent = Color(0xFF000000),
@@ -108,8 +108,8 @@ class Sz(val scale: Float, val wide: Boolean, val width: Dp, val height: Dp) {
     val caption get() = sp(18f)
     val pad get() = dp(28f)
     val gap get() = dp(16f)
-    /** 시스템 버튼·선택 칸은 모서리가 거의 직각이다. */
-    val radius get() = dp(2f)
+    /** 카드·버튼의 둥근 모서리. */
+    val radius get() = dp(20f)
     val line get() = dp(1.5f)
     val touch get() = dp(84f)
 }

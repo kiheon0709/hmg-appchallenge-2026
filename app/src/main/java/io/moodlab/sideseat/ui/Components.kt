@@ -31,6 +31,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -39,7 +44,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +53,16 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+
+/** 카드 바탕. 주간은 옅은 그림자로, 야간은 가는 테두리로 바탕에서 띄운다. */
+@Composable
+fun Modifier.card(shape: Shape = RoundedCornerShape(LocalSz.current.radius), color: Color = Sc.surface): Modifier {
+    val sz = LocalSz.current
+    return if (Sc.dark) clip(shape).background(color).border(sz.dp(1f), Sc.outline, shape)
+    else shadow(sz.dp(5f), shape, clip = false, ambientColor = CardShadow, spotColor = CardShadow).clip(shape).background(color)
+}
+
+private val CardShadow = Color(0x33101216)
 
 /** 반투명 판. 주행 화면 위에 얹어도 글자 대비가 유지된다. */
 @Composable
@@ -95,16 +109,16 @@ fun BigButton(
 ) {
     val sz = LocalSz.current
     val shape = RoundedCornerShape(sz.radius)
-    // 시스템 선택 칸과 같은 모양: 주 버튼은 검은(야간은 흰) 채움, 나머지는 바탕색에 테두리
-    val bg = when { !enabled -> Sc.surface; primary -> color; else -> Sc.bg }
+    // 주 버튼은 검은(야간은 흰) 채움, 나머지는 카드색에 옅은 테두리, 못 누르는 것은 바탕에 묻히게
+    val bg = when { !enabled -> Sc.surfaceHi; primary -> color; else -> Sc.surface }
     val fg = when { !enabled -> Sc.textDim; primary -> if (color == Color.White) Color.Black else if (color == Sc.primary) Sc.onPrimary else Sc.onAccent; else -> Sc.text }
     Column(
         modifier.defaultMinSize(minHeight = sz.touch).clip(shape).background(bg)
-            .border(sz.line, if (primary) Color.Transparent else if (!enabled) Sc.outline else Sc.text, shape)
+            .border(sz.line, if (primary) Color.Transparent else Sc.outline, shape)
             .clickable(enabled = enabled, onClick = onClick).padding(horizontal = sz.dp(24f), vertical = sz.dp(12f)),
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (sub != null) Text(sub, color = fg.copy(alpha = 0.8f), fontSize = sz.caption, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -219,7 +233,7 @@ fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, color: Color = S
 
 internal fun DrawScope.micGlyph(c: Color, cx: Float, cy: Float, s: Float) {
     val st = s * 0.12f
-    drawRoundRect(c, Offset(cx - s * 0.2f, cy - s * 0.55f), Size(s * 0.4f, s * 0.7f), androidx.compose.ui.geometry.CornerRadius(s * 0.2f))
+    drawRoundRect(c, Offset(cx - s * 0.2f, cy - s * 0.55f), Size(s * 0.4f, s * 0.7f), CornerRadius(s * 0.2f))
     drawArc(c, 0f, 180f, false, Offset(cx - s * 0.36f, cy - s * 0.35f), Size(s * 0.72f, s * 0.7f), style = Stroke(st, cap = StrokeCap.Round))
     drawLine(c, Offset(cx, cy + s * 0.35f), Offset(cx, cy + s * 0.58f), st, cap = StrokeCap.Round)
     drawLine(c, Offset(cx - s * 0.2f, cy + s * 0.58f), Offset(cx + s * 0.2f, cy + s * 0.58f), st, cap = StrokeCap.Round)
@@ -228,9 +242,10 @@ internal fun DrawScope.micGlyph(c: Color, cx: Float, cy: Float, s: Float) {
 /**
  * 큰 "질문하기" 버튼과 대화 자막. 홈·코치·리뷰가 같이 쓴다.
  * 움직이는 효과가 없어서 주행 화면에도 그대로 쓸 수 있다.
+ * [tonal]이면 쉬는 동안 카드색 바탕에 강조색 마이크로 그린다(주 행동이 따로 있는 화면).
  */
 @Composable
-fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz.current.dp(120f), onAction: (UiAction) -> Unit) {
+fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz.current.dp(120f), tonal: Boolean = false, onAction: (UiAction) -> Unit) {
     val sz = LocalSz.current
     val active = talk.listening || talk.speaking || talk.thinking
     val label = when {
@@ -239,21 +254,29 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
         talk.speaking -> "눌러서 멈추기"
         else -> "질문하기"
     }
-    val bg = when { talk.listening -> Sc.accent; active -> Sc.bg; else -> Sc.primary }
-    val fg = when { talk.listening -> Sc.onAccent; active -> Sc.text; else -> Sc.onPrimary }
+    val idleTonal = tonal && !active
+    val bg = when { talk.listening -> Sc.accent; active || tonal -> Sc.surface; else -> Sc.primary }
+    val fg = when { talk.listening -> Sc.onAccent; active || tonal -> Sc.text; else -> Sc.onPrimary }
     val shape = RoundedCornerShape(sz.radius)
     Row(
         modifier.height(height).clip(shape).background(bg)
-            .border(sz.line, if (active && !talk.listening) Sc.text else Color.Transparent, shape)
+            .border(sz.line, if (active && !talk.listening) Sc.text else if (idleTonal) Sc.outline else Color.Transparent, shape)
             .clickable { onAction(if (active) UiAction.StopTalking else UiAction.AskQuestion) }
             .padding(horizontal = sz.dp(20f)),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
-        Canvas(Modifier.size(height * 0.42f)) { micGlyph(fg, size.width / 2f, size.height / 2f, size.minDimension * 0.8f) }
+        if (idleTonal) {
+            Canvas(Modifier.size(height * 0.62f)) {
+                drawCircle(Sc.accent)
+                micGlyph(Sc.onAccent, size.width / 2f, size.height / 2f, size.minDimension * 0.5f)
+            }
+        } else {
+            Canvas(Modifier.size(height * 0.42f)) { micGlyph(fg, size.width / 2f, size.height / 2f, size.minDimension * 0.8f) }
+        }
         Spacer(Modifier.width(sz.dp(18f)))
         // 좁은 버튼에서도 글자가 잘리지 않게 긴 문구는 한 단계 작게 쓴다
         Text(
-            label, color = fg, fontSize = if (label.length > 5) sz.body else sz.h2, fontWeight = FontWeight.Medium,
+            label, color = fg, fontSize = if (label.length > 5) sz.body else sz.h2, fontWeight = FontWeight.SemiBold,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
         )
     }
@@ -272,17 +295,40 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
     }
 }
 
-/** 캐릭터 그림 자리. 지금은 옆자리 좌석 모양의 둥근 아이콘. 그림이 정해지면 여기만 바꾼다(홈·리뷰가 같이 쓴다). */
+/**
+ * 앱 표식. 나란히 앉은 두 사람 가운데 옆자리(오른쪽) 사람이 말을 건다: 운전자는 흐리게, 코치는 또렷하게.
+ * 캐릭터 그림이 정해지면 여기만 바꾼다(홈·코치·리뷰가 같이 쓴다).
+ */
 @Composable
 fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f), speaking: Boolean = false) {
-    Canvas(modifier.size(size).graphicsLayer { }) {
+    val path = remember { Path() }
+    Canvas(modifier.size(size)) {
         val s = this.size.minDimension
-        drawCircle(if (speaking) Sc.accent else Sc.primary, s / 2f)
-        // 좌석: 등받이와 방석
-        val c = if (speaking) Sc.onAccent else Sc.onPrimary
-        drawRoundRect(c, Offset(s * 0.36f, s * 0.2f), Size(s * 0.24f, s * 0.42f), androidx.compose.ui.geometry.CornerRadius(s * 0.08f))
-        drawRoundRect(c, Offset(s * 0.3f, s * 0.6f), Size(s * 0.42f, s * 0.14f), androidx.compose.ui.geometry.CornerRadius(s * 0.06f))
-        drawCircle(c, s * 0.07f, Offset(s * 0.48f, s * 0.14f + s * 0.02f))
+        val c = Sc.onAccent
+        drawRoundRect(Sc.accent, size = Size(s, s), cornerRadius = CornerRadius(s * 0.3f))
+        fun person(cx: Float, top: Float, w: Float, color: Color) {
+            val r = w * 0.31f
+            drawCircle(color, r, Offset(cx, top + r))
+            val bodyTop = top + r * 2f + s * 0.035f
+            path.rewind()
+            path.addRoundRect(
+                RoundRect(
+                    Rect(cx - w / 2f, bodyTop, cx + w / 2f, s * 0.84f),
+                    topLeft = CornerRadius(w / 2f), topRight = CornerRadius(w / 2f),
+                    bottomRight = CornerRadius(w * 0.2f), bottomLeft = CornerRadius(w * 0.2f),
+                ),
+            )
+            drawPath(path, color)
+        }
+        // 운전자(왼쪽, 흐리게)와 옆자리 코치(오른쪽)
+        person(s * 0.33f, s * 0.4f, s * 0.24f, c.copy(alpha = 0.45f))
+        person(s * 0.66f, s * 0.36f, s * 0.27f, c)
+        // 코치의 말풍선
+        path.rewind()
+        path.addRoundRect(RoundRect(Rect(s * 0.56f, s * 0.13f, s * 0.84f, s * 0.29f), CornerRadius(s * 0.07f)))
+        path.moveTo(s * 0.62f, s * 0.27f); path.lineTo(s * 0.6f, s * 0.35f); path.lineTo(s * 0.7f, s * 0.27f); path.close()
+        drawPath(path, c)
+        if (speaking) drawRoundRect(c.copy(alpha = 0.7f), Offset(s * 0.04f, s * 0.04f), Size(s * 0.92f, s * 0.92f), CornerRadius(s * 0.26f), style = Stroke(s * 0.035f))
     }
 }
 

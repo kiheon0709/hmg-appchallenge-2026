@@ -14,7 +14,11 @@ import io.moodlab.sideseat.ui.WindowBuzzerScreen
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import io.moodlab.sideseat.ui.LocalHomeArt
 import io.moodlab.sideseat.ui.LocalSwitchLocation
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import io.moodlab.sideseat.ui.scene.LocalSceneBackdrop
 import io.moodlab.sideseat.ui.scene.LocalScene3d
 import io.moodlab.sideseat.ui.scene.SceneRender
@@ -44,7 +48,11 @@ fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((Vehicle
     val backdrop = remember { VideoSceneBackdrop() }
     // 훈련 장면은 3D(WebView)로 그린다. 못 띄우는 기기와 주차장 장면은 위의 영상·사진 방식으로 돌아간다
     val scene3d = remember { WebViewScene3d() }
+    // 홈 미리보기 그림(3D 훈련 장면 캡처). 못 읽으면 홈이 예전처럼 주행 장면을 그린다
+    val context = LocalContext.current
+    val homeArt = remember { runCatching { context.assets.open("home/hero.jpg").use { BitmapFactory.decodeStream(it) }.asImageBitmap() }.getOrNull() }
     CompositionLocalProvider(
+        LocalHomeArt provides homeArt,
         LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) },
         LocalSceneBackdrop provides backdrop,
         LocalScene3d provides scene3d,
