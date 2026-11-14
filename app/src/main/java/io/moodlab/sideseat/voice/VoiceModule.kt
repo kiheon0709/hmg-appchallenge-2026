@@ -168,6 +168,9 @@ object VoiceModule {
         return true
     }
 
+    /** 사용자가 고를 수 있는 차종 (아이디, 이름). 차종을 모를 때 쓰는 기본 차종은 뺀다. */
+    fun selectableVehicles(): List<Pair<String, String>> = switchGuide?.profiles?.filter { !it.isDefault }?.map { it.id to it.name }.orEmpty()
+
     /** 디버그·설정 화면: 데이터가 있는 차종 (아이디, 이름). */
     fun vehicleProfiles(): List<Pair<String, String>> = switchGuide?.profiles?.map { it.id to it.name }.orEmpty()
 

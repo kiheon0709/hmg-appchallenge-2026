@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +41,11 @@ import io.moodlab.sideseat.voice.Persona
 @Composable
 fun HomeScreen(state: HomeUi, onAction: (UiAction) -> Unit) {
     SideSeatFrame { sz ->
-        if (sz.wide) {
+        // 차종 고르기: 처음에는 먼저 뜨고, 그 뒤에는 "차종 바꾸기"로 연다. 정차 중에만 보인다
+        var pickerOpen by remember { mutableStateOf(false) }
+        if (state.vehicleChoices.isNotEmpty() && state.canTrain && (!state.vehicleChosen || pickerOpen)) {
+            VehiclePicker(state, onChoose = { pickerOpen = false; onAction(UiAction.ChooseVehicle(it)) }, onClose = { pickerOpen = false })
+        } else if (sz.wide) {
             Row(Modifier.fillMaxSize().padding(sz.pad), horizontalArrangement = Arrangement.spacedBy(sz.pad)) {
                 Column(Modifier.weight(0.46f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                     Hero(state, onAction, Modifier.fillMaxWidth().weight(1f))
@@ -46,13 +54,13 @@ fun HomeScreen(state: HomeUi, onAction: (UiAction) -> Unit) {
                 Column(
                     Modifier.weight(0.54f).fillMaxHeight().verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(sz.gap),
-                ) { Catalog(state, onAction) }
+                ) { Catalog(state, onAction) { pickerOpen = true } }
             }
         } else {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                 Hero(state, onAction, Modifier.fillMaxWidth().height(sz.height * 0.46f))
                 TalkArea(state, onAction)
-                Catalog(state, onAction)
+                Catalog(state, onAction) { pickerOpen = true }
             }
         }
     }
@@ -97,6 +105,40 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
     }
 }
 
+/** 차종 고르기. 조사된 차종 가운데 하나를 고르면 힌트·결과·질문 답이 그 차의 스위치 위치로 나온다. */
+@Composable
+private fun VehiclePicker(state: HomeUi, onChoose: (String?) -> Unit, onClose: () -> Unit) {
+    val sz = LocalSz.current
+    Box(Modifier.fillMaxSize().padding(sz.pad), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.widthIn(max = sz.dp(1000f)).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(sz.gap),
+        ) {
+            Text("어떤 차를 타고 있나요?", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold)
+            Text(
+                "스위치가 어디 있는지 이 차에 맞춰 알려 줄게요. 나중에 홈에서 바꿀 수 있어요.",
+                color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.35f,
+            )
+            Spacer(Modifier.height(sz.dp(4f)))
+            // 마지막 칸은 "그 밖의 차"(아이디 없음)
+            val items: List<VehicleChoice?> = state.vehicleChoices + null
+            items.chunked(if (sz.wide) 2 else 1).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
+                    row.forEach { c ->
+                        val selected = state.vehicleChosen && state.vehicleChoiceId == c?.id
+                        BigButton(
+                            c?.name ?: "그 밖의 차", Modifier.weight(1f), primary = selected,
+                            sub = if (c == null) "차종을 정하지 않고 알려 줘요" else null,
+                        ) { onChoose(c?.id) }
+                    }
+                    if (row.size == 1 && sz.wide) Spacer(Modifier.weight(1f))
+                }
+            }
+            if (state.vehicleChosen) BigButton("닫기", Modifier.padding(top = sz.dp(8f)), onClick = onClose)
+        }
+    }
+}
+
 @Composable
 private fun TalkArea(state: HomeUi, onAction: (UiAction) -> Unit) {
     val sz = LocalSz.current
@@ -107,8 +149,22 @@ private fun TalkArea(state: HomeUi, onAction: (UiAction) -> Unit) {
 }
 
 @Composable
-private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit) {
+private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit, onPickVehicle: () -> Unit) {
     val sz = LocalSz.current
+    if (state.vehicleChoices.isNotEmpty()) {
+        // 지금 고른 차종. 스위치 위치 안내가 이 차 기준으로 나온다
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(horizontal = sz.dp(20f), vertical = sz.dp(14f)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("이 차", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+                Text(state.vehicleName ?: "그 밖의 차", color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Spacer(Modifier.width(sz.gap))
+            BigButton("차종 바꾸기", enabled = state.canTrain, onClick = onPickVehicle)
+        }
+    }
     LicenseBar(state.progress, state.vehicleModelKey, state.vehicleName)
     Text("챕터", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
     state.chapters.chunked(2).forEach { row ->

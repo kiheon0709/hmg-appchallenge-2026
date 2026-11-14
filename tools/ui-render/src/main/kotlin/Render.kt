@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
     train("t_tunnel_enter", SituationId.TUNNEL, 1.0f)
     train("t_tunnel_in", SituationId.TUNNEL, 3.6f)
     train("t_glare", SituationId.ONCOMING_GLARE, 2.4f)
-    train("t_densefog", SituationId.DENSE_FOG, 2.2f)
+    train("t_densefog", SituationId.DENSE_FOG, 2.6f)
     train("t_drowsy", SituationId.DROWSY, 2.3f)
     train("t_warning", SituationId.WARNING_LIGHT, 2.0f)
     train("t_breakdown", SituationId.BREAKDOWN, 3.4f)
@@ -68,6 +68,7 @@ fun main(args: Array<String>) {
     train("t_exit", SituationId.BEFORE_EXIT, 1.2f)
     train("t_portrait_rain", SituationId.HEAVY_RAIN, 2.4f, w = 835, h = 1210)
     if (want("h_home")) shoot("h_home", W, H, false, 0f, 5f) { HomeScreen(UiSamples.home) {} }
+    if (want("h_vehicle")) shoot("h_vehicle", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
     val car = VehicleState(0, parked = false, wiper = WiperLevel.LOW, lowBeamOn = false, recirculationOn = true, speedLimitKmh = 80, speedKmhEstimate = 93f)
     fun coach(name: String, dark: Boolean, ui: CoachUi, w: Int = W, h: Int = H) { if (want(name)) shoot(name, w, h, dark, 0f, 0.2f) { CoachShot(ui, car) } }
     coach("c_k01", false, UiSamples.coach)

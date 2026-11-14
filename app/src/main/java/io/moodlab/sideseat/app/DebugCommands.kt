@@ -51,6 +51,7 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "answer" -> controller.onAction(UiAction.Answer(arg))
             "inject" -> runCatching { io.moodlab.sideseat.core.SituationId.valueOf(arg) }
                 .onSuccess { controller.onAction(UiAction.Inject(it)) }
+            "choose_vehicle" -> controller.onAction(UiAction.ChooseVehicle(arg.takeUnless { it == "other" || it.isEmpty() }))
             "vehicle" -> AppGraph.useDebugVehicle(arg == "debug")
             "ambient" -> runCatching { io.moodlab.sideseat.core.AmbientMood.valueOf(arg) }.onSuccess { mood ->
                 gatewayCall("ambient $mood") { it.setAmbient(mood) }

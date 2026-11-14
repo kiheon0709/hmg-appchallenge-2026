@@ -35,6 +35,7 @@ internal class CockpitLayer {
     private var dashBrush: Brush? = null
     private var fritBottom: Brush? = null
     private var fritTop: Brush? = null
+    private var dashFade: Brush? = null
     private var lidTop: Brush? = null
     private var lidBottom: Brush? = null
     private var screenBrush: Brush? = null
@@ -60,6 +61,8 @@ internal class CockpitLayer {
         dashBrush = Brush.verticalGradient(0f to Color(0xFF17191C), 0.18f to Color(0xFF0D0E10), 1f to Color(0xFF040405), startY = dy - h * 0.025f, endY = h)
         // 앞유리 아래·위의 검은 테두리(유리 가장자리의 세라믹 띠)
         fritBottom = Brush.verticalGradient(0f to Color(0x00000000), 1f to Color(0xB3000000), startY = dy - h * 0.045f, endY = dy + h * 0.02f)
+        // 실사 배경과 대시보드가 만나는 자리를 길게 어둡혀 경계가 잘려 보이지 않게 한다
+        dashFade = Brush.verticalGradient(0f to Color(0x00000000), 0.55f to Color(0x59000000), 1f to Color(0xD9000000), startY = dy - h * 0.15f, endY = dy + h * 0.02f)
         fritTop = Brush.verticalGradient(0f to Color(0xCC000000), 1f to Color(0x00000000), startY = h * 0.03f, endY = h * 0.1f)
         screenBrush = Brush.verticalGradient(0f to Color(0xFF020203), 1f to Color(0xFF08090B), startY = h * 0.8f, endY = h * 0.96f)
 
@@ -97,6 +100,7 @@ internal class CockpitLayer {
         // 유리 가장자리 그늘, 지붕, 필러, 룸미러
         drawRect(fritTop!!, topLeft = Offset(0f, h * 0.03f), size = Size(w, h * 0.07f))
         drawRect(fritBottom!!, topLeft = Offset(0f, dy - h * 0.045f), size = Size(w, h * 0.065f))
+        if (sim.photo) drawRect(dashFade!!, topLeft = Offset(0f, dy - h * 0.15f), size = Size(w, h * 0.17f))
         drawPath(roof, Color(0xFF060708))
         drawPath(pillarL, Color(0xFF08090A)); drawPath(pillarR, Color(0xFF08090A))
         drawLine(Color.White, Offset(w * 0.1f, 0f), Offset(w * 0.024f, dy + h * 0.04f), h * 0.0015f, alpha = 0.09f)

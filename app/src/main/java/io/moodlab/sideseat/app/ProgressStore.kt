@@ -24,6 +24,11 @@ class ProgressStore(context: Context) {
 
     fun saveLastDrive(s: DriveSummary) = write("last_drive.json", json.encodeToString(StoredSummary.serializer(), StoredSummary.of(s)))
 
+    /** 사용자가 고른 차종 아이디. 아직 안 골랐으면 null, "그 밖의 차"를 골랐으면 빈 문자열. */
+    fun loadVehicleChoice(): String? = read("vehicle_choice.txt") { it.trim() }
+
+    fun saveVehicleChoice(id: String?) = write("vehicle_choice.txt", id.orEmpty())
+
     private fun <T> read(name: String, parse: (String) -> T): T? = runCatching {
         File(dir, name).takeIf { it.exists() }?.readText()?.let(parse)
     }.onFailure { Log.w(TAG, "load $name failed: $it") }.getOrNull()

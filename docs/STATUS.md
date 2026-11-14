@@ -7,6 +7,25 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 화면 v9(차종 고르기, v8 다듬기) 에뮬레이터 확인 (2026-11-14 18:54~19:00, 화면 품질 세션)
+
+빌드: 디버그 APK, Pleos Connect Emulator 2.1.0, 가로 창. 캡처 `docs/screens/sim/v9_day_landscape_*.jpg` 10장, 원본 `logs/cpu_train_c1_v9_debug_40s.csv`, `cpu_coach_v9_debug_30s.csv`.
+
+- **차종 고르기**: 차종을 고른 적이 없으면 홈에 들어올 때 "어떤 차를 타고 있나요?" 판이 먼저 뜬다(조사된 6차종 + "그 밖의 차", `v9_*_vehicle_picker.jpg`). 고르면 `files/vehicle_choice.txt`에 저장하고 `VoiceModule.forceVehicle`로 넘긴다(로그 `app vehicle choice grandeur_gn7`, `vehicle forced=grandeur_gn7`). 홈 오른쪽 맨 위 "이 차 · 더 뉴 그랜저(GN7 부분변경) [차종 바꾸기]"로 다시 고른다(`v9_*_home_vehicle_chosen.jpg`). 정차 중 홈에서만 뜨고, 주행 중에는 바꾸는 동작도 받지 않는다. 디버그 명령 `choose_vehicle <아이디|other>`.
+- **고른 뒤 힌트 문구**: 터널 "전조등을 켜요. 그랜저는 운전석 왼쪽 아래 조명 버튼일 거예요. 눌러서 켜요."(`v9_*_training_tunnel_hint_grandeur.jpg`), 폭우 "와이퍼를 가장 빠른 단으로 바꿔요. 그랜저는 와이퍼가 왼쪽 레버 끝 노브일 거예요. 돌려서 켜요."(`v9_*_training_rain_hint_grandeur.jpg`). "차마다 조금 달라요"는 붙지 않는다.
+- 터널은 전조등을 끈 상태에서도 벽·조명·앞차가 보인다(`v9_*_training_tunnel_lights_off.jpg`). 짙은 안개에서 힌트 판이 또렷하다(`v9_*_training_dense_fog_hint.jpg`). 실패 판과 힌트 판이 겹치지 않는다(`v9_*_training_sudden_stop_fail_hint.jpg`). 빗줄기는 굵기·길이·밝기를 다르게, 영상과 대시보드 경계는 길게 어둡혔다(`v9_*_training_rain_wiping.jpg`).
+
+| 항목 | v8 | v9 | 기준 |
+| --- | --- | --- | --- |
+| 훈련 장면 프레임(C1 40초, 조작 없음) | 58.0~60.0 fps, 33 ms 넘는 프레임 1/1,800 | 58.5~60.0 fps(23구간), 0/2,760 | 30 fps 이상 |
+| gfxinfo | 50번째 24 ms·90번째 28 ms·99번째 34 ms, GPU 50번째 18 ms | 50번째 25 ms·90번째 28 ms·99번째 32 ms, GPU 50번째 18 ms·90번째 21 ms·99번째 25 ms | – |
+| 정차 훈련 중 앱 CPU(4코어 전체) | 평균 9.1 %·최대 13.6 % | 평균 11.2 %·최대 13.1 % | 정차 25 % 이하 |
+| 정차 훈련 중 메모리 PSS | 122.6 MB | 123.5 MB | 400 MB 이하 |
+| 주행 중 코치 화면 CPU(D단 30초) | 평균 0.28 %·최대 0.74 % | 평균 0.27 %·최대 0.50 % | 5 % 미만 |
+| 주행 중 코치 화면 메모리 PSS | 129.6 MB | 125.9 MB | 400 MB 이하 |
+
+`./gradlew :core:test` 94개·`:app:testDebugUnitTest` 114개 통과. release APK는 다시 만들지 않았다.
+
 ## 화면 v8(실사 배경) 에뮬레이터 실측 (2026-11-14 18:40~18:47, 화면 품질 세션)
 
 훈련 장면의 바깥 세상을 운전석 시점 실사 영상·사진으로 바꾸고(정차 화면에서만 재생), 비·물방울·김서림·와이퍼·전조등 밝기·앞차 브레이크등·눈부심·안개를 그 위에 코드로 얹었다. 소재 출처는 `docs/assets-sources.md`. 빌드: 디버그 APK, Pleos Connect Emulator 2.1.0, 가로 창. 측정 방법은 아래 v7 절과 같다. 원본: `docs/screens/sim/logs/cpu_train_c1_v8_debug_40s.csv`, `cpu_train_rain_versus_v8_debug_28s.csv`, `cpu_home_hero_v8_debug_30s.csv`, `cpu_coach_v8_debug_45s.csv`.

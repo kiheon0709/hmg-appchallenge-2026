@@ -249,7 +249,8 @@ private fun HintBanner(view: TrainingView, modifier: Modifier) {
     val step = view.steps.firstOrNull { !it.done }
     val hint = if (show && step != null) SituationTexts.hint(view.situation, step.id) else null
     val where = if (show && step != null) SituationTexts.switchId(step.id)?.let { LocalSwitchLocation.current(it) } else null
-    AnimatedVisibility(hint != null, modifier, enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut() + slideOutVertically { it / 2 }) {
+    // 힌트는 장면 효과(안개·김서림) 위에 바로 또렷하게 뜬다
+    AnimatedVisibility(hint != null, modifier, enter = fadeIn(tween(120)) + slideInVertically(tween(160)) { it / 4 }, exit = fadeOut(tween(150)) + slideOutVertically(tween(150)) { it / 4 }) {
         AccentPanel(Sc.warn) {
             Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)

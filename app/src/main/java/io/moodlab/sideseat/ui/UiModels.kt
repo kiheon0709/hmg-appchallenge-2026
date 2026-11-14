@@ -43,8 +43,17 @@ data class HomeUi(
     val canTrain: Boolean = true,
     /** 미니게임이 열렸다(챕터를 하나라도 깸). */
     val miniGamesUnlocked: Boolean = false,
+    /** 사용자가 고를 수 있는 차종. 비어 있으면 차종 고르기를 보여 주지 않는다. */
+    val vehicleChoices: List<VehicleChoice> = emptyList(),
+    /** 고른 차종의 아이디. "그 밖의 차"를 골랐거나 아직 안 골랐으면 null. */
+    val vehicleChoiceId: String? = null,
+    /** 차종을 한 번이라도 골랐다. false면 홈에 들어올 때 고르는 판이 먼저 뜬다. */
+    val vehicleChosen: Boolean = true,
     val talk: TalkUi = TalkUi(),
 )
+
+/** 고를 수 있는 차종 하나(스위치 위치 안내가 조사된 차). */
+data class VehicleChoice(val id: String, val name: String)
 
 /** 주행 중 호출어 대기 상태(화면 표시용). 음성 모듈의 WakeState를 통합 세션이 이것으로 옮긴다. */
 enum class WakeUi {
@@ -116,4 +125,6 @@ sealed interface UiAction {
     data object StopTalking : UiAction
     data object DismissReview : UiAction
     data object ToggleDebugPanel : UiAction
+    /** 이 차의 차종을 고른다. null이면 "그 밖의 차"(차종을 모르는 것으로 두고 공통 안내를 쓴다). */
+    data class ChooseVehicle(val id: String?) : UiAction
 }

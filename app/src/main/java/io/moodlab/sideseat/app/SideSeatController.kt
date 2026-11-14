@@ -24,10 +24,12 @@ import io.moodlab.sideseat.ui.HomeUi
 import io.moodlab.sideseat.ui.ReviewUi
 import io.moodlab.sideseat.ui.TalkUi
 import io.moodlab.sideseat.ui.UiAction
+import io.moodlab.sideseat.ui.VehicleChoice
 import io.moodlab.sideseat.ui.WakeUi
 import io.moodlab.sideseat.vehicle.VehicleGateway
 import io.moodlab.sideseat.voice.Instructor
 import io.moodlab.sideseat.voice.PleosVoice
+import io.moodlab.sideseat.voice.VoiceModule
 import io.moodlab.sideseat.voice.WakeListening
 import io.moodlab.sideseat.voice.WakeState
 import io.moodlab.sideseat.voice.Sfx
@@ -97,7 +99,38 @@ class SideSeatController(
         }
         scope.launch { gatewayFlow.collectLatest { g -> g.arrivals.collect { Log.i(TAG, "app navi arrival") } } }
         wake?.let { w -> scope.launch { w.state.collect { st -> _ui.update { it.copy(coach = it.coach.copy(wake = wakeUi(st))) } } } }
+        restoreVehicleChoice()
         refreshHome()
+    }
+
+    // ---------- 차종 고르기 ----------
+    // 국내 VIN 차종 코드를 확인하지 못해 자동 판정이 없다. 사용자가 고른 차종을 저장하고,
+    // 음성 모듈의 차종 지정 경로로 넘겨 힌트·결과·질문 답이 그 차의 스위치 위치를 쓰게 한다.
+
+    private fun restoreVehicleChoice() {
+        // Pleos 탑재 차를 앞에 둔다
+        val order = listOf("grandeur_gn7", "avante_cn8", "avante_cn7", "casper_ax", "ray_tam", "seltos_sp2")
+        val choices = VoiceModule.selectableVehicles().map { (id, name) -> VehicleChoice(id, name) }
+            .sortedBy { c -> order.indexOf(c.id).let { i -> if (i < 0) order.size else i } }
+        val saved = store.loadVehicleChoice()
+        val id = saved?.takeIf { s -> choices.any { it.id == s } }
+        if (id != null) VoiceModule.forceVehicle(id)
+        _ui.update {
+            it.copy(home = it.home.copy(
+                vehicleChoices = choices, vehicleChoiceId = id, vehicleChosen = saved != null || choices.isEmpty(),
+                vehicleName = choices.firstOrNull { c -> c.id == id }?.name,
+            ))
+        }
+    }
+
+    private fun chooseVehicle(id: String?) {
+        // 주행 중에는 바꾸지 않는다(고르는 판은 정차 중 홈에만 뜬다)
+        if (!_ui.value.vehicle.parked) return
+        val choice = _ui.value.home.vehicleChoices.firstOrNull { it.id == id }
+        VoiceModule.forceVehicle(choice?.id)
+        store.saveVehicleChoice(choice?.id)
+        Log.i(TAG, "app vehicle choice ${choice?.id ?: "other"}")
+        _ui.update { it.copy(home = it.home.copy(vehicleChoiceId = choice?.id, vehicleChosen = true, vehicleName = choice?.name)) }
     }
 
     private fun isDebugGateway(g: VehicleGateway) = g.javaClass.simpleName.startsWith("Debug")
@@ -421,6 +454,7 @@ class SideSeatController(
                 updateTalk { it.copy(thinking = false, partialText = null) }
             }
             UiAction.ToggleDebugPanel -> _ui.update { it.copy(debugPanel = !it.debugPanel) }
+            is UiAction.ChooseVehicle -> chooseVehicle(a.id)
         }
     }
 

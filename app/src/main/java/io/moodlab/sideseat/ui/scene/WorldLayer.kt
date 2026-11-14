@@ -281,7 +281,8 @@ internal class WorldLayer {
                 }
                 if (sim.highBeam > 0.01f) glow(beam, cx, horizon + h * 0.06f, w * 0.5f, h * 0.2f, alpha = sim.highBeam * 0.14f)
             }
-            BackdropClip.TUNNEL -> if (dark > 0.01f) drawRect(Color.Black, alpha = 0.58f * dark)
+            // 전조등을 켜기 전에도 터널 벽과 앞차는 알아볼 수 있을 만큼만 어둡게
+            BackdropClip.TUNNEL -> if (dark > 0.01f) drawRect(Color.Black, alpha = 0.42f * dark)
             BackdropClip.PARKING -> {
                 if (dark > 0.01f) drawRect(Color.Black, alpha = 0.34f * dark)
                 // 벽에 닿은 내 전조등
@@ -881,15 +882,22 @@ internal class WorldLayer {
         val n = (SceneSim.MAX_STREAKS * (0.25f + 0.75f * rain) * (if (sim.lowDetail) 0.5f else 1f)).toInt()
         val rush = (sim.speed / 30f).coerceIn(0f, 1.3f)
         // 빗줄기는 전조등 빛을 받을 때 가장 잘 보인다
-        val a = (0.07f + 0.16f * rain) * ((if (sim.photo) 0.95f else 0.65f) + 0.6f * sim.lowBeam) * (1f - 0.7f * sim.tunnelP)
-        val sw = maxOf(1f, h * 0.0011f)
+        val a = (0.09f + 0.2f * rain) * ((if (sim.photo) 0.95f else 0.65f) + 0.6f * sim.lowBeam) * (1f - 0.7f * sim.tunnelP)
+        // 빗줄기마다 굵기·길이·밝기가 다르다. 머리 쪽이 조금 더 밝고 꼬리는 흐려진다
+        val thin = maxOf(0.7f, h * 0.0007f)
         val c = Color(0xFFD3DCE8)
         for (k in 0 until n) {
             val x = sim.streakX[k]; val y = sim.streakY[k]
-            val vx = ((x - 0.5f) * 2.6f * rush + 0.06f) * sim.streakV[k]
-            val vy = ((y - SceneSim.VANISH_Y) * 2.6f * rush + 1.5f) * sim.streakV[k]
-            val len = 0.03f + 0.03f * sim.streakV[k]
-            drawLine(c, Offset(x * w, y * h), Offset((x - vx * len) * w, (y - vy * len) * h), sw, alpha = a * (0.5f + 0.5f * sim.streakV[k]))
+            val v = sim.streakV[k]
+            val vx = ((x - 0.5f) * 2.6f * rush + 0.06f) * v
+            val vy = ((y - SceneSim.VANISH_Y) * 2.6f * rush + 1.5f) * v
+            val r = (k * 0.618034f) % 1f
+            val len = 0.012f + 0.05f * r * r
+            val ka = a * (0.2f + 0.8f * ((k * 0.381966f) % 1f))
+            val sw = thin * (0.7f + 1.1f * r)
+            val mx = (x - vx * len * 0.45f) * w; val my = (y - vy * len * 0.45f) * h
+            drawLine(c, Offset(x * w, y * h), Offset(mx, my), sw, alpha = ka)
+            drawLine(c, Offset(mx, my), Offset((x - vx * len) * w, (y - vy * len) * h), sw, alpha = ka * 0.4f)
         }
     }
 
