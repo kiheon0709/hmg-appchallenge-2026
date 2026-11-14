@@ -82,13 +82,17 @@ internal interface ListenHooks {
     fun onFinal(text: String) {}
 }
 
-/** 통합 세션이 BuildConfig에서 꺼내 넘기는 설정. apiKey가 비어 있으면 LLM 없이 동작한다. */
+/** 통합 세션이 BuildConfig에서 꺼내 넘기는 설정. apiKey와 relayUrl이 모두 비어 있으면 LLM 없이 동작한다. */
 data class VoiceConfig(
     val apiKey: String,
     val fastModel: String = DEFAULT_FAST_MODEL,
     val reviewModel: String = DEFAULT_REVIEW_MODEL,
     /** BuildConfig.LLM_PROVIDER. 비어 있거나 anthropic·claude일 때만 LLM을 켠다(다른 회사 키를 Claude API로 보내지 않게). */
     val provider: String = "",
+    /**
+     * BuildConfig.LLM_RELAY_URL. 있으면 키 없이 이 중계 서버(server/)로 보낸다(키는 서버가 가짐). 비어 있으면 [apiKey]로 직접 부른다.
+     */
+    val relayUrl: String = "",
     /** 실측용: TTS가 말하는 중에도 마이크를 열지(끼어들기). 기본은 말이 끝난 뒤 연다. */
     val bargeIn: Boolean = false,
     /**
@@ -105,11 +109,11 @@ data class VoiceConfig(
     val wake: WakeConfig = WakeConfig(),
 ) {
     val llmEnabled: Boolean
-        get() = apiKey.isNotBlank() && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }
+        get() = (apiKey.isNotBlank() || relayUrl.isNotBlank()) && provider.trim().lowercase().let { it.isEmpty() || it == "anthropic" || it == "claude" }
 
     /** 키가 로그에 찍히지 않게 한다. */
     override fun toString(): String =
-        "VoiceConfig(llmEnabled=$llmEnabled, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel, bargeIn=$bargeIn, chunkedTts=$chunkedTts, speculative=$speculativeRequests)"
+        "VoiceConfig(llmEnabled=$llmEnabled, relay=${relayUrl.isNotBlank()}, provider=${provider.ifBlank { "-" }}, fastModel=$fastModel, reviewModel=$reviewModel, bargeIn=$bargeIn, chunkedTts=$chunkedTts, speculative=$speculativeRequests)"
 
     companion object {
         /** 주행 중 질문: 첫 문장까지의 시간이 가장 중요하다. */

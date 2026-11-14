@@ -1,0 +1,5 @@
+project_id = "sideseat-relay"
+
+# 앱은 Supabase 키 없이 부른다. 대신 함수 안에서 앱 식별 헤더·크기·모델을 검사한다.
+[functions.relay]
+verify_jwt = false

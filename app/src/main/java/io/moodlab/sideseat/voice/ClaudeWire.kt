@@ -11,6 +11,9 @@ object ClaudeWire {
     const val URL = "https://api.anthropic.com/v1/messages"
     const val API_VERSION = "2026-10-21"
     const val FALLBACK_BETA = "server-side-fallback-2026-07-01"
+    /** 중계 서버(server/)가 확인하는 앱 식별 헤더. 비밀이 아니다. */
+    const val RELAY_APP_HEADER = "x-sideseat-app"
+    const val RELAY_APP_ID = "io.moodlab.sideseat"
 
     /**
      * 모델별 생각(thinking) 설정. 음성 응답은 첫 문장까지의 시간이 중요하다.

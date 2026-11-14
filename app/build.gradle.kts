@@ -38,6 +38,8 @@ android {
         llmField("LLM_API_KEY")
         llmField("LLM_MODEL_FAST")
         llmField("LLM_MODEL_REVIEW")
+        // 중계 서버 주소(server/README.md). 비밀이 아니라 release에도 들어간다. 있으면 키 없이 중계 서버로 보낸다.
+        llmField("LLM_RELAY_URL")
     }
 
     signingConfigs {

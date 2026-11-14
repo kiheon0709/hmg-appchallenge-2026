@@ -43,6 +43,7 @@ object AppGraph {
                 fastModel = BuildConfig.LLM_MODEL_FAST,
                 reviewModel = BuildConfig.LLM_MODEL_REVIEW,
                 provider = BuildConfig.LLM_PROVIDER,
+                relayUrl = BuildConfig.LLM_RELAY_URL,
                 wake = debugWakeConfig(app),
             ),
         )
@@ -58,7 +59,7 @@ object AppGraph {
         }
         if (BuildConfig.DEBUG) DebugCommands(app, c).register()
         controller = c
-        Log.i("SideSeatMeasure", "app graph ready debug=${BuildConfig.DEBUG} llm=${BuildConfig.LLM_API_KEY.isNotBlank()}")
+        Log.i("SideSeatMeasure", "app graph ready debug=${BuildConfig.DEBUG} llm=${BuildConfig.LLM_API_KEY.isNotBlank()} relay=${BuildConfig.LLM_RELAY_URL.isNotBlank()}")
         return c
     }
 

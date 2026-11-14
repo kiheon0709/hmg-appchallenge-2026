@@ -13,7 +13,7 @@ import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-/** LLM 클라이언트 생성. 키가 있을 때만 부른다. */
+/** LLM 클라이언트 생성. 키나 중계 주소가 있을 때만 부른다. */
 internal fun createLlmClient(config: VoiceConfig, log: (String) -> Unit): LlmClient = AnthropicLlmClient(config, log)
 
 /** 거절·오류로 답을 못 받았을 때. withFallback이 받아 미리 쓴 문장으로 바꾼다. 메시지에 키나 본문을 넣지 않는다. */
@@ -33,9 +33,10 @@ class LlmException(message: String) : IOException(message)
 internal class AnthropicLlmClient(
     private val config: VoiceConfig,
     private val log: (String) -> Unit,
-    /** 테스트에서만 바꾼다(로컬 가짜 서버). */
-    private val url: String = ClaudeWire.URL,
+    /** 중계 주소가 있으면 그쪽으로(키 없이), 없으면 Claude API로 직접. 테스트에서는 로컬 가짜 서버. */
+    private val url: String = config.relayUrl.trim().ifEmpty { ClaudeWire.URL },
 ) : LlmClient {
+    private val relay = config.relayUrl.isNotBlank()
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val seq = AtomicInteger(0)
 
@@ -166,7 +167,9 @@ internal class AnthropicLlmClient(
             setRequestProperty("content-type", "application/json")
             setRequestProperty("accept", "text/event-stream, application/json")
             setRequestProperty("anthropic-version", ClaudeWire.API_VERSION)
-            setRequestProperty("x-api-key", config.apiKey)
+            // 중계 서버로 갈 때는 키를 싣지 않는다. 서버가 자기 키를 붙인다.
+            if (relay) setRequestProperty(ClaudeWire.RELAY_APP_HEADER, ClaudeWire.RELAY_APP_ID)
+            else setRequestProperty("x-api-key", config.apiKey)
             if (ClaudeWire.supportsServerFallback(model)) setRequestProperty("anthropic-beta", ClaudeWire.FALLBACK_BETA)
         }
 

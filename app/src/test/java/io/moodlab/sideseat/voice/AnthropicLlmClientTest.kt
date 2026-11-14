@@ -28,6 +28,8 @@ class AnthropicLlmClientTest {
     private val requests = Collections.synchronizedList(mutableListOf<Pair<Int, Boolean>>())
     private val logs = Collections.synchronizedList(mutableListOf<String>())
     @Volatile private var status = 200
+    /** 마지막 요청의 헤더(소문자). */
+    @Volatile private var lastHeaders = ""
     @Volatile private var done = CountDownLatch(1)
 
     init {
@@ -46,6 +48,7 @@ class AnthropicLlmClientTest {
         val out = sock.getOutputStream()
         while (true) {
             val headers = readHeaders(input) ?: return
+            lastHeaders = headers.lowercase()
             val len = headers.lines().firstOrNull { it.lowercase().startsWith("content-length:") }?.substringAfter(':')?.trim()?.toInt() ?: 0
             repeat(len) { input.read() }
             if (status != 200) {
@@ -116,6 +119,21 @@ class AnthropicLlmClientTest {
         assertEquals("두 번째 요청이 같은 연결로 와야 함 logs=$logs", requests[0].first, requests[1].first)
         assertTrue(logs.toString(), logs.any { "draining" in it } && logs.any { "connection kept" in it })
         assertTrue(logs.toString(), logs.any { "conn=reused" in it })
+    }
+
+    /** 중계 주소가 있으면 키 없이(앱 식별 헤더만) 그 주소로 보내고, 같은 SSE를 그대로 읽는다. */
+    @Test fun relayUrlSendsAppHeaderInsteadOfKey() = runBlocking {
+        val cfg = VoiceConfig(apiKey = "test-key", relayUrl = "http://127.0.0.1:${server.localPort}/functions/v1/relay")
+        assertTrue(cfg.llmEnabled && VoiceConfig(apiKey = "", relayUrl = cfg.relayUrl).llmEnabled)
+        val texts = AnthropicLlmClient(cfg, { logs += it }).stream(LlmClient.Route.FAST, "s", "u", 10).toList()
+        assertEquals(listOf("첫 문장이에요. ", "둘째 문장. ", "셋째 문장. ", "넷째 문장."), texts)
+        assertTrue(lastHeaders, "post /functions/v1/relay " in lastHeaders)
+        assertTrue(lastHeaders, "${ClaudeWire.RELAY_APP_HEADER}: ${ClaudeWire.RELAY_APP_ID}" in lastHeaders)
+        assertTrue("중계 서버로는 키를 보내지 않는다", "x-api-key" !in lastHeaders && "test-key" !in lastHeaders)
+    }
+
+    @Test fun noRelayNoKeyMeansLlmOff() {
+        assertTrue(!VoiceConfig(apiKey = "").llmEnabled)
     }
 
     @Test fun httpErrorBecomesLlmExceptionWithoutLeakingKey() = runBlocking {
