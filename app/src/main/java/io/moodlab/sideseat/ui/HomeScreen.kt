@@ -96,7 +96,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
                 Chip("주차(P)에 두면 훈련을 시작할 수 있어요", color = Sc.warn, size = sz.label)
             } else if (pick != null) {
                 BigButton(
-                    if (resume != null) "이어서 하기 · ${pick.title}" else "오늘의 추천 · ${pick.title}",
+                    if (resume != null) "이어서 하기 · ${pick.title}" else "${state.recommendLabel} · ${pick.title}",
                     Modifier.fillMaxWidth(), primary = true, color = Color.White,
                     sub = state.recommendReason?.takeIf { resume == null } ?: "약 ${pick.estMinutes}분 · 상황 ${pick.situations.size}개",
                 ) { onAction(UiAction.StartChapter(pick.id)) }

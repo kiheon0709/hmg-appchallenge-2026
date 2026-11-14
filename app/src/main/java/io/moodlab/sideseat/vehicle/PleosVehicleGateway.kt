@@ -4,10 +4,13 @@ import ai.pleos.playground.location.fused.FusedLocation
 import ai.pleos.playground.location.fused.listener.FusedLocationListener
 import ai.pleos.playground.location.fused.model.LocationData
 import ai.pleos.playground.navi.constants.TurnType
+import ai.pleos.playground.navi.data.CautionPoint
 import ai.pleos.playground.navi.data.DestinationArrivedInfo
 import ai.pleos.playground.navi.data.DrivingInfo
 import ai.pleos.playground.navi.data.NavigationScreenRequest
+import ai.pleos.playground.navi.data.RouteStartInfo
 import ai.pleos.playground.navi.data.TBTInfo
+import ai.pleos.playground.navi.data.TripInfo
 import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
 import ai.pleos.playground.vehicle.Vehicle
@@ -50,6 +53,7 @@ import io.moodlab.sideseat.core.SolarTimes
 import io.moodlab.sideseat.core.LocationTrack
 import io.moodlab.sideseat.core.RoadSpeedLimits
 import io.moodlab.sideseat.core.RoadWay
+import io.moodlab.sideseat.core.RouteFeatures
 import io.moodlab.sideseat.core.SpeedLimitSource
 import io.moodlab.sideseat.core.TelltaleColor
 import io.moodlab.sideseat.core.TurnSignal
@@ -71,6 +75,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -170,6 +175,8 @@ class PleosVehicleGateway(
     override val navRemainingMinutes: StateFlow<Int?> = remaining.asStateFlow()
     private val arrived = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
     override val arrivals: SharedFlow<Unit> = arrived.asSharedFlow()
+    private val route = MutableStateFlow<RouteFeatures?>(null)
+    override val routeFeatures: StateFlow<RouteFeatures?> = route.asStateFlow()
 
     private var vehicle: Vehicle? = null
     private var car: Car? = null
@@ -532,10 +539,21 @@ class PleosVehicleGateway(
             log("sig navi arrived")
             remaining.value = 0
             arrived.tryEmit(Unit)
+            route.value = null
         }
         override fun onRouteCancelled() {
             remaining.value = null
+            route.value = null
         }
+        override fun onRouteStarted(routeStartInfo: RouteStartInfo) {
+            // 새 경로. 통행료가 있으면 요금소를 지나는 길이다(TBT 목록이 경로 전체가 아닐 수 있어 함께 본다).
+            route.value = RouteFeatures(turnTypes = if (routeStartInfo.tollFare > 0) setOf(TurnType.TURN_TOLL.name) else emptySet())
+            log("sig navi route started toll=${routeStartInfo.tollFare > 0}")
+        }
+        override fun onCautionPointInfo(cautionPointList: List<CautionPoint>) =
+            addRoute(cautions = cautionPointList.map { it.type.name })
+        override fun onTripInfo(tripInfo: TripInfo) =
+            addRoute(congestion = tripInfo.summary.trafficConditions.map { it.congestionType.name })
         override fun onCurrentRoadSpeedLimit(speedLimit: Int) {
             // 에뮬레이터는 늘 0(실측). 0보다 클 때만 쓴다.
             val v = speedLimit.takeIf { it > 0 }
@@ -546,12 +564,22 @@ class PleosVehicleGateway(
         override fun onTBTInfo(tbtInfo: List<TBTInfo>) {
             tbtInfo.firstOrNull { it.type == TurnType.TURN_ENTER_SERVICEAREA || it.type == TurnType.TURN_RESTAREA }
                 ?.let { log("sig navi nextRestArea=${it.distance}m") }
+            addRoute(turns = tbtInfo.map { it.type.name })
         }
+    }
+
+    /** 경로에서 본 것을 모은다. TBT 목록이 다음 몇 개뿐일 수 있어 경로가 끝날 때까지 합쳐 둔다. 같은 값이면 알리지 않는다. */
+    private fun addRoute(turns: List<String> = emptyList(), cautions: List<String> = emptyList(), congestion: List<String> = emptyList()) {
+        if (turns.isEmpty() && cautions.isEmpty() && congestion.isEmpty()) return
+        val before = route.value
+        route.update { (it ?: RouteFeatures()).let { r -> r.copy(r.turnTypes + turns, r.cautionTypes + cautions, r.congestion + congestion) } }
+        if (route.value != before) log("sig navi route features=${route.value}")
     }
 
     private fun startNavi() {
         navi = NaviHelper(context).also {
-            it.initialize()
+            // 앱을 열기 전에 잡힌 경로도 읽게, 연결되면 TBT를 한 번 요청한다(결과는 onTBTInfo로 온다).
+            it.initialize({ runCatching { it.getTBTInfo() }.onFailure { e -> log("FAIL navi getTBTInfo $e") } }, { e -> log("FAIL navi init $e") })
             it.addListener(naviListener)
             unregister += { it.removeListener(naviListener) }
         }

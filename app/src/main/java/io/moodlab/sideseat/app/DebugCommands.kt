@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
  * - `vehicle_force <차종 아이디|off>`: 차종 강제 지정, `where`: 지금 차종의 스위치 위치 문장
  * - `wake_pcm <files 안 PCM>`: 연속 청취의 다음 한 번을 PCM으로, `wake_status`: 상태·횟수
  * - `navi start|route <lat>,<lon>|trip <lat>,<lon>|get|reroute|cancel|stop`: NaviHelper 콜백 실측(NaviProbe)
+ * - `route <이름,이름,…|off>`: 내비 대신 가짜 경로 정보를 넣어 홈 추천을 확인. 이름은 TurnType(TURN_TOLL 등), CautionPointType(FOG_AREA 등),
+ *   정체(FAST·MODERATE·SLOW·HEAVY). 예) `route TURN_TOLL,TURN_TUNNEL,FOG_AREA,HEAVY`. 결과는 로그 `app route recommend …`
  * - `loc start|stop`: FusedLocation 콜백 실측(LocationProbe)
  * - `wake_test on|off`: 사람 목소리로 호출어 직접 시험(VoiceModule.startWakeTest/stopWakeTest, 토스트·`wake test #n` 로그)
  * - `wake_trial <files 안 목록 파일>`: 호출어 이름 후보 시험(VoiceModule.debugWakeTrial). 목록 줄은 `<PCM 파일>\t<wake|plain>`
@@ -63,6 +65,7 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "reststop" -> gatewayCall("rest stop") { it.addRestStopWaypoint() }
             "navi" -> naviProbe.command(arg)
             "loc" -> locationProbe.command(arg)
+            "route" -> controller.debugSetRoute(arg.takeUnless { it == "off" || it.isEmpty() }?.let(::routeFeatures))
             "wake_test" -> when (arg) {
                 "on" -> Log.i("SideSeatMeasure", "app debug wake test start ok=${io.moodlab.sideseat.voice.VoiceModule.startWakeTest()}")
                 else -> io.moodlab.sideseat.voice.VoiceModule.stopWakeTest()
@@ -86,6 +89,16 @@ class DebugCommands(private val context: Context, private val controller: SideSe
                 listOf("sw_wiper", "sw_headlight", "sw_defrost", "sw_hazard", "sw_epb").joinToString(" | ") { "$it=${io.moodlab.sideseat.voice.VoiceModule.switchLocation(it)}" })
             "wake_status" -> Log.i("SideSeatMeasure", "app debug wake status ${io.moodlab.sideseat.voice.VoiceModule.wake?.debugStatus()}")
         }
+    }
+
+    private fun routeFeatures(arg: String): io.moodlab.sideseat.core.RouteFeatures {
+        val names = arg.split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }
+        val congestion = setOf("FAST", "MODERATE", "SLOW", "HEAVY")
+        return io.moodlab.sideseat.core.RouteFeatures(
+            turnTypes = names.filter { it.startsWith("TURN_") }.toSet(),
+            cautionTypes = names.filter { !it.startsWith("TURN_") && it !in congestion }.toSet(),
+            congestion = names.filter { it in congestion }.toSet(),
+        )
     }
 
     private fun gatewayCall(what: String, f: suspend (io.moodlab.sideseat.vehicle.VehicleGateway) -> Boolean) {

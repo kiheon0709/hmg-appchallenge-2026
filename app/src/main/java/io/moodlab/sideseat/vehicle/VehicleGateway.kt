@@ -1,6 +1,7 @@
 package io.moodlab.sideseat.vehicle
 
 import io.moodlab.sideseat.core.AmbientMood
+import io.moodlab.sideseat.core.RouteFeatures
 import io.moodlab.sideseat.core.Seat
 import io.moodlab.sideseat.core.SpeedLimitSource
 import io.moodlab.sideseat.core.TelltaleColor
@@ -34,6 +35,9 @@ interface VehicleGateway {
 
     /** 목적지 도착. */
     val arrivals: SharedFlow<Unit>
+
+    /** 내비 경로에서 읽은 회전 종류·주의 지점·정체(NaviHelper). 경로가 없거나 값을 못 받았으면 null. */
+    val routeFeatures: StateFlow<RouteFeatures?>
 }
 
 /**
@@ -71,6 +75,7 @@ class DebugVehicleGateway : VehicleGateway {
     override val navRemainingMinutes: StateFlow<Int?> = remaining.asStateFlow()
     private val arrived = MutableSharedFlow<Unit>(extraBufferCapacity = 4)
     override val arrivals: SharedFlow<Unit> = arrived.asSharedFlow()
+    override val routeFeatures: StateFlow<RouteFeatures?> = MutableStateFlow(null)
 
     /** 마지막으로 요청받은 조명. 디버그 패널 표시용. */
     private val ambient = MutableStateFlow<AmbientMood?>(null)

@@ -13,6 +13,8 @@ import io.moodlab.sideseat.core.DefaultWindowBuzzerGame
 import io.moodlab.sideseat.core.DriveCoach
 import io.moodlab.sideseat.core.DriveSummary
 import io.moodlab.sideseat.core.ReplyKind
+import io.moodlab.sideseat.core.RouteFeatures
+import io.moodlab.sideseat.core.RouteTraining
 import io.moodlab.sideseat.core.SchoolZoneIndex
 import io.moodlab.sideseat.core.SituationId
 import io.moodlab.sideseat.core.TrainingEngine
@@ -84,6 +86,12 @@ class SideSeatController(
     private var talkJob: Job? = null
     private var lastAmbient: AmbientMood? = null
     private var firstState = true
+    /** 내비 경로에서 읽은 것. 없으면 null(기존 "오늘의 추천"). */
+    private var route: RouteFeatures? = null
+    private val debugRoute = MutableStateFlow<RouteFeatures?>(null)
+
+    /** 디버그: 내비 대신 가짜 경로 정보를 넣는다. null이면 내비 값으로 돌아간다. */
+    fun debugSetRoute(features: RouteFeatures?) { debugRoute.value = features }
 
     fun start() {
         scope.launch {
@@ -98,6 +106,14 @@ class SideSeatController(
             }
         }
         scope.launch { gatewayFlow.collectLatest { g -> g.arrivals.collect { Log.i(TAG, "app navi arrival") } } }
+        scope.launch {
+            gatewayFlow.collectLatest { g ->
+                combine(g.routeFeatures, debugRoute) { real, fake -> fake ?: real }.collect {
+                    route = it
+                    if (_ui.value.mode == AppMode.HOME) refreshHome()
+                }
+            }
+        }
         wake?.let { w -> scope.launch { w.state.collect { st -> _ui.update { it.copy(coach = it.coach.copy(wake = wakeUi(st))) } } } }
         restoreVehicleChoice()
         refreshHome()
@@ -495,6 +511,9 @@ class SideSeatController(
             firstTime -> "처음이라면 여기서 시작해요."
             else -> "아직 별이 없는 챕터예요."
         }
+        // 내비에 경로가 있고 가는 길에 연습할 만한 것이 있으면 그것을 먼저 권한다.
+        val onRoute = route?.let { RouteTraining.recommend(it, chapters, practicedSituations()) }
+        if (onRoute != null) Log.i(TAG, "app route recommend chapter=${onRoute.chapterId} situation=${onRoute.situation} reason=${onRoute.reason}")
         _ui.update {
             it.copy(
                 progress = progress,
@@ -504,8 +523,9 @@ class SideSeatController(
                     chapters = chapters,
                     progress = progress,
                     vehicleModelKey = key,
-                    recommendedChapterId = recommended?.id,
-                    recommendReason = recommended?.let { reason },
+                    recommendedChapterId = onRoute?.chapterId ?: recommended?.id,
+                    recommendReason = onRoute?.reason ?: recommended?.let { reason },
+                    recommendLabel = if (onRoute != null) "가는 길 연습" else "오늘의 추천",
                     resumeChapterId = engine.resumableChapter(),
                     canTrain = state.parked,
                     miniGamesUnlocked = progress.chapterBestStars.values.any { s -> s > 0 },

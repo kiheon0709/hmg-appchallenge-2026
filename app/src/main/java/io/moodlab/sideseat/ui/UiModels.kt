@@ -37,6 +37,8 @@ data class HomeUi(
     /** 오늘의 추천 챕터 id와 이유 한 줄. */
     val recommendedChapterId: String? = null,
     val recommendReason: String? = null,
+    /** 추천 카드 머리말. 내비 경로에서 고른 추천이면 "가는 길 연습". */
+    val recommendLabel: String = "오늘의 추천",
     /** 이어 할 수 있는 챕터(P를 벗어나 끊긴 훈련). */
     val resumeChapterId: String? = null,
     /** 정차 중이라 훈련을 시작할 수 있다. */
