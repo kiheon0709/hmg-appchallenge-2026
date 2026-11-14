@@ -77,7 +77,7 @@ class DebugCommands(private val context: Context, private val controller: SideSe
             "wake_pcm" -> runCatching { File(context.filesDir, arg).readBytes() }
                 .onSuccess { io.moodlab.sideseat.voice.VoiceModule.wake?.debugFeedPcm(it) }
                 .onFailure { Log.w("SideSeatMeasure", "app debug wake pcm read failed: $it") }
-            "vehicle_force" -> Log.i("SideSeatMeasure", "app debug vehicle force $arg ok=${io.moodlab.sideseat.voice.VoiceModule.forceVehicle(arg.takeUnless { it == "off" || it.isEmpty() })} profiles=${io.moodlab.sideseat.voice.VoiceModule.vehicleProfiles()}")
+            "vehicle_force" -> Log.i("SideSeatMeasure", "app debug vehicle force $arg ok=${io.moodlab.sideseat.voice.VoiceModule.forceVehicle(arg.takeUnless { it == "off" || it.isEmpty() })} profiles=${io.moodlab.sideseat.voice.VoiceModule.vehicleProfiles()}").also { controller.syncVehicleChoice() }
             "where" -> Log.i("SideSeatMeasure", "app debug where vehicle=${io.moodlab.sideseat.voice.VoiceModule.currentVehicle?.id} " +
                 listOf("sw_wiper", "sw_headlight", "sw_defrost", "sw_hazard", "sw_epb").joinToString(" | ") { "$it=${io.moodlab.sideseat.voice.VoiceModule.switchLocation(it)}" })
             "wake_status" -> Log.i("SideSeatMeasure", "app debug wake status ${io.moodlab.sideseat.voice.VoiceModule.wake?.debugStatus()}")

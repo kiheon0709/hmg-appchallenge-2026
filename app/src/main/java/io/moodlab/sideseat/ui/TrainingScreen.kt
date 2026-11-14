@@ -309,7 +309,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     }
     AnimatedVisibility(view.phase == TrainingPhase.CHAPTER_DONE, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         Panel(padding = sz.dp(30f)) {
-            Column(modifier = Modifier.widthIn(min = sz.dp(420f))) {
+            Column(modifier = Modifier.widthIn(min = sz.dp(420f), max = sz.dp(560f))) {
                 val res = view.chapterResult
                 Text(
                     if (view.chapterId == ChapterCatalog.SURPRISE) "${view.surviveCount}개 버텼어요!" else "${SituationTexts.chapterTitle(view.chapterId)} 완료!",

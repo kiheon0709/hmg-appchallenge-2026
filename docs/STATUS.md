@@ -7,6 +7,33 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## release APK 갱신과 화면 v10 (2026-11-14 19:27~19:35, 화면 품질 세션)
+
+`apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,082,404 바이트(27.1 MB)**, 이전(23,056,630) 대비 **+4,025,774 바이트(+4.0 MB)**. 늘어난 것은 실사 배경 소재(`assets/scene/` 5개 파일, 3.9 MB)와 코드. APK 전체를 풀어 `sk-ant-`를 찾은 결과 0건(LLM 키 없음), release 서명 확인(`apksigner verify`). 서명 키와 `local.properties`는 커밋하지 않았다. `./gradlew :core:test` 94개·`:app:testDebugUnitTest` 114개 통과.
+
+**v10에서 바꾼 것**
+- 차종별 스위치 위치 문장(6차종, `assets/knowledge/vehicles/`)을 "~일 거예요"에서 단정 말투로: "그랜저는 운전석 왼쪽 아래 조명 버튼이에요. 눌러서 켜요." 설명서에서 확인하지 못한 항목(레이 자동 정차 위치 등)은 "확인하지 못했어요" 그대로. 그림을 보고 읽은 위치라는 표시는 출처 줄에만 남는다. 모르는 차(기본값)는 "Pleos 차는 보통 …" 그대로. 문구 검사 테스트(`SwitchGuideTest`)와 LLM 지식 머리말도 같이 맞춤.
+- 차종 표시 이름에서 개발 코드를 뺌: 더 뉴 그랜저, 디 올 뉴 아반떼 (신형), 더 뉴 아반떼 (이전 모델), 캐스퍼, 레이, 셀토스. 아반떼 두 세대의 출시 연식은 조사 문서에 없어 "신형/이전 모델"로 구분.
+- 폭우: 와이퍼가 닦은 부채꼴은 전조등을 켜기 전에도 도로·차선·앞차가 또렷하다(닦인 자리는 번짐·물막이 거의 없고, 닦이지 않은 가장자리는 물막이 짙다). 전조등을 켜면 한 단계 더 밝아진다.
+- 디버그 `vehicle_force`로 바꾼 차종이 홈의 "이 차" 표시에 반영된다(`v10_debug_home_vehicle_force_casper.jpg`). 챕터 완료 판이 가로로 꽉 차던 것을 줄임.
+
+**release 스모크(지우고 새로 설치, 조작은 화면 터치 `adb shell input tap`과 Virtual Console 신호, 크래시 0)**
+- 권한 허용 → 차종 고르기 판(`v10_release_vehicle_picker.jpg`) → "캐스퍼" 누름 → 홈 "이 차 · 캐스퍼" → "차종 바꾸기" 누름 → 판이 다시 뜨고 캐스퍼가 선택 상태(`v10_release_vehicle_picker_reopened.jpg`) → "더 뉴 그랜저" 누름 → 홈 "이 차 · 더 뉴 그랜저"(`v10_release_home_vehicle_chosen.jpg`, 로그 `app vehicle choice grandeur_gn7`). 앱을 다시 켜도 선택이 남아 있다.
+- 홈에서 C1 카드를 눌러 시작: 폭우(`…rain_active.jpg`) → 와이퍼 High(`…rain_wiped_lights_off.jpg`, 힌트 "전조등을 켜요. 그랜저는 운전석 왼쪽 아래 조명 버튼이에요. 눌러서 켜요." `…rain_hint_grandeur.jpg`) → 전조등(★2, `…rain_success.jpg`) → 김서림 ★3(`…fogged_clearing.jpg`) → 급정거 0.6초 ★3(`…sudden_stop_braked.jpg`) → "첫 빗길 완료! 별 8 / 9".
+- D단 → 코치 화면(`v10_release_coach.jpg`) → P단 → 리뷰(`v10_release_review.jpg`) → 홈 → C4 내리기 전(주차장 사진, 선택지 "네, 채웠어요" 누름).
+
+**release 기준 리소스**(가로 창, 측정 방법은 v7 절과 같음. 원본 `logs/cpu_train_c1_v10_release_40s.csv`, `cpu_coach_v10_release_40s.csv`)
+
+| 항목 | v9 debug | v10 release | 이전 release(437a100 등) | 기준 |
+| --- | --- | --- | --- | --- |
+| 정차 훈련 중 앱 CPU(4코어 전체, C1 40초 조작 없음) | 평균 11.2 %·최대 13.1 % | **평균 8.3 %·최대 10.1 %** | – | 정차 25 % 이하 |
+| 훈련 장면 gfxinfo | 50번째 25 ms·90번째 28 ms | 2,514프레임/40초, 50번째 23 ms·90번째 27 ms·99번째 32 ms, GPU 50번째 18 ms·90번째 21 ms | – | 30 fps 이상 |
+| 정차 훈련 중 메모리 PSS | 123.5 MB | **74.0 MB**(RSS 201.5 MB) | – | 400 MB 이하 |
+| 주행 중 코치 화면 CPU(D단 40초) | 평균 0.27 % | **평균 0.12 %·최대 0.50 %** | 평균 0.05~0.13 % | 5 % 미만 |
+| 주행 중 코치 화면 메모리 PSS | 125.9 MB | **72.8 MB** | 61 MB | 400 MB 이하 |
+
+차종 고르기와 C1 스모크는 완료 판 폭을 고치기 직전 빌드로 했고(차이는 그 한 줄), 리소스 측정·재실행·코치·리뷰·C4는 `apk/`에 넣은 빌드로 했다. release에는 `frame scene` 로그를 켜는 디버그 명령이 없어 프레임 수는 gfxinfo로만 쟀다. 확인하지 못한 것: 챕터 완료 판 폭 수정은 에뮬레이터에서 화면을 잡지 못해 JVM 렌더로만 확인, 세로 창·폼 팩터·야간 테마.
+
 ## 화면 v9(차종 고르기, v8 다듬기) 에뮬레이터 확인 (2026-11-14 18:54~19:00, 화면 품질 세션)
 
 빌드: 디버그 APK, Pleos Connect Emulator 2.1.0, 가로 창. 캡처 `docs/screens/sim/v9_day_landscape_*.jpg` 10장, 원본 `logs/cpu_train_c1_v9_debug_40s.csv`, `cpu_coach_v9_debug_30s.csv`.

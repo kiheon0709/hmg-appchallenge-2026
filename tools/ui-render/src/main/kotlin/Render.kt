@@ -67,6 +67,10 @@ fun main(args: Array<String>) {
     train("t_accel", SituationId.UNINTENDED_ACCEL, 2.3f)
     train("t_exit", SituationId.BEFORE_EXIT, 1.2f)
     train("t_portrait_rain", SituationId.HEAVY_RAIN, 2.4f, w = 835, h = 1210)
+    if (want("t_chapter_done")) shoot("t_chapter_done", W, H, false, 0f, 3f) {
+        val (v, c) = UiSamples.trainingAt(0.5f)
+        TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = UiSamples.chapterResult), c) {}
+    }
     if (want("h_home")) shoot("h_home", W, H, false, 0f, 5f) { HomeScreen(UiSamples.home) {} }
     if (want("h_vehicle")) shoot("h_vehicle", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
     val car = VehicleState(0, parked = false, wiper = WiperLevel.LOW, lowBeamOn = false, recirculationOn = true, speedLimitKmh = 80, speedKmhEstimate = 93f)

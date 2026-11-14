@@ -275,9 +275,10 @@ internal class WorldLayer {
         when (f.clip) {
             BackdropClip.NIGHT_ROAD -> {
                 // 영상은 전조등을 켜고 찍었다. 끄면 전체가 가라앉고, 발밑 노면은 거의 보이지 않는다
+                // 비가 오면 덜 가라앉힌다: 와이퍼가 닦은 자리로 도로·차선·앞차가 보여야 닦인 차이가 난다
                 if (dark > 0.01f) {
-                    drawRect(Color.Black, alpha = (0.4f - 0.12f * sim.rain) * dark)
-                    drawRect(roadShade!!, topLeft = Offset(0f, horizon), size = Size(w, h - horizon), alpha = dark)
+                    drawRect(Color.Black, alpha = (0.4f - 0.24f * sim.rain) * dark)
+                    drawRect(roadShade!!, topLeft = Offset(0f, horizon), size = Size(w, h - horizon), alpha = dark * (1f - 0.55f * sim.rain))
                 }
                 if (sim.highBeam > 0.01f) glow(beam, cx, horizon + h * 0.06f, w * 0.5f, h * 0.2f, alpha = sim.highBeam * 0.14f)
             }

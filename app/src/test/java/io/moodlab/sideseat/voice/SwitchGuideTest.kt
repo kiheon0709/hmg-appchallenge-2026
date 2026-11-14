@@ -127,9 +127,11 @@ class SwitchGuideTest {
                 assertFalse("$where '설명서 그림'은 출처 줄에만", "설명서 그림" in text)
                 assertFalse("$where '이 차에서는' 금지", "이 차에서는" in text)
                 assertFalse("$where 꼬리말은 데이터에 쓰지 않음(모르는 차에만 앱이 붙임)", SwitchGuide.VARIES_NOTE in text)
-                // 그림 판독인 위치는 단정하지 않는다("~일 거예요"·"보통")
-                if ("그림 판독" in e.source && "미확인" !in e.source) {
-                    assertTrue("$where 그림 판독인데 단정함: $text", "거예요" in text || "보통" in text)
+                // 11-14 사용자 결정: 고른 차종의 위치는 단정해서 말한다("~일 거예요" 금지). 모르는 차(기본값)만 "보통"으로 낮춘다
+                if (p.isDefault) {
+                    if ("그림 판독" in e.source && "미확인" !in e.source) assertTrue("$where 기본값인데 단정함: $text", "거예요" in text || "보통" in text)
+                } else {
+                    assertFalse("$where 추측 말투: $text", "거예요" in text)
                 }
                 // 아는 차종은 이름으로 시작
                 names[p.id]?.let { n -> assertTrue("$where 이름으로 시작하지 않음: ${e.short}", e.short.startsWith(n)) }

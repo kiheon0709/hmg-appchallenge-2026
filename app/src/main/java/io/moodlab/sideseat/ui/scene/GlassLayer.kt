@@ -99,9 +99,10 @@ internal class GlassLayer {
         val film = mix(Color(0xFF8B98A8), Color(0xFF1B2634), sim.night)
         val maxA = if (sim.photo) 0.36f else 0.64f
         val un = sim.ambientWet
-        if (un > 0.01f) drawPath(unswept, film, alpha = filmAlpha(un) * maxA)
+        if (un > 0.01f) drawPath(unswept, film, alpha = filmAlpha(un) * (if (sim.photo) 0.55f else maxA))
         for (k in 0 until SceneSim.WIPE_BINS) {
-            val a = filmAlpha(sim.wet[k]) * maxA
+            // 실사 배경에서는 막 닦인 자리가 거의 맑다(물이 두껍게 덮일수록 급히 흐려진다)
+            val a = (if (sim.photo) sim.wet[k] * sim.wet[k] else filmAlpha(sim.wet[k])) * maxA
             if (a < 0.012f) continue
             drawPath(wedgeA[k], film, alpha = a)
             drawPath(wedgeB[k], film, alpha = a)

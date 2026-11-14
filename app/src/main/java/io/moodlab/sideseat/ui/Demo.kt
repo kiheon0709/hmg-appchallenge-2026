@@ -142,11 +142,11 @@ object UiSamples {
         chapters = chapters, progress = progress, recommendedChapterId = "C2", recommendReason = "지난번에 전조등을 늦게 켰어요 · 약 4분",
         miniGamesUnlocked = true,
         vehicleChoices = listOf(
-            VehicleChoice("grandeur_gn7", "더 뉴 그랜저(GN7 부분변경)"), VehicleChoice("avante_cn8", "디 올 뉴 아반떼(CN8)"),
-            VehicleChoice("avante_cn7", "더 뉴 아반떼(CN7)"), VehicleChoice("casper_ax", "캐스퍼(AX)"),
-            VehicleChoice("ray_tam", "레이(TAM)"), VehicleChoice("seltos_sp2", "셀토스(SP2)"),
+            VehicleChoice("grandeur_gn7", "더 뉴 그랜저"), VehicleChoice("avante_cn8", "디 올 뉴 아반떼 (신형)"),
+            VehicleChoice("avante_cn7", "더 뉴 아반떼 (이전 모델)"), VehicleChoice("casper_ax", "캐스퍼"),
+            VehicleChoice("ray_tam", "레이"), VehicleChoice("seltos_sp2", "셀토스"),
         ),
-        vehicleChoiceId = "grandeur_gn7", vehicleName = "더 뉴 그랜저(GN7 부분변경)",
+        vehicleChoiceId = "grandeur_gn7", vehicleName = "더 뉴 그랜저",
         talk = TalkUi(answerText = "앞유리가 뿌예지면 공조 패널의 앞유리 모양 버튼을 눌러요. 에어컨을 같이 켜면 더 빨리 걷혀요."),
     )
 

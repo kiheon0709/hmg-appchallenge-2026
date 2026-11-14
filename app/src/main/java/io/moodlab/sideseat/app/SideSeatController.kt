@@ -123,6 +123,13 @@ class SideSeatController(
         }
     }
 
+    /** 디버그 명령으로 음성 모듈의 차종을 직접 바꾼 뒤 홈의 "이 차" 표시를 맞춘다(저장하지 않는다). */
+    fun syncVehicleChoice() {
+        val id = VoiceModule.currentVehicle?.id
+        val choice = _ui.value.home.vehicleChoices.firstOrNull { it.id == id }
+        _ui.update { it.copy(home = it.home.copy(vehicleChoiceId = choice?.id, vehicleName = choice?.name)) }
+    }
+
     private fun chooseVehicle(id: String?) {
         // 주행 중에는 바꾸지 않는다(고르는 판은 정차 중 홈에만 뜬다)
         if (!_ui.value.vehicle.parked) return

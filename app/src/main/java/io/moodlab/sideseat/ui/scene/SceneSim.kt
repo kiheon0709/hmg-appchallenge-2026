@@ -300,7 +300,9 @@ internal class SceneSim {
         ambientWet = if (rain > ambientWet) ease(ambientWet, rain, 1.2f, dt) else ease(ambientWet, rain, 0.35f, dt)
         var avg = 0f
         for (k in 0 until WIPE_BINS) avg += wet[k]
-        glassBlur = ease(glassBlur, maxOf(avg / WIPE_BINS, drowsy * 0.8f), 9f, dt)
+        // 와이퍼가 돌면 닦인 자리에 얇게 다시 맺힌 물은 앞을 번지게 하지 않는다. 닦지 않아 두껍게 덮였을 때만 번진다
+        val film = avg / WIPE_BINS
+        glassBlur = ease(glassBlur, maxOf(film * film, drowsy * 0.8f), 9f, dt)
         if (w <= 0f) return
         dropDebt += rain * rain * 260f * dt + (if (rain > 0.05f) 8f * dt else 0f)
         while (dropDebt >= 1f) {
