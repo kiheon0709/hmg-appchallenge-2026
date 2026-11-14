@@ -267,7 +267,7 @@ internal class SceneSim {
         }
         ambientWet = if (rain > ambientWet) ease(ambientWet, rain, 1.2f, dt) else ease(ambientWet, rain, 0.35f, dt)
         if (w <= 0f) return
-        dropDebt += rain * rain * 160f * dt + (if (rain > 0.05f) 6f * dt else 0f)
+        dropDebt += rain * rain * 260f * dt + (if (rain > 0.05f) 8f * dt else 0f)
         while (dropDebt >= 1f) {
             dropDebt -= 1f
             val n = dropCursor
@@ -275,7 +275,7 @@ internal class SceneSim {
             val x = rnd() * w
             val y = rnd() * dashY
             dropX[n] = x; dropY[n] = y
-            dropR[n] = h * (0.006f + rnd() * rnd() * 0.022f)
+            dropR[n] = h * (0.0022f + rnd() * rnd() * rnd() * 0.016f)
             dropBorn[n] = t
             dropLife[n] = 2.5f + rnd() * 5f
             dropBin[n] = binAt(x, y)
@@ -350,8 +350,8 @@ internal class SceneSim {
 
     companion object {
         const val WIPE_BINS = 20
-        const val MAX_DROPS = 150
-        const val MAX_STREAKS = 110
+        const val MAX_DROPS = 240
+        const val MAX_STREAKS = 160
         const val AMBIENT_CARS = 4
         const val ONCOMING = 3
         const val DASH_Y = 0.76f

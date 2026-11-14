@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.text.rememberTextMeasurer
 import io.moodlab.sideseat.core.SceneParams
 import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
@@ -42,6 +43,7 @@ fun DriveScene(
     val glass = remember { GlassLayer() }
     val cockpit = remember { CockpitLayer() }
     val meter = remember { FrameMeter("scene") }
+    val measurer = rememberTextMeasurer(cacheSize = 0)
     var frame by remember { mutableLongStateOf(0L) }
 
     LaunchedEffect(Unit) {
@@ -70,7 +72,7 @@ fun DriveScene(
         sim.setSize(size.width, size.height)
         world.draw(this, sim)
         glass.draw(this, sim)
-        cockpit.draw(this, sim, input)
+        cockpit.draw(this, sim, input, measurer)
         meter.draw(System.nanoTime() - t0)
     }
 }

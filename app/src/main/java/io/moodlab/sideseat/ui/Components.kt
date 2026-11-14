@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -61,6 +62,25 @@ fun Panel(
     val sz = LocalSz.current
     val shape = RoundedCornerShape(sz.radius)
     Column(modifier.clip(shape).background(color).border(sz.line, border, shape).padding(padding), content = content)
+}
+
+/** 왼쪽에 상태 색 띠가 있는 판. 테두리 전체를 색으로 두르지 않고 띠 하나로 상태를 알린다. */
+@Composable
+fun AccentPanel(
+    accent: Color,
+    modifier: Modifier = Modifier,
+    padding: Dp = LocalSz.current.dp(18f),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val sz = LocalSz.current
+    val shape = RoundedCornerShape(sz.radius)
+    val bar = sz.dp(6f)
+    Column(
+        modifier.clip(shape).background(Sc.scrim).border(sz.line, Sc.outline, shape)
+            .drawBehind { drawRect(accent, size = Size(bar.toPx(), size.height)) }
+            .padding(start = padding + bar, top = padding, end = padding, bottom = padding),
+        content = content,
+    )
 }
 
 @Composable
@@ -116,7 +136,7 @@ fun Stars(count: Int, modifier: Modifier = Modifier, max: Int = 3, size: Dp = Lo
     if (animateKey != null) {
         LaunchedEffect(animateKey, count) {
             for (i in 0 until count.coerceAtMost(max)) {
-                pops[i].animateTo(1f, spring(dampingRatio = 0.42f, stiffness = Spring.StiffnessMediumLow))
+                pops[i].animateTo(1f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMedium))
             }
         }
     }
@@ -147,8 +167,9 @@ fun Stars(count: Int, modifier: Modifier = Modifier, max: Int = 3, size: Dp = Lo
 fun EdgeGlow(color: Color, intensity: () -> Float, modifier: Modifier = Modifier) {
     Box(
         modifier.fillMaxSize().drawWithCache {
-            val t = minOf(size.width, size.height) * 0.065f
-            val c0 = color; val c1 = color.copy(alpha = 0f)
+            // 실내 조명이 화면 가장자리에 은은하게 비친 정도로만. 선으로 두르지 않는다
+            val t = minOf(size.width, size.height) * 0.05f
+            val c0 = color.copy(alpha = 0.45f); val c1 = color.copy(alpha = 0f)
             val top = Brush.verticalGradient(listOf(c0, c1), 0f, t)
             val bottom = Brush.verticalGradient(listOf(c1, c0), size.height - t, size.height)
             val left = Brush.horizontalGradient(listOf(c0, c1), 0f, t)
@@ -160,7 +181,6 @@ fun EdgeGlow(color: Color, intensity: () -> Float, modifier: Modifier = Modifier
                     drawRect(bottom, topLeft = Offset(0f, size.height - t), size = Size(size.width, t), alpha = a)
                     drawRect(left, size = Size(t, size.height), alpha = a)
                     drawRect(right, topLeft = Offset(size.width - t, 0f), size = Size(t, size.height), alpha = a)
-                    drawRect(color, style = Stroke(t * 0.1f), alpha = a)
                 }
             }
         },
@@ -175,7 +195,7 @@ fun TimerRing(fraction: Float, label: String, modifier: Modifier = Modifier, siz
     val c = when { f > 0.8f -> Sc.danger; f > 0.5f -> Sc.warn; else -> Sc.text }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            val st = this.size.minDimension * 0.09f
+            val st = this.size.minDimension * 0.055f
             val inset = st / 2f
             val arc = Size(this.size.width - st, this.size.height - st)
             drawArc(Sc.outline, 0f, 360f, false, Offset(inset, inset), arc, style = Stroke(st))

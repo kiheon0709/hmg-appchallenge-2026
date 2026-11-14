@@ -46,7 +46,7 @@ private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChang
             AppMode.HOME -> HomeScreen(ui.home, onAction)
             AppMode.TRAINING -> ui.training?.let { TrainingScreen(it, ui.vehicle, onAction) } ?: Waiting()
             AppMode.RESULT -> ui.result?.let { ResultScreen(it, ui.progress, onAction) } ?: Waiting()
-            AppMode.COACH -> CoachScreen(ui.coach, onAction)
+            AppMode.COACH -> CoachScreen(ui.coach, onAction, ui.vehicle)
             AppMode.REVIEW -> ui.review?.let { ReviewScreen(it, onAction) } ?: Waiting()
             AppMode.MINIGAME -> when (ui.miniGame) {
                 MiniGameKind.SAFE_DIAL -> ui.safeDial?.let { SafeDialScreen(it, onAction) } ?: Waiting()

@@ -3,14 +3,18 @@ package io.moodlab.sideseat.ui.scene
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import kotlin.math.PI
 import kotlin.math.cos
@@ -24,8 +28,12 @@ internal class GlassLayer {
     private val wedgeB = Array(SceneSim.WIPE_BINS) { Path() }
     private val unswept = Path()
     private val tmp = Path()
-    private var fogEdgeUp: Brush? = null
-    private var fogEdgeDown: Brush? = null
+    private val layerPaint = Paint()
+    /** 김이 걷힌 자리를 뚫는 붓(가운데가 완전히 맑고 가장자리로 갈수록 김이 남는다). */
+    private val hole: Brush = Brush.radialGradient(
+        0f to Color.Black, 0.5f to Color.Black, 0.8f to Color(0x99000000), 1f to Color(0x00000000),
+        center = Offset.Zero, radius = 1f,
+    )
     private val bokehX = FloatArray(BOKEH)
     private val bokehY = FloatArray(BOKEH)
     private val bokehR = FloatArray(BOKEH)
@@ -51,14 +59,10 @@ internal class GlassLayer {
         tmp.rewind(); tmp.op(glass, sectorA, PathOperation.Difference)
         unswept.rewind(); unswept.op(tmp, sectorB, PathOperation.Difference)
 
-        val band = h * 0.16f
-        // 김이 걷히는 경계: 위쪽이 뿌옇고 아래가 맑다 / 그 반대
-        fogEdgeUp = Brush.verticalGradient(0f to Color(0xFFFFFFFF), 1f to Color(0x00FFFFFF), startY = -band, endY = 0f)
-        fogEdgeDown = Brush.verticalGradient(0f to Color(0x00FFFFFF), 1f to Color(0xFFFFFFFF), startY = 0f, endY = band)
         var seed = 911
         fun r(): Float { seed = seed * 1103515245 + 12345; return ((seed ushr 8) and 0xFFFF) / 65535f }
         for (k in 0 until BOKEH) {
-            bokehX[k] = r() * w; bokehY[k] = h * (0.2f + r() * 0.5f); bokehR[k] = h * (0.03f + r() * 0.06f)
+            bokehX[k] = r() * w; bokehY[k] = h * (0.2f + r() * 0.5f); bokehR[k] = h * (0.02f + r() * 0.04f)
         }
     }
 
@@ -118,64 +122,67 @@ internal class GlassLayer {
             for (k in 0 until BOKEH) {
                 val g = when (k % 3) { 0 -> bokehWarm; 1 -> bokehRed; else -> bokehCool }
                 val wob = sin(sim.t * 0.7f + k) * h * 0.01f
-                glow(g, bokehX[k] + wob, bokehY[k], bokehR[k], alpha = avg * 0.22f * sim.night)
+                glow(g, bokehX[k] + wob, bokehY[k], bokehR[k], alpha = avg * 0.13f * sim.night)
             }
         }
-        // 물방울
-        val hi = Color.White
-        val lo = Color(0xFF03060A)
+        // 물방울: 작은 렌즈처럼 위쪽은 어둡고 아래 가장자리에 빛이 맺힌다. 달리는 동안에는 바람에 밀려 위로 흐른다
+        val hi = Color(0xFFEAF1F8)
+        val lo = Color(0xFF04070B)
         val up = sim.speed * 0.0025f * h
+        val big = h * 0.0055f
         val stepN = if (sim.lowDetail) 2 else 1
         for (n in 0 until SceneSim.MAX_DROPS step stepN) {
             val a = sim.dropAlpha(n)
             if (a <= 0.02f) continue
             val r = sim.dropR[n]
             val age = sim.t - sim.dropBorn[n]
+            val run = up * age * (r / (h * 0.012f))
             val x = sim.dropX[n]
-            val y = sim.dropY[n] - up * age * (r / (h * 0.02f))
-            drawCircle(lo, r, Offset(x + r * 0.12f, y + r * 0.18f), alpha = 0.34f * a)
-            drawCircle(hi, r * 0.92f, Offset(x, y), alpha = 0.085f * a)
-            drawCircle(hi, r * 0.3f, Offset(x - r * 0.32f, y - r * 0.34f), alpha = 0.5f * a)
+            val y = sim.dropY[n] - run
+            drawCircle(lo, r, Offset(x, y), alpha = 0.3f * a)
+            if (r < big) {
+                drawCircle(hi, r * 0.42f, Offset(x + r * 0.18f, y + r * 0.3f), alpha = 0.34f * a)
+            } else {
+                drawArc(hi, 20f, 95f, false, Offset(x - r * 0.8f, y - r * 0.8f), Size(r * 1.6f, r * 1.6f), alpha = 0.3f * a, style = Stroke(r * 0.16f, cap = StrokeCap.Round))
+                drawCircle(hi, r * 0.14f, Offset(x - r * 0.36f, y - r * 0.4f), alpha = 0.45f * a)
+            }
         }
     }
 
     private fun filmAlpha(wet: Float): Float = if (wet <= 0f) 0f else kotlin.math.sqrt(wet.coerceAtMost(1f))
 
+    /**
+     * 앞유리 안쪽 김서림. 낄 때는 가장자리에서 가운데로 좁혀 오고,
+     * 걷힐 때는 송풍구가 있는 아래 두 곳에서부터 부채꼴로 맑아진다.
+     */
     private fun DrawScope.drawFog(sim: SceneSim, glassBottom: Float) {
         val f = sim.wsFog
         if (f < 0.005f) return
-        val c = mix(Color(0xFFE4E9EE), Color(0xFFB9C3CE), sim.night)
-        val a = 0.93f
-        val band = h * 0.16f
-        val span = glassBottom + band
-        if (sim.wsFogGrowing) {
-            // 아래에서부터 뿌옇게 올라온다
-            val line = glassBottom - f * span
-            drawRect(c, Offset(0f, line + band), Size(w, (glassBottom - line - band).coerceAtLeast(0f)), alpha = a)
-            translate(0f, line) { drawRect(fogEdgeDown!!, Offset(0f, 0f), Size(w, band), alpha = a, colorFilter = tint(c)) }
-        } else {
-            // 아래에서부터 걷힌다
-            val line = glassBottom + band - (1f - f) * span
-            drawRect(c, Offset(0f, 0f), Size(w, (line - band).coerceAtLeast(0f)), alpha = a)
-            translate(0f, line) { drawRect(fogEdgeUp!!, Offset(0f, -band), Size(w, band), alpha = a, colorFilter = tint(c)) }
-        }
-        // 김의 얼룩
-        val soft = minOf(1f, f * 1.6f)
-        for (k in 0 until 5) {
-            val x = w * (0.12f + 0.19f * k) + sin(sim.t * 0.3f + k * 1.7f) * w * 0.02f
-            val y = sim.dashY * (0.3f + 0.12f * ((k * 3) % 4))
-            glow(blobs, x, y, w * 0.16f, h * 0.2f, alpha = 0.1f * soft)
+        val c = mix(Color(0xFFDDE2E6), Color(0xFFA9B1B8), sim.night)
+        val a = 0.94f * minOf(1f, f * 3.5f)
+        val open = 1f - f
+        drawIntoCanvas { canvas ->
+            canvas.saveLayer(Rect(0f, 0f, w, glassBottom), layerPaint)
+            drawRect(c, size = Size(w, glassBottom), alpha = a)
+            // 김의 얼룩
+            for (k in 0 until 5) {
+                val x = w * (0.12f + 0.19f * k) + sin(sim.t * 0.3f + k * 1.7f) * w * 0.02f
+                val y = sim.dashY * (0.3f + 0.12f * ((k * 3) % 4))
+                glow(blobs, x, y, w * 0.16f, h * 0.2f, alpha = 0.08f * minOf(1f, f * 1.6f))
+            }
+            if (sim.wsFogGrowing) {
+                if (open > 0.05f) punch(w * 0.5f, sim.dashY * 0.52f, w * 0.9f * (open - 0.05f), sim.dashY * 0.95f * (open - 0.05f))
+            } else if (open > 0.01f) {
+                val k = open * (2f - open)
+                punch(w * 0.3f, glassBottom, w * 0.52f * k, sim.dashY * 1.35f * k)
+                punch(w * 0.7f, glassBottom, w * 0.52f * k, sim.dashY * 1.35f * k)
+            }
+            canvas.restore()
         }
     }
 
-    private var tintColor = Color.Unspecified
-    private var tintFilter: androidx.compose.ui.graphics.ColorFilter? = null
-    private fun tint(c: Color): androidx.compose.ui.graphics.ColorFilter {
-        if (c != tintColor || tintFilter == null) {
-            tintColor = c
-            tintFilter = androidx.compose.ui.graphics.ColorFilter.tint(c, androidx.compose.ui.graphics.BlendMode.Modulate)
-        }
-        return tintFilter!!
+    private fun DrawScope.punch(x: Float, y: Float, rx: Float, ry: Float) {
+        translate(x, y) { scale(rx, ry, Offset.Zero) { drawCircle(hole, radius = 1f, center = Offset.Zero, blendMode = BlendMode.DstOut) } }
     }
 
     private fun DrawScope.drawDebris(sim: SceneSim) {
