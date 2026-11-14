@@ -1,0 +1,134 @@
+== audio_heavyrain.txt
+Audio Focus stack entries (last is top of stack):
+11-15 02:55:13:862 player piid:47 event:started
+11-15 02:55:20:502 player piid:127 event:started
+11-15 02:55:25:797 player piid:95 event:stopped
+11-15 02:55:25:813 player piid:103 event:stopped
+11-15 02:55:25:822 player piid:111 event:stopped
+11-15 02:55:25:825 player piid:119 event:stopped
+11-15 02:55:25:828 player piid:63 event:stopped
+11-15 02:55:25:842 player piid:71 event:stopped
+11-15 02:55:25:844 player piid:79 event:stopped
+11-15 02:55:25:846 player piid:87 event:stopped
+11-15 02:55:26:555 player piid:127 event:stopped
+11-15 02:57:30:853 new player piid:239 uid/pid:1010224/28235 type:android.media.SoundPool attr:AudioAttributes: usage=USAGE_GAME content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null session:0
+11-15 02:59:32:413 new player piid:247 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:193
+11-15 02:59:32:416 player piid:247 event:started
+11-15 02:59:36:194 player piid:247 event:stopped
+11-15 02:59:36:196 player piid:247 event:stopped
+11-15 02:59:38:910 player piid:239 event:started
+11-15 02:59:38:921 player piid:239 event:started
+11-15 02:59:38:948 new player piid:255 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:217
+11-15 02:59:38:953 player piid:255 event:started
+11-15 02:59:44:598 player piid:255 event:stopped
+11-15 02:59:44:598 player piid:255 event:stopped
+11-15 02:59:46:946 new player piid:263 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:225
+11-15 02:59:46:951 player piid:263 event:started
+11-15 02:59:51:798 player piid:263 event:stopped
+11-15 02:59:51:798 player piid:263 event:stopped
+== audio_c3.txt
+Audio Focus stack entries (last is top of stack):
+11-15 03:26:00:478 player piid:919 event:stopped
+11-15 03:26:00:480 player piid:919 event:stopped
+11-15 03:26:01:382 player piid:239 event:started
+11-15 03:26:01:410 new player piid:935 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1193
+11-15 03:26:01:432 player piid:935 event:started
+11-15 03:26:04:430 player piid:239 event:started
+11-15 03:26:08:585 player piid:935 event:stopped
+11-15 03:26:08:586 player piid:935 event:stopped
+11-15 03:26:08:592 new player piid:943 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1201
+11-15 03:26:08:596 player piid:943 event:started
+11-15 03:26:11:247 player piid:239 event:started
+11-15 03:26:14:278 player piid:239 event:started
+11-15 03:26:14:290 player piid:239 event:started
+11-15 03:26:16:031 player piid:943 event:stopped
+11-15 03:26:16:032 player piid:943 event:stopped
+11-15 03:26:16:040 new player piid:951 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1217
+11-15 03:26:16:046 player piid:951 event:started
+11-15 03:26:21:443 player piid:951 event:stopped
+11-15 03:26:21:444 player piid:951 event:stopped
+11-15 03:26:21:453 new player piid:959 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1225
+11-15 03:26:21:459 player piid:959 event:started
+11-15 03:26:25:810 player piid:239 event:started
+11-15 03:26:25:819 player piid:239 event:started
+11-15 03:26:25:993 new player piid:967 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1249
+11-15 03:26:25:998 player piid:967 event:started
+11-15 03:26:26:071 player piid:959 event:stopped
+11-15 03:26:26:072 player piid:959 event:stopped
+11-15 03:26:28:971 player piid:967 event:stopped
+11-15 03:26:28:972 player piid:967 event:stopped
+11-15 03:26:28:978 new player piid:975 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1257
+11-15 03:26:28:982 player piid:975 event:started
+11-15 03:26:31:763 player piid:239 event:started
+11-15 03:26:31:769 player piid:239 event:started
+11-15 03:26:31:855 player piid:975 event:stopped
+11-15 03:26:31:855 player piid:975 event:stopped
+11-15 03:26:31:893 new player piid:991 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1281
+11-15 03:26:31:898 player piid:991 event:started
+11-15 03:26:36:948 player piid:991 event:stopped
+11-15 03:26:36:948 player piid:991 event:stopped
+11-15 03:26:36:961 new player piid:999 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1289
+11-15 03:26:36:965 player piid:999 event:started
+11-15 03:26:39:426 player piid:999 event:stopped
+11-15 03:26:39:426 player piid:999 event:stopped
+11-15 03:26:39:438 new player piid:1007 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1297
+11-15 03:26:39:440 player piid:1007 event:started
+11-15 03:26:41:794 player piid:239 event:started
+11-15 03:26:42:069 player piid:1007 event:stopped
+11-15 03:26:42:071 player piid:1007 event:stopped
+11-15 03:26:42:111 new player piid:1015 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:1305
+11-15 03:26:42:124 player piid:1015 event:started
+11-15 03:26:47:691 player piid:1015 event:stopped
+11-15 03:26:47:692 player piid:1015 event:stopped
+== audio_final.txt
+Audio Focus stack entries (last is top of stack):
+11-15 04:08:56:266 player piid:2951 event:stopped
+11-15 04:08:56:271 player piid:2951 event:stopped
+11-15 04:08:56:279 new player piid:2959 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3577
+11-15 04:08:56:281 player piid:2959 event:started
+11-15 04:08:59:148 player piid:2959 event:stopped
+11-15 04:08:59:149 player piid:2959 event:stopped
+11-15 04:09:15:411 new player piid:2967 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3585
+11-15 04:09:15:416 player piid:2967 event:started
+11-15 04:09:17:448 player piid:2431 event:started
+11-15 04:09:21:049 player piid:2967 event:stopped
+11-15 04:09:21:050 player piid:2967 event:stopped
+11-15 04:09:21:066 new player piid:2975 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3593
+11-15 04:09:21:088 player piid:2975 event:started
+11-15 04:09:22:615 player piid:2975 event:stopped
+11-15 04:09:22:616 player piid:2975 event:stopped
+11-15 04:09:35:409 player piid:2431 event:started
+11-15 04:09:35:438 new player piid:2983 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3609
+11-15 04:09:35:443 player piid:2983 event:started
+11-15 04:09:38:837 player piid:2983 event:stopped
+11-15 04:09:38:838 player piid:2983 event:stopped
+11-15 04:09:44:113 player piid:2431 event:started
+11-15 04:09:44:142 new player piid:2991 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3625
+11-15 04:09:44:151 player piid:2991 event:started
+11-15 04:09:45:295 player piid:2431 event:started
+11-15 04:09:47:076 player piid:2991 event:stopped
+11-15 04:09:47:076 player piid:2991 event:stopped
+11-15 04:09:49:170 new player piid:2999 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3633
+11-15 04:09:49:180 player piid:2999 event:started
+11-15 04:09:52:572 player piid:2999 event:stopped
+11-15 04:09:52:572 player piid:2999 event:stopped
+11-15 04:10:04:117 player piid:2431 event:started
+11-15 04:10:04:144 new player piid:3007 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3649
+11-15 04:10:04:149 player piid:3007 event:started
+11-15 04:10:09:331 player piid:3007 event:stopped
+11-15 04:10:09:332 player piid:3007 event:stopped
+11-15 04:10:28:156 player piid:2431 event:started
+11-15 04:10:28:174 player piid:2431 event:started
+11-15 04:10:28:216 new player piid:3015 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3673
+11-15 04:10:28:228 player piid:3015 event:started
+11-15 04:10:33:937 player piid:3015 event:stopped
+11-15 04:10:33:938 player piid:3015 event:stopped
+11-15 04:10:36:190 new player piid:3023 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3681
+11-15 04:10:36:192 player piid:3023 event:started
+11-15 04:10:41:102 player piid:3023 event:stopped
+11-15 04:10:41:102 player piid:3023 event:stopped
+11-15 04:11:00:153 player piid:2431 event:started
+11-15 04:11:00:180 new player piid:3031 uid/pid:1010143/2651 type:android.media.AudioTrack attr:AudioAttributes: usage=USAGE_ASSISTANT content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null session:3697
+11-15 04:11:00:189 player piid:3031 event:started
+11-15 04:11:03:067 player piid:3031 event:stopped
+11-15 04:11:03:067 player piid:3031 event:stopped
