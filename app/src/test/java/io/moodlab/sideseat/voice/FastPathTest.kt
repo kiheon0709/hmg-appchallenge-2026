@@ -120,6 +120,15 @@ class KnowledgeBaseTest {
         assertEquals("아이디 중복", real.entries.size, real.entries.map { it.id }.toSet().size)
     }
 
+    @Test fun realKnowledgeRoutesRoadRuleQuestions() {
+        assertEquals("right_turn_crosswalk", real.match("우회전할 때 멈춰야 해?")?.entry?.id)
+        assertEquals("right_turn_crosswalk", real.match("횡단보도에 사람 있으면?")?.entry?.id)
+        assertEquals("highway_merge", real.match("고속도로 합류 어떻게 해?")?.entry?.id)
+        assertEquals("hipass_wrong_lane", real.match("하이패스 차로에 잘못 들어갔어")?.entry?.id)
+        assertEquals("rain_driving", real.match("수막현상이 뭐야?")?.entry?.id)
+        assertEquals("turn_signal", real.match("깜빡이 언제 켜?")?.entry?.id)
+    }
+
     @Test fun realKnowledgeRoutesSpecExampleQuestions() {
         // 명세 6.3의 주행 중 질문 예
         assertEquals("defog_windshield", real.match("앞유리가 뿌예")?.entry?.id)

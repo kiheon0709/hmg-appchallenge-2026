@@ -66,6 +66,10 @@ fun main(args: Array<String>) {
     train("t_breakdown", SituationId.BREAKDOWN, 3.4f)
     train("t_accel", SituationId.UNINTENDED_ACCEL, 2.3f)
     train("t_exit", SituationId.BEFORE_EXIT, 1.2f)
+    train("t_rightturn", SituationId.RIGHT_TURN_CROSSWALK, 2.0f)
+    train("t_merge", SituationId.HIGHWAY_MERGE, 3.2f)
+    train("t_hydro", SituationId.HYDROPLANING, 2.0f)
+    train("t_hipass", SituationId.HIPASS_WRONG_LANE, 2.0f)
     train("t_portrait_rain", SituationId.HEAVY_RAIN, 2.4f, w = 835, h = 1210)
     if (want("t_chapter_done")) shoot("t_chapter_done", W, H, false, 0f, 3f) {
         val (v, c) = UiSamples.trainingAt(0.5f)

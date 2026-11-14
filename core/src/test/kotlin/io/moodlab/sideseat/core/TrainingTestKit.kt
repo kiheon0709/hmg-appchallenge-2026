@@ -67,3 +67,10 @@ class TrainingDriver(val engine: TrainingEngine, var state: VehicleState = baseS
 
     fun clearEvents() = events.clear()
 }
+
+/** 앞이 안 보이는 상황의 첫 단계: 브레이크로 화면 속 속도를 절반 아래로 줄인 뒤 발을 뗀다(약 1.6초). */
+fun TrainingDriver.slowDownFirst() {
+    set { it.copy(brakePressed = true) }
+    until { v -> v.steps.firstOrNull { it.id == "slow_down" }?.done == true }
+    set { it.copy(brakePressed = false) }
+}

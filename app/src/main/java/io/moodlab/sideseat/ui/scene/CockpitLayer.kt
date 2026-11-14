@@ -44,6 +44,8 @@ internal class CockpitLayer {
     // 속도 숫자는 값마다 한 번만 재서 담아 둔다(프레임마다 글자를 다시 재지 않는다)
     private val speedText = arrayOfNulls<TextLayoutResult>(300)
     private var unitText: TextLayoutResult? = null
+    private var signText: TextLayoutResult? = null
+    private val signPath = Path()
 
     private fun ensure(size: Size) {
         if (size.width == w && size.height == h) return
@@ -90,7 +92,7 @@ internal class CockpitLayer {
 
         lidTop = Brush.verticalGradient(0f to Color(0xFF000000), 0.75f to Color(0xF2000000), 1f to Color(0x00000000), startY = 0f, endY = h * 0.6f)
         lidBottom = Brush.verticalGradient(0f to Color(0x00000000), 0.25f to Color(0xF2000000), 1f to Color(0xFF000000), startY = 0f, endY = h * 0.6f)
-        speedText.fill(null); unitText = null
+        speedText.fill(null); unitText = null; signText = null
     }
 
     fun draw(scope: DrawScope, sim: SceneSim, input: SceneInput, measurer: TextMeasurer) = with(scope) {
@@ -149,6 +151,8 @@ internal class CockpitLayer {
             }
         }
 
+        if (sim.signA > 0.02f) drawSign(sim, cx, measurer)
+
         // 졸음: 눈꺼풀이 내려온다
         if (sim.drowsy > 0.01f) {
             val d = sim.drowsy
@@ -157,6 +161,42 @@ internal class CockpitLayer {
             drawRect(Color.Black, alpha = d * 0.3f)
             translate(0f, -lid + lid * 0.62f * d * blink) { drawRect(lidTop!!, size = Size(w, lid)) }
             translate(0f, h - lid * 0.5f * d * blink) { drawRect(lidBottom!!, size = Size(w, lid)) }
+        }
+    }
+
+    /**
+     * 도로 표지 판. 전용 영상이 없는 상황(우회전 횡단보도, 하이패스 차로)은 장면을 꾸며 그리지 않고,
+     * 계기판 경고등처럼 표지 하나를 앞에 띄워 무엇을 만났는지만 알린다.
+     */
+    private fun DrawScope.drawSign(sim: SceneSim, cx: Float, measurer: TextMeasurer) {
+        val a = sim.signA
+        val s = h * 0.07f
+        val cy = h * 0.33f
+        val blue = Color(0xFF1E5BB8)
+        drawRoundRect(Color(0xFF07080A), Offset(cx - s * 2.3f, cy - s * 2.3f), Size(s * 4.6f, s * 4.6f), CornerRadius(s * 0.5f), alpha = 0.9f * a)
+        drawRoundRect(Color.White, Offset(cx - s * 2.3f, cy - s * 2.3f), Size(s * 4.6f, s * 4.6f), CornerRadius(s * 0.5f), alpha = 0.1f * a, style = Stroke(h * 0.0016f))
+        if (sim.signKey == "HIPASS") {
+            drawRoundRect(blue, Offset(cx - s * 1.9f, cy - s * 0.85f), Size(s * 3.8f, s * 1.7f), CornerRadius(s * 0.2f), alpha = a)
+            drawRoundRect(Color.White, Offset(cx - s * 1.78f, cy - s * 0.73f), Size(s * 3.56f, s * 1.46f), CornerRadius(s * 0.14f), alpha = a, style = Stroke(s * 0.06f))
+            val text = signText ?: measurer.measure("하이패스", TextStyle(fontSize = (s * 0.72f).toSp(), fontWeight = FontWeight.Bold)).also { signText = it }
+            drawText(text, Color.White, Offset(cx - text.size.width / 2f, cy - text.size.height / 2f), alpha = a)
+        } else {
+            // 횡단보도 표지: 파란 오각형, 흰 세모, 걷는 사람
+            signPath.rewind()
+            signPath.moveTo(cx, cy - s * 1.65f); signPath.lineTo(cx + s * 1.5f, cy - s * 0.55f); signPath.lineTo(cx + s * 1.5f, cy + s * 1.6f)
+            signPath.lineTo(cx - s * 1.5f, cy + s * 1.6f); signPath.lineTo(cx - s * 1.5f, cy - s * 0.55f); signPath.close()
+            drawPath(signPath, blue, alpha = a)
+            signPath.rewind()
+            signPath.moveTo(cx, cy - s * 0.95f); signPath.lineTo(cx + s * 1.15f, cy + s * 1.25f); signPath.lineTo(cx - s * 1.15f, cy + s * 1.25f); signPath.close()
+            drawPath(signPath, Color.White, alpha = a)
+            val ink = Color(0xFF111214)
+            val st = s * 0.13f
+            drawCircle(ink, s * 0.14f, Offset(cx + s * 0.06f, cy - s * 0.18f), alpha = a)
+            drawLine(ink, Offset(cx + s * 0.02f, cy + s * 0.04f), Offset(cx - s * 0.04f, cy + s * 0.55f), st, cap = StrokeCap.Round, alpha = a)
+            drawLine(ink, Offset(cx - s * 0.04f, cy + s * 0.55f), Offset(cx - s * 0.34f, cy + s * 1.02f), st, cap = StrokeCap.Round, alpha = a)
+            drawLine(ink, Offset(cx - s * 0.04f, cy + s * 0.55f), Offset(cx + s * 0.3f, cy + s * 1.02f), st, cap = StrokeCap.Round, alpha = a)
+            drawLine(ink, Offset(cx + s * 0.02f, cy + s * 0.14f), Offset(cx - s * 0.32f, cy + s * 0.42f), st * 0.85f, cap = StrokeCap.Round, alpha = a)
+            drawLine(ink, Offset(cx + s * 0.02f, cy + s * 0.14f), Offset(cx + s * 0.34f, cy + s * 0.36f), st * 0.85f, cap = StrokeCap.Round, alpha = a)
         }
     }
 

@@ -39,6 +39,7 @@ object UiSamples {
         SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.SUDDEN_STOP, SituationId.TUNNEL,
         SituationId.ONCOMING_GLARE, SituationId.DENSE_FOG, SituationId.DROWSY, SituationId.WARNING_LIGHT,
         SituationId.BREAKDOWN, SituationId.UNINTENDED_ACCEL, SituationId.WIPER_DEBRIS, SituationId.BEFORE_EXIT,
+        SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE,
     )
 
     private fun ramp(t: Float, dur: Float) = (t / dur).coerceIn(0f, 1f)
@@ -105,6 +106,21 @@ object UiSamples {
                 scene = scene.copy(debris = if (reacted) 1f - ramp(r - 0.5f, 0.8f) else ramp(a, 0.25f))
                 car = car.copy(hazardOn = a > 1.4f && live, wiper = if (reacted && live) WiperLevel.LOW else WiperLevel.OFF)
                 speed = 70f
+            }
+            SituationId.RIGHT_TURN_CROSSWALK -> {
+                scene = scene.copy(sign = "CROSSWALK")
+                car = car.copy(brakePressed = reacted && live)
+                speed = if (reacted) 30f * (1f - ramp(r, 1.2f)) else 30f
+            }
+            SituationId.HIGHWAY_MERGE -> car = car.copy(
+                turnSignal = if (a > 0.6f && live) io.moodlab.sideseat.core.TurnSignal.LEFT else io.moodlab.sideseat.core.TurnSignal.OFF,
+                steeringAngleDeg = if (reacted) -14f * ramp(r, 0.6f) else 0f,
+            )
+            SituationId.HYDROPLANING -> { scene = scene.copy(rain = 0.7f, slip = if (live) 0.5f else 0f); speed = 80f - 6f * a.coerceAtMost(4f) }
+            SituationId.HIPASS_WRONG_LANE -> {
+                scene = scene.copy(sign = "HIPASS")
+                speed = 30f
+                if (live) choice = ChoiceView("어떻게 할까요?", listOf("멈추지 않고 그대로 지나가요", "차를 세우고 후진해요", "차에서 내려 요금소로 가요"))
             }
             SituationId.BEFORE_EXIT -> {
                 scene = scene.copy(parkingLot = true, alert = 0f)

@@ -147,7 +147,8 @@ internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, ve
     } else {
         progress.licenses.values.maxByOrNull { it.clearedChapters.size }!!
     }
-    val total = ChapterCatalog.chapters.size
+    // 면허는 이 차의 스위치를 익히는 챕터만 센다
+    val total = ChapterCatalog.LICENSE_CHAPTERS.size
     val cleared = license.clearedChapters.size.coerceAtMost(total)
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f))) {
         Row(verticalAlignment = Alignment.CenterVertically) {

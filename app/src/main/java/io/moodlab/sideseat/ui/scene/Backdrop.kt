@@ -76,19 +76,23 @@ fun DrawScope.drawStill(frame: BackdropFrame, image: ImageBitmap) {
 }
 
 /**
- * 야간 도로 영상 속 앞차 미등의 위치(0.5초 간격, 소재 안 좌표)와 차 폭. 영상에서 빨간 등을 찾아 적어 둔 값이다.
+ * 야간 도로 영상 속 앞차 미등의 위치(0.5초 간격, 소재 안 좌표)와 차 폭. 영상에서 빨간 등을 찾아 적어 둔 값이다
+ * (앞 5초는 노면 반사를 빼고 등 높이만 다시 쟀다).
  * 앞차 급정거 장면에서 이 자리로 다가가고 브레이크등 빛을 얹는다.
  */
 internal object LeadTrack {
     private val u = floatArrayOf(
-        0.588f, 0.583f, 0.583f, 0.574f, 0.558f, 0.551f, 0.542f, 0.529f, 0.529f, 0.526f, 0.522f, 0.530f,
+        0.5996f, 0.5910f, 0.5816f, 0.5680f, 0.5551f, 0.5469f, 0.5398f, 0.5312f, 0.5262f, 0.5238f, 0.522f, 0.530f,
         0.531f, 0.534f, 0.535f, 0.533f, 0.540f, 0.549f, 0.547f, 0.543f, 0.542f, 0.534f, 0.536f, 0.535f, 0.535f,
     )
+    private val v = floatArrayOf(
+        0.3767f, 0.3732f, 0.3720f, 0.3739f, 0.3728f, 0.3702f, 0.3648f, 0.3649f, 0.3677f, 0.3658f, 0.365f, 0.365f,
+        0.365f, 0.365f, 0.365f, 0.365f, 0.365f, 0.365f, 0.364f, 0.363f, 0.361f, 0.357f, 0.355f, 0.354f, 0.354f,
+    )
     private val w = floatArrayOf(
-        0.040f, 0.040f, 0.035f, 0.034f, 0.030f, 0.030f, 0.028f, 0.025f, 0.027f, 0.022f, 0.021f, 0.022f,
+        0.0437f, 0.0391f, 0.0359f, 0.0352f, 0.0328f, 0.0320f, 0.0305f, 0.0273f, 0.0281f, 0.0266f, 0.021f, 0.022f,
         0.022f, 0.019f, 0.020f, 0.018f, 0.017f, 0.016f, 0.015f, 0.016f, 0.014f, 0.016f, 0.013f, 0.013f, 0.013f,
     )
-    const val V = 0.368f
 
     private fun at(a: FloatArray, sec: Float): Float {
         val t = (sec * 2f).coerceIn(0f, (a.size - 1).toFloat())
@@ -96,6 +100,10 @@ internal object LeadTrack {
         return a[i] + (a[i + 1] - a[i]) * (t - i)
     }
 
+    /** 두 미등 사이 가운데의 가로 위치. */
     fun u(sec: Float) = at(u, sec)
+    /** 미등의 세로 위치. */
+    fun v(sec: Float) = at(v, sec)
+    /** 차 폭(두 미등 바깥 끝 사이). */
     fun width(sec: Float) = at(w, sec)
 }

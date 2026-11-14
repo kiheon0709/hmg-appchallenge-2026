@@ -31,6 +31,8 @@ internal class SceneInput {
     var drowsy = 0f
     var speedKmh = 0f
     var success = false
+    var sign: String? = null
+    var slip = 0f
 
     var wiper = WiperLevel.OFF
     var lowBeam = false
@@ -52,6 +54,7 @@ internal class SceneInput {
         tunnel = s.tunnel; leadDistance = s.leadCarDistance ?: -1f; leadBraking = s.leadCarBraking
         glare = s.oncomingGlare; debris = s.debris; alert = s.alert; warningLight = s.warningLight
         parkingLot = s.parkingLot; drowsy = s.drowsyBlur; speedKmh = speed; success = successNow
+        sign = s.sign; slip = s.slip
         wiper = v.wiper ?: WiperLevel.OFF
         lowBeam = v.lowBeamOn == true; highBeam = v.highBeamOn == true; fogLamp = v.anyFogOn == true
         // 비상등은 따로 오는 신호(hazardOn)다. 방향지시등 값이 HAZARD로 와도 같게 그린다
@@ -87,6 +90,11 @@ internal class SceneSim {
     var leadZ = 40f
     /** 실사 배경을 쓰는 중. 코드로 그리던 번진 불빛은 빼고(영상에 진짜 불빛이 있다) 물막을 옅게 한다. */
     var photo = false
+    /** 도로 표지 판이 보이는 정도(0~1)와 그 표지. */
+    var signA = 0f
+    var signKey: String? = null
+    /** 차가 미끄러지는 정도(수막현상). 배경이 좌우로 흔들린다. */
+    var slip = 0f
     /** 실사 배경을 흐리게 볼 정도(0~1). 닦이지 않은 빗물과 졸음이 앞을 번지게 한다. */
     var glassBlur = 0f
     /** 실사 배경에서 앞차 쪽으로 다가간 정도(0~1). */
@@ -212,6 +220,9 @@ internal class SceneSim {
         fogLamp = ease(fogLamp, if (i.fogLamp) 1f else 0f, 9f, dt)
         brake = ease(brake, if (i.brake) 1f else 0f, 12f, dt)
         warn = ease(warn, if (i.warningLight != null || i.telltaleWarn) 1f else 0f, 6f, dt)
+        if (i.sign != null) signKey = i.sign
+        signA = ease(signA, if (i.sign != null) 1f else 0f, 5f, dt)
+        slip = ease(slip, i.slip, 4f, dt)
 
         // 터널: 입구·출구가 1.6초에 걸쳐 다가와 지나간다
         tunnelEntering = i.tunnel
@@ -226,7 +237,7 @@ internal class SceneSim {
         leadA = ease(leadA, if (i.parkingLot) 0f else 1f, 3f, dt)
         urgency = ease(urgency, if (d in 0f..0.55f) ((0.55f - d) / 0.35f).coerceAtMost(1f) else 0f, 8f, dt)
         leadBrake = ease(leadBrake, if (i.leadBraking) 1f else 0f, 14f, dt)
-        leadZoom = ease(leadZoom, if (d >= 0f) (1f - d / 0.75f).coerceIn(0f, 1f) else 0f, 5f, dt)
+        leadZoom = ease(leadZoom, if (d >= 0f) (1f - d / 0.75f).coerceIn(0f, 1f) else 0f, 8f, dt)
 
         stepWiper(dt, i.wiper)
         stepWater(dt)
@@ -252,10 +263,14 @@ internal class SceneSim {
         leadWasOn = leadOn
         val z = if (road) leadZoom else 0f
         val pull = (z * 2.5f).coerceAtMost(1f)
-        f.zoom = (if (clip == BackdropClip.PARKING) 1f else 1.12f) * (1f + 1.25f * z.pow(1.2f))
+        f.zoom = (if (clip == BackdropClip.PARKING) 1f else 1.12f) * (1f + 2f * z.pow(1.2f))
         f.focusU = clip.horizonU + (LeadTrack.u(f.positionSec) - clip.horizonU) * pull
-        f.focusV = clip.horizonV + (LeadTrack.V - clip.horizonV) * pull
-        f.anchorX = 0.5f - playerX * 0.02f
+        f.focusV = clip.horizonV + (LeadTrack.v(f.positionSec) - clip.horizonV) * pull
+        // 핸들을 돌리면 차가 그쪽으로 가는 만큼 바깥이 반대로 밀린다. 미끄러질 때는 좌우로 흔들린다.
+        // 영상은 화면보다 넓게 깔려 있어 이만큼 밀어도 가장자리가 드러나지 않는다
+        val steer = if (clip == BackdropClip.PARKING) 0f else (steerVis / 60f).coerceIn(-1f, 1f) * 0.075f
+        val sway = slip * (0.035f * sin(t * 2.3f) + 0.02f * sin(t * 5.1f + 1f))
+        f.anchorX = 0.5f - steer + sway
         f.anchorY = VANISH_Y + 0.04f * pull
     }
 

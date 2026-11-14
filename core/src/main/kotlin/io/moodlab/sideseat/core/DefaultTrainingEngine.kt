@@ -34,9 +34,11 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val choiceSteps get() = steps.filter { it.choice != null }
         val allDone get() = steps.all { it.id in doneAt }
 
-        /** 신호 단계가 다 끝나면 선택 단계를 순서대로 묻는다. */
-        fun currentChoice(): StepDef? =
-            if (signalSteps.all { it.id in doneAt }) choiceSteps.firstOrNull { it.id !in doneAt } else null
+        /** 선택 단계는 목록에서 자기보다 앞에 있는 단계가 모두 끝나면 묻는다(끝에 있으면 신호 단계가 다 끝난 뒤). */
+        fun currentChoice(): StepDef? {
+            val i = steps.indexOfFirst { it.id !in doneAt }
+            return if (i >= 0 && steps[i].choice != null) steps[i] else null
+        }
 
         fun shownLimitMs(): Long = if (def.id == SituationId.SUDDEN_STOP) config.suddenStopStarsMs.last() else limitMs
 
@@ -291,6 +293,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val sinceActive = nowMs - r.activeStartMs
         for (step in r.signalSteps) {
             if (step.id in r.doneAt) continue
+            if (step.after != null && step.after !in r.doneAt) {
+                r.holdSince.remove(step.id)
+                continue
+            }
             val ok = step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
             if (ok) {
                 val since = r.holdSince.getOrPut(step.id) { nowMs }
@@ -337,10 +343,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private fun succeed(r: Run, nowMs: Long) {
         r.endMs = nowMs
         val measured = r.doneAt.filterKeys { it !in r.preDone }.values
-        val reaction = if (r.def.id == SituationId.SUDDEN_STOP) {
-            r.doneAt["brake"]?.minus(r.activeStartMs)
-        } else {
-            measured.maxOrNull()?.minus(r.activeStartMs)
+        val reaction = when {
+            r.def.id == SituationId.SUDDEN_STOP -> r.doneAt["brake"]?.minus(r.activeStartMs)
+            r.def.successLine != null -> null // 버티는 상황은 걸린 시간을 재지 않는다
+            else -> measured.maxOrNull()?.minus(r.activeStartMs)
         }
         var stars = stars(r, reaction)
         if (r.attempt > 0) stars = minOf(stars, config.retryMaxStars)
@@ -389,6 +395,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     private fun successLine(r: Run, stars: Int, reaction: Long?): String {
         if (r.def.id == SituationId.BEFORE_EXIT) return "좋아요. 이제 내려도 돼요."
+        r.def.successLine?.let { return if (r.penalties.isEmpty()) it else "됐어요. 다음엔 밟거나 꺾지 않고 버텨 봐요." }
         val sec = reaction?.let { String.format(Locale.ROOT, "%.1f", it / 1000.0) }
         return when {
             sec == null -> "좋아요."
@@ -581,6 +588,8 @@ internal class SceneSim(private val config: TrainingConfig) {
     private var tunnel = false
     private var warning: String? = null
     private var parkingLot = false
+    private var sign: String? = null
+    private var slip = 0f
 
     fun update(
         dtMs: Long,
@@ -596,7 +605,24 @@ internal class SceneSim(private val config: TrainingConfig) {
         val briefing = phase == TrainingPhase.BRIEFING
         fun on(id: SituationId) = inSit && situation == id
 
-        rain = if (on(SituationId.HEAVY_RAIN)) approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt) else approach(rain, 0f, 0.1f, dt)
+        rain = when {
+            on(SituationId.HEAVY_RAIN) -> approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt)
+            on(SituationId.HYDROPLANING) -> approach(rain, 0.7f, 0.8f, dt)
+            else -> approach(rain, 0f, 0.1f, dt)
+        }
+        // 수막현상: 물 위에 뜬 동안 차가 좌우로 흔들린다. 브레이크를 밟거나 핸들을 꺾으면 더 크게 미끄러진다
+        slip = when {
+            on(SituationId.HYDROPLANING) && active -> {
+                val panic = state.brakePressed == true || kotlin.math.abs(state.steeringAngleDeg ?: 0f) > config.hydroSteerDeg
+                approach(slip, if (panic) 1f else 0.5f, 1.5f, dt)
+            }
+            else -> approach(slip, 0f, 0.5f, dt)
+        }
+        sign = when {
+            on(SituationId.RIGHT_TURN_CROSSWALK) -> "CROSSWALK"
+            on(SituationId.HIPASS_WRONG_LANE) -> "HIPASS"
+            else -> null
+        }
         fogOutside = if (on(SituationId.DENSE_FOG)) approach(fogOutside, 0.85f, 0.6f, dt) else approach(fogOutside, 0f, 0.15f, dt)
 
         // 성에 제거가 켜져 있어야 걷히기 시작하고, 에어컨·외기가 속도를 더한다
@@ -661,6 +687,11 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.UNINTENDED_ACCEL) && active ->
                 if (braking) (speed - (18f + if (state.epbOn()) 12f else 0f) * dt).coerceAtLeast(0f) else (speed + 10f * dt).coerceAtMost(170f)
             braking -> (speed - 25f * dt).coerceAtLeast(0f)
+            // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
+            on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
+            on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
+            // 물 위에 뜬 동안은 발을 떼면 속도가 천천히 준다
+            on(SituationId.HYDROPLANING) && active -> approach(speed, config.cruiseSpeedKmh * 0.6f, 5f, dt)
             else -> approach(speed, config.cruiseSpeedKmh, 6f, dt)
         }
 
@@ -688,6 +719,8 @@ internal class SceneSim(private val config: TrainingConfig) {
         warningLight = warning,
         parkingLot = parkingLot,
         drowsyBlur = drowsy,
+        sign = sign,
+        slip = slip,
     )
 
     private fun approach(cur: Float, target: Float, ratePerSec: Float, dt: Float): Float {

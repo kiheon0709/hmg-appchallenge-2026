@@ -70,6 +70,8 @@ data class VehicleState(
 enum class SituationId {
     HEAVY_RAIN, FOGGED_WINDSHIELD, SUDDEN_STOP, TUNNEL, DENSE_FOG, ONCOMING_GLARE,
     BREAKDOWN, WARNING_LIGHT, DROWSY, UNINTENDED_ACCEL, BEFORE_EXIT, WIPER_DEBRIS,
+    // 길 위의 규칙(11-14 추가). 기록은 이름으로 저장하므로 뒤에 붙여도 이전 기록과 호환된다.
+    RIGHT_TURN_CROSSWALK, HIGHWAY_MERGE, HYDROPLANING, HIPASS_WRONG_LANE,
 }
 
 data class StepView(val id: String, val label: String, val done: Boolean)
@@ -121,6 +123,10 @@ data class SceneParams(
     val parkingLot: Boolean = false,
     /** 졸음 흐림(S09). */
     val drowsyBlur: Float = 0f,
+    /** 화면에 띄울 도로 표지 키. "CROSSWALK"(횡단보도), "HIPASS"(하이패스 차로). 없으면 null. */
+    val sign: String? = null,
+    /** 차가 미끄러지는 정도(수막현상). 화면이 좌우로 흔들린다. */
+    val slip: Float = 0f,
 )
 
 data class SituationResult(

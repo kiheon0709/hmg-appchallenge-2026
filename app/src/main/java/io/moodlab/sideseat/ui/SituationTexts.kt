@@ -34,7 +34,7 @@ internal object SituationTexts {
         "low_beam_on", "lights_off" -> "sw_headlight"
         "high_beam_off" -> "sw_highbeam"
         "fog_on" -> "sw_fog"
-        "hazard_on" -> "sw_hazard"
+        "hazard_on", "hazard_confirm" -> "sw_hazard"
         "defrost_on" -> "sw_defrost"
         "ac_on" -> "sw_ac"
         "fresh_air" -> "sw_recirc"

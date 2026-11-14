@@ -19,10 +19,12 @@ class SituationDef(
     val onceSfx: List<String> = emptyList(),
     /** 힌트를 말하지 않는다(반응 시간 상황). */
     val noHint: Boolean = false,
+    /** 걸린 시간을 재지 않는 상황(버티기)의 성공 대사. 있으면 "~초 걸렸어요" 대신 이 말을 한다. */
+    val successLine: String? = null,
 )
 
 /**
- * 해야 할 조작 하나. [choice]가 있으면 말이나 화면 선택으로 답하는 단계이고, 신호 단계가 모두 끝난 뒤 순서대로 묻는다.
+ * 해야 할 조작 하나. [choice]가 있으면 말이나 화면 선택으로 답하는 단계이고, 목록에서 자기보다 앞에 있는 단계가 모두 끝나면 묻는다.
  * @param available 이 단계를 판정할 신호가 있는가. 없으면 단계를 빼고, [essential] 단계가 없으면 상황 전체를 건너뛴다.
  * @param setup 시작 때 이미 [done] 조건이 참이면 되돌려 달라고 할 말("와이퍼를 꺼 두세요").
  * @param holdMs 조건을 이만큼 유지해야 완료(반응 시간은 처음 참이 된 때).
@@ -40,6 +42,8 @@ class StepDef(
     val choice: ChoiceDef? = null,
     /** 화면 속 가상 속도(km/h)까지 보고 판정할 때(S05 감속). 있으면 [done] 대신 쓴다. */
     val doneWithSpeed: ((VehicleState, Float) -> Boolean)? = null,
+    /** 이 단계(id)가 끝난 뒤에만 인정한다(합류: 깜빡이 다음에 조향). */
+    val after: String? = null,
 )
 
 class ChoiceDef(
@@ -101,13 +105,42 @@ object SituationCatalog {
         available = { it.lowBeamOn != null }, done = { it.lowBeamOn == true },
     )
 
+    // 앞이 안 보이는 상황(폭우·김서림·짙은 안개)의 공통 절차: 먼저 브레이크로 속도를 줄이고 그 상황의 조작을 한다.
+    // 폭우·안개의 "절반"은 시행규칙 제19조 제2항(가시거리 100m 이내 50% 감속)이고, 김서림은 그 조문 대상이 아니라 수치를 말하지 않는다.
+    // 비상등 단계는 공식 근거가 약해 꺼 두었다(TrainingConfig.lowVisibilityHazardStep, docs/plan/safety-sources.md 16번).
+    private fun slowDown(config: TrainingConfig, label: String, hint: String, fraction: Float = config.fogSlowFraction) = StepDef(
+        id = "slow_down", label = label, hint = hint,
+        available = { it.brakePressed != null },
+        doneWithSpeed = { _, v -> v <= config.cruiseSpeedKmh * fraction },
+    )
+
+    private val hazardConfirm = StepDef(
+        id = "hazard_confirm", label = "비상등 켜기", hint = HAZARD_HINT,
+        choice = ChoiceDef(
+            question = "비상등 켰나요?",
+            options = listOf(
+                ChoiceOption("네, 켰어요", listOf("네", "응", "예", "켰", "그래")),
+                ChoiceOption("아직이요", listOf("아직", "아니", "안 켰", "안켰")),
+            ),
+            correct = 0,
+            wrongLine = "빨간 삼각형 비상등 버튼을 눌러요. 켰으면 '응'이라고 해 주세요.",
+            replyKind = ReplyKind.YES_NO,
+            penaltyFree = true,
+        ),
+    )
+
+    private fun sightFirst(config: TrainingConfig, label: String, hint: String, fraction: Float = config.fogSlowFraction): List<StepDef> =
+        listOfNotNull(slowDown(config, label, hint, fraction), hazardConfirm.takeIf { config.lowVisibilityHazardStep })
+
+    private fun hazardWords(config: TrainingConfig) = if (config.lowVisibilityHazardStep) "속도부터 줄이고 비상등을 켜요." else "속도부터 줄여요."
+
     fun all(config: TrainingConfig = TrainingConfig()): List<SituationDef> = listOf(
         SituationDef(
             id = SituationId.HEAVY_RAIN, title = "폭우",
-            intro = "비가 쏟아져요. 앞이 안 보여요!",
+            intro = "비가 쏟아져요. 앞이 안 보여요! 먼저 속도부터 줄여요.",
             // 출처: 도로교통법 제37조(비 올 때 등화), 시행규칙 제19조(가시거리 100m 이내 50% 감속).
-            lesson = "폭우엔 전조등을 켜고 와이퍼를 가장 빠르게, 속도는 절반으로 줄여요.",
-            steps = listOf(
+            lesson = "앞이 안 보이면 ${hazardWords(config)} 그다음 와이퍼를 가장 빠르게, 전조등도 켜요.",
+            steps = sightFirst(config, "속도 절반으로 줄이기", "브레이크를 밟아 속도를 절반으로 줄여요.") + listOf(
                 StepDef(
                     id = "wiper_fast", label = "와이퍼 빠르게", essential = true,
                     hint = "와이퍼를 가장 빠른 단으로 바꿔요.", setup = "와이퍼를 꺼 두세요",
@@ -119,9 +152,9 @@ object SituationCatalog {
         ),
         SituationDef(
             id = SituationId.FOGGED_WINDSHIELD, title = "앞유리 김서림",
-            intro = "터널을 나왔더니 앞유리가 뿌예져요!",
-            lesson = "김서림엔 성에 제거, 에어컨, 외기. 이 세 개예요.",
-            steps = listOf(
+            intro = "터널을 나왔더니 앞유리가 뿌예져요! 먼저 속도부터 줄여요.",
+            lesson = "앞유리가 뿌예지면 ${hazardWords(config)} 그다음 성에 제거, 에어컨, 외기. 이 세 개예요.",
+            steps = sightFirst(config, "속도 줄이기", "브레이크를 밟아 속도를 줄여요.", config.mistSlowFraction) + listOf(
                 StepDef(
                     id = "defrost_on", label = "앞유리 성에 제거", essential = true,
                     hint = "앞유리 모양 성에 제거를 켜요.", setup = "앞유리 성에 제거를 꺼 두세요",
@@ -169,18 +202,10 @@ object SituationCatalog {
         ),
         SituationDef(
             id = SituationId.DENSE_FOG, title = "짙은 안개",
-            intro = "안개가 짙어요. 앞이 하얘요.",
+            intro = "안개가 짙어요. 앞이 하얘요. 먼저 속도부터 줄여요.",
             // 출처: 도로교통법 제37조(등화), 시행규칙 제19조(가시거리 100m 이내 50% 감속). 안개등은 신호를 못 읽어 말로만 안내(실측).
-            lesson = "안개엔 전조등을 켜고 속도를 절반으로 줄여요. 안개등이 있으면 같이 켜요.",
-            steps = listOf(
-                lowBeamOn.copyEssential(),
-                StepDef(
-                    id = "slow_down", label = "속도 절반으로 줄이기",
-                    hint = "브레이크를 밟아 속도를 절반으로 줄여요.",
-                    available = { it.brakePressed != null },
-                    doneWithSpeed = { _, v -> v <= config.cruiseSpeedKmh * config.fogSlowFraction },
-                ),
-            ),
+            lesson = "안개가 짙으면 ${hazardWords(config)} 전조등을 켜고, 안개등이 있으면 같이 켜요.",
+            steps = sightFirst(config, "속도 절반으로 줄이기", "브레이크를 밟아 속도를 절반으로 줄여요.") + listOf(lowBeamOn.copyEssential()),
             // 상향등 감점 없음: 근거 원문 미확인(명세 5.2).
         ),
         SituationDef(
@@ -364,6 +389,97 @@ object SituationCatalog {
                 PenaltyDef("HARD_BRAKE", "급브레이크는 뒤차가 위험해요. 비상등부터예요.") { c -> HardBrakeDetector(c.hardBrakeWindowMs, c.hardBrakeHoldMs) },
             ),
         ),
+        SituationDef(
+            // 출처: 도로교통법 제27조 제1항(보행자가 건너거나 건너려 하면 횡단보도 앞 일시정지), 시행규칙 별표 2(적색 신호 우회전은 정지 후 서행).
+            id = SituationId.RIGHT_TURN_CROSSWALK, title = "우회전 횡단보도",
+            intro = "우회전할 거예요. 횡단보도에 사람이 있어요!",
+            lesson = "우회전할 때 횡단보도에 사람이 건너거나 건너려고 하면 일단 멈춰요. 빨간불이면 사람이 없어도 한 번 멈췄다가 가요.",
+            steps = listOf(
+                StepDef(
+                    id = "full_stop", label = "완전히 멈추기", essential = true,
+                    hint = "브레이크를 밟아 완전히 멈춰요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeed = { _, v -> v <= 0.5f },
+                ),
+            ),
+        ),
+        SituationDef(
+            // 출처: 도로교통법 제65조(고속도로 진입 시 본선 차 우선), 제38조·시행령 별표 2(진로 변경 신호: 고속도로 100m 이전).
+            // 깜빡이 유지 시간은 게임 규칙이고, 대사에서는 "몇 초"라고 말하지 않는다.
+            id = SituationId.HIGHWAY_MERGE, title = "고속도로 합류",
+            intro = "고속도로로 들어가요. 깜빡이부터 켜고 본선 차를 봐요.",
+            lesson = "합류할 땐 깜빡이를 먼저 켜서 뒤차가 볼 시간을 주고, 본선 차가 지나간 뒤에 들어가요.",
+            steps = listOf(
+                StepDef(
+                    id = "signal_left", label = "왼쪽 깜빡이 켜고 유지", essential = true, holdMs = config.mergeSignalHoldMs,
+                    hint = "왼쪽 깜빡이를 켜고 그대로 둬요.", setup = "깜빡이를 꺼 두세요",
+                    available = { it.turnSignal != null }, done = { it.turnSignal == TurnSignal.LEFT },
+                ),
+                StepDef(
+                    id = "steer_left", label = "핸들 왼쪽으로 조금", after = "signal_left",
+                    hint = "깜빡이를 켠 채로 핸들을 왼쪽으로 조금만 돌려요.",
+                    available = { it.steeringAngleDeg != null },
+                    done = { (it.steeringAngleDeg ?: 0f) <= -config.mergeSteerDeg },
+                ),
+            ),
+            penalties = listOf(
+                PenaltyDef("STEER_NO_SIGNAL", "깜빡이를 먼저 켜고 들어가요.") { c -> SteerWithoutSignalDetector(c.mergeSteerDeg) },
+            ),
+        ),
+        SituationDef(
+            // "하지 않기"를 익히는 상황: 급하게 밟거나 꺾지 않고 버틴다.
+            // 출처: 도로교통공단·행정안전부(2025-06-27) "급제동하지 않도록", 한국도로공사 빗길 요령 "급출발, 급핸들, 급브레이크"는 미끄러짐의 원인,
+            // 현대 취급설명서 "급하게 제동하지 마십시오". "발을 떼고 핸들을 유지"하는 단계 절차는 공식 원문을 확인하지 못해 대사에 넣지 않았다.
+            // 브레이크 신호가 밟음/안 밟음뿐이라 이 상황에서는 밟는 것 자체를 급브레이크로 본다.
+            id = SituationId.HYDROPLANING, title = "수막현상",
+            intro = "차가 물 위에서 미끄러져요! 급하게 밟거나 꺾지 말고 그대로 버텨요.",
+            lesson = "빗길에서 미끄러질 땐 급브레이크와 급핸들이 더 위험해요. 급하게 밟거나 꺾지 않고 버텨요. 비 오는 날은 미리 속도를 줄여 두는 게 먼저예요.",
+            successLine = "잘 버텼어요. 급하게 밟거나 꺾지 않는 게 먼저예요.",
+            steps = listOf(
+                StepDef(
+                    id = "hold_steady", label = "급하게 밟거나 꺾지 않기", essential = true, holdMs = config.hydroHoldMs,
+                    hint = "급하게 밟거나 꺾지 말고 핸들을 똑바로 잡고 있어요.",
+                    available = { it.brakePressed != null && it.steeringAngleDeg != null },
+                    done = { it.brakePressed != true && kotlin.math.abs(it.steeringAngleDeg ?: 0f) <= config.hydroSteerDeg },
+                ),
+            ),
+            penalties = listOf(
+                PenaltyDef("HYDRO_BRAKE", "급하게 밟으면 더 미끄러져요. 발을 떼고 버텨요.") { _ -> PenaltyDetector { st, _, _, _ -> st.brakePressed == true } },
+                PenaltyDef("HYDRO_STEER", "핸들을 급하게 꺾지 말고 똑바로 잡아요.") { c ->
+                    PenaltyDetector { st, _, _, _ -> kotlin.math.abs(st.steeringAngleDeg ?: 0f) > c.hydroSteerDeg }
+                },
+            ),
+            loopSfx = listOf("rain"), onceSfx = listOf("tire"),
+            noHint = true,
+        ),
+        SituationDef(
+            // 출처: 정책브리핑 2018-07-20·2019-10-02(들어섰다면 일단 통과, 후진·정지는 큰 사고 위험), 한국도로공사 미납통행료 납부안내.
+            id = SituationId.HIPASS_WRONG_LANE, title = "하이패스 차로 오진입",
+            intro = "앗, 하이패스 차로로 잘못 들어왔어요. 단말기가 없어요.",
+            lesson = "하이패스 차로에 잘못 들어가도 멈추거나 후진하지 않아요. 그대로 지나가고 요금은 나중에 내면 돼요.",
+            steps = listOf(
+                quizStep(
+                    "pass", "어떻게 할까", essential = true,
+                    question = "어떻게 할까요?",
+                    options = listOf(
+                        ChoiceOption("멈추지 않고 그대로 지나가요", listOf("그대로", "지나", "통과", "계속")),
+                        ChoiceOption("차를 세우고 후진해요", listOf("후진", "뒤로", "세우")),
+                        ChoiceOption("차에서 내려 요금소로 가요", listOf("내려", "요금소로", "걸어")),
+                    ),
+                    wrongLine = "멈추거나 후진하면 큰 사고로 이어질 수 있어요. 그대로 지나가요.",
+                ),
+                quizStep(
+                    "pay", "요금은",
+                    question = "그럼 요금은 어떻게 할까요?",
+                    options = listOf(
+                        ChoiceOption("나중에 내요. 나가는 요금소나 누리집에서 정산해요", listOf("나중", "정산", "요금소", "누리집", "홈페이지")),
+                        ChoiceOption("안 내도 돼요", listOf("안 내", "안내", "공짜")),
+                        ChoiceOption("지금 차를 세우고 내요", listOf("지금", "세우")),
+                    ),
+                    wrongLine = "요금은 없어지지 않아요. 나가는 요금소에서 말하거나 나중에 정산하면 돼요.",
+                ),
+            ),
+        ),
     )
 
     fun title(id: SituationId): String = all().first { it.id == id }.title
@@ -380,7 +496,7 @@ object SituationCatalog {
         choice = ChoiceDef(question, options, correct = 0, wrongLine = wrongLine),
     )
 
-    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice, doneWithSpeed)
+    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice, doneWithSpeed, after)
 }
 
 /** 주차 브레이크(일반·전자식) 경고등 또는 주차 브레이크 신호. */
@@ -419,5 +535,13 @@ internal class HardBrakeDetector(private val windowMs: Long, private val holdMs:
             pressStart = null
         }
         return pressStart?.let { nowMs - it >= holdMs } ?: false
+    }
+}
+
+/** 깜빡이를 켜지 않은 채 핸들을 [deg] 넘게 돌리면 감점(합류). */
+internal class SteerWithoutSignalDetector(private val deg: Float) : PenaltyDetector {
+    override fun update(state: VehicleState, nowMs: Long, sinceActiveMs: Long, doneSteps: Set<String>): Boolean {
+        val a = state.steeringAngleDeg ?: return false
+        return kotlin.math.abs(a) >= deg && state.turnSignal != TurnSignal.LEFT && "signal_left" !in doneSteps
     }
 }

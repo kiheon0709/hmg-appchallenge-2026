@@ -295,18 +295,22 @@ internal class WorldLayer {
                 if (sim.highBeam > 0.01f) glow(white, f.viewX(0.385f), f.viewY(0.5f), w * 0.4f, h * 0.2f, alpha = sim.highBeam * 0.3f)
             }
         }
-        // 앞차 급정거: 브레이크등이 켜지고, 다가갈수록 그 빛이 유리와 젖은 노면에 번진다
+        // 앞차 급정거: 영상 속 앞차의 두 미등 자리에 브레이크등 빛을 얹는다. 빛은 등 크기의 두세 배 안에서 끝나고,
+        // 다가갈수록 젖은 노면에 비친 빛만 조금 길어진다
         if (f.clip == BackdropClip.NIGHT_ROAD && (sim.leadBrake > 0.02f || sim.leadZoom > 0.02f)) {
-            val lx = f.viewX(LeadTrack.u(f.positionSec)); val ly = f.viewY(LeadTrack.V)
+            val lx = f.viewX(LeadTrack.u(f.positionSec)); val ly = f.viewY(LeadTrack.v(f.positionSec))
             val cw = LeadTrack.width(f.positionSec) * f.dw
             sim.leadSx = lx; sim.leadSy = ly; sim.leadK = cw / 1.8f
             val on = sim.leadBrake
-            glow(red, lx - cw * 0.36f, ly, cw * (0.3f + 0.5f * on), alpha = 0.9f * on)
-            glow(red, lx + cw * 0.36f, ly, cw * (0.3f + 0.5f * on), alpha = 0.9f * on)
-            glow(red, lx, ly - cw * 0.5f, cw * 0.22f, cw * 0.07f, alpha = 0.8f * on)
-            val u = sim.leadZoom * (0.35f + 0.65f * on)
-            glow(red, lx, ly, cw * 2.4f, cw * 1.3f, alpha = 0.3f * u)
-            glow(red, lx, ly + cw * 1.1f, cw * 1.1f, cw * 1.6f, alpha = 0.26f * u)
+            val lampR = cw * 0.16f
+            glow(red, lx - cw * 0.37f, ly, lampR * 2.4f, alpha = 0.95f * on)
+            glow(red, lx + cw * 0.37f, ly, lampR * 2.4f, alpha = 0.95f * on)
+            glow(white, lx - cw * 0.37f, ly, lampR * 0.7f, alpha = 0.5f * on)
+            glow(white, lx + cw * 0.37f, ly, lampR * 0.7f, alpha = 0.5f * on)
+            glow(red, lx, ly - cw * 0.3f, cw * 0.16f, cw * 0.05f, alpha = 0.8f * on)
+            val u = sim.leadZoom * on
+            glow(red, lx - cw * 0.37f, ly + cw * 0.95f, lampR * 1.2f, cw * 0.7f, alpha = 0.2f * u)
+            glow(red, lx + cw * 0.37f, ly + cw * 0.95f, lampR * 1.2f, cw * 0.7f, alpha = 0.2f * u)
         }
         // 맞은편 눈부심: 왼쪽 맞은편 차로에서 전조등이 다가온다
         if (sim.glare > 0.01f && f.clip != BackdropClip.PARKING) {

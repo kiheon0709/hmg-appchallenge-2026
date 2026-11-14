@@ -21,11 +21,11 @@ class TrainingEngineTest {
     @Test
     fun `default numbers follow the spec`() {
         val c = TrainingConfig()
-        assertEquals(8_000, c.limitOf(SituationId.HEAVY_RAIN))
-        assertEquals(10_000, c.limitOf(SituationId.FOGGED_WINDSHIELD))
+        assertEquals(14_000, c.limitOf(SituationId.HEAVY_RAIN))
+        assertEquals(16_000, c.limitOf(SituationId.FOGGED_WINDSHIELD))
         assertEquals(listOf(700L, 1_000L, 1_500L), c.suddenStopStarsMs)
         assertEquals(6_000, c.limitOf(SituationId.TUNNEL))
-        assertEquals(10_000, c.limitOf(SituationId.DENSE_FOG))
+        assertEquals(12_000, c.limitOf(SituationId.DENSE_FOG))
         assertEquals(5_000, c.limitOf(SituationId.ONCOMING_GLARE))
         assertEquals(0, c.limitOf(SituationId.WARNING_LIGHT)) // 말로 답하는 상황은 틀린 횟수로
         assertEquals(0, c.limitOf(SituationId.BREAKDOWN))
@@ -66,7 +66,11 @@ class TrainingEngineTest {
     fun `chapters follow spec order and drop disabled situations`() {
         val e = DefaultTrainingEngine()
         val ch = e.chapters()
-        assertEquals(listOf("C1", "C2", "C3", "C4"), ch.map { it.id })
+        assertEquals(listOf("C1", "C2", "C3", "C4", "C5"), ch.map { it.id })
+        assertEquals(
+            listOf(SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIGHWAY_MERGE, SituationId.HYDROPLANING, SituationId.HIPASS_WRONG_LANE),
+            ch[4].situations,
+        )
         assertEquals(
             listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.SUDDEN_STOP),
             ch.first().situations,
@@ -94,9 +98,10 @@ class TrainingEngineTest {
         val d = driver(state = baseState.copy(acOn = null))
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
-        assertEquals(listOf("defrost_on", "fresh_air"), d.view.steps.map { it.id })
+        assertEquals(listOf("slow_down", "defrost_on", "fresh_air"), d.view.steps.map { it.id })
     }
 
     @Test
@@ -108,14 +113,14 @@ class TrainingEngineTest {
         assertEquals(listOf("first", "trunk", "evacuate", "report"), d.view.steps.map { it.id })
         assertNotNull(d.view.choice)
 
-        // 안개: 전조등 + 브레이크로 가상 속도를 절반 이하로
+        // 안개: 브레이크로 가상 속도를 절반 이하로(먼저) + 전조등
         val f = driver(state = emu)
         f.engine.inject(SituationId.DENSE_FOG, f.now)
         f.untilActive(SituationId.DENSE_FOG)
-        assertEquals(listOf("low_beam_on", "slow_down"), f.view.steps.map { it.id })
+        assertEquals(listOf("slow_down", "low_beam_on"), f.view.steps.map { it.id })
         f.set { it.copy(lowBeamOn = true) }
         f.advance(1_000)
-        assertEquals(listOf(true, false), f.view.steps.map { it.done })
+        assertEquals(listOf(false, true), f.view.steps.map { it.done })
         f.set { it.copy(brakePressed = true) }
         f.until { it.phase == TrainingPhase.SUCCESS }
         assertTrue(f.view.virtualSpeedKmh <= 40f)
@@ -138,15 +143,17 @@ class TrainingEngineTest {
         assertEquals(TrainingPhase.CRUISE, d.tick().phase)
         assertTrue(d.says().first().startsWith("첫 빗길."))
 
-        // S01 폭우: 2초에 와이퍼 High + 전조등 → 제한 8초의 절반 안 → ★3
+        // S01 폭우: 먼저 감속, 그다음 와이퍼 High + 전조등을 2초에 → 제한 14초의 절반 안 → ★3
         d.untilActive(SituationId.HEAVY_RAIN)
         assertTrue(d.events.contains(CoachEvent.Sfx("rain", loop = true)))
         assertTrue(d.events.contains(CoachEvent.Ambient(AmbientMood.ALERT)))
-        assertTrue("비가 쏟아져요. 앞이 안 보여요!" in d.says())
-        d.advance(1_000)
+        assertTrue("비가 쏟아져요. 앞이 안 보여요! 먼저 속도부터 줄여요." in d.says())
+        val rainStart = d.now
+        d.slowDownFirst()
+        assertTrue(d.view.virtualSpeedKmh <= 40f)
         d.set { it.copy(wiper = WiperLevel.HIGH) }
-        assertEquals(listOf(true, false), d.view.steps.map { it.done })
-        d.advance(1_000)
+        assertEquals(listOf(true, true, false), d.view.steps.map { it.done })
+        d.advance(2_000 - (d.now - rainStart))
         d.set { it.copy(lowBeamOn = true) }
         assertEquals(TrainingPhase.SUCCESS, d.view.phase)
         assertEquals(3, d.view.lastResult?.stars)
@@ -159,9 +166,11 @@ class TrainingEngineTest {
         d.until { it.phase == TrainingPhase.CRUISE }
         assertTrue(SituationCatalog.all().first { it.id == SituationId.HEAVY_RAIN }.lesson in d.says())
 
-        // S02 김서림: 6초에 세 조작 → 절반(5초) 넘김 → ★2
+        // S02 김서림: 감속 뒤 9초에 세 조작 → 절반(8초) 넘김 → ★2
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
-        d.advance(6_000)
+        val fogStart = d.now
+        d.slowDownFirst()
+        d.advance(9_000 - (d.now - fogStart))
         d.set { it.copy(defrostFrontOn = true, acOn = true, recirculationOn = false) }
         assertEquals(2, d.view.lastResult?.stars)
 
@@ -200,10 +209,11 @@ class TrainingEngineTest {
         val d = driver(state = baseState.copy(lowBeamOn = true))
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
-        assertEquals(listOf(false, true), d.view.steps.map { it.done })
-        d.advance(500)
+        assertEquals(listOf(false, false, true), d.view.steps.map { it.done })
+        val start = d.now
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH) }
-        assertEquals(500L, d.view.lastResult?.reactionMs) // 미리 된 단계는 반응 시간에 넣지 않는다
+        assertEquals(d.now - start, d.view.lastResult?.reactionMs) // 미리 된 단계는 반응 시간에 넣지 않는다
     }
 
     @Test
@@ -212,11 +222,12 @@ class TrainingEngineTest {
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
         d.clearEvents()
-        d.advance(3_900)
+        d.advance(6_900)
         assertEquals(TrainingPhase.ACTIVE, d.view.phase)
         d.advance(200)
         assertEquals(TrainingPhase.HINT, d.view.phase)
-        assertTrue("와이퍼를 가장 빠른 단으로 바꿔요." in d.says())
+        // 아직 안 한 첫 단계(감속)를 말한다
+        assertTrue("브레이크를 밟아 속도를 절반으로 줄여요." in d.says())
     }
 
     @Test
@@ -224,7 +235,8 @@ class TrainingEngineTest {
         val d = driver()
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
-        d.advance(9_000)
+        d.advance(15_000)
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         assertEquals(1, d.view.lastResult?.stars)
     }
@@ -235,16 +247,17 @@ class TrainingEngineTest {
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
         d.until { it.phase == TrainingPhase.FAIL }
-        assertTrue(d.view.elapsedMs in 16_000L..16_050L, "제한 8초 + 초과 8초 뒤 실패: ${d.view.elapsedMs}")
+        assertTrue(d.view.elapsedMs in 28_000L..28_050L, "제한 14초 + 초과 14초 뒤 실패: ${d.view.elapsedMs}")
         val failed = assertNotNull(d.view.lastResult)
         assertEquals(0, failed.stars)
-        assertEquals(listOf("wiper_fast", "low_beam_on"), failed.missedStepIds)
+        assertEquals(listOf("slow_down", "wiper_fast", "low_beam_on"), failed.missedStepIds)
         assertTrue(d.events.contains(CoachEvent.Sfx("fail")))
         assertTrue(d.says().last().endsWith("한 번 더 해 볼까요?"))
 
         // 다시: 바로 같은 상황, 빠르게 해도 ★1
         d.untilActive(SituationId.HEAVY_RAIN)
         d.advance(500)
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         assertEquals(1, d.view.lastResult?.stars)
         d.set { it.copy(wiper = WiperLevel.OFF) }
@@ -258,12 +271,14 @@ class TrainingEngineTest {
         val d = driver()
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         d.set { it.copy(wiper = WiperLevel.OFF) }
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
         d.clearEvents()
         d.set { it.copy(wiper = WiperLevel.LOW) }
         assertTrue(d.says().any { it.startsWith("안쪽 김이라") })
+        d.slowDownFirst()
         d.set { it.copy(defrostFrontOn = true, acOn = true, recirculationOn = false) }
         assertEquals(1, d.view.lastResult?.stars)
         assertEquals(listOf("WIPER_ONLY"), d.view.lastResult?.penalties)
@@ -557,6 +572,7 @@ class TrainingEngineTest {
         val d = driver()
         d.engine.start("C1", d.now)
         d.untilActive(SituationId.HEAVY_RAIN)
+        d.slowDownFirst()
         d.set { it.copy(wiper = WiperLevel.HIGH, lowBeamOn = true) }
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
         d.clearEvents()
@@ -572,6 +588,7 @@ class TrainingEngineTest {
         d.tick()
         assertTrue(d.says().last().startsWith("이어서 할게요."))
         d.untilActive(SituationId.FOGGED_WINDSHIELD)
+        d.slowDownFirst()
         d.set { it.copy(defrostFrontOn = true, acOn = true, recirculationOn = false) }
         d.untilActive(SituationId.SUDDEN_STOP)
         d.set { it.copy(brakePressed = true) }
@@ -644,8 +661,9 @@ fun setupFor(id: SituationId, s: VehicleState): VehicleState = when (id) {
 
 /** 상황의 모든 신호 단계를 만족하는 상태. */
 fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
-    SituationId.HEAVY_RAIN -> s.copy(wiper = WiperLevel.HIGH, lowBeamOn = true)
-    SituationId.FOGGED_WINDSHIELD -> s.copy(defrostFrontOn = true, acOn = true, recirculationOn = false)
+    // 앞이 안 보이는 상황은 브레이크로 속도를 줄이는 것이 먼저다
+    SituationId.HEAVY_RAIN -> s.copy(brakePressed = true, wiper = WiperLevel.HIGH, lowBeamOn = true)
+    SituationId.FOGGED_WINDSHIELD -> s.copy(brakePressed = true, defrostFrontOn = true, acOn = true, recirculationOn = false)
     SituationId.SUDDEN_STOP -> s.copy(brakePressed = true)
     SituationId.TUNNEL -> s.copy(lowBeamOn = true)
     SituationId.DENSE_FOG -> s.copy(lowBeamOn = true, brakePressed = true)
@@ -656,4 +674,8 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.UNINTENDED_ACCEL -> s.copy(brakePressed = true)
     SituationId.BEFORE_EXIT -> s.copy(lowBeamOn = false, driverWindowOpenPct = 0, parkingBrakeOn = true)
     SituationId.WIPER_DEBRIS -> s.copy(hazardOn = true, wiper = WiperLevel.LOW)
+    SituationId.RIGHT_TURN_CROSSWALK -> s.copy(brakePressed = true)
+    SituationId.HIGHWAY_MERGE -> s.copy(turnSignal = TurnSignal.LEFT, steeringAngleDeg = -15f)
+    SituationId.HYDROPLANING -> s
+    SituationId.HIPASS_WRONG_LANE -> s
 }

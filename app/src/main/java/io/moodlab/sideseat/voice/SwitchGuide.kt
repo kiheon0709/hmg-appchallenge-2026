@@ -117,6 +117,7 @@ class SwitchGuide(
             "window_open" to "sw_window",
             "windows_closed" to "sw_window",
             "hazard_on" to "sw_hazard",
+            "hazard_confirm" to "sw_hazard",
             "parking_brake" to "sw_epb",
         )
     }

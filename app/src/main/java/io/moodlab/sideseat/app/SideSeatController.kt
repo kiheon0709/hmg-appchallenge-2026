@@ -569,4 +569,8 @@ fun situationTitle(id: SituationId): String = when (id) {
     SituationId.UNINTENDED_ACCEL -> "의도치 않은 가속"
     SituationId.BEFORE_EXIT -> "내리기 전"
     SituationId.WIPER_DEBRIS -> "앞유리 이물질"
+    SituationId.RIGHT_TURN_CROSSWALK -> "우회전 횡단보도"
+    SituationId.HIGHWAY_MERGE -> "고속도로 합류"
+    SituationId.HYDROPLANING -> "수막현상"
+    SituationId.HIPASS_WRONG_LANE -> "하이패스 차로 오진입"
 }

@@ -174,10 +174,11 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
                     }
                     Timer(view)
                 }
-                if (view.choice == null || !sz.wide) Spacer(Modifier.height(sz.dp(14f)))
+                // 보기가 셋 이상인 질문이 떠 있으면 목록은 접어서 선택지가 화면 밖으로 밀리지 않게 한다("네/아직" 확인 질문은 목록과 같이 보인다)
+                val showSteps = !sz.wide || (view.choice?.options?.size ?: 0) <= 2
+                if (showSteps) Spacer(Modifier.height(sz.dp(14f)))
                 val next = view.steps.indexOfFirst { !it.done }
-                // 선택지가 떠 있으면 그 질문이 지금 할 일이다. 목록은 접어서 선택지가 화면 밖으로 밀리지 않게 한다
-                if (view.choice == null || !sz.wide) {
+                if (showSteps) {
                     view.steps.forEachIndexed { i, step -> StepRow(step, current = i == next && view.phase != TrainingPhase.BRIEFING) }
                 }
             }
