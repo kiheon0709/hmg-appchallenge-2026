@@ -1,0 +1,51 @@
+11-15 05:27:10.483 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{ai.umos.maps.android.navigation.app/ai.umos.maps.android.navigation.app.MainActivity} (1000312), distractionOptimized: true)
+11-15 05:27:10.503 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{ai.umos.drivingview/ai.umos.drivingview.DrivingViewActivity} (1000313), distractionOptimized: true)
+11-15 05:27:12.086 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{ai.umos.drivingview/ai.umos.drivingview.DrivingViewActivity}
+11-15 05:27:12.318 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{ai.umos.maps.android.navigation.app/ai.umos.maps.android.navigation.app.MainActivity}
+11-15 05:27:19.089 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{ai.umos.systemdialogdispatcher/ai.umos.systemdialogdispatcher.ui.SystemDialogActivity} (taskId: 1000314)
+11-15 05:28:03.090 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000315), distractionOptimized: true)
+11-15 05:28:11.190 I/SideSeatMeasure(23281): app first vehicle state parked=true
+11-15 05:28:11.192 I/SideSeatMeasure(23281): app graph ready debug=false llm=false relay=false
+11-15 05:28:11.333 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 05:29:04.789 I/SideSeatMeasure(23281): app permissions {android.permission.RECORD_AUDIO=true, pleos.car.permission.FUSED_LOCATION=true, android.permission.POST_NOTIFICATIONS=true}
+11-15 05:29:04.818 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 05:29:05.415 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000316), distractionOptimized: true)
+11-15 05:29:08.540 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 05:29:08.546 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000315)
+11-15 05:27:17.357 E/AndroidRuntime(20102): FATAL EXCEPTION: Firebase Blocking Thread #0
+11-15 05:28:07.463 E/AndroidRuntime(30709): FATAL EXCEPTION: Firebase Blocking Thread #0
+11-15 05:28:07.632 E/AndroidRuntime(30709): FATAL EXCEPTION: Firebase Blocking Thread #1
+11-15 05:29:49.853 I/SideSeatMeasure(23281): app vehicle choice grandeur_gn7
+11-15 05:30:18.852 I/SideSeatMeasure(23281): app mode HOME -> TRAINING
+11-15 05:30:35.305 I/SideSeatMeasure(23281): app mode TRAINING -> HOME
+11-15 05:30:38.346 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000316)
+11-15 05:30:38.356 E/AndroidRuntime(18680): FATAL EXCEPTION: DefaultDispatcher-worker-1
+11-15 05:30:43.194 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000317), distractionOptimized: true)
+11-15 05:30:50.549 I/SideSeatMeasure(30873): app first vehicle state parked=true
+11-15 05:30:50.556 I/SideSeatMeasure(30873): app graph ready debug=false llm=false relay=false
+11-15 05:30:51.452 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 05:31:10.501 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000317)
+11-15 05:33:07.834 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000318), distractionOptimized: true)
+11-15 05:33:13.159 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 05:33:14.474 I/SideSeatMeasure(16695): app first vehicle state parked=true
+11-15 05:33:14.477 I/SideSeatMeasure(16695): app graph ready debug=false llm=false relay=false
+11-15 05:33:40.679 I/SideSeatMeasure(16695): app permissions {android.permission.RECORD_AUDIO=false, pleos.car.permission.FUSED_LOCATION=false, android.permission.POST_NOTIFICATIONS=false}
+11-15 05:33:40.686 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 05:33:40.772 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000319), distractionOptimized: true)
+11-15 05:33:42.660 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 05:33:42.671 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000318)
+11-15 05:34:21.940 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000319)
+11-15 05:36:34.402 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000320), distractionOptimized: true)
+11-15 05:36:39.919 I/SideSeatMeasure(21606): app first vehicle state parked=true
+11-15 05:36:39.920 I/SideSeatMeasure(21606): app graph ready debug=false llm=false relay=false
+11-15 05:36:40.601 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 05:37:04.603 I/SideSeatMeasure(21606): app vehicle choice ray_tam
+11-15 05:37:12.155 I/SideSeatMeasure(21606): app mode HOME -> TRAINING
+11-15 05:37:25.893 I/SideSeatMeasure(21606): app training C3 WARNING_LIGHT SUCCESS steps=meaning:1, action:1 result=WARNING_LIGHT★3 7200ms miss=[] pen=[]
+11-15 05:37:29.494 I/SideSeatMeasure(21606): app mode TRAINING -> HOME
+11-15 05:37:32.201 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000320)
+11-15 05:37:32.520 E/AndroidRuntime(32643): FATAL EXCEPTION: DefaultDispatcher-worker-1
+11-15 05:37:35.011 I/HOME_SCREEN(18317): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000321), distractionOptimized: true)
+11-15 05:37:39.477 I/SideSeatMeasure(10705): app first vehicle state parked=true
+11-15 05:37:39.482 I/SideSeatMeasure(10705): app graph ready debug=false llm=false relay=false
+11-15 05:37:40.111 I/HOME_SCREEN(18317): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
