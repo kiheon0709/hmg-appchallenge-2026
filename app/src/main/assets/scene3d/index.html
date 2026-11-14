@@ -326,7 +326,7 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   float l3 = 1. - smoothstep(.075 - aw, .075 + aw, abs(u + 5.4));
   float wear = 0.5 + 0.5*smoothstep(0.3, 0.55, n1.g + (n3.g - .5)*0.5);
   float wl = clamp(l1 + l2, 0., 1.) * wear, yl = l3 * wear;
-  float bl = 0.;
+  float bl = 0., gateL = 0.;
   if (uMark.y > 0.5) { // 횡단보도(1) · 하이패스 차로 유도선(2). uMark.x는 그 자리의 z
     float dzm = P.z - uMark.x;
     if (uMark.y < 1.5) {
@@ -334,6 +334,7 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
       float sl = step(abs(dzm - 3.3), 0.2) * step(abs(x), 5.3);
       wl = max(wl, max(cw, sl) * (0.6 + 0.4*wear));
     } else {
+      gateL = smoothstep(9., 3., abs(dzm)) * step(abs(x - 1.1), 8.6);
       bl = (1. - smoothstep(.09 - aw, .09 + aw, abs(abs(x) - 1.5))) * step(-14., dzm) * step(dzm, 90.) * (0.6 + 0.4*wear);
     }
   }
@@ -352,7 +353,7 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
   N = normalize(vec3((n1.g - .5)*0.09*rough + (n3.g - .5)*0.02*wet, 1., (n1.b*0.5 + n1.r*0.5 - .5)*0.26*rough));
   float fres = 0.04 + 0.96*pow(1. - max(V.y, 0.), 5.);
   spec = mix(0.03, fres*(0.55 + 0.6*pud), wet); gloss = mix(14., mix(160., 900., pud), wet);
-  emis = wet * fres * vec3(0.016, 0.020, 0.028) * (0.4 + 0.6*pud);
+  emis = wet * fres * vec3(0.016, 0.020, 0.028) * (0.4 + 0.6*pud) + col * TUN_COL * 2.2 * gateL;
   vec2 q = vec2((x - uLead.x)/1.0, (P.z - (uLead.y - 2.3))/2.5);
   col *= 1. - 0.8*smoothstep(1.35, 0.6, length(q))*step(0.01, uLead.z);
   emis += col * HL_COL * 1.4 * exp(-pow((x - uLead.x)/2.6, 2.) - pow((P.z - (uLead.y - 17.))/9., 2.)) * uLead.z;
@@ -484,57 +485,132 @@ void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, ino
 })();
 
 // ---------------------------------------------------------------- crosswalk pedestrians and toll gate (landmarks placed by the host)
+const UP = { uWalk: { value: 0 } };
+const tubeRing = (cx, cy, cz, rx, rz, n = 10) => { const r = []; for (let i = 0; i < n; i++) { const t = i / n * Math.PI * 2; r.push([cx + Math.cos(t) * rx, cy, cz + Math.sin(t) * rz]); } return r; };
 const peds = (() => {
   const b = new Builder();
-  const person = (ox, oz, k) => {
-    for (const s of [-1, 1]) b.box(ox + s * 0.11 * k - 0.07 * k, ox + s * 0.11 * k + 0.07 * k, 0, 0.84 * k, oz - 0.08 * k, oz + 0.08 * k, 0);
-    b.box(ox - 0.23 * k, ox + 0.23 * k, 0.80 * k, 1.44 * k, oz - 0.13 * k, oz + 0.13 * k, 1);
-    for (const s of [-1, 1]) b.box(ox + s * 0.29 * k - 0.055 * k, ox + s * 0.29 * k + 0.055 * k, 0.86 * k, 1.40 * k, oz - 0.07 * k, oz + 0.07 * k, 1);
-    b.box(ox - 0.10 * k, ox + 0.10 * k, 1.47 * k, 1.71 * k, oz - 0.11 * k, oz + 0.11 * k, 2);
+  // part: 고리들을 이어 붙인 둥근 몸 조각. limb > 0이면 (px, py)를 축으로 걸음에 맞춰 흔들린다(1·2 다리, 3·4 팔)
+  const part = (rings, m, limb = 0, px = 0, py = 0) => { const base = b.p.length / 3; b.loft(rings, m); b.cap(rings[0], m, true); b.cap(rings[rings.length - 1], m, false);
+    for (let i = base; i < b.p.length / 3; i++) { b.d[i * 4] = m; b.d[i * 4 + 1] = limb; b.d[i * 4 + 2] = px; b.d[i * 4 + 3] = py; } };
+  const person = (ox, oz, k, coat, opt = {}) => {
+    const R = (y, rx, rz, dx = 0, dz = 0) => tubeRing(ox + dx * k, y * k, oz + dz * k, rx * k, rz * k);
+    for (const s of [-1, 1]) { const z = s * 0.085, limb = s < 0 ? 1 : 2;
+      part([R(0.90, 0.085, 0.085, 0, z), R(0.50, 0.062, 0.062, 0, z), R(0.10, 0.046, 0.046, 0, z)], 0, limb, ox, 0.90 * k);
+      part([R(0.085, 0.06, 0.055, -0.035, z), R(0.045, 0.115, 0.058, -0.06, z), R(0.0, 0.118, 0.06, -0.06, z)], 5, limb, ox, 0.90 * k); }
+    const hem = opt.long ? 0.58 : 0.80;
+    part([R(hem, 0.135, 0.185), R(0.98, 0.115, 0.165), R(1.22, 0.125, 0.185), R(1.36, 0.12, 0.205), R(1.43, 0.07, 0.13)], coat);
+    part([R(1.41, 0.045, 0.045), R(1.50, 0.042, 0.042)], 2);
+    const hy = 1.605, hr = 0.105, head = [], hair = [];
+    for (let i = 0; i <= 6; i++) { const t = -Math.PI / 2 + i / 6 * Math.PI; head.push(R(hy + Math.sin(t) * hr * 1.12, Math.max(Math.cos(t), 0.08) * hr * 0.95, Math.max(Math.cos(t), 0.08) * hr * 0.88)); }
+    part(head, 2);
+    for (let i = 0; i <= 4; i++) { const t = -0.25 + i / 4 * (Math.PI / 2 + 0.25); hair.push(R(hy + Math.sin(t) * hr * 1.2, Math.max(Math.cos(t), 0.06) * hr * 1.06, Math.max(Math.cos(t), 0.06) * hr * 0.98, 0.012)); }
+    part(hair, 3);
+    for (const s of [-1, 1]) { const z = s * 0.24, limb = s < 0 ? 4 : 3;
+      part([R(1.39, 0.055, 0.055, 0, z), R(1.10, 0.047, 0.047, 0, z), R(0.86, 0.04, 0.04, 0, z)], coat, limb, ox, 1.38 * k);
+      part([R(0.86, 0.036, 0.036, 0, z), R(0.80, 0.042, 0.03, 0, z), R(0.75, 0.025, 0.02, 0, z)], 2, limb, ox, 1.38 * k); }
+    if (opt.pack) part([R(0.98, 0.07, 0.13, 0.17), R(1.15, 0.085, 0.145, 0.18), R(1.34, 0.07, 0.13, 0.17)], 6);
+    if (opt.bag) part([R(0.62, 0.03, 0.11, 0, -0.27), R(0.80, 0.035, 0.12, 0, -0.27)], 6, 4, ox, 1.38 * k);
   };
-  person(0, 0.3, 1); person(0.85, -0.5, 0.72);
+  person(0, 0.35, 1.0, 1, { long: true, bag: true }); person(0.95, -0.45, 0.70, 4, { pack: true });
+  const PED_VERT = /* glsl */`
+attribute vec4 aData; uniform float uWalk;
+varying vec3 vP, vN, vL; varying vec2 vUv; varying vec4 vA;
+void main(){
+  vec3 p = position, n = normal; float limb = aData.y;
+  if (limb > 0.5) {
+    float sgn = (limb < 1.5 || limb > 3.5) ? 1. : -1.;
+    float a = sin(uWalk) * (limb < 2.5 ? 0.42 : 0.30) * sgn, c = cos(a), s = sin(a);
+    vec2 d = p.xy - aData.zw; p.xy = aData.zw + vec2(c*d.x - s*d.y, s*d.x + c*d.y); n.xy = vec2(c*n.x - s*n.y, s*n.x + c*n.y);
+  }
+  vec4 wp = modelMatrix * vec4(p, 1.);
+  vP = wp.xyz; vN = mat3(modelMatrix) * n; vUv = uv; vA = vec4(aData.x, 0., 0., 0.); vL = position;
+  wp.xyz = bend(wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
   const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
 void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
-  float m = vA.x;
-  if (m < 0.5) alb = vec3(0.035, 0.04, 0.055);
-  else if (m < 1.5) { alb = vL.x > 0.5 ? vec3(0.22, 0.17, 0.04) : vec3(0.15, 0.145, 0.13); }
-  else alb = vec3(0.12, 0.09, 0.07);
-}`, { defines: { BEND: 1 } })), 2);
+  float m = vA.x; float rim = pow(1. - max(dot(N, V), 0.), 2.);
+  if (m < 0.5) alb = vec3(0.030, 0.036, 0.055);
+  else if (m < 1.5) alb = vec3(0.105, 0.085, 0.065) * (1. - 0.25*step(0.5, fract(vL.y*9.))*0.2);
+  else if (m < 2.5) alb = vec3(0.21, 0.15, 0.115);
+  else if (m < 3.5) alb = vec3(0.012, 0.010, 0.009);
+  else if (m < 4.5) { alb = vec3(0.26, 0.20, 0.035); if (abs(vL.y - 0.62) < 0.02 || abs(vL.y - 0.80) < 0.012) { alb = vec3(0.3); retro = 0.5; } }
+  else if (m < 5.5) alb = vec3(0.02);
+  else { alb = vec3(0.10, 0.03, 0.03); if (abs(vL.y - 0.8) < 0.025) retro = 0.4; }
+  alb *= 1. - 0.35*rim;
+}`, { vertex: PED_VERT, defines: { BEND: 1 }, uniforms: UP })), 2);
   m.visible = false; return m;
 })();
 function makeSign() {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 128; const g = c.getContext('2d');
-  g.font = 'bold 60px "Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = '#0b3fae'; g.fillRect(0, 0, 256, 128); g.fillStyle = '#156b3a'; g.fillRect(256, 0, 256, 128);
-  g.strokeStyle = '#fff'; g.lineWidth = 5; g.strokeRect(5, 5, 246, 118); g.strokeRect(261, 5, 246, 118);
-  g.fillStyle = '#fff'; g.fillText('하이패스', 128, 66); g.fillText('일반', 384, 66);
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128; const g = c.getContext('2d');
+  const F = '"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#0a3aa8'; g.fillRect(0, 0, 384, 128); g.fillStyle = '#12602f'; g.fillRect(384, 0, 256, 128);
+  g.strokeStyle = '#fff'; g.lineWidth = 5; g.strokeRect(5, 5, 374, 118); g.strokeRect(389, 5, 246, 118);
+  g.fillStyle = '#ff8a1e'; g.beginPath(); g.arc(62, 64, 34, 0, 7); g.fill(); g.fillStyle = '#fff'; g.font = 'bold 30px ' + F; g.fillText('Hi', 62, 66);
+  g.font = 'bold 64px ' + F; g.fillText('하이패스', 232, 68); g.fillText('일반', 512, 68);
+  g.fillStyle = '#050607'; g.fillRect(640, 0, 384, 128);
+  const arrow = (x, col) => { g.fillStyle = col; g.fillRect(x - 12, 18, 24, 52); g.beginPath(); g.moveTo(x - 36, 62); g.lineTo(x + 36, 62); g.lineTo(x, 112); g.fill(); };
+  arrow(704, '#2f8cff'); arrow(832, '#2fe36a');
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(960, 64, 58, 0, 7); g.fill(); g.strokeStyle = '#d5151b'; g.lineWidth = 13; g.beginPath(); g.arc(960, 64, 50, 0, 7); g.stroke();
+  g.fillStyle = '#111'; g.font = 'bold 58px ' + F; g.fillText('30', 960, 68);
   const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
 }
 const toll = (() => {
   const b = new Builder();
-  b.box(-7.2, 9.6, 5.3, 5.75, -4.5, 4.5, 0);                         // 지붕
+  // m: 0 구조물, 1 섬(콘크리트), 2 부스, 5 노랑·검정 빗금, 6 조명, 7 지붕 띠, 8 차단봉, 9 금속, 10~14 표지(하이패스, 일반, 파란 화살표, 초록 화살표, 30)
+  const tube = (x, z, y0, y1, r, m) => { b.loft([tubeRing(x, y0, z, r, r, 8), tubeRing(x, y1, z, r, r, 8)], m); };
+  const sign = (x0, x1, y0, y1, z, m) => b.rect([x0, y0, z], [x1, y0, z], [x0, y1, z], [x1, y1, z], m);
+  b.box(-7.6, 9.9, 5.55, 5.95, -5.2, 5.2, 0);                                   // 지붕
+  b.box(-7.7, 10.0, 5.25, 6.15, 5.2, 5.32, 7); b.box(-7.7, 10.0, 5.25, 6.15, -5.32, -5.2, 7); // 앞뒤 띠
   for (const x of [-5.4, -1.8, 1.8, 5.4]) {
-    b.box(x - 0.42, x + 0.42, 0, 0.28, -7, 7, 1);                    // 차로 사이 섬
-    b.box(x - 0.36, x + 0.36, 0.28, 2.5, -1.4, 1.4, 2);              // 부스
-    b.box(x - 0.12, x + 0.12, 2.5, 5.3, -0.12, 0.12, 0);             // 기둥
-    b.box(x - 0.2, x + 0.2, 0.28, 1.1, 6.2, 6.9, 5);                 // 섬 머리의 노란 충격 흡수대
+    b.box(x - 0.45, x + 0.45, 0, 0.3, -9.5, 9.5, 1);                             // 차로 사이 섬
+    b.loft([tubeRing(x, 0, 9.5, 0.45, 1.3, 12), tubeRing(x, 0.3, 9.5, 0.45, 1.3, 12)], 1); b.cap(tubeRing(x, 0.3, 9.5, 0.45, 1.3, 12), 1, false);
+    b.loft([tubeRing(x, 0.3, 10.2, 0.4, 0.4, 12), tubeRing(x, 1.15, 10.2, 0.4, 0.4, 12)], 5); b.cap(tubeRing(x, 1.15, 10.2, 0.4, 0.4, 12), 5, false); // 충격 흡수통
+    for (const z of [-3.6, 3.6]) tube(x, z, 0.3, 5.55, 0.16, 9);                 // 기둥
+    for (const z of [6.2, 7.6, 9.0]) { tube(x, z, 0.3, 1.0, 0.035, 9); sign(x - 0.07, x + 0.07, 0.78, 0.98, z + 0.04, 15); } // 시선 유도봉
   }
-  b.box(8.4, 8.7, 0, 5.3, -0.15, 0.15, 0);
-  [[-3.6, 4], [0, 3], [3.6, 4]].forEach(([x, m]) => {                // 차로 위 표지: 가운데가 하이패스
-    b.rect([x - 1.45, 4.25, 4.56], [x + 1.45, 4.25, 4.56], [x - 1.45, 5.2, 4.56], [x + 1.45, 5.2, 4.56], m);
-    b.box(x - 1.0, x + 1.0, 5.22, 5.28, 0.5, 2.5, 6);                 // 지붕 아래 등
+  tube(8.9, 0, 0, 5.55, 0.2, 9);
+  for (const x of [-5.4, 1.8]) {                                                  // 일반 차로의 부스와 내려온 차단봉
+    b.box(x - 0.38, x + 0.38, 0.3, 2.55, -1.5, 1.5, 2); b.box(x - 0.5, x + 0.5, 2.55, 2.68, -1.65, 1.65, 0);
+    b.box(x + 0.38, x + 0.5, 0.3, 1.1, 2.1, 2.3, 9); b.box(x + 0.44, x + 3.1, 0.98, 1.08, 2.16, 2.24, 8);
+  }
+  tube(-1.8, 2.2, 0.3, 1.2, 0.07, 9); b.box(-1.83, -1.77, 1.15, 3.6, 2.17, 2.23, 8); // 하이패스 차로의 올라간 차단봉
+  [[-3.6, 11, 13], [0, 10, 12], [3.6, 11, 13]].forEach(([x, m, am]) => {          // 차로 위 표지와 화살표 신호
+    b.box(x - 1.6, x + 1.6, 4.28, 5.22, 5.33, 5.42, 9); sign(x - 1.55, x + 1.55, 4.32, 5.18, 5.43, m);
+    b.box(x - 0.36, x + 0.36, 3.5, 4.2, 5.33, 5.42, 9); sign(x - 0.32, x + 0.32, 3.54, 4.16, 5.43, am);
+    for (const z of [-3, 0, 3]) b.box(x - 1.1, x + 1.1, 5.47, 5.55, z - 0.35, z + 0.35, 6); // 지붕 아래 등
   });
+  for (const x of [-1.8, 1.8]) { tube(x, 8.3, 0.3, 2.5, 0.04, 9); sign(x - 0.36, x + 0.36, 1.9, 2.62, 8.35, 14); } // 시속 30 표지
+  // 요금소 앞의 하이패스 안테나 문
+  for (const x of [-1.95, 1.95]) tube(x, 15, 0, 5.0, 0.11, 9);
+  b.box(-2.1, 2.1, 4.9, 5.1, 14.9, 15.1, 9); for (const x of [-1, 0, 1]) b.box(x - 0.22, x + 0.22, 4.62, 4.9, 14.85, 15.15, 2);
+  b.box(-2.0, 2.0, 4.82, 4.88, 15.1, 15.13, 16);
   const m = add(new THREE.Mesh(b.geo(), lit(/* glsl */`
 uniform sampler2D tSign;
+vec3 signTex(float u0, float u1){ return texture2D(tSign, vec2(mix(u0, u1, vUv.x), vUv.y)).rgb; }
 void surface(vec3 P, vec3 V, inout vec3 alb, inout vec3 N, inout float spec, inout float gloss, inout float retro, inout vec3 emis, inout float alpha){
   float m = vA.x; vec4 n = texture2D(tNoise, vL.xz*0.3 + vL.y*0.2);
-  if (m < 0.5) { alb = vec3(0.13, 0.135, 0.14) * (0.8 + 0.3*n.g); if (N.y < -0.5) emis = TUN_COL * 0.05; }
-  else if (m < 1.5) alb = vec3(0.16, 0.155, 0.15) * (0.7 + 0.5*n.b);
-  else if (m < 2.5) { alb = vL.y > 1.25 && vL.y < 2.2 && abs(N.x) > 0.5 ? vec3(0.02, 0.03, 0.04) : vec3(0.22, 0.23, 0.24); emis = TUN_COL * 0.02; }
-  else if (m < 4.5) { vec3 t = texture2D(tSign, vec2((m < 3.5 ? 0. : 0.5) + vUv.x*0.5, vUv.y)).rgb; alb = t*0.5; emis = t * (m < 3.5 ? 1.6 : 0.7); }
-  else if (m < 5.5) { alb = vec3(0.55, 0.42, 0.02) * step(0.5, fract(vL.y*4. + vL.x*2.)) + 0.01; retro = 0.3; }
-  else { alb = vec3(0.); emis = TUN_COL * 4.; }
-}`, { defines: { BEND: 1 }, uniforms: { tSign: { value: makeSign() } } })), 2);
+  float under = smoothstep(5.6, 5.2, vL.y) * smoothstep(9., 4., abs(vL.z));     // 지붕 아래 조명이 닿는 정도
+  if (m < 0.5) { alb = vec3(0.16, 0.165, 0.17) * (0.8 + 0.3*n.g); }
+  else if (m < 1.5) { alb = vec3(0.17, 0.165, 0.16) * (0.7 + 0.5*n.b); if (vL.y > 0.2 && vL.y < 0.29) alb = mix(alb, vec3(0.5, 0.38, 0.03), 0.8); }
+  else if (m < 2.5) { alb = vec3(0.20, 0.21, 0.22);
+    bool win = vL.y > 1.25 && vL.y < 2.2 && (abs(N.x) > 0.5 ? abs(vL.z) < 1.3 : true);
+    if (win) { alb = vec3(0.03); emis = vec3(1., 0.9, 0.7) * (0.35 + 0.25*n.b); spec = 0.4; gloss = 120.; }
+    if (vL.y < 0.75) alb = vec3(0.07, 0.08, 0.10); }
+  else if (m < 5.5) { alb = vec3(0.55, 0.42, 0.02) * step(0.5, fract(vL.y*3.5 + atan(N.x, N.z)*0.6)) + 0.012; retro = 0.25; }
+  else if (m < 6.5) { alb = vec3(0.); emis = TUN_COL * 5.; }
+  else if (m < 7.5) { alb = vec3(0.05, 0.09, 0.20); if (abs(vL.y - 5.35) < 0.05) { alb = vec3(0.4); emis = vec3(0.5, 0.7, 1.) * 0.5; } }
+  else if (m < 8.5) { alb = mix(vec3(0.45), vec3(0.45, 0.03, 0.03), step(0.5, fract((vL.x + vL.y)*1.6))); retro = 0.5; }
+  else if (m < 9.5) { alb = vec3(0.11, 0.115, 0.12); spec = 0.25; gloss = 40.; }
+  else if (m < 10.5) { vec3 t = signTex(0., 0.375); alb = t*0.4; emis = t * 0.6; }
+  else if (m < 11.5) { vec3 t = signTex(0.375, 0.625); alb = t*0.4; emis = t * 0.28; }
+  else if (m < 12.5) { vec3 t = signTex(0.625, 0.75); alb = vec3(0.01); emis = t * 1.1; }
+  else if (m < 13.5) { vec3 t = signTex(0.75, 0.875); alb = vec3(0.01); emis = t * 0.9; }
+  else if (m < 14.5) { vec3 t = signTex(0.875, 1.); alb = t*0.55; retro = 0.6; }
+  else if (m < 15.5) { alb = vec3(0.5, 0.35, 0.02); retro = 1.5; }
+  else { alb = vec3(0.); emis = vec3(0.2, 0.5, 1.) * 4.; }
+  if (m < 9.5) emis += alb * TUN_COL * 1.6 * under;
+}`, { defines: { BEND: 1, SPEC: 1 }, uniforms: { tSign: { value: makeSign() } } })), 2);
   m.visible = false; return m;
 })();
 
@@ -863,9 +939,9 @@ function update(dt) {
   // landmark (crosswalk, toll gate): rides with the road; while held it never comes nearer than the car can still stop / the gate waits
   if (S.lmW !== null) {
     let z = S.lmW + S.dist;
-    if (P.landmark && P.hold) { const lim = -(S.lmKind === 'tollgate' ? 22 : 10.5 + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
+    if (P.landmark && P.hold) { const lim = -(S.lmKind === 'tollgate' ? 27 : 10.5 + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
     S.lmZ = z;
-    if (S.lmKind === 'crosswalk' && S.pedX > -5.3) S.pedX -= 1.4 * dt;
+    if (S.lmKind === 'crosswalk' && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
     if (z > 16) { S.lmW = null; S.lmZ = -5000; emit('landmarkPassed', { kind: S.lmKind }); }
   }
 
@@ -942,7 +1018,7 @@ function render() {
   // landmarks
   const lmOn = S.lmW !== null;
   U.uMark.value.set(S.lmZ, lmOn ? (S.lmKind === 'tollgate' ? 2 : 1) : 0, 0);
-  peds.visible = lmOn && S.lmKind === 'crosswalk' && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.sin(t * 5.5)) * 0.025, S.lmZ);
+  peds.visible = lmOn && S.lmKind === 'crosswalk' && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.cos(UP.uWalk.value)) * 0.022, S.lmZ);
   toll.visible = lmOn && S.lmKind === 'tollgate'; toll.position.set(0, 0, S.lmZ);
 
   // dynamic sprites
