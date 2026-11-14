@@ -64,6 +64,10 @@ object SceneRender {
         }
     }
 
+    /** 검수용: 시각·장소를 고정한다(디버그 명령 `scene_day`, `scene_place`). null이면 시계와 엔진을 따른다. */
+    var debugDaylight: Float? = null
+    var debugPlace: String? = null
+
     /** 기기가 3D를 못 띄웠다(WebGL2 없음 등). 그 뒤로는 영상 방식으로 그린다. */
     var failed by mutableStateOf(false)
 
@@ -98,6 +102,15 @@ object Scene3dCommand {
         SituationId.RIGHT_TURN_CROSSWALK, SituationId.HIPASS_WRONG_LANE, SituationId.BREAKDOWN,
         SituationId.ROUNDABOUT_ENTRY, SituationId.SCHOOL_ZONE,
     )
+    /** 전조등·상향등·터널처럼 어두워야 뜻이 통하는 상황. 이 동안은 낮에도 밤 장면이다. */
+    private val NIGHT_ONLY = setOf(
+        SituationId.TUNNEL, SituationId.ONCOMING_GLARE, SituationId.DENSE_FOG, SituationId.HEAVY_RAIN, SituationId.DROWSY,
+    )
+    /** 해 뜨는·지는 시각을 모를 때의 값(11월 중순 서울 근처: 07:10, 17:20). */
+    private const val DEFAULT_SUNRISE_MIN = 7 * 60 + 10
+    private const val DEFAULT_SUNSET_MIN = 17 * 60 + 20
+    /** 해가 뜨고 지는 앞뒤로 이만큼(분)에 걸쳐 밝기가 바뀐다. */
+    private const val TWILIGHT_MIN = 40f
     private const val CRUISE_GAP_M = 55f
     private const val FAR_GAP_M = 400f
     private const val TUNNEL_AHEAD_M = 70
@@ -157,7 +170,10 @@ object Scene3dCommand {
         sb.append(",\"hydroplane\":").append(f2(if (s.slip > 0.05f) s.slip else 0f))
         sb.append(",\"tunnelDist\":").append(TUNNEL_AHEAD_M)
         sb.append(",\"tunnel\":").append(s.tunnel)
-        sb.append(",\"place\":\"").append(s.place.lowercase(Locale.ROOT)).append('"')
+        // 어두워야 뜻이 통하는 상황은 시각과 상관없이 밤으로 둔다
+        val daylight = if (inSit && sit in NIGHT_ONLY) 0f else SceneRender.debugDaylight ?: daylight(v.minuteOfDay, v.sunriseMinute, v.sunsetMinute)
+        sb.append(",\"daylight\":").append(f2(daylight))
+        sb.append(",\"place\":\"").append((SceneRender.debugPlace ?: s.place).lowercase(Locale.ROOT)).append('"')
         sb.append(",\"landmark\":").append(landmark)
         sb.append(",\"hold\":").append(hold)
         sb.append(",\"lane\":").append(lane)
@@ -165,6 +181,23 @@ object Scene3dCommand {
         if (sit == SituationId.ONCOMING_GLARE && live) sb.append(",\"glare\":true")
         sb.append('}')
         return sb.toString()
+    }
+
+    /**
+     * 기기 시계로 본 밝기: 0 밤, 0.4 해 질 녘(해가 뜨거나 지는 순간), 1 낮.
+     * 해 뜨는·지는 시각 앞뒤 [TWILIGHT_MIN]분 동안 이어서 바뀐다.
+     */
+    fun daylight(minuteOfDay: Int, sunriseMinute: Int? = null, sunsetMinute: Int? = null): Float {
+        val rise = sunriseMinute ?: DEFAULT_SUNRISE_MIN
+        val set = sunsetMinute ?: DEFAULT_SUNSET_MIN
+        // 해가 떠 있는 쪽으로 얼마나 들어와 있는가(분). 음수면 해가 없다
+        val into = minOf(minuteOfDay - rise, set - minuteOfDay).toFloat()
+        return when {
+            into >= TWILIGHT_MIN -> 1f
+            into >= 0f -> 0.4f + 0.6f * into / TWILIGHT_MIN
+            into > -TWILIGHT_MIN -> 0.4f * (1f + into / TWILIGHT_MIN)
+            else -> 0f
+        }
     }
 
     private fun f1(x: Float) = String.format(Locale.ROOT, "%.1f", x)

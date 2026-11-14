@@ -88,4 +88,21 @@ class Scene3dCommandTest {
         val rain = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.HEAVY_RAIN, SceneParams(rain = 1f, place = "DOWNHILL")), car)
         assertTrue(rain, "\"place\":\"downhill\"" in rain && "\"landmark\":null" in rain)
     }
+
+    @Test
+    fun `daylight follows the clock but dark-only situations stay night`() {
+        assertEquals(1f, Scene3dCommand.daylight(12 * 60), 0f)
+        assertEquals(0f, Scene3dCommand.daylight(22 * 60), 0f)
+        assertEquals(0f, Scene3dCommand.daylight(3 * 60), 0f)
+        assertEquals(0.4f, Scene3dCommand.daylight(17 * 60 + 20), 0.001f) // 해 지는 순간
+        assertEquals(0.7f, Scene3dCommand.daylight(17 * 60), 0.001f)
+        assertEquals(0.2f, Scene3dCommand.daylight(17 * 60 + 40), 0.001f)
+        assertEquals(0.4f, Scene3dCommand.daylight(6 * 60, sunriseMinute = 6 * 60, sunsetMinute = 19 * 60), 0.001f)
+        val noon = car.copy(minuteOfDay = 12 * 60)
+        assertEquals(1f, num(Scene3dCommand.build(view(TrainingPhase.CRUISE, null), noon), "daylight"), 0f)
+        assertEquals(1f, num(Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.SUDDEN_STOP), noon), "daylight"), 0f)
+        for (id in listOf(SituationId.TUNNEL, SituationId.ONCOMING_GLARE, SituationId.DENSE_FOG, SituationId.HEAVY_RAIN)) {
+            assertEquals("$id", 0f, num(Scene3dCommand.build(view(TrainingPhase.ACTIVE, id), noon), "daylight"), 0f)
+        }
+    }
 }
