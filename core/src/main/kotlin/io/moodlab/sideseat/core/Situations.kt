@@ -44,6 +44,8 @@ class StepDef(
     val doneWithSpeed: ((VehicleState, Float) -> Boolean)? = null,
     /** 이 단계(id)가 끝난 뒤에만 인정한다(합류: 깜빡이 다음에 조향). */
     val after: String? = null,
+    /** 화면 속 속도를 그 장소의 평소 속도에 대한 비율(0~1)로 보고 판정할 때(감속: 절반으로). 있으면 [done]·[doneWithSpeed] 대신 쓴다. */
+    val doneWithSpeedRatio: ((VehicleState, Float) -> Boolean)? = null,
 )
 
 class ChoiceDef(
@@ -114,7 +116,8 @@ object SituationCatalog {
     private fun slowDown(config: TrainingConfig, label: String, hint: String, fraction: Float = config.fogSlowFraction) = StepDef(
         id = "slow_down", label = label, hint = hint,
         available = { it.brakePressed != null },
-        doneWithSpeed = { _, v -> v <= config.cruiseSpeedKmh * fraction },
+        // 장소마다 평소 속도가 달라(고속도로 80, 도심 50) 비율로 본다
+        doneWithSpeedRatio = { _, ratio -> ratio <= fraction },
     )
 
     private val hazardConfirm = StepDef(
@@ -549,7 +552,7 @@ object SituationCatalog {
         choice = ChoiceDef(question, options, correct = 0, wrongLine = wrongLine),
     )
 
-    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice, doneWithSpeed, after)
+    private fun StepDef.copyEssential() = StepDef(id, label, hint, setup, true, holdMs, available, done, choice, doneWithSpeed, after, doneWithSpeedRatio)
 }
 
 /** 주차 브레이크(일반·전자식) 경고등 또는 주차 브레이크 신호. */

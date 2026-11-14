@@ -7,6 +7,52 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 가는 길 미리 연습 확인, 장소별 평소 속도, 타비 지식 2건, 도심 건물(v15), release APK 재갱신 (2026-11-15 01:40~02:10, 3D 장면 세션)
+
+`apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,352,339 바이트**, `sk-ant-` 0건. `./gradlew :core:test` **119개**·`:app:testDebugUnitTest` **123개** 통과.
+
+**1. 가는 길 미리 연습(커밋 0b84bab) 에뮬레이터 확인** — debug 빌드, Pleos_Connect_v2.1
+
+가짜 경로(디버그 명령 `route`)
+- 경로 없음: 홈 카드 "오늘의 추천"(`v15_home_no_route`).
+- `route TURN_TOLL,TURN_TUNNEL,FOG_AREA,HEAVY` → 카드가 "가는 길 연습 · 길 위의 규칙 / 가는 길에 요금소가 있어요. 미리 연습해 볼까요?"로 바뀜(`v15_home_route_toll`, 로그 `app route recommend chapter=C5 situation=HIPASS_WRONG_LANE`).
+- `route FOG_AREA,TURN_RIGHT` → "가는 길 연습 · 밤 고속도로 / 가는 길에 안개가 잦은 구간이 있어요."(`v15_home_route_fog`, `chapter=C2 situation=DENSE_FOG`).
+- 그 카드를 누르면 훈련이 시작된다(`v15_route_training_started`). **다만 추천한 상황이 아니라 그 챕터의 처음부터 시작한다**: 안개 추천으로 C2를 열면 첫 상황은 터널 진입이고 짙은 안개는 세 번째다.
+- `route off` → 원래 추천으로 돌아옴.
+
+실제 경로(내비 실측 도구로 성남 수정구 시흥동 → 부산 동구 초량동 경로를 요청, 378km·4시간 2분)
+- **`onRouteStarted`가 온다**: `duration=14520, distance=378000, tollFare=14510`. 통행료가 있어 바로 "가는 길에 요금소가 있어요"가 뜬다(`v15_home_real_route_busan`).
+- **`onTBTInfo`가 온다. 경로 전체다**: 한 번에 54개. 앞에서부터 `TURN_LEFT, TURN_RIGHT, TURN_AVOID_UNDER_R, TURN_ENTER_IC_R, TURN_ENTER_SERVICEAREA, TURN_TOLL, TURN_KEEP_R, …`이고 모아 둔 종류에 `TURN_EXIT_IC_C`와 `TURN_ARRIVE`(도착)까지 들어 있다. 경로가 잡히고 1.3초 뒤에 스스로 오고, `getTBTInfo()`를 부르면 같은 54개가 다시 온다. 차가 서 있어서 주행하면서 목록이 줄어드는지는 보지 못했다.
+  - 이 경로에서 나온 종류: 휴게소(`TURN_RESTAREA`) 10, 졸음쉼터·휴게소 진입(`TURN_ENTER_SERVICEAREA`) 9, `TURN_KEEP_R` 5, `TURN_DEVIDE_MERGE` 3, `TURN_KEEP_L` 2, `TURN_LEFT`·`TURN_RIGHT`·`TURN_AVOID_UNDER_R`·`TURN_ENTER_IC_R`·`TURN_TOLL` 각 1 등(로그가 600자에서 잘려 앞 35개만 셈).
+  - **`TURN_TUNNEL`은 한 번도 오지 않았다.** 경부고속도로로 부산까지 가는 길인데도 없어서, 터널 추천은 실제 경로에서는 뜨지 않을 수 있다.
+- **`onCautionPointInfo`는 오지 않았다**(경로를 잡고 1분 동안 0번). 안개 구간·미끄러운 길·사고 잦은 곳 추천은 실제 경로에서 확인하지 못했다. 주행 중에만 오는 값일 수 있는데 에뮬레이터에서는 내비 위치를 움직일 방법이 없다(이전 실측과 같음).
+- **`onTripInfo`는 `requestTrip`을 불러야만 온다.** 실측 도구로 부르니 한 번 왔고(378,452m, `trafficConditions`가 경로를 4%씩 나눈 구간별 `FAST`/`MODERATE`), 앱은 부르지 않으므로 평소에는 정체 정보가 비어 있다. 한편 `onRouteStateInfo`의 `trafficStatus.congestionItemList`에는 `HEAVY` 구간(대왕판교로)이 들어 있었는데 앱은 이 값을 쓰지 않는다.
+- 경로를 취소하면(`onRouteCancelled`) 추천이 원래대로 돌아온다(`v15_home_after_route_cancel`). 확인 뒤 경로는 취소해 뒀다.
+- 요청대로 고치지 않고 기록만 했다. 실측 도구의 TBT·주의 지점 로그에 개수와 종류를 따로 남기게 한 것만 바꿨다(`app/measure/NaviProbe.kt`).
+
+**2. 장소에 맞는 평소 속도**
+- 도심은 시속 50(`TrainingConfig.cityCruiseKmh`), 어린이 보호구역은 들어서는 속도 그대로 50, 고속도로·내리막은 80. 장소가 도심으로 바뀌면 초당 12km/h씩 줄어 50에 맞춘다.
+- "속도 절반으로 줄이기"는 그 장소의 평소 속도에 대한 비율로 본다(도심에서는 25 이하, 고속도로는 40 이하). 김서림의 "속도 줄이기"도 같다(평소의 80%).
+
+**3. 타비 질문 답**: `assets/knowledge/procedures.md`에 `roundabout`(회전교차로)와 `school_zone`(어린이 보호구역) 두 항목을 넣었다. 근거는 `safety-sources.md` 21·22번의 조문 그대로다.
+
+**4. 도심 건물**: 앞줄 뒤에 더 높은 건물 줄을 하나 더 세우고, 건물 사이 틈으로 뒤쪽이 보이게 했다. 틈 옆은 꺾여 들어간 옆면처럼 어둡게, 옥상에는 난간 띠, 층 사이에는 가는 줄을 넣고 낮에는 창유리에 하늘빛이 돈다(`v15_day_city_cruise`, `v15_day_city_sudden_stop`). 여전히 평면에 그린 것이라 지붕 윗면은 없다.
+
+| release 실측 | v15 C5 도심 우회전(40초) | v14 같은 장면 | 기준 |
+| --- | --- | --- | --- |
+| 훈련 CPU 합(앱 + WebView 렌더러), 4코어 기준 | **평균 16.34%, 최대 19.42%** (앱 15.18 + 렌더러 1.17) | 평균 16.36%, 최대 19.42% | 25% 미만 |
+| 훈련 프레임 | 장면 30fps, 창 41초에 1,296장 | 30fps | – |
+| 훈련 PSS | 앱 139.5 + 렌더러 100.1 = **239.5 MB** | 254.2 MB | 400 MB 미만 |
+
+원본: `docs/screens/sim/logs/v15_release_train_c5_city.csv`. 주행(코치) 상태는 바뀐 것이 없어 다시 재지 않았다(v14: 0.11%, 169.1 MB). release는 차종 고르기 → 홈 → C5 시작까지 터치로 확인, 크래시 0.
+
+**남은 약점**(v14 목록에서 달라진 것만)
+- 가는 길 추천 카드가 추천한 상황이 아니라 챕터 처음부터 시작한다.
+- 실제 경로에서 터널(`TURN_TUNNEL`)·주의 지점·정체 정보가 오지 않아, 요금소·고속도로 진입·합류·우회전 추천만 실제로 확인됐다.
+- 디버그 명령 `scene_place`는 보이는 장소만 바꾸고 속도는 엔진이 고른 장소를 따른다(`v15_day_city_cruise`의 속도가 80인 이유).
+
+**캡처** (`docs/screens/sim/v15_*.jpg` 11장, 1600×900): `v15_home_no_route`, `v15_home_route_toll`, `v15_home_route_fog`, `v15_route_training_started`, `v15_home_real_route_busan`, `v15_home_after_route_cancel`, `v15_day_city_cruise`, `v15_day_city_sudden_stop`, `v15_dusk_city_fogged_briefing`, `v15_night_city_fogged_slowed`, `v15_release_training_city`
+
 ## 보행자·요금소 다듬기, 장소 × 문제 상황, 시간대(v14), release APK 재갱신 (2026-11-15 01:00~02:00, 3D 장면 세션)
 
 `apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,351,571 바이트**(v13 27,328,027 대비 +23,544), `sk-ant-` 0건. `./gradlew :core:test` **118개**·`:app:testDebugUnitTest` **123개** 통과(다른 세션의 내비 추천·중계 서버 테스트 포함). 외부 파일은 새로 받지 않았다(전부 코드로 그림). 커밋은 단계별로 `2e8cbf3`(1단계), `bded0e0`(2단계), `685b3b6`(3단계)와 이 기록.

@@ -331,4 +331,24 @@ class RoadRulesTest {
         val fixed = TrainingConfig(places = mapOf(SituationId.HEAVY_RAIN to listOf(ScenePlace.DOWNHILL)))
         assertEquals(ScenePlace.DOWNHILL, active(SituationId.HEAVY_RAIN, fixed).view.scene.place)
     }
+
+    @Test
+    fun `usual speed follows the place and slowing to half is judged against it`() {
+        val city = TrainingConfig(places = mapOf(SituationId.HEAVY_RAIN to listOf(ScenePlace.CITY)))
+        val d = active(SituationId.HEAVY_RAIN, city)
+        assertEquals(ScenePlace.CITY, d.view.scene.place)
+        d.advance(4_000)
+        assertEquals(50f, d.view.virtualSpeedKmh, 0.5f) // 도심의 평소 속도
+        d.set { it.copy(brakePressed = true) }
+        d.until { v -> v.steps.first().done }
+        assertEquals(25f, d.view.virtualSpeedKmh, 1.5f) // 도심에서는 절반이 25
+        // 고속도로에서는 그대로 80과 40
+        val hw = active(SituationId.HEAVY_RAIN, TrainingConfig(places = emptyMap()))
+        assertEquals(80f, hw.view.virtualSpeedKmh, 0.5f)
+        hw.slowDownFirst(confirmHazard = false)
+        assertEquals(40f, hw.view.virtualSpeedKmh, 1.5f)
+        // 보호구역은 들어서는 속도 그대로
+        assertEquals(50f, TrainingConfig().cruiseKmhAt(ScenePlace.SCHOOL))
+        assertEquals(80f, TrainingConfig().cruiseKmhAt(ScenePlace.DOWNHILL))
+    }
 }

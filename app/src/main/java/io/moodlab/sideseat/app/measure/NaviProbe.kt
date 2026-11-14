@@ -55,8 +55,11 @@ class NaviProbe(private val context: Context) {
         override fun onCameraAlert(alerts: List<ai.pleos.playground.navi.data.CameraAlert>) = log("onCameraAlert", alerts)
         override fun onDrivingInfo(drivingInfo: DrivingInfo) = log("onDrivingInfo", drivingInfo)
         override fun onNavigationStatus(status: NavigationStatus) = log("onNavigationStatus", status)
-        override fun onTBTInfo(tbtInfo: List<ai.pleos.playground.navi.data.TBTInfo>) = log("onTBTInfo", tbtInfo)
-        override fun onCautionPointInfo(infos: List<ai.pleos.playground.navi.data.CautionPoint>) = log("onCautionPointInfo", infos)
+        // 목록이 경로 전체인지 다음 몇 개인지 보려고 개수·종류·처음과 마지막 항목을 따로 남긴다
+        override fun onTBTInfo(tbtInfo: List<ai.pleos.playground.navi.data.TBTInfo>) =
+            log("onTBTInfo", "n=${tbtInfo.size} types=${tbtInfo.map { it.type.name }} first=${tbtInfo.firstOrNull().toString().take(220)} last=${tbtInfo.lastOrNull().toString().take(220)}")
+        override fun onCautionPointInfo(infos: List<ai.pleos.playground.navi.data.CautionPoint>) =
+            log("onCautionPointInfo", "n=${infos.size} types=${infos.map { it.type.name }} first=${infos.firstOrNull().toString().take(220)} last=${infos.lastOrNull().toString().take(220)}")
         override fun onTripInfo(tripInfo: TripInfo) = log("onTripInfo", tripInfo)
     }
 

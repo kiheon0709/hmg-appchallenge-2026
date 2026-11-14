@@ -299,7 +299,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                 r.holdSince.remove(step.id)
                 continue
             }
-            val ok = step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
+            val ok = step.doneWithSpeedRatio?.invoke(state, scene.speed / scene.cruiseKmh)
+                ?: step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
             if (ok) {
                 val since = r.holdSince.getOrPut(step.id) { nowMs }
                 if (nowMs - since >= step.holdMs) {
@@ -593,6 +594,8 @@ internal class SceneSim(private val config: TrainingConfig) {
     private var sign: String? = null
     private var slip = 0f
     private var place = ScenePlace.HIGHWAY
+    /** 지금 장소의 평소 속도. */
+    val cruiseKmh: Float get() = config.cruiseKmhAt(place)
     private var placedFor: SituationId? = null
 
     fun update(
@@ -712,7 +715,8 @@ internal class SceneSim(private val config: TrainingConfig) {
             inSit && "slow_down" in doneSteps -> speed
             // 물 위에 뜬 동안은 발을 떼면 속도가 천천히 준다
             on(SituationId.HYDROPLANING) && active -> approach(speed, config.cruiseSpeedKmh * 0.6f, 5f, dt)
-            else -> approach(speed, config.cruiseSpeedKmh, 6f, dt)
+            // 평소 속도는 장소를 따른다. 더 빠르게 달리던 중이면 조금 더 빨리 줄인다
+            else -> approach(speed, cruiseKmh, if (speed > cruiseKmh) 12f else 6f, dt)
         }
 
         val doneFraction = if (stepCount == 0) 0f else doneSteps.size.toFloat() / stepCount

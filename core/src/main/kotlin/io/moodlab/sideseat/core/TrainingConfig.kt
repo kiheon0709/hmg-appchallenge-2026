@@ -89,9 +89,18 @@ data class TrainingConfig(
     val roundaboutYieldKmh: Float = 10f,
     /** 어린이 보호구역: 들어설 때의 화면 속 속도와 지켜야 할 속도(표지의 제한속도, 통상 시속 30km). */
     val schoolApproachKmh: Float = 50f,
+    /** 도심의 평소 속도(일반도로 도시부 제한속도). 고속도로·내리막은 [cruiseSpeedKmh], 보호구역은 [schoolApproachKmh]. */
+    val cityCruiseKmh: Float = 50f,
     val schoolLimitKmh: Float = 30f,
 ) {
     fun limitOf(id: SituationId): Long = limitsMs[id] ?: 10_000
+
+    /** 그 장소에서의 평소 속도. */
+    fun cruiseKmhAt(place: String): Float = when (place) {
+        ScenePlace.CITY -> cityCruiseKmh
+        ScenePlace.SCHOOL -> schoolApproachKmh
+        else -> cruiseSpeedKmh
+    }
 
     companion object {
         /**
