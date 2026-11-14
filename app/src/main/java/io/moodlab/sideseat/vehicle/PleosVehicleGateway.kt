@@ -549,6 +549,18 @@ class PleosVehicleGateway(
             // 새 경로. 통행료가 있으면 요금소를 지나는 길이다(TBT 목록이 경로 전체가 아닐 수 있어 함께 본다).
             route.value = RouteFeatures(turnTypes = if (routeStartInfo.tollFare > 0) setOf(TurnType.TURN_TOLL.name) else emptySet())
             log("sig navi route started toll=${routeStartInfo.tollFare > 0}")
+            // 정체 구간은 경로가 잡히고 조금 뒤에 채워진다(실측 11-15). 잠깐 뒤에 경로 상태를 한 번 더 읽는다.
+            scope.launch {
+                delay(ROUTE_STATE_DELAY_MS)
+                runCatching { navi?.getRouteStateInfo() }.onFailure { e -> log("FAIL navi getRouteStateInfo $e") }
+            }
+        }
+        // 경로 상태에 심하게 막히는 구간이 있으면 정체로 본다(구간별 정체는 requestTrip 없이도 여기에 온다)
+        override fun onRouteStateInfo(routeStateInfo: ai.pleos.playground.navi.data.RouteStateInfo) {
+            // 경로 안내 중일 때만 본다. 경로가 없어도 주변 도로의 정체가 실려 오기 때문이다(실측 11-15)
+            if (routeStateInfo.naviMode?.name != "ROUTE_GUIDING") return
+            val heavy = routeStateInfo.trafficStatus?.congestionItemList.orEmpty().any { it.trafficCongestionType?.name == "HEAVY" }
+            if (heavy) addRoute(congestion = listOf("HEAVY"))
         }
         override fun onCautionPointInfo(cautionPointList: List<CautionPoint>) =
             addRoute(cautions = cautionPointList.map { it.type.name })
@@ -579,7 +591,7 @@ class PleosVehicleGateway(
     private fun startNavi() {
         navi = NaviHelper(context).also {
             // 앱을 열기 전에 잡힌 경로도 읽게, 연결되면 TBT를 한 번 요청한다(결과는 onTBTInfo로 온다).
-            it.initialize({ runCatching { it.getTBTInfo() }.onFailure { e -> log("FAIL navi getTBTInfo $e") } }, { e -> log("FAIL navi init $e") })
+            it.initialize({ runCatching { it.getTBTInfo(); it.getRouteStateInfo() }.onFailure { e -> log("FAIL navi getTBTInfo $e") } }, { e -> log("FAIL navi init $e") })
             it.addListener(naviListener)
             unregister += { it.removeListener(naviListener) }
         }
@@ -889,6 +901,8 @@ class PleosVehicleGateway(
 
     private companion object {
         const val ROAD_LIMITS_ASSET = "zones/road_limits.json"
+        /** 경로가 잡힌 뒤 경로 상태(정체 구간)를 다시 읽기까지 기다리는 시간. */
+        const val ROUTE_STATE_DELAY_MS = 4_000L
 
         /** 제한 대상 set은 P단 밖에서 메시지 "...: 50001"로 온다(실측 11-07). */
         fun Exception.isDrivingRestricted(): Boolean =

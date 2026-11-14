@@ -78,17 +78,24 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         ChapterInfo(ch.id, ch.title, ch.story, playable, ch.estMinutes, locked = playable.isEmpty())
     }
 
-    override fun start(chapterId: String, nowMs: Long) {
+    override fun start(chapterId: String, nowMs: Long, from: SituationId?) {
         val ch = ChapterCatalog.chapters.firstOrNull { it.id == chapterId } ?: return
         reset(Mode.CHAPTER)
         chapter = ch
-        val saved = resume?.takeIf { it.chapterId == chapterId }
-        if (saved != null) {
+        val playable = ch.situations.filter { isPlayable(it, lastState) }
+        val first = from?.takeIf { it in playable }
+        val saved = resume?.takeIf { it.chapterId == chapterId && first == null }
+        if (first != null) {
+            // 추천한 상황부터 하고, 나머지는 원래 순서대로 이어 간다(챕터 전체를 하므로 별·면허 계산은 그대로다)
+            queue.add(first)
+            queue.addAll(playable - first)
+            say("${ch.title}. ${defs.getValue(first).title}부터 해 볼게요.")
+        } else if (saved != null) {
             queue.addAll(saved.remaining)
             results.addAll(saved.results)
             say("이어서 할게요. ${ch.title}.")
         } else {
-            queue.addAll(ch.situations.filter { isPlayable(it, lastState) })
+            queue.addAll(playable)
             say("${ch.title}. ${ch.story}")
         }
         resume = null

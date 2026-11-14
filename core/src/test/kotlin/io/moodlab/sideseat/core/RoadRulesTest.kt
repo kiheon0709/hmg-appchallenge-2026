@@ -351,4 +351,39 @@ class RoadRulesTest {
         assertEquals(50f, TrainingConfig().cruiseKmhAt(ScenePlace.SCHOOL))
         assertEquals(80f, TrainingConfig().cruiseKmhAt(ScenePlace.DOWNHILL))
     }
+
+    @Test
+    fun `a chapter can start from the recommended situation and then runs the rest in order`() {
+        val d = driver()
+        d.engine.start("C2", d.now, SituationId.DENSE_FOG)
+        d.tick()
+        assertTrue(d.says().first().contains("짙은 안개부터"), d.says().first())
+        val order = mutableListOf<SituationId>()
+        while (true) {
+            val v = d.until { it.phase == TrainingPhase.BRIEFING || it.phase == TrainingPhase.CHAPTER_DONE }
+            if (v.phase == TrainingPhase.CHAPTER_DONE) break
+            val id = v.situation!!
+            if (order.lastOrNull() != id) order += id
+            d.set { setupFor(id, baseState) }
+            d.untilActive(id)
+            d.set { solveAll(it, id) }
+            while (d.until { it.choice != null || it.phase == TrainingPhase.SUCCESS }.choice != null) { d.engine.answer("1", d.now); d.tick() }
+            d.until { it.phase != TrainingPhase.SUCCESS }
+        }
+        assertEquals(listOf(SituationId.DENSE_FOG, SituationId.TUNNEL, SituationId.ONCOMING_GLARE, SituationId.DROWSY), order)
+        assertTrue("C2" in d.engine.progress().licenseFor("avante").clearedChapters) // 챕터 전체를 했으므로 그대로 인정된다
+
+        // 그 챕터에 없는 상황이면 평소처럼 처음부터
+        val other = driver()
+        other.engine.start("C2", other.now, SituationId.HIPASS_WRONG_LANE)
+        assertEquals(SituationId.TUNNEL, other.until { it.phase == TrainingPhase.BRIEFING }.situation)
+        // 끊겼던 훈련이 있어도 추천으로 시작하면 새로 시작한다
+        val r = driver()
+        r.engine.start("C2", r.now)
+        r.untilActive(SituationId.TUNNEL)
+        r.engine.abort(r.now); r.tick()
+        assertEquals("C2", r.engine.resumableChapter())
+        r.engine.start("C2", r.now, SituationId.DROWSY)
+        assertEquals(SituationId.DROWSY, r.until { it.phase == TrainingPhase.BRIEFING }.situation)
+    }
 }

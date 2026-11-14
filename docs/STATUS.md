@@ -7,6 +7,30 @@
 > 2. `./gradlew :app:installDebug` 뒤 앱을 열고 `adb shell am broadcast -a io.moodlab.sideseat.DEBUG --es cmd wake_test --es arg on` (또는 `--es cmd action --es arg ToggleDebugPanel`로 디버그 패널을 열고 "타비야 직접 불러 보기" 시작 키) → 맥 마이크에 "타비야, 와이퍼 어디 있어?"처럼 말하면 화면 토스트와 확인음, 끝낼 때는 `--es arg off`(또는 패널의 멈춤 키).
 > 3. 결과는 `adb logcat -s SideSeatMeasure | grep "wake test"`(`깨어남 a/b`, 나비야 규칙을 켰을 때 수치도 같이). 나비·아비·차비 규칙을 실제로 켜 보려면 앱 files에 `wake_config.txt`로 `allowWeakWakeWords=1`.
 
+## 가는 길 미리 연습 두 가지 수정(v16), release APK 재갱신 — 제출 전 마지막 코드 변경 (2026-11-15 02:10~02:40, 3D 장면 세션)
+
+`apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,352,339 바이트**(v15와 크기는 같고 내용은 다름), `sk-ant-` 0건. `./gradlew :core:test` **120개**·`:app:testDebugUnitTest` **123개** 통과.
+
+**1. 추천 카드는 추천한 상황부터 시작한다**
+- 가는 길 추천 카드를 누르면 그 챕터를 추천한 상황부터 하고, 나머지 상황을 원래 순서대로 이어 간다(`TrainingEngine.start(chapterId, nowMs, from)`). 챕터 전체를 하므로 별·면허 계산은 그대로다. 타비는 "밤 고속도로. 짙은 안개부터 해 볼게요."라고 말한다.
+- 끊겼던 훈련이 있으면 홈 버튼은 이전처럼 "이어서 하기"가 먼저다. 챕터 카드를 직접 누르면 이전처럼 처음부터 한다.
+- 확인(debug): `route FOG_AREA,TURN_RIGHT` → 카드 누름 → C2가 짙은 안개부터 시작(`v16_home_route_fog`, `v16_route_starts_from_dense_fog`, 로그 `C2 DENSE_FOG BRIEFING`).
+
+**2. 실제 경로의 정체**
+- `onRouteStateInfo`의 `trafficStatus.congestionItemList`에 `HEAVY` 구간이 있으면 정체로 본다. `requestTrip`은 부르지 않는다. 정체 구간은 경로가 잡힌 직후에는 비어 있고 조금 뒤에 채워져서, 경로가 시작되고 4초 뒤에 `getRouteStateInfo()`를 한 번 부른다(앱을 열 때도 한 번).
+- **경로 안내 중(`naviMode = ROUTE_GUIDING`)일 때만 센다.** 경로가 없어도 주변 도로의 정체가 실려 와서, 처음 고친 빌드에서는 경로 없이도 "가는 길에 막히는 구간이 있어요"가 떴다. 이 조건을 넣고 다시 확인했다.
+- 확인(debug, 실제 내비 경로)
+  - 경로 없음: 가는 길 추천 없음(`v16_home_no_route`).
+  - 성남 수정구 시흥동 → 판교역(3.1km, 통행료 없음): 경로 시작 직후 "가는 길에 우회전이 있어요"가 잠깐 떴다가 2.4초 뒤 정체 구간(대왕판교로 `HEAVY`)이 들어오면서 "가는 길에 막히는 구간이 있어요. 미리 연습해 볼까요?"로 바뀜(`v16_home_real_route_pangyo_congestion`, 로그 `congestion=[HEAVY]`, `chapter=C1 situation=SUDDEN_STOP`). 카드를 누르면 C1이 앞차 급정거부터 시작(`v16_real_route_starts_from_sudden_stop`).
+  - 성남 → 부산(378km): 경로 시작 4초 뒤 `congestion=[HEAVY]`가 들어옴. 추천은 순서상 앞선 요금소 그대로("가는 길에 요금소가 있어요"). 이 확인은 `ROUTE_GUIDING` 조건을 넣기 전 빌드로 했다.
+  - 경로 취소: 추천이 원래대로(`v16_home_after_route_cancel`).
+- release: 새로 설치 → 홈에 가는 길 추천 없음(`v16_release_home_no_route`) → 추천 카드로 C1이 폭우부터 정상 시작(`v16_release_training_started`). 크래시 0.
+- 그대로 둔 것: 주의 지점(`onCautionPointInfo`)이 정차 중에 오지 않는 것, `TURN_TUNNEL`이 오지 않는 것.
+
+장면·그리기 코드는 건드리지 않아 리소스는 다시 재지 않았다(v15: 훈련 CPU 합 평균 16.34%·최대 19.42%, PSS 239.5 MB).
+
+**캡처** (`docs/screens/sim/v16_*.jpg` 8장, 1600×900): `v16_home_no_route`, `v16_home_route_fog`, `v16_route_starts_from_dense_fog`, `v16_home_real_route_pangyo_congestion`, `v16_real_route_starts_from_sudden_stop`, `v16_home_after_route_cancel`, `v16_release_home_no_route`, `v16_release_training_started`
+
 ## 가는 길 미리 연습 확인, 장소별 평소 속도, 타비 지식 2건, 도심 건물(v15), release APK 재갱신 (2026-11-15 01:40~02:10, 3D 장면 세션)
 
 `apk/MoodLab_SideSeat_release.apk`를 다시 만들었다: **27,352,339 바이트**, `sk-ant-` 0건. `./gradlew :core:test` **119개**·`:app:testDebugUnitTest` **123개** 통과.

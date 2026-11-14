@@ -159,7 +159,11 @@ enum class ReplyKind { YES_NO, CHOICE, FREE }
 
 interface TrainingEngine {
     fun chapters(): List<ChapterInfo>
-    fun start(chapterId: String, nowMs: Long)
+    /**
+     * 챕터를 시작한다. [from]이 그 챕터에서 할 수 있는 상황이면 그 상황부터 하고 나머지를 원래 순서로 이어 간다
+     * (가는 길 추천). 이때는 끊겼던 훈련을 잇지 않고 새로 시작한다.
+     */
+    fun start(chapterId: String, nowMs: Long, from: SituationId? = null)
 
     /** 돌발 모드. */
     fun startSurprise(nowMs: Long)

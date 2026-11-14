@@ -445,7 +445,7 @@ class SideSeatController(
     fun onAction(a: UiAction) {
         Log.i(TAG, "app action $a")
         when (a) {
-            is UiAction.StartChapter -> startTraining { engine.start(a.chapterId, it) }
+            is UiAction.StartChapter -> startTraining { engine.start(a.chapterId, it, a.from) }
             UiAction.StartSurprise -> startTraining { engine.startSurprise(it) }
             // 교관 대결: 엔진은 친구가 첫 상황을 던질 때(Inject) 시작한다. 그전까지 훈련 화면은 IDLE 뷰로 상황 고르는 판을 보여 준다.
             UiAction.StartVersus -> startTraining { }
@@ -525,6 +525,7 @@ class SideSeatController(
                     vehicleModelKey = key,
                     recommendedChapterId = onRoute?.chapterId ?: recommended?.id,
                     recommendReason = onRoute?.reason ?: recommended?.let { reason },
+                    recommendedSituation = onRoute?.situation,
                     recommendLabel = if (onRoute != null) "가는 길 연습" else "오늘의 추천",
                     resumeChapterId = engine.resumableChapter(),
                     canTrain = state.parked,

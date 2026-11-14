@@ -99,7 +99,10 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
                     if (resume != null) "이어서 하기 · ${pick.title}" else "${state.recommendLabel} · ${pick.title}",
                     Modifier.fillMaxWidth(), primary = true, color = Color.White,
                     sub = state.recommendReason?.takeIf { resume == null } ?: "약 ${pick.estMinutes}분 · 상황 ${pick.situations.size}개",
-                ) { onAction(UiAction.StartChapter(pick.id)) }
+                ) {
+                    // 가는 길 추천이면 그 상황부터 시작한다(끊긴 훈련을 잇는 중이 아닐 때)
+                    onAction(UiAction.StartChapter(pick.id, state.recommendedSituation.takeIf { resume == null && pick.id == state.recommendedChapterId }))
+                }
             }
         }
     }

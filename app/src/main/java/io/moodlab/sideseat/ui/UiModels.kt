@@ -37,6 +37,8 @@ data class HomeUi(
     /** 오늘의 추천 챕터 id와 이유 한 줄. */
     val recommendedChapterId: String? = null,
     val recommendReason: String? = null,
+    /** 추천이 내비 경로에서 나온 것이면 그 상황. 추천 버튼은 챕터를 이 상황부터 시작한다. */
+    val recommendedSituation: io.moodlab.sideseat.core.SituationId? = null,
     /** 추천 카드 머리말. 내비 경로에서 고른 추천이면 "가는 길 연습". */
     val recommendLabel: String = "오늘의 추천",
     /** 이어 할 수 있는 챕터(P를 벗어나 끊긴 훈련). */
@@ -103,7 +105,8 @@ data class WakeTestUi(val running: Boolean = false, val lines: List<String> = em
 
 /** 화면에서 일어난 일. */
 sealed interface UiAction {
-    data class StartChapter(val chapterId: String) : UiAction
+    /** [from]이 있으면 그 상황부터 시작한다(가는 길 추천). */
+    data class StartChapter(val chapterId: String, val from: io.moodlab.sideseat.core.SituationId? = null) : UiAction
     data object StartSurprise : UiAction
     /** 교관 대결을 연다(상황 고르는 판이 뜬다). */
     data object StartVersus : UiAction
