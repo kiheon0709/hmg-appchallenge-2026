@@ -306,8 +306,8 @@ void main(){
     vec3 dusk = mix(vec3(0.62, 0.30, 0.13), vec3(0.085, 0.10, 0.24), smoothstep(0., 0.38, el));
     dusk += vec3(0.9, 0.42, 0.12) * exp(-max(el, 0.)*12.) * exp(-pow(az - 0.55, 2.)*1.4);
     dusk = mix(dusk, vec3(0.42, 0.24, 0.22), cm * 0.6);
-    vec3 day = mix(vec3(0.60, 0.72, 0.90), vec3(0.17, 0.36, 0.76), smoothstep(0., 0.5, el));
-    day = mix(day, vec3(0.90, 0.92, 0.95), cm * 0.8);
+    vec3 day = mix(vec3(0.46, 0.57, 0.74), vec3(0.11, 0.25, 0.58), smoothstep(0., 0.5, el));
+    day = mix(day, vec3(0.70, 0.72, 0.76), cm * 0.8);
     day = mix(day, vec3(0.50, 0.53, 0.58), uEnv.x * 0.85);
     skyc = dayMix(skyc, dusk, day);
   }
@@ -949,7 +949,7 @@ void main(){
     vec3 veil = blur*1.1 + vec3(0.085, 0.092, 0.102)*(0.7 + 0.6*nz) + dot(blur, vec3(.33))*0.4;
     col = mix(col, veil, fm*0.95);
   }
-  if (uBloom > 0.5) { vec3 b = textureLod(tScene, uv, 3.5).rgb*0.5 + textureLod(tScene, uv, 5.5).rgb*0.5; col += max(b - 0.10, 0.) * 0.35; }
+  if (uBloom > 0.05) { vec3 b = textureLod(tScene, uv, 3.5).rgb*0.5 + textureLod(tScene, uv, 5.5).rgb*0.5; col += max(b - 0.10, 0.) * 0.35 * uBloom; }
   if (uGlare.z > 0.001) {
     vec2 g = (uv - uGlare.xy) * vec2(uAsp, 1.); float r2 = dot(g, g);
     float v = 0.55/(1. + r2*90.) + 0.10/(1. + r2*5.) + 0.22*exp(-g.y*g.y*1400.)*exp(-g.x*g.x*5.);
@@ -1171,7 +1171,7 @@ function render() {
   const fb = 0.011 + S.fogD * 0.028 + S.rainS * 0.006;
   { // 안개·먼 풍경의 색도 시간대를 따른다
     const d = S.day, k = d < 0.4 ? d / 0.4 : (d - 0.4) / 0.6, gray = 1 - 0.3 * S.rainS;
-    const a = d < 0.4 ? [fb, fb * 1.18, fb * 1.5] : [0.30, 0.19, 0.17], b = d < 0.4 ? [0.30, 0.19, 0.17] : [0.50 * gray, 0.60 * gray, 0.74 * gray];
+    const a = d < 0.4 ? [fb, fb * 1.18, fb * 1.5] : [0.30, 0.19, 0.17], b = d < 0.4 ? [0.30, 0.19, 0.17] : [0.42 * gray, 0.50 * gray, 0.62 * gray];
     U.uFog.value.set(lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k), dens);
   }
   U.uDay.value = S.day;
@@ -1222,6 +1222,7 @@ function render() {
   renderer.info.reset();
   renderer.setRenderTarget(rt); renderer.render(scene, camera);
   CU.tScene.value = rt.texture; CU.tWet.value = wetA.texture; CU.uFilm.value = clamp(S.rainS * 1.25, 0, 1); CU.uFogG.value = S.fogGlass; CU.uWipVis.value = S.wRun ? 1 : 0;
+  CU.uBloom.value = P.bloom ? 1 - 0.85 * S.day : 0; // 낮에는 번짐을 줄인다(하늘이 하얗게 날아가지 않게)
   CU.uDim.value = Math.max(S.crashed || P.crash ? 0.25 : 0, S.cutT < 0 ? 0 : S.cutT < 0.3 ? S.cutT / 0.3 : (0.6 - S.cutT) / 0.3); CU.uBlur.value = P.blur;
   quad.material = compMat; renderer.setRenderTarget(null); renderer.render(quadScene, quadCam);
 }
