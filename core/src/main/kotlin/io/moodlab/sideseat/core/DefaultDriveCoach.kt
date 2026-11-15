@@ -41,6 +41,8 @@ data class CoachConfig(
     val disabledRules: Set<String> = setOf("K07", "K10"),
     /** K11: 구역 반경을 이만큼 더 벗어나야 나간 것으로 본다(경계에서 GPS가 흔들려도 한 번만 세려고). */
     val k11ExitMarginM: Double = 50.0,
+    /** K11: 이 속도 이상으로 움직일 때만 보호구역에 들어선 것으로 본다. */
+    val k11MinKmh: Float = 5f,
     /** K12: 제한속도보다 이만큼 넘게. */
     val k12OverKmh: Float = 10f,
     /** K12: 이 시간 넘게 이어지면. */
@@ -377,7 +379,8 @@ class DefaultDriveCoach(
                     if (zoneToAnnounce == current) zoneToAnnounce = null
                 }
             }
-            if (zone == null) {
+            // 서 있거나 속도를 아직 모르면 진입으로 보지 않는다(보호구역 안에서 출발할 때 시속 0에 안내하고 "최고 0km/h 통과"로 남지 않게)
+            if (zone == null && (v ?: 0f) >= config.k11MinKmh) {
                 zones.nearestWithin(lat, lon)?.first?.let { z ->
                     zone = z
                     zonePasses++
@@ -455,11 +458,14 @@ class DefaultDriveCoach(
             "K02" to SituationId.TUNNEL,
             "K08" to SituationId.DROWSY,
         )
+        // 보호구역을 제한속도보다 빠르게 지났으면 그 연습을 먼저 권한다
+        if (zoneOverLimit != null) return SituationId.SCHOOL_ZONE
         utterances.firstNotNullOfOrNull { byRule[it.ruleId] }?.let { return it }
         if ((obs["HARD_BRAKE"] ?: 0) > 0) return SituationId.SUDDEN_STOP
         // 비·밤만으로 권할 때는 1분 넘게 그 길을 달렸을 때만(잠깐 움직인 것으로 "지난 주행에서…"라고 하지 않게)
         if (rainMs >= CoachConfig.MIN) return SituationId.HEAVY_RAIN
-        if (nightMs >= CoachConfig.MIN) return SituationId.ONCOMING_GLARE
+        // 과속이 있던 주행에 밤길만으로 상관없는 연습을 권하지 않는다
+        if (nightMs >= CoachConfig.MIN && speedingCount == 0) return SituationId.ONCOMING_GLARE
         return null
     }
 
@@ -468,12 +474,14 @@ class DefaultDriveCoach(
         // 과속이나 보호구역 초과가 있었으면 첫 문장에서 "침착하게 잘 왔어요"라고 하지 않는다
         val violated = zoneOverLimit != null || speedingCount > 0
         val span = if (durationMin >= 1) "${durationMin}분 동안" else "짧은 길이었지만"
+        // 같은 조치를 권하는 규칙은 묶어서 본다: 비 오는 밤에 K01("비가 와요. 전조등을…")을 들었으면 전조등을 놓친 것이다
+        fun advised(id: String) = adviceGroup(id).any { it in said }
         val good = when {
-            zonePasses > 0 && zoneOverLimit == null && zoneMaxKmh != null ->
-                "어린이 보호구역 ${zonePasses}곳을 천천히 지났어요."
-            rainMin > 0 && "K01" !in said -> "비 오는 길에서도 전조등을 잘 챙겼어요."
-            nightMin > 0 && "K02" !in said -> "어두워지자 전조등을 바로 켰어요."
-            violated -> "$span 끝까지 같이 왔어요. 속도는 한 가지 짚을게요."
+            // 과속이나 보호구역 초과가 있었으면 칭찬이 아니라 속도부터 짚는다
+            violated -> "오늘은 속도부터 짚을게요."
+            zonePasses > 0 && zoneMaxKmh != null -> "어린이 보호구역 ${zonePasses}곳을 천천히 지났어요."
+            rainMin > 0 && !advised("K01") -> "비 오는 길에서도 전조등을 잘 챙겼어요."
+            nightMin > 0 && !advised("K02") -> "어두워지자 전조등을 바로 켰어요."
             utterances.isEmpty() -> "오늘은 제가 한 번도 끼어들 일이 없었어요."
             else -> "$span 침착하게 잘 왔어요."
         }

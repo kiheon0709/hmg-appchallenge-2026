@@ -334,7 +334,7 @@ class SideSeatController(
             _ui.update { it.copy(result = view.chapterResult, progress = progress) }
             Log.i(TAG, "app chapter done ${view.chapterResult}")
             // 상황 하나만 하는 연습(리뷰의 "1분 연습")은 끝 판 없이 바로 결과로 간다
-            if (view.chapterResult?.chapterId == io.moodlab.sideseat.core.ChapterCatalog.VERSUS) {
+            if (view.chapterResult?.chapterId == io.moodlab.sideseat.core.ChapterCatalog.PRACTICE) {
                 stopLoop()
                 setMode(AppMode.RESULT)
             }

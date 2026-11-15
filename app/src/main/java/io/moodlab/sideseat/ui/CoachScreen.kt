@@ -46,6 +46,8 @@ fun CoachScreen(state: CoachUi, onAction: (UiAction) -> Unit, vehicle: VehicleSt
         if (sz.wide) {
             Row(Modifier.fillMaxSize()) {
                 Column(Modifier.weight(1f).fillMaxHeight().padding(start = sz.dp(56f), end = sz.dp(48f), top = sz.dp(40f), bottom = sz.dp(36f))) {
+                    // 왼쪽 깜빡이를 켜면 차량 시스템의 사각지대 카메라 창이 왼쪽 위에 뜬다. 그동안 머리말을 그 아래로 내린다
+                    if (vehicle?.turnSignal == io.moodlab.sideseat.core.TurnSignal.LEFT) Spacer(Modifier.height(sz.height * 0.33f))
                     Header(state)
                     Spacer(Modifier.weight(1f))
                     Message(state)

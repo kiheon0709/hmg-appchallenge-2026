@@ -105,6 +105,8 @@ fun BigButton(
     enabled: Boolean = true,
     color: Color = Sc.primary,
     sub: String? = null,
+    /** 긴 보기 문장은 두 줄까지 보여 준다(선택지). */
+    maxLines: Int = 1,
     onClick: () -> Unit,
 ) {
     val sz = LocalSz.current
@@ -118,7 +120,9 @@ fun BigButton(
             .clickable(enabled = enabled, onClick = onClick).padding(horizontal = sz.dp(24f), vertical = sz.dp(12f)),
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, color = fg, fontSize = sz.label, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, lineHeight = sz.label * 1.25f, maxLines = maxLines, overflow = TextOverflow.Ellipsis,
+            // 두 줄로 넘어가는 보기는 줄 길이를 고르게 나눈다(마지막 한 글자만 넘어가지 않게)
+            style = if (maxLines > 1) androidx.compose.material3.LocalTextStyle.current.copy(lineBreak = androidx.compose.ui.text.style.LineBreak.Heading) else androidx.compose.material3.LocalTextStyle.current)
         if (sub != null) Text(sub, color = fg.copy(alpha = 0.8f), fontSize = sz.caption, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }

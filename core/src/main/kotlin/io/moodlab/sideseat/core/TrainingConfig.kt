@@ -220,4 +220,6 @@ object ChapterCatalog {
 
     const val SURPRISE = "SURPRISE"
     const val VERSUS = "VERSUS"
+    /** 상황 하나만 하는 연습(리뷰의 "1분 연습"). */
+    const val PRACTICE = "PRACTICE"
 }

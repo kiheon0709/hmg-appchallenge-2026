@@ -652,7 +652,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     /** 하나만 하는 연습(리뷰의 "1분 연습")이 끝났다. 결과 화면으로 넘어갈 수 있게 챕터 끝과 같은 상태로 둔다. */
     private fun finishSingle(nowMs: Long) {
-        chapterResult = ChapterResult(ChapterCatalog.VERSUS, results.toList(), results.sumOf { it.stars })
+        chapterResult = ChapterResult(ChapterCatalog.PRACTICE, results.toList(), results.sumOf { it.stars })
         phase = TrainingPhase.CHAPTER_DONE
         phaseStartMs = nowMs
         single = false
@@ -694,12 +694,13 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val title = r?.def?.title ?: when (mode) {
             Mode.CHAPTER -> chapter?.title ?: ""
             Mode.SURPRISE -> "돌발 모드"
-            Mode.VERSUS -> "교관 대결"
+            Mode.VERSUS -> if (single) "1분 연습" else "교관 대결"
             null -> chapterResult?.let { res -> ChapterCatalog.chapters.firstOrNull { it.id == res.chapterId }?.title } ?: ""
         }
         val chapterId = chapter?.id ?: when (mode) {
             Mode.SURPRISE -> ChapterCatalog.SURPRISE
-            Mode.VERSUS -> ChapterCatalog.VERSUS
+            // 상황 하나만 하는 연습은 교관 대결과 다른 이름으로 보인다
+            Mode.VERSUS -> if (single) ChapterCatalog.PRACTICE else ChapterCatalog.VERSUS
             else -> chapterResult?.chapterId
         }
         return TrainingView(
@@ -812,7 +813,8 @@ internal class SceneSim(private val config: TrainingConfig) {
         rain = when {
             on(SituationId.HEAVY_RAIN) -> approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt)
             on(SituationId.HYDROPLANING) -> approach(rain, 0.7f, 0.8f, dt)
-            else -> approach(rain, 0f, 0.1f, dt)
+            // 다른 상황이 시작되면 앞 상황의 비는 바로 걷힌다(교관 대결에서 폭우 뒤 졸음에 빗방울이 남지 않게)
+            else -> approach(rain, 0f, if (inSit) 1.5f else 0.1f, dt)
         }
         // 수막현상: 물 위에 뜬 동안 차가 좌우로 흔들린다. 브레이크를 밟거나 핸들을 꺾으면 더 크게 미끄러진다
         slip = when {

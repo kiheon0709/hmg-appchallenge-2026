@@ -574,7 +574,7 @@ object SituationCatalog {
             lesson = "하이패스 차로에 잘못 들어가도 멈추거나 후진하지 않아요. 그대로 지나가고 요금은 나중에 내면 돼요.",
             steps = listOf(
                 quizStep(
-                    "pass", "어떻게 할까", essential = true,
+                    "pass", "대처 고르기", essential = true,
                     question = "어떻게 할까요?",
                     options = listOf(
                         ChoiceOption("멈추지 않고 그대로 지나가요", listOf("그대로", "지나", "통과", "계속")),
@@ -584,7 +584,7 @@ object SituationCatalog {
                     wrongLine = "멈추거나 후진하면 큰 사고로 이어질 수 있어요. 그대로 지나가요.",
                 ),
                 quizStep(
-                    "pay", "요금은",
+                    "pay", "요금 내는 법 고르기",
                     question = "그럼 요금은 어떻게 할까요?",
                     options = listOf(
                         ChoiceOption("나중에 내요. 나가는 요금소나 누리집에서 정산해요", listOf("나중", "정산", "요금소", "누리집", "홈페이지")),

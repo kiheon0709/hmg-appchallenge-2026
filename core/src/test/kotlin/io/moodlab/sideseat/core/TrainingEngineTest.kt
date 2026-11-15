@@ -729,7 +729,7 @@ class TrainingEngineTest {
         d.until { it.phase == TrainingPhase.SUCCESS }
         d.until { it.phase == TrainingPhase.CHAPTER_DONE }
         val res = assertNotNull(d.view.chapterResult)
-        assertEquals(ChapterCatalog.VERSUS, res.chapterId)
+        assertEquals(ChapterCatalog.PRACTICE, res.chapterId)
         assertEquals(listOf(SituationId.TUNNEL), res.results.map { it.id })
     }
 

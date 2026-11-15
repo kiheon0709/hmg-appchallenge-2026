@@ -513,4 +513,35 @@ class DriveCoachTest {
         assertFalse("침착하게 잘 왔어요" in s.ruleBasedReview[0], s.ruleBasedReview[0])
         assertTrue("과속" in s.ruleBasedReview[1], s.ruleBasedReview[1])
     }
+
+    @Test
+    fun `hearing either rule of a pair means that advice was missed`() {
+        // 비 오는 밤에 전조등을 끄고 달려 K01을 들었다: "어두워지자 전조등을 바로 켰어요"라고 칭찬하면 안 된다
+        val d = drive(day.copy(minuteOfDay = 21 * 60, wiper = WiperLevel.LOW))
+        d.run(3 * min)
+        assertEquals(listOf("K01"), d.ids())
+        val s = d.coach.onDriveEnd(d.now)
+        assertFalse("전조등을 바로 켰어요" in s.ruleBasedReview[0] || "전조등을 잘 챙겼어요" in s.ruleBasedReview[0], s.ruleBasedReview[0])
+    }
+
+    @Test
+    fun `speeding at night opens with speed and does not suggest an unrelated practice`() {
+        val d = drive(day.copy(minuteOfDay = 21 * 60, lowBeamOn = true, speedLimitKmh = 50, speedKmhEstimate = 80f))
+        d.run(2 * min)
+        val s = d.coach.onDriveEnd(d.now)
+        assertTrue(s.speedingCount > 0)
+        assertEquals("오늘은 속도부터 짚을게요.", s.ruleBasedReview[0])
+        assertNull(s.suggestedSituation) // 밤길만으로 "맞은편 차"를 권하지 않는다
+    }
+
+    @Test
+    fun `standing inside a school zone is not an entry`() {
+        // 보호구역 안에 서 있다가 D에 넣고 그대로 서 있다: 안내도, "최고 0km/h 통과" 기록도 없다
+        val d = geo(startM = 0.0)
+        d.drive(40, 0.0)
+        assertTrue(d.said.none { it.ruleId == "K11" }, "${d.said}")
+        val s = d.coach.onDriveEnd(d.now)
+        assertEquals(0, s.schoolZonePasses)
+        assertNull(s.schoolZoneMaxKmh)
+    }
 }

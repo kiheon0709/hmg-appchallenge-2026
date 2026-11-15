@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import io.moodlab.sideseat.core.ChapterCatalog
@@ -49,6 +51,7 @@ import io.moodlab.sideseat.core.SituationId
 import io.moodlab.sideseat.core.StepView
 import io.moodlab.sideseat.core.TrainingPhase
 import io.moodlab.sideseat.core.TrainingView
+import io.moodlab.sideseat.core.TurnSignal
 import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.scene.DriveScene
 import io.moodlab.sideseat.ui.scene.SceneRender
@@ -88,7 +91,12 @@ fun TrainingScreen(liveView: TrainingView, liveVehicle: VehicleState, onAction: 
                 // 준비 표시는 장면 자리만 덮는다(위의 판과 버튼은 그대로 쓸 수 있다)
                 if (seeThrough && !SceneRender.ready) SceneLoading()
                 EdgeGlow(glowColor, glow)
-                SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.pad).widthIn(max = sz.width * 0.42f))
+                // 왼쪽 깜빡이를 켜면 차량 시스템의 사각지대 카메라 창이 왼쪽 위(폭 45%, 높이 35%)에 뜬다. 그동안 제목 카드는 그 아래로 내린다
+                val cameraUp = vehicle.turnSignal == TurnSignal.LEFT
+                SituationCard(
+                    view,
+                    Modifier.align(Alignment.TopStart).padding(start = sz.pad, end = sz.pad, top = if (cameraUp) sz.height * 0.37f else sz.pad).widthIn(max = sz.width * 0.42f),
+                )
                 SidePanel(
                     view, onAction,
                     // 힌트는 도로 가운데를 덮지 않게 이 판 안(조작 목록 아래)에 뜬다. 길어지면 판 안에서 스크롤한다
@@ -209,7 +217,7 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
                 Text(choice.question, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Medium, lineHeight = sz.body * 1.3f)
                 Text("말로 답해도 돼요", color = Sc.textDim, fontSize = sz.caption, modifier = Modifier.padding(top = sz.dp(4f), bottom = sz.dp(12f)))
                 choice.options.forEachIndexed { i, option ->
-                    BigButton("${i + 1}. $option", Modifier.fillMaxWidth().padding(bottom = sz.dp(8f))) { onAction(UiAction.Answer(option)) }
+                    BigButton("${i + 1}. $option", Modifier.fillMaxWidth().padding(bottom = sz.dp(8f)), maxLines = 2) { onAction(UiAction.Answer(option)) }
                 }
             }
         }
@@ -249,7 +257,13 @@ private fun Timer(view: TrainingView) {
         )
         else -> {
             val left = ((limit - view.elapsedMs).coerceAtLeast(0L)) / 1000f
-            TimerRing(if (running) view.elapsedMs / limit.toFloat() else 0f, if (running) "%.1f".format(left) else "%.0f".format(limit / 1000f), size = ring, caption = "초")
+            // 성공 뒤에는 제한 시간이 아니라 걸린 시간을 보여 준다(가운데 판의 숫자와 같게)
+            val shown = when {
+                running -> "%.1f".format(left)
+                reaction != null -> "%.1f".format(reaction / 1000f)
+                else -> "%.0f".format(limit / 1000f)
+            }
+            TimerRing(if (running) view.elapsedMs / limit.toFloat() else 0f, shown, size = ring, caption = if (reaction != null && !running) "걸린 시간" else "초")
         }
     }
 }
@@ -276,7 +290,7 @@ private fun StepRow(step: StepView, current: Boolean) {
             Spacer(Modifier.width(sz.dp(14f)))
             // 끝낸 조작은 흐리게 줄을 긋고, 아직 안 한 조작은 밝게 둔다(체크 아이콘 말고 글자로도 구별되게)
             Text(
-                step.label, color = if (step.done) Sc.textDim.copy(alpha = 0.75f) else Sc.text, fontSize = sz.sp(29f),
+                step.label, color = if (step.done) Sc.textDim.copy(alpha = 0.75f) else Sc.text, fontSize = sz.sp(29f), lineHeight = sz.sp(29f) * 1.2f,
                 fontWeight = if (current) FontWeight.Bold else FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 textDecoration = if (step.done) TextDecoration.LineThrough else null,
             )
@@ -300,8 +314,10 @@ private fun HintBanner(view: TrainingView, modifier: Modifier) {
                 Spacer(Modifier.width(sz.dp(8f)))
                 Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             }
-            Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)
-            if (where != null) Text(where, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
+            // 마지막 한 글자만 다음 줄로 넘어가지 않게 줄 길이를 고르게 나눈다
+            val even = LocalTextStyle.current.copy(lineBreak = LineBreak.Heading)
+            Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f, style = even)
+            if (where != null) Text(where, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f, style = even)
         }
     }
 }
@@ -314,7 +330,11 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     val exit = fadeOut(tween(200))
     val result = view.lastResult
 
-    AnimatedVisibility(view.phase == TrainingPhase.SUCCESS && result != null, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
+    // 가로에서는 오른쪽 조작 목록과 겹치지 않게 왼쪽으로 비켜 둔다(감점 문구가 길 때)
+    AnimatedVisibility(
+        view.phase == TrainingPhase.SUCCESS && result != null,
+        Modifier.align(Alignment.Center).padding(end = if (sz.wide) sz.width * 0.3f else sz.dp(0f)), enter = enter, exit = exit,
+    ) {
         AccentPanel(Sc.ok, padding = sz.dp(28f)) {
           Row(verticalAlignment = Alignment.CenterVertically) {
             // 장면 위에서는 타비가 멈춘 한 장면으로만 나온다(다시 그리는 횟수를 늘리지 않게)
@@ -342,7 +362,8 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                 result?.penalties?.firstOrNull()?.let { p ->
                     Text(
                         SituationTexts.penaltyLine(result.id, p), color = Sc.warn, fontSize = sz.label,
-                        modifier = Modifier.padding(top = sz.dp(8f)).widthIn(max = sz.dp(520f)),
+                        lineHeight = sz.label * 1.3f, style = LocalTextStyle.current.copy(lineBreak = LineBreak.Heading),
+                        modifier = Modifier.padding(top = sz.dp(8f)).widthIn(max = sz.dp(400f)),
                     )
                 }
             }

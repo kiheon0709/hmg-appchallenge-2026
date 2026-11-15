@@ -225,7 +225,7 @@ fun TurnSignalGameScreen(view: TurnSignalGameView, onAction: (UiAction) -> Unit)
                     MiniGamePhase.SHOW -> "순서를 잘 보세요"
                     MiniGamePhase.INPUT -> "방향지시등으로 따라 해요"
                     MiniGamePhase.ROUND_CLEAR -> "좋아요! 한 칸 더 길어져요"
-                    MiniGamePhase.OVER -> "아쉬워요. ${view.score}라운드까지 갔어요"
+                    MiniGamePhase.OVER -> if (view.score == 0) "아쉬워요. 첫 라운드에서 막혔어요" else "아쉬워요. ${view.score}라운드까지 갔어요"
                     MiniGamePhase.DONE -> "다 맞혔어요!"
                 },
                 color = when (view.phase) { MiniGamePhase.OVER -> Sc.warn; MiniGamePhase.DONE, MiniGamePhase.ROUND_CLEAR -> Sc.ok; else -> Sc.textDim },

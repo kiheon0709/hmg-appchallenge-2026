@@ -70,6 +70,7 @@ internal object SituationTexts {
         null -> ""
         ChapterCatalog.SURPRISE -> "돌발 모드"
         ChapterCatalog.VERSUS -> "교관 대결"
+        ChapterCatalog.PRACTICE -> "1분 연습"
         else -> ChapterCatalog.chapters.firstOrNull { it.id == chapterId }?.title ?: chapterId
     }
 

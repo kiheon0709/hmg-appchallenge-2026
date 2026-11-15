@@ -83,10 +83,13 @@ fun main(args: Array<String>) {
         TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = UiSamples.chapterResult), c) {}
     }
     // 점검(11-15) 뒤에 넣은 상태들
-    fun state(name: String, w: Int = W, h: Int = H, f: (TrainingView) -> TrainingView) {
+    fun state(name: String, w: Int = W, h: Int = H, left: Boolean = false, f: (TrainingView) -> TrainingView) {
         if (!want(name)) return
         val t = at(SituationId.HEAVY_RAIN, 2.4f)
-        shoot(name, w, h, false, maxOf(0f, t - 6f), t) { val (v, c) = UiSamples.trainingAt(simT); TrainingScreen(f(v), c) {} }
+        shoot(name, w, h, false, maxOf(0f, t - 6f), t) {
+            val (v, c) = UiSamples.trainingAt(simT)
+            TrainingScreen(f(v), if (left) c.copy(turnSignal = TurnSignal.LEFT) else c) {}
+        }
     }
     state("t_opening") { it.copy(phase = TrainingPhase.CRUISE, situation = null, steps = emptyList(), opening = true, title = "첫 빗길") }
     state("t_versus") { it.copy(phase = TrainingPhase.CRUISE, chapterId = ChapterCatalog.VERSUS, situation = null, steps = emptyList(), title = "교관 대결") }
@@ -94,6 +97,9 @@ fun main(args: Array<String>) {
     val hazardQ = ChoiceView("비상등 켰나요?", listOf("네, 켰어요", "아직이요"))
     state("t_hazard_q") { it.copy(phase = TrainingPhase.ACTIVE, choice = hazardQ) }
     state("t_hazard_q_hint") { it.copy(phase = TrainingPhase.HINT, choice = hazardQ, canSkip = true) }
+    state("t_camera", left = true) { it.copy(phase = TrainingPhase.ACTIVE, steps = listOf(StepView("signal_left", "왼쪽 깜빡이 켜기", true), StepView("yield_slow", "양보선에서 멈춰 도는 차 보내기", false), StepView("enter", "비면 진입하기", false)), title = "회전교차로") }
+    state("t_success_penalty") { it.copy(phase = TrainingPhase.SUCCESS, lastResult = SituationResult(SituationId.FOGGED_WINDSHIELD, 1, 18_600, emptyList(), listOf("WIPER_ONLY")), situation = SituationId.FOGGED_WINDSHIELD, title = "앞유리 김서림") }
+    state("t_quiz_long") { it.copy(phase = TrainingPhase.ACTIVE, choice = ChoiceView("마지막으로 할 일은요?", listOf("견인차가 올 때까지 그냥 기다리기", "112나 119, 한국도로공사 콜센터에 신고", "차 사진 찍어 올리기"))) }
     state("t_overtime") { it.copy(phase = TrainingPhase.HINT, overtime = true, elapsedMs = it.limitMs + 2_300) }
     state("t_overtime_portrait", w = 835) { it.copy(phase = TrainingPhase.HINT, overtime = true, canSkip = true, elapsedMs = it.limitMs + 2_300) }
     if (want("t_done_unfinished")) shoot("t_done_unfinished", W, H, false, 0f, 3f) {
@@ -150,6 +156,7 @@ fun main(args: Array<String>) {
     if (want("h_vehicle")) shoot("h_vehicle", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
     val car = VehicleState(0, parked = false, wiper = WiperLevel.LOW, lowBeamOn = false, recirculationOn = true, speedLimitKmh = 80, speedKmhEstimate = 93f)
     fun coach(name: String, dark: Boolean, ui: CoachUi, w: Int = W, h: Int = H) { if (want(name)) shoot(name, w, h, dark, 0f, 0.2f) { CoachShot(ui, car) } }
+    if (want("c_left")) shoot("c_left_signal", W, H, true, 0f, 0.2f) { CoachShot(CoachUi(lastLine = "깜빡이가 계속 켜져 있어요.", wake = WakeUi.WAITING), car.copy(turnSignal = TurnSignal.LEFT)) }
     coach("c_k01", false, UiSamples.coach)
     coach("c_k12_speaking", false, CoachUi(lastLine = "제한속도가 80이에요. 조금 줄여요.", urgent = true, wake = WakeUi.WAITING, talk = TalkUi(speaking = true)))
     coach("c_idle", false, CoachUi(wake = WakeUi.WAITING))

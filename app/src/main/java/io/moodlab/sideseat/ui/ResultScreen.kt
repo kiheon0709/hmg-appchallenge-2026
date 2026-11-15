@@ -33,7 +33,7 @@ fun ResultScreen(result: ChapterResult, progress: TrainingProgress, bestBefore: 
     SideSeatFrame { sz ->
         val surprise = result.chapterId == ChapterCatalog.SURPRISE
         // 상황 하나만 한 연습(리뷰의 "1분 연습")
-        val single = result.chapterId == ChapterCatalog.VERSUS
+        val single = result.chapterId == ChapterCatalog.PRACTICE
         val singleId = result.results.firstOrNull()?.id
         val summary: @Composable (Modifier) -> Unit = { m ->
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
