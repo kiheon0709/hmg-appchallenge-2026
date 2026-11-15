@@ -1,0 +1,44 @@
+<template>
+  <!-- cuts.json에서 만든 장면(r4_c2.webm 3~20초). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
+    #clip-tunnel-k { position: absolute; left: 60px; top: 44px; padding: 6px 22px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 34px; }
+    #clip-tunnel-h { position: absolute; left: 60px; top: 98px; font-size: 62px; color: var(--color-ink); }
+    #clip-tunnel-v { position: absolute; left: 60px; top: 184px; width: 1160px; height: 822px; border-radius: 26px; overflow: hidden; background: #0B0E13; box-shadow: 0 24px 60px rgba(16,18,22,0.2); }
+    #clip-tunnel-v video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+    #clip-tunnel-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: 822px; border-radius: 26px; background: #fff; box-shadow: 0 24px 60px rgba(16,18,22,0.1); padding: 30px 36px; }
+    #clip-tunnel-m { width: 170px; height: 170px; }
+    #clip-tunnel-m canvas { width: 170px; height: 170px; display: block; }
+    #clip-tunnel-p h5 { margin-top: 6px; font-size: 40px; font-weight: 400; color: var(--color-accent); }
+    #clip-tunnel-p .wl { margin-top: 18px; display: flex; gap: 16px; font-size: 37px; line-height: 1.36; color: var(--color-ink); }
+    #clip-tunnel-p .wl i { flex: none; margin-top: 16px; width: 14px; height: 14px; border-radius: 50%; background: var(--color-accent); }
+    #clip-tunnel-n { position: absolute; left: 60px; top: 1018px; font-size: 28px; color: var(--ink2); }
+  </style>
+  <div id="root" data-composition-id="clip-tunnel" data-width="1920" data-height="1080">
+    <audio id="clip-tunnel-a" class="clip" data-start="0" data-duration="17" data-track-index="9" data-volume="1" src="assets/media/tunnel.m4a"></audio>
+    <div id="clip-tunnel-k">출발 전 연습 · 밤 고속도로</div>
+    <div id="clip-tunnel-h">상황 3. 터널 진입</div>
+    <div id="clip-tunnel-v"><video id="clip-tunnel-vd" class="clip" data-start="0" data-duration="17" data-track-index="2" muted playsinline src="assets/media/tunnel.mp4"></video></div>
+    <div id="clip-tunnel-p">
+      <div id="clip-tunnel-m"><canvas id="clip-tunnel-cv" width="340" height="340"></canvas></div>
+      <h5>여기를 보세요</h5>
+      <div class="wl"><i></i><span>터널이 다가오면 타비가 알려 줘요</span></div>
+      <div class="wl"><i></i><span>전조등을 켜면 바로 성공</span></div>
+      <div class="wl"><i></i><span>걸린 시간이 별로 남아요</span></div>
+    </div>
+    <div id="clip-tunnel-n">실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      FX.tabi(tl, document.getElementById("clip-tunnel-cv"), 17.6, [[0, "speaking"], [3, "idle"], [13.50, "happy"]]);
+      tl.fromTo("#clip-tunnel-k, #clip-tunnel-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
+      tl.fromTo("#clip-tunnel-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
+      tl.fromTo("#clip-tunnel-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
+      const at = [1.2,5.53,9.87];
+      document.querySelectorAll("#clip-tunnel-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
+      tl.fromTo("#clip-tunnel-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
+      window.__timelines["clip-tunnel"] = tl;
+    })();
+  </script>
+</template>

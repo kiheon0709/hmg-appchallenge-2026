@@ -1,0 +1,38 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
+    #nm-k { position: absolute; left: 160px; top: 80px; font-size: 40px; color: var(--color-accent); }
+    #nm-h { position: absolute; left: 160px; top: 140px; font-size: 68px; color: var(--color-ink); }
+    .nm-r { position: absolute; left: 160px; width: 1600px; height: 170px; border-bottom: 3px solid var(--line); display: flex; align-items: baseline; gap: 44px; }
+    .nm-r b { width: 520px; font-weight: 400; font-size: 130px; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+    .nm-r b u { text-decoration: none; font-size: 62px; margin-left: 8px; }
+    .nm-r > span { font-size: 50px; color: var(--color-ink); }
+    .nm-r i { font-style: normal; margin-left: auto; font-size: 38px; color: var(--ink2); }
+    #nm-n { position: absolute; left: 160px; top: 990px; font-size: 34px; color: var(--ink2); }
+  </style>
+  <div id="root" data-composition-id="numbers" data-width="1920" data-height="1080">
+    <div id="nm-k">실측</div>
+    <div id="nm-h"><span class="sp">차에 부담을 주지 않게 만들었어요</span></div>
+    <div class="nm-r" style="top:270px"><b><span class="n" data-to="16.9" data-fx="1">0</span><u>%</u></b><span>정차 훈련 중 CPU 평균</span><i>기준 25% 미만</i></div>
+    <div class="nm-r" style="top:440px"><b><span class="n" data-to="30" data-fx="0">0</span><u>fps</u></b><span>3D 훈련 장면</span><i>41초에 1,299장</i></div>
+    <div class="nm-r" style="top:610px"><b><span class="n" data-to="240.6" data-fx="1">0</span><u>MB</u></b><span>정차 훈련 중 메모리</span><i>기준 400MB 미만</i></div>
+    <div class="nm-r" style="top:780px"><b><span class="n" data-to="0.12" data-fx="2">0</span><u>%</u></b><span>주행 중 코치 CPU 평균</span><i>기준 5% 미만</i></div>
+    <div id="nm-n">Pleos Connect 에뮬레이터, release 빌드, 4코어 기준으로 잰 값</div>
+  </div>
+  <script>
+    (function () {
+      const root = document.querySelector('[data-composition-id="numbers"]');
+      const tl = gsap.timeline({ paused: true });
+      FX.split(root);
+      FX.rise(tl, "#nm-k", 0.1);
+      FX.words(tl, "#nm-h .w", 0.3, 0.07);
+      FX.rise(tl, ".nm-r", 1.4, 2.2);
+      root.querySelectorAll(".n").forEach((el, i) => {
+        const o = { v: 0 }, to = parseFloat(el.dataset.to), fx = parseInt(el.dataset.fx, 10);
+        tl.to(o, { v: to, duration: 1.2, ease: "power2.out", onUpdate: () => { el.textContent = o.v.toFixed(fx); } }, 1.5 + i * 2.2);
+      });
+      FX.rise(tl, "#nm-n", 10.4);
+      window.__timelines["numbers"] = tl;
+    })();
+  </script>
+</template>

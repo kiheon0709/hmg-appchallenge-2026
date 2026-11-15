@@ -1,0 +1,35 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
+    #sd-k { position: absolute; left: 160px; top: 70px; font-size: 40px; color: var(--color-accent); }
+    #sd-h { position: absolute; left: 160px; top: 128px; font-size: 68px; color: var(--color-ink); }
+    .sd-c { position: absolute; height: 270px; border-radius: 34px; background: #fff; box-shadow: 0 22px 56px rgba(16,18,22,0.11); padding: 34px 40px; }
+    .sd-c h4 { font-size: 52px; font-weight: 400; color: var(--color-accent); }
+    .sd-c p { margin-top: 14px; font-size: 36px; line-height: 1.42; color: var(--color-ink); }
+    .sd-c span { display: block; margin-top: 10px; font-size: 32px; color: var(--ink2); }
+    #sd-b { position: absolute; left: 0; right: 0; top: 925px; text-align: center; font-size: 54px; color: var(--color-ink); }
+    #sd-b em { font-style: normal; color: var(--color-accent); }
+  </style>
+  <div id="root" data-composition-id="sdk" data-width="1920" data-height="1080">
+    <div id="sd-k">왜 차 안에서만 되나요</div>
+    <div id="sd-h"><span class="sp">Pleos Connect SDK 다섯 가지로 차를 읽어요</span></div>
+    <div class="sd-c" style="left:160px;top:270px;width:1000px"><h4>Vehicle</h4><p>와이퍼, 전조등·상향등, 깜빡이, 브레이크, 조향각,<br>성에 제거·에어컨·내기순환, 창문, 안전벨트, 문</p><span>실제 스위치로 답하는 훈련과 주행 중 코치</span></div>
+    <div class="sd-c" style="left:1200px;top:270px;width:560px"><h4>NaviHelper</h4><p>회전 안내, 주의 지점,<br>정체, 도착</p><span>가는 길 미리 연습</span></div>
+    <div class="sd-c" style="left:160px;top:580px;width:500px"><h4>TextToSpeech</h4><p>타비의 모든 말</p><span>문장 단위로 이어 말하기</span></div>
+    <div class="sd-c" style="left:700px;top:580px;width:500px"><h4>SpeechToText</h4><p>"타비야" 호출과 질문</p><span>말로 답하는 훈련</span></div>
+    <div class="sd-c" style="left:1240px;top:580px;width:520px"><h4>FusedLocation</h4><p>어린이 보호구역, 제한속도</p><span>일몰 시각 계산</span></div>
+    <div id="sd-b"><span class="sp">휴대폰 앱은 와이퍼 레버를 읽을 수 없어요.</span> <em class="sp">그래서 차 안의 앱이에요</em></div>
+  </div>
+  <script>
+    (function () {
+      const root = document.querySelector('[data-composition-id="sdk"]');
+      const tl = gsap.timeline({ paused: true });
+      FX.split(root);
+      FX.rise(tl, "#sd-k", 0.1);
+      FX.words(tl, "#sd-h .w", 0.3, 0.07);
+      FX.pop(tl, ".sd-c", 1.5, 2.4);
+      FX.words(tl, "#sd-b .w", 14.6, 0.08);
+      window.__timelines["sdk"] = tl;
+    })();
+  </script>
+</template>

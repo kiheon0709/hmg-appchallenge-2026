@@ -1,0 +1,44 @@
+<template>
+  <!-- 가는 길 미리 연습: 내비 경로에 나올 구간을 출발 전에 권한다 -->
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
+    #rt-k { position: absolute; left: 160px; top: 80px; font-size: 40px; color: var(--color-accent); }
+    #rt-h { position: absolute; left: 160px; top: 140px; font-size: 66px; line-height: 1.3; color: var(--color-ink); }
+    #rt-map { position: absolute; left: 160px; top: 380px; width: 800px; height: 560px; border-radius: 36px; background: #fff; box-shadow: 0 26px 64px rgba(16,18,22,0.12); }
+    #rt-map svg { position: absolute; inset: 0; }
+    .rt-p { position: absolute; padding: 10px 24px; border-radius: 30px; background: #101216; color: #fff; font-size: 36px; white-space: nowrap; }
+    .rt-e { position: absolute; font-size: 34px; color: var(--ink2); }
+    #rt-sh { position: absolute; left: 1040px; top: 380px; width: 720px; height: 518px; border-radius: 30px; overflow: hidden; box-shadow: 0 26px 64px rgba(16,18,22,0.18); }
+    #rt-sh img { width: 1000px; display: block; }
+    #rt-c { position: absolute; left: 1040px; top: 920px; font-size: 36px; color: var(--ink2); }
+  </style>
+  <div id="root" data-composition-id="route" data-width="1920" data-height="1080">
+    <div id="rt-k">가는 길 미리 연습</div>
+    <div id="rt-h"><span class="sp">내비에 목적지를 넣으면,</span><br><span class="sp">가는 길에 나올 구간을 출발 전에 연습해요</span></div>
+    <div id="rt-map">
+      <svg width="800" height="560" viewBox="0 0 800 560"><path id="rt-path" d="M90 470 C 220 470, 200 300, 330 300 S 470 150, 560 190 S 660 110, 720 90" fill="none" stroke="#2563EB" stroke-width="14" stroke-linecap="round" stroke-dasharray="1100" stroke-dashoffset="1100"/></svg>
+      <div class="rt-e" style="left:50px;top:500px">출발</div><div class="rt-e" style="left:690px;top:30px">도착</div>
+      <div class="rt-p" style="left:150px;top:330px">요금소</div>
+      <div class="rt-p" style="left:380px;top:210px">터널</div>
+      <div class="rt-p" style="left:520px;top:120px">회전교차로</div>
+    </div>
+    <div id="rt-sh"><img src="assets/img/home-route.png" alt=""></div>
+    <div id="rt-c">홈의 추천이 "가는 길 연습"으로 바뀌어요 (실제 앱 화면)</div>
+  </div>
+  <script>
+    (function () {
+      const root = document.querySelector('[data-composition-id="route"]');
+      const tl = gsap.timeline({ paused: true });
+      FX.split(root);
+      FX.rise(tl, "#rt-k", 0.1);
+      FX.words(tl, "#rt-h .w", 0.3, 0.07);
+      FX.pop(tl, "#rt-map", 1.6);
+      tl.to("#rt-path", { attr: { "stroke-dashoffset": 0 }, duration: 3.0, ease: "power1.inOut" }, 2.2);
+      FX.pop(tl, ".rt-p", 3.0, 0.8);
+      tl.fromTo("#rt-sh", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.7, ease: "expo.out" }, 6.2);
+      tl.fromTo("#rt-sh img", { scale: 1, x: 0, y: 0 }, { scale: 1.25, x: -20, y: -200, transformOrigin: "0 0", duration: 3.0, ease: "power2.inOut" }, 7.4);
+      FX.rise(tl, "#rt-c", 6.8);
+      window.__timelines["route"] = tl;
+    })();
+  </script>
+</template>

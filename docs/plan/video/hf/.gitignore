@@ -1,0 +1,7 @@
+.hyperframes/
+renders/
+node_modules/
+assets/media/
+# 음악·효과음은 Pixabay 라이선스 파일이라 저장소에 올리지 않는다(STORYBOARD.md의 "소리 파일" 참고)
+assets/music/
+assets/sfx/*.mp3

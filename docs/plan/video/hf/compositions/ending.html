@@ -1,0 +1,30 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
+    #en-m { position: absolute; left: 660px; top: 90px; width: 600px; height: 600px; }
+    #en-m canvas { width: 600px; height: 600px; display: block; }
+    #en-n { position: absolute; left: 0; right: 0; top: 660px; text-align: center; font-size: 150px; line-height: 1; color: var(--color-accent); }
+    #en-n span { font-size: 64px; color: #5B8DF6; letter-spacing: 0.08em; margin-left: 24px; }
+    #en-s { position: absolute; left: 0; right: 0; top: 840px; text-align: center; font-size: 60px; color: var(--color-ink); }
+    #en-f { position: absolute; left: 0; right: 0; top: 960px; text-align: center; font-size: 36px; color: var(--ink2); }
+  </style>
+  <div id="root" data-composition-id="ending" data-width="1920" data-height="1080">
+    <div id="en-m"><canvas id="en-cv" width="900" height="900"></canvas></div>
+    <div id="en-n">타비<span>TABI</span></div>
+    <div id="en-s"><span class="sp">처음인 길, 옆자리에서 같이.</span></div>
+    <div id="en-f">현대자동차그룹 차량용 앱 개발 공모전 출품작 · Pleos Connect</div>
+  </div>
+  <script>
+    (function () {
+      const D = 10, root = document.querySelector('[data-composition-id="ending"]');
+      const tl = gsap.timeline({ paused: true });
+      FX.split(root);
+      FX.tabi(tl, document.getElementById("en-cv"), D, [[0, "idle"], [0.6, "happy"], [4.6, "cheer"]]);
+      tl.fromTo("#en-m", { y: 300, opacity: 0, scale: 0.6 }, { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.5)" }, 0.2);
+      FX.rise(tl, "#en-n", 1.1);
+      FX.words(tl, "#en-s .w", 1.9, 0.1);
+      FX.rise(tl, "#en-f", 3.2);
+      window.__timelines["ending"] = tl;
+    })();
+  </script>
+</template>
