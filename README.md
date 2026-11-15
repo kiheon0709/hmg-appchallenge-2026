@@ -20,7 +20,7 @@
 
 ## APK
 
-- **`apk/TABI_release.apk`** (release 빌드, R8 적용, 약 27 MB)
+- **`apk/홍기헌_TABI_release.apk`** (release 빌드, R8 적용, 약 28 MB. 파일명은 공모전 규칙 `팀명_앱이름_release.apk`를 따랐고, 개인 참가라 팀명 자리에 성명이 들어가요)
 - 이 APK에는 LLM API 키가 들어 있지 않아요. 키가 없으면 AI 교관은 미리 쓴 문장과 규칙 기반 총평으로 동작해요(모든 기능이 키 없이 돌아요). 키를 앱에 넣지 않고 서버가 보관하는 중계 서버 코드는 `server/`에 있고, 아직 배포하지 않았어요.
 
 ## 테스트 환경
@@ -42,7 +42,7 @@
    emulator -avd Pleos_Connect_v2.1 -no-snapshot-load -allow-host-audio
    ```
    그다음 `adb emu avd hostmicon`으로 호스트 마이크를 켜요(Extended Controls → Microphone의 "Virtual microphone uses host audio input"과 같아요).
-2. `adb install -g apk/TABI_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
+2. `adb install -g apk/홍기헌_TABI_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
 3. 앱 목록에서 **타비**를 실행해요.
 
 - 위치를 쓰려면 앱 첫 실행 때 위치 권한을 허용해요(일몰 시각 계산). 거부해도 나머지는 동작해요.
