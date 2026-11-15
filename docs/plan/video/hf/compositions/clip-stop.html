@@ -19,10 +19,10 @@
     #clip-stop-v .sx { position: absolute; right: 24px; top: 24px; padding: 8px 20px; border-radius: 30px; background: rgba(16,18,22,0.8); color: #fff; font-size: 30px; opacity: 0; }
   </style>
   <div id="root" data-composition-id="clip-stop" data-width="1920" data-height="1080">
-    <audio id="clip-stop-a" class="clip" data-start="0" data-duration="21" data-track-index="9" data-volume="1" src="assets/media/stop.m4a"></audio>
+    <audio id="clip-stop-a" class="clip" data-start="0" data-duration="21.3" data-track-index="9" data-volume="1" src="assets/media/stop.m4a"></audio>
     <div id="clip-stop-k">출발 전 연습 · 첫 빗길</div>
     <div id="clip-stop-h">앞차 급정거</div>
-    <div id="clip-stop-v"><video id="clip-stop-vd" class="clip" data-start="0" data-duration="21" data-track-index="2" muted playsinline src="assets/media/stop.mp4"></video><div class="fl" id="clip-stop-fl"></div></div>
+    <div id="clip-stop-v"><video id="clip-stop-vd" class="clip" data-start="0" data-duration="21.3" data-track-index="2" muted playsinline src="assets/media/stop.mp4"></video><div class="fl" id="clip-stop-fl"></div></div>
 
     <div id="clip-stop-p">
       <div class="tg">타비의 설명</div>
@@ -37,11 +37,11 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("clip-stop-cv"), 21, [[0, "speaking"], [3, "idle"], [17.50, "happy"]]);
+      FX.tabi(tl, document.getElementById("clip-stop-cv"), 21.3, [[0, "speaking"], [3, "idle"], [17.80, "happy"]]);
       tl.fromTo("#clip-stop-k, #clip-stop-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
       tl.fromTo("#clip-stop-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
       tl.fromTo("#clip-stop-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
-      const at = [1.2,6.87,12.53];
+      const at = [1.2,6.97,12.73];
       document.querySelectorAll("#clip-stop-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#clip-stop-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
 

@@ -1,6 +1,6 @@
 ---
 message: "초보 운전자를 위한 AI 운전 코치. 출발 전에는 미리 연습하고, 운전 중에는 옆에서 알려 주고, 주차 후에는 같이 돌아봐요"
-length: 약 7분 30초 (클립 구간에 따라 달라짐)
+length: 약 7분 45초 (클립 구간에 따라 달라짐)
 format: 1920x1080, 30fps, mp4
 voice: 내레이션 없음. 클립 구간에는 앱의 실제 소리(타비 목소리, 효과음)만
 ---
@@ -31,7 +31,7 @@ node scripts/build.mjs
 - 장면 순서와 그래픽 장면 길이는 `scripts/build.mjs`의 `scenes`에 있어요.
 - 싱크: 원본 webm은 프레임 간격이 일정하지 않아요. 영상과 소리를 함께 고정 30fps 중간 파일(`assets/media/src_*.mp4`)로 바꾼 뒤 거기서 같은 구간으로 잘라요.
 
-## 장면 (v5, 약 7분 30초, 클립은 v28 녹화본)
+## 장면 (v6, 약 7분 45초, 클립은 r2·r3·r6이 v29, 나머지는 v28 녹화본)
 
 그래픽 장면은 애니메이션을 원래 길이의 절반쯤으로 빠르게 돌리고(`build.mjs`의 `g(id, 원래 길이, 목표 길이, 효과음)`), 아무것도 움직이지 않는 구간은 1.3초만 남기고 건너뛰어요(`HOLD`). 정확한 길이는 `node scripts/build.mjs`가 표로 찍어요.
 
@@ -46,7 +46,7 @@ node scripts/build.mjs
 | 7 | "첫 빗길": 폭우, 앞유리 김서림, 앞차 급정거 (r2) | 2.2초 + 79초 | |
 | 8 | "밤 고속도로": 터널 진입, 맞은편 차, 졸음 (r4) | 2.2초 + 42초 | 맞은편 차는 앱에서 끊긴 준비 말이 끝난 뒤(25.48초)부터 |
 | 9 | "길 위의 규칙": 회전교차로, 어린이 보호구역, 고속도로 합류, 일반 차로 요금소, 하이패스 차로 오진입 (r3) | 2.2초 + 132초 | |
-| 10 | "멈춰야 할 때": 고속도로 고장, 의도치 않은 가속 (r6, 구간표는 `../clips/cuts_c3.md`) | 2.2초 + 62초 + 21초 | 고장 퀴즈는 문항 사이 대기 한 곳을 잘라 냄 |
+| 10 | "멈춰야 할 때": 고속도로 고장, 의도치 않은 가속 (r6) | 2.2초 + 62초 + 21초 | 고장 퀴즈는 문항 사이 대기 한 곳을 잘라 냄 |
 | 11 | 가는 길 미리 연습 `route` | 7초 | |
 | 12 | "운전 중과 주차 후": 운전 중 코치, 주차 후 리뷰 (r5) | 2.2초 + 17초 + 12초 | 코치는 상황 자막 세 개, 말 사이 대기는 잘라 냄 |
 | 13 | (대화) | 클립, 선택 | 사용자가 찍은 클립이 있으면 |
@@ -62,7 +62,7 @@ node scripts/build.mjs
 ## 검수
 
 ```bash
-python3 scripts/qa.py renders/tabi_v5.mp4
+python3 scripts/qa.py renders/tabi_v6.mp4
 ```
 
 클립 장면마다 시작·끝 1초의 소리 크기를 뽑고, 그래픽 장면에서 1.5초 넘게 멈춘 곳과 클립에서 영상 칸이 3초 넘게 멈추고 소리도 없는 곳을 찾아요.
@@ -84,5 +84,5 @@ cp ~/hkheon/Project/Meety/docs/presentation/video/assets/sfx/*.mp3 assets/sfx/
 node scripts/build.mjs                       # 클립 자르기 + index.html
 npx --yes hyperframes@0.8.226 check --json   # 검사
 npx --yes hyperframes@0.8.226 preview        # 미리 보기
-npx --yes hyperframes@0.8.226 render --video-frame-format png -o renders/tabi_v5.mp4
+npx --yes hyperframes@0.8.226 render --video-frame-format png -o renders/tabi_v6.mp4
 ```
