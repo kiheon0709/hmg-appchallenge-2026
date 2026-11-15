@@ -118,8 +118,14 @@ val LocalSz = staticCompositionLocalOf { Sz(1f, true, 1280.dp, 800.dp) }
 
 /** 모든 화면의 바깥 틀: 테마와 치수를 정하고, 가로(창 2칸)·세로(창 1칸)를 구분해 준다. */
 @Composable
-fun SideSeatFrame(modifier: Modifier = Modifier, paintBackground: Boolean = true, content: @Composable BoxWithConstraintsScope.(Sz) -> Unit) {
-    val dark = SideSeatUiDebug.forceDark ?: isSystemInDarkTheme()
+fun SideSeatFrame(
+    modifier: Modifier = Modifier,
+    paintBackground: Boolean = true,
+    /** true면 시스템 테마와 상관없이 야간 색을 쓴다(훈련 장면 위의 판은 낮에도 어두운 반투명이어야 장면이 먼저 보인다). */
+    alwaysDark: Boolean = false,
+    content: @Composable BoxWithConstraintsScope.(Sz) -> Unit,
+) {
+    val dark = alwaysDark || (SideSeatUiDebug.forceDark ?: isSystemInDarkTheme())
     val p = remember(dark) { (if (dark) NightPalette else DayPalette).also { Sc.palette = it } }
     MaterialTheme(
         colorScheme = if (dark) {

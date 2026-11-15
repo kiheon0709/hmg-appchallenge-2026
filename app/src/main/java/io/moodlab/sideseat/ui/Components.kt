@@ -255,12 +255,14 @@ fun TalkButton(talk: TalkUi, modifier: Modifier = Modifier, height: Dp = LocalSz
         else -> "질문하기"
     }
     val idleTonal = tonal && !active
-    val bg = when { talk.listening -> Sc.accent; active || tonal -> Sc.surface; else -> Sc.primary }
-    val fg = when { talk.listening -> Sc.onAccent; active || tonal -> Sc.text; else -> Sc.onPrimary }
+    // 야간에는 흰 채움이 화면에서 가장 밝은 면이 돼 눈이 부시다. 어두운 채움에 테두리로 그린다
+    val dim = Sc.dark && !tonal && !active
+    val bg = when { talk.listening -> Sc.accent; active || tonal -> Sc.surface; dim -> Sc.surfaceHi; else -> Sc.primary }
+    val fg = when { talk.listening -> Sc.onAccent; active || tonal || dim -> Sc.text; else -> Sc.onPrimary }
     val shape = RoundedCornerShape(sz.radius)
     Row(
         modifier.height(height).clip(shape).background(bg)
-            .border(sz.line, if (active && !talk.listening) Sc.text else if (idleTonal) Sc.outline else Color.Transparent, shape)
+            .border(sz.line, if (active && !talk.listening) Sc.text else if (idleTonal) Sc.outline else if (dim) Sc.textDim else Color.Transparent, shape)
             .clickable { onAction(if (active) UiAction.StopTalking else UiAction.AskQuestion) }
             .padding(horizontal = sz.dp(20f)),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
@@ -329,7 +331,7 @@ fun StatTile(value: String, label: String, modifier: Modifier = Modifier, delta:
     val sz = LocalSz.current
     Column(modifier.clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(18f))) {
         Text(value, color = color, fontSize = sz.title, fontWeight = FontWeight.Medium, maxLines = 1)
-        Text(label, color = Sc.textDim, fontSize = sz.caption, maxLines = 1)
+        Text(label, color = Sc.text, fontSize = sz.label, fontWeight = FontWeight.Medium, maxLines = 1)
         if (delta != null) Text(delta, color = Sc.textDim, fontSize = sz.caption, maxLines = 1)
     }
 }

@@ -718,6 +718,9 @@ internal class SceneSim(private val config: TrainingConfig) {
     private var placedFor: SituationId? = null
     /** 주차장 장면에서 챕터가 끝나면 끝 화면도 주차장이다. */
     private var parked = false
+    /** 일반 차로 요금소까지 남은 거리(m). 3D 장면이 요금소를 세우는 거리와 같은 값에서 시작해 화면 속 속도로 줄인다. */
+    private var boothM = 0f
+    private var boothAhead = false
     /** 비가 보이는 중(와이퍼 소리를 낼지). */
     val raining: Boolean get() = rain > 0.25f
 
@@ -841,14 +844,21 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.BREAKDOWN) && !briefing -> approach(speed, 0f, 20f, dt)
             on(SituationId.UNINTENDED_ACCEL) && active ->
                 if (braking) (speed - (18f + if (state.epbOn()) 12f else 0f) * dt).coerceAtLeast(0f) else (speed + 10f * dt).coerceAtMost(170f)
+            // 일반 차로 요금소: 천천히 들어가 부스 옆에 멈춘 뒤 상황이 끝날 때까지 서 있는다.
+            // 부스에 닿기 전에 밟으면 천천히 굴러가다가 부스 옆에 와서야 멈춘다(부스가 한참 앞인데 "멈추기"가 끝나지 않게)
+            on(SituationId.TOLL_BOOTH) -> when {
+                "full_stop" in doneSteps -> 0f
+                braking && boothM > config.tollStopM -> approach(speed, config.tollCreepKmh, config.brakeDecelKmhPerSec, dt)
+                braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
+                else -> approach(speed, config.slowApproachKmh, 25f, dt)
+            }
             // 앞차 급정거: 한 번 밟았으면 발을 떼도 앞차 뒤에 멈춰 선다(다시 80으로 올라가지 않는다)
             on(SituationId.SUDDEN_STOP) && (braking || "brake" in doneSteps) -> (speed - config.suddenStopDecelKmhPerSec * dt).coerceAtLeast(0f)
             braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
             // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
-            // 일반 차로 요금소: 천천히 들어가 멈춘 뒤 상황이 끝날 때까지 서 있는다
-            on(SituationId.TOLL_BOOTH) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
+
             // 회전교차로: 천천히 다가가고, 양보하려고 줄였으면 그 속도로 기다린다
             on(SituationId.ROUNDABOUT_ENTRY) -> if ("yield_slow" in doneSteps) speed else approach(speed, config.slowApproachKmh, 25f, dt)
             // 보호구역: 시속 50으로 들어서고, 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
@@ -859,6 +869,14 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.HYDROPLANING) && active -> approach(speed, config.cruiseSpeedKmh * 0.6f, 5f, dt)
             // 평소 속도는 장소를 따른다. 더 빠르게 달리던 중이면 조금 더 빨리 줄인다
             else -> approach(speed, cruiseKmh, if (speed > cruiseKmh) 12f else 6f, dt)
+        }
+
+        if (on(SituationId.TOLL_BOOTH)) {
+            if (!boothAhead) boothM = config.tollApproachM
+            boothAhead = true
+            boothM = (boothM - speed / 3.6f * dt).coerceAtLeast(0f)
+        } else {
+            boothAhead = false
         }
 
         val doneFraction = if (stepCount == 0) 0f else doneSteps.size.toFloat() / stepCount

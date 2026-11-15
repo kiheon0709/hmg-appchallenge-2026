@@ -385,6 +385,18 @@ class RoadRulesTest {
     }
 
     @Test
+    fun `braking early at the toll lane creeps up to the booth before stopping`() {
+        val d = active(SituationId.TOLL_BOOTH)
+        d.set { it.copy(brakePressed = true) }
+        d.advance(3_000)
+        // 부스가 아직 앞이라 멈추지 않고 천천히 굴러간다
+        assertFalse(d.view.steps[0].done)
+        assertEquals(20f, d.view.virtualSpeedKmh, 1f)
+        d.until(maxMs = 30_000) { v -> v.steps[0].done }
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+    }
+
+    @Test
     fun `ordinary toll lane is stop, window down, take the ticket, window up`() {
         val d = active(SituationId.TOLL_BOOTH)
         assertEquals("TOLLBOOTH", d.view.scene.sign)

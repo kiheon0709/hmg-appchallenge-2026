@@ -19,6 +19,26 @@ internal object SituationTexts {
 
     val all: List<SituationDef> get() = defs.values.toList()
 
+    /** 교관 대결 판에 올릴 상황: 꺼 둔 상황은 뺀다. */
+    val playable: List<SituationDef> by lazy { all.filter { it.id !in io.moodlab.sideseat.core.TrainingConfig().disabled } }
+
+    /** 좁은 버튼에 넣는 짧은 이름. 잘려서 "고속도로 …"가 둘이 되지 않게 한다. */
+    fun shortTitle(id: SituationId): String = when (id) {
+        SituationId.FOGGED_WINDSHIELD -> "김서림"
+        SituationId.SUDDEN_STOP -> "급정거"
+        SituationId.TUNNEL -> "터널"
+        SituationId.DENSE_FOG -> "안개"
+        SituationId.BREAKDOWN -> "고장 정차"
+        SituationId.WARNING_LIGHT -> "경고등"
+        SituationId.UNINTENDED_ACCEL -> "급가속"
+        SituationId.RIGHT_TURN_CROSSWALK -> "우회전"
+        SituationId.HIGHWAY_MERGE -> "합류"
+        SituationId.SCHOOL_ZONE -> "보호구역"
+        SituationId.TOLL_BOOTH -> "요금소"
+        SituationId.HIPASS_WRONG_LANE -> "하이패스"
+        else -> title(id)
+    }
+
     fun title(id: SituationId): String = defs[id]?.title ?: id.name
 
     fun lesson(id: SituationId): String? = defs[id]?.lesson

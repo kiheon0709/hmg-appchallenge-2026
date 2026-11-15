@@ -568,7 +568,7 @@ class SideSeatController(
                 progress = progress,
                 home = it.home.copy(
                     greeting = if (firstTime) "이 차는 처음이시네요." else "다시 왔네요. 반가워요.",
-                    subGreeting = if (firstTime) "3분만 같이 해 볼까요? 화면 말고 이 차의 진짜 스위치로 연습해요."
+                    subGreeting = if (firstTime) "3분만 같이 해 볼까요? 이 차의 진짜 스위치로 연습해요."
                     else "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요.",
                     chapters = chapters,
                     progress = progress,

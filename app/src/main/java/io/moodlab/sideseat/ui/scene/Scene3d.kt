@@ -68,6 +68,9 @@ object SceneRender {
     var debugDaylight: Float? = null
     var debugPlace: String? = null
 
+    /** 3D 장면이 떠서 그릴 준비가 됐다. 그전에는 훈련 화면이 검은 앞유리 대신 준비 표시를 보여 준다. */
+    var ready by mutableStateOf(false)
+
     /** 기기가 3D를 못 띄웠다(WebGL2 없음 등). 그 뒤로는 영상 방식으로 그린다. */
     var failed by mutableStateOf(false)
 

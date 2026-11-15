@@ -154,6 +154,7 @@ private class Scene3dHolder {
         web = null
         root = null
         ready = false
+        SceneRender.ready = false
         Scene3dDebug.eval = null
     }
 
@@ -161,6 +162,7 @@ private class Scene3dHolder {
         when (name) {
             "ready" -> {
                 ready = true
+                SceneRender.ready = true
                 Log.i(TAG, "scene3d ready")
                 wanted?.let(::send)
             }

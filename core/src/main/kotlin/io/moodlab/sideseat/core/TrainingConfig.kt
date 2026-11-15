@@ -97,6 +97,10 @@ data class TrainingConfig(
      * 바로 움직여도 절반 안에 못 끝낸다: 보호구역은 시속 50에서 멈추는 데만 3.6초, 합류는 깜빡이를 3초 켜 둔 뒤에 조향한다.
      */
     val threeStarMs: Map<SituationId, Long> = mapOf(SituationId.SCHOOL_ZONE to 7_500, SituationId.HIGHWAY_MERGE to 7_000),
+    /** 일반 차로 요금소: 요금소가 처음 보이는 거리(3D 장면의 값과 같다), 멈추기 시작하는 거리, 그 전에 밟았을 때 굴러가는 속도. */
+    val tollApproachM: Float = 80f,
+    val tollStopM: Float = 5f,
+    val tollCreepKmh: Float = 20f,
     /** 챕터마다 나올 수 있는 장소. 없는 챕터는 제한이 없다. "밤 고속도로"는 고속도로에서만 일어난다. */
     val chapterPlaces: Map<String, List<String>> = mapOf("C2" to listOf(ScenePlace.HIGHWAY)),
 ) {

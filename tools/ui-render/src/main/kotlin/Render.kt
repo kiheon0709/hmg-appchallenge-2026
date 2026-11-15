@@ -79,6 +79,22 @@ fun main(args: Array<String>) {
         val (v, c) = UiSamples.trainingAt(0.5f)
         TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = UiSamples.chapterResult), c) {}
     }
+    // 점검(11-15) 뒤에 넣은 상태들
+    fun state(name: String, w: Int = W, h: Int = H, f: (TrainingView) -> TrainingView) {
+        if (!want(name)) return
+        val t = at(SituationId.HEAVY_RAIN, 2.4f)
+        shoot(name, w, h, false, maxOf(0f, t - 6f), t) { val (v, c) = UiSamples.trainingAt(simT); TrainingScreen(f(v), c) {} }
+    }
+    state("t_opening") { it.copy(phase = TrainingPhase.CRUISE, situation = null, steps = emptyList(), opening = true, title = "첫 빗길") }
+    state("t_versus") { it.copy(phase = TrainingPhase.CRUISE, chapterId = ChapterCatalog.VERSUS, situation = null, steps = emptyList(), title = "교관 대결") }
+    state("t_fail_skip") { it.copy(phase = TrainingPhase.FAIL, canSkip = true) }
+    state("t_overtime") { it.copy(phase = TrainingPhase.HINT, overtime = true, elapsedMs = it.limitMs + 2_300) }
+    state("t_overtime_portrait", w = 835) { it.copy(phase = TrainingPhase.HINT, overtime = true, canSkip = true, elapsedMs = it.limitMs + 2_300) }
+    if (want("t_done_unfinished")) shoot("t_done_unfinished", W, H, false, 0f, 3f) {
+        val (v, c) = UiSamples.trainingAt(0.5f)
+        val res = UiSamples.chapterResult.copy(results = UiSamples.chapterResult.results.map { if (it.id == SituationId.SUDDEN_STOP) it.copy(stars = 0, reactionMs = null, missedStepIds = listOf("brake")) else it })
+        TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = res), c) {}
+    }
     if (want("h_home")) shoot("h_home", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
     if (want("h_home_night")) shoot("h_home_night", W, H, true, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
     if (want("h_home_portrait")) shoot("h_home_portrait", 835, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }

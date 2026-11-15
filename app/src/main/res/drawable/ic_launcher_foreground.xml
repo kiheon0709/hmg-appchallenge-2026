@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 앱 아이콘 앞 그림: 홈의 타비 표식과 같다(운전자 옆자리에 앉은 타비). 좌표는 108dp 틀의 가운데 60dp 안. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#73FFFFFF" android:pathData="M34.5,52.2 a4.5,4.5 0 1,0 9.0,0 a4.5,4.5 0 1,0 -9.0,0 Z" />
+    <path android:fillColor="#73FFFFFF" android:pathData="M39.0,58.8 H39.0 A7.2,7.2 0 0 1 46.2,66.0 V71.4 A3,3 0 0 1 43.2,74.4 H34.8 A3,3 0 0 1 31.8,71.4 V66.0 A7.2,7.2 0 0 1 39.0,58.8 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M63.0,36 H63.0 A13.2,13.2 0 0 1 76.2,49.2 V68.4 A6,6 0 0 1 70.2,74.4 H55.8 A6,6 0 0 1 49.8,68.4 V49.2 A13.2,13.2 0 0 1 63.0,36 Z" />
+    <path android:fillColor="#FF2563EB" android:pathData="M56.0,50.4 a2.5,2.5 0 1,0 5.0,0 a2.5,2.5 0 1,0 -5.0,0 Z" />
+    <path android:fillColor="#FF2563EB" android:pathData="M65.0,50.4 a2.5,2.5 0 1,0 5.0,0 a2.5,2.5 0 1,0 -5.0,0 Z" />
+    <path android:strokeColor="#FF2563EB" android:strokeWidth="2.1" android:strokeLineCap="round"
+        android:pathData="M66.53,56.89 A3.9,3.3 0 0 1 59.47,56.89" />
+</vector>

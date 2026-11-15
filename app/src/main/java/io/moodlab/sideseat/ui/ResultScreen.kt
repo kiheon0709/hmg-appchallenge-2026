@@ -28,7 +28,7 @@ import io.moodlab.sideseat.core.TrainingProgress
 
 /** 챕터 결과: 상황별 별과 반응 시간, 놓친 조작의 스위치 위치, 다시 하기. */
 @Composable
-fun ResultScreen(result: ChapterResult, progress: TrainingProgress, onAction: (UiAction) -> Unit, bestBefore: Map<String, Long> = emptyMap()) {
+fun ResultScreen(result: ChapterResult, progress: TrainingProgress, bestBefore: Map<String, Long> = emptyMap(), onAction: (UiAction) -> Unit) {
     SideSeatFrame { sz ->
         val surprise = result.chapterId == ChapterCatalog.SURPRISE
         // 상황 하나만 한 연습(리뷰의 "1분 연습")
@@ -175,7 +175,7 @@ internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, ve
             Text(" / $total", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
         }
         Text(
-            (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "챕터마다 별 2개 이상이면 면허가 채워져요. 다른 차에서는 다시 따요.",
+            (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "이 차의 스위치를 익히는 챕터 ${total}개(C1~C4) 가운데 별 2개 이상으로 마친 수예요. 다른 차에서는 다시 따요.",
             color = Sc.textDim, fontSize = sz.caption, lineHeight = sz.caption * 1.4f,
         )
     }

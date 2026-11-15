@@ -70,7 +70,7 @@ private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChang
         when (ui.mode) {
             AppMode.HOME -> HomeScreen(ui.home, onAction)
             AppMode.TRAINING -> ui.training?.let { TrainingScreen(it, ui.vehicle, onAction) } ?: Waiting()
-            AppMode.RESULT -> ui.result?.let { ResultScreen(it, ui.progress, onAction, ui.bestBefore) } ?: Waiting()
+            AppMode.RESULT -> ui.result?.let { ResultScreen(it, ui.progress, ui.bestBefore, onAction) } ?: Waiting()
             AppMode.COACH -> CoachScreen(ui.coach, onAction, ui.vehicle)
             AppMode.REVIEW -> ui.review?.let { ReviewScreen(it, onAction) } ?: Waiting()
             AppMode.MINIGAME -> when (ui.miniGame) {
