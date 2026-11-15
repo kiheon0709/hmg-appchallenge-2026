@@ -4,7 +4,7 @@
 
 출발 전에는 세워 둔 차의 와이퍼·전조등·브레이크를 직접 움직여 폭우나 앞차 급정거 같은 상황을 미리 연습하고, 내비에 목적지를 넣으면 가는 길의 요금소·합류 구간을 연습해요. 운전 중에는 "비가 와요. 전조등을 켜 주세요."처럼 필요한 것 하나만 말로 알려 주고, 주차 후에는 방금 운전을 같이 돌아봐요.
 
-현대자동차그룹 차량용 앱 개발 공모전(Pleos Connect) 출품작 · 팀 MoodLab(개발사명 기어르)
+현대자동차그룹 차량용 앱 개발 공모전(Pleos Connect) 출품작 · 개인 참가
 
 ## 무엇을 하나
 
@@ -20,7 +20,7 @@
 
 ## APK
 
-- **`apk/MoodLab_TABI_release.apk`** (release 빌드, R8 적용, 약 27 MB)
+- **`apk/TABI_release.apk`** (release 빌드, R8 적용, 약 27 MB)
 - 이 APK에는 LLM API 키가 들어 있지 않아요. 키가 없으면 AI 교관은 미리 쓴 문장과 규칙 기반 총평으로 동작해요(모든 기능이 키 없이 돌아요). 키를 앱에 넣지 않고 서버가 보관하는 중계 서버 코드는 `server/`에 있고, 아직 배포하지 않았어요.
 
 ## 테스트 환경
@@ -42,7 +42,7 @@
    emulator -avd Pleos_Connect_v2.1 -no-snapshot-load -allow-host-audio
    ```
    그다음 `adb emu avd hostmicon`으로 호스트 마이크를 켜요(Extended Controls → Microphone의 "Virtual microphone uses host audio input"과 같아요).
-2. `adb install -g apk/MoodLab_TABI_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
+2. `adb install -g apk/TABI_release.apk` (`-g`는 마이크·위치 권한을 미리 줘요. 없으면 첫 실행 때 물어봐요)
 3. 앱 목록에서 **타비**를 실행해요.
 
 - 위치를 쓰려면 앱 첫 실행 때 위치 권한을 허용해요(일몰 시각 계산). 거부해도 나머지는 동작해요.

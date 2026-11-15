@@ -15,3 +15,13 @@ docs/pleos-docs/reference/
 
 # 접수양식 (개인정보가 들어가므로 저장소에서 제외)
 contest-application-consent*.docx
+
+# 시연 영상 원본 클립(용량이 커서 제외)
+docs/plan/video/clips/
+docs/plan/video/clips-user/
+
+# 영상 산출물(용량 큼)
+docs/plan/video/*.mp4
+docs/plan/video/**/*.webm
+.kotlin/
+_check.pdf
