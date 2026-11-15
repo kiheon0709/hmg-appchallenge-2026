@@ -115,7 +115,7 @@ class TrainingEngineTest {
         val d = driver(state = emu)
         d.engine.inject(SituationId.BREAKDOWN, d.now)
         d.untilActive(SituationId.BREAKDOWN)
-        assertEquals(listOf("first", "trunk", "evacuate", "report"), d.view.steps.map { it.id })
+        assertEquals(listOf("first", "shoulder", "evacuate", "report"), d.view.steps.map { it.id })
         assertNotNull(d.view.choice)
 
         // 안개: 브레이크로 가상 속도를 절반 이하로(먼저) + 전조등
@@ -411,8 +411,8 @@ class TrainingEngineTest {
         assertTrue(ask.text.contains("1번, ") && ask.text.contains("3번, ") && ask.text.contains("비상등 켜기."), ask.text)
 
         d.engine.answer("비상등", d.now)
-        assertEquals("그다음엔요?", d.tick().choice?.question)
-        d.engine.answer("트렁크 열어", d.now)
+        assertEquals("그다음엔요? 차는 아직 움직여요.", d.tick().choice?.question)
+        d.engine.answer("갓길로 옮겨", d.now)
         d.engine.answer("차 바로 앞", d.now) // 틀림 → 바로잡는 말, 같은 질문 유지
         assertEquals("사람은 어디로 갈까요?", d.tick().choice?.question)
         assertTrue(d.says().any { it.startsWith("차 근처는 위험해요.") })
@@ -890,7 +890,7 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.WIPER_DEBRIS -> s.copy(hazardOn = true, wiper = WiperLevel.LOW)
     SituationId.RIGHT_TURN_CROSSWALK -> s.copy(brakePressed = true)
     SituationId.HIGHWAY_MERGE -> s.copy(turnSignal = TurnSignal.LEFT, steeringAngleDeg = -15f)
-    SituationId.HYDROPLANING -> s
+    SituationId.HYDROPLANING -> s.copy(brakePressed = true)
     SituationId.HIPASS_WRONG_LANE -> s
     SituationId.ROUNDABOUT_ENTRY -> s.copy(turnSignal = TurnSignal.LEFT, brakePressed = true)
     SituationId.SCHOOL_ZONE -> s.copy(brakePressed = true)

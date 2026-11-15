@@ -141,6 +141,8 @@ data class SceneParams(
     val place: String = ScenePlace.HIGHWAY,
     /** 회전교차로: 도는 차가 내 진입 지점을 지나가기까지 남은 시간(초). 지나간 뒤에는 음수. 회전교차로가 아니면 null. 3D 장면만 쓴다. */
     val ringPassSec: Float? = null,
+    /** 수막현상: 물 고인 곳이 시작되는 곳까지 남은 거리(m). 들어선 뒤에는 음수. 물 고인 곳이 없으면 null. 3D 장면만 쓴다. */
+    val puddleM: Float? = null,
 )
 
 @Serializable

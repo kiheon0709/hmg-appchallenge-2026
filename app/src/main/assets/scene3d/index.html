@@ -33,6 +33,8 @@ const DEFAULTS = { speed: 100, brake: 0, steer: 0, turn: 'off', rain: 0, wiper: 
   hostSpeed: null, hostGap: null, crash: false, lane: 0, landmark: null, hold: true, blur: 0, tunnelDist: 180,
   // ringT: 회전교차로에서 도는 차가 내 진입 지점을 지나가기까지 남은 시간(초, 지나가면 음수). null이면 장면이 알아서 돌린다
   ringT: null,
+  // puddle: 물 고인 곳이 시작되는 곳까지 남은 거리(m, 들어서면 음수). null이면 없다
+  puddle: null,
   fpsCap: +Q.get('fps_cap') || 0,
   // place: 장소(highway 고속도로, city 도심, school 어린이 보호구역, downhill 내리막). 문제 상황(비·안개·앞차 등)과 따로 고른다
   place: 'highway',
@@ -971,6 +973,17 @@ function makeChevron() {
   for (let x = 30; x < 500; x += 62) { g.beginPath(); g.moveTo(x, 12); g.lineTo(x + 30, 48); g.lineTo(x, 84); g.stroke(); }
   const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
 }
+// 물 고인 곳(길이 50m)과 그 위를 지날 때 양옆으로 튀는 물보라
+const PUDDLE_LEN = 50;
+const puddle = add(new THREE.Mesh(new THREE.PlaneGeometry(11.5, PUDDLE_LEN, 1, 12).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xb9c9dc, transparent: true, opacity: 0.62, depthWrite: false, fog: false, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -8 })), 3);
+puddle.visible = false; const puddleBase = puddle.geometry.attributes.position.array.slice();
+const sprayTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(32, 40, 2, 32, 40, 30); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+const sprays = [-1, 1].map((side) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.3),
+  new THREE.MeshBasicMaterial({ map: sprayTex, color: 0xdfe8f0, transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
+  m.position.set(side * 1.9, -0.72, -3.4); m.frustumCulled = false; m.renderOrder = 4; m.visible = false; camera.add(m); return m; });
 const island = (() => {
   const b = new Builder(), N = 40;
   b.loft([tubeRing(0, 0, 0, 8.2, 8.2, N), tubeRing(0, 0.28, 0, 8.2, 8.2, N), tubeRing(0, 0.28, 0, 7.6, 7.6, N), tubeRing(0, 0.9, 0, 4.5, 4.5, N), tubeRing(0, 1.25, 0, 0.6, 0.6, N)], 0);
@@ -1226,6 +1239,7 @@ function set(o) {
       case 'lane': P.lane = clamp(+v, -1, 1); break;
       case 'hold': P.hold = !!v; break;
       case 'ringT': P.ringT = v === null ? null : +v; break;
+      case 'puddle': P.puddle = v === null ? null : +v; break;
       case 'blur': P.blur = clamp(+v, 0, 1); break;
       case 'fpsCap': P.fpsCap = clamp(+v, 0, 240); break;
       case 'daylight': P.daylight = clamp(+v, 0, 1); break;
@@ -1437,6 +1451,16 @@ function render() {
   signalMast.visible = lmOn && S.lmKind === 'crosswalk' && S.placeId === 1; signalMast.position.set(0, 0, S.lmZ);
   schoolSigns.visible = lmOn && S.lmKind === 'school'; schoolSigns.position.set(0, 0, S.lmZ);
   const rbOn = lmOn && S.lmKind === 'roundabout';
+  { // 물 고인 곳: 앱이 준 거리만큼 앞에 놓고, 그 위에 있는 동안 물보라를 튀긴다
+    const pOn = P.puddle !== null && P.puddle > -PUDDLE_LEN - 30 && P.puddle < 400;
+    puddle.visible = pOn; if (pOn) { // 도로가 휘는 만큼(셰이더의 bend) 꼭짓점을 같이 옮긴다
+      const pos = puddle.geometry.attributes.position, cz = -(P.puddle + PUDDLE_LEN / 2), cv = U.uCurve.value;
+      for (let k = 0; k < pos.count; k++) { const z = puddleBase[k * 3 + 2] + cz, zz = Math.min(z, 0);
+        pos.setXYZ(k, puddleBase[k * 3] + cv.x * zz * zz, 0.05 + cv.y * zz * zz, z); }
+      pos.needsUpdate = true; }
+    const wet = pOn && P.puddle <= 1 && P.puddle > -PUDDLE_LEN ? clamp(S.v / 20, 0, 1) : 0;
+    sprays.forEach((m, i) => { m.visible = wet > 0; m.material.opacity = wet * (0.55 + 0.2 * Math.sin(t * 23 + i * 2.1) + 0.12 * Math.sin(t * 41 + i)); });
+  }
   // 앱이 도는 차의 시각을 줄 때는, 진입 지점을 지나간 차가 맞은편 출구로 빠져나가 다시 돌아오지 않는다(지나간 뒤 비어 보이게)
   const ringCarOn = (a) => P.ringT === null || a < 2.3;
   island.visible = rbOn; island.position.set(0, 0, S.lmZ - 19);

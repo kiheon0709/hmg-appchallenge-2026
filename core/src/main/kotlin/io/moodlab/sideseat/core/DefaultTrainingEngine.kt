@@ -30,6 +30,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         var choiceAsked: String? = null
         var retryPending = false
         var overtimeSaid = false
+        var steadySaid = false
 
         val signalSteps get() = steps.filter { it.choice == null }
         val choiceSteps get() = steps.filter { it.choice != null }
@@ -396,7 +397,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             }
             val ok = step.doneWithSpeedRatio?.invoke(state, scene.speed / scene.cruiseKmh)
                 ?: step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
-            if (ok && (!step.needsClearRing || scene.ringClear)) {
+            if (ok && (!step.needsClearRing || scene.ringClear) && (!step.needsPuddlePassed || scene.puddlePassed)) {
                 val since = r.holdSince.getOrPut(step.id) { nowMs }
                 if (nowMs - since >= step.holdMs) {
                     r.doneAt[step.id] = since
@@ -415,6 +416,18 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         if (r.allDone) {
             succeed(r, nowMs)
             return
+        }
+        // 수막현상: 줄이지 않고 물 고인 곳에 들어가면 실패. 물 위에서 밟거나 꺾으면 한마디만 한다(채점하지 않는다)
+        if (r.def.id == SituationId.HYDROPLANING && scene.puddleOn) {
+            if ("slow_down" !in r.doneAt) {
+                fail(r, nowMs, SituationCatalog.HYDRO_TOO_FAST)
+                return
+            }
+            val rough = state.brakePressed == true || kotlin.math.abs(state.steeringAngleDeg ?: 0f) > config.hydroSteerDeg
+            if (rough && !r.steadySaid) {
+                r.steadySaid = true
+                say(SituationCatalog.HYDRO_STEADY, priority = 1)
+            }
         }
         // 회전교차로: 도는 차를 보내기 전에 양보선을 넘으면 실패
         if (r.def.id == SituationId.ROUNDABOUT_ENTRY && "yield_slow" !in r.doneAt && scene.ringEntered) {
@@ -512,10 +525,17 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     private fun successLine(r: Run, stars: Int, reaction: Long?): String {
         if (r.def.id == SituationId.BEFORE_EXIT) return "좋아요. 이제 내려도 돼요."
-        r.def.successLine?.let { return if (r.penalties.isEmpty()) it else "됐어요. 다음엔 밟거나 꺾지 않고 버텨 봐요." }
+        r.def.successLine?.let { return it }
         val sec = reaction?.let { String.format(Locale.ROOT, "%.1f", it / 1000.0) }
+        // 급정거는 밟았는지만 읽는다. 얼마나 세게 밟았는지는 재지 못했다고 알려 준다
+        if (r.def.id == SituationId.SUDDEN_STOP) {
+            val head = if (sec == null) "밟았어요." else if (stars >= 2) "제때 밟았어요. ${sec}초 걸렸어요." else "밟았어요. ${sec}초, 조금 늦었어요."
+            return "$head 세기는 재지 않았어요. 실제로는 끝까지 세게 밟아요."
+        }
         return when {
             sec == null -> "좋아요."
+            // 비상 상황은 별 3개여도 "완벽"이라고 하지 않는다(숙달했다는 말이 과신을 키운다)
+            stars >= 3 && r.def.id in EMERGENCIES -> "순서를 지켰어요. ${sec}초 걸렸어요."
             stars >= 3 -> "완벽해요. ${sec}초 걸렸어요."
             stars == 2 -> "좋아요. ${sec}초 걸렸어요."
             r.penalties.isNotEmpty() -> "됐어요. ${sec}초. 다음엔 감점 없이 해 봐요."
@@ -707,6 +727,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private companion object {
         /** 스위치를 되돌린 뒤 상황이 터지기까지 숨 고를 시간. */
         const val SETUP_SETTLE_MS = 1_000L
+        /** 별 3개여도 "완벽해요"라고 하지 않는 상황. 수막현상은 따로 정한 성공 대사를 쓴다. */
+        val EMERGENCIES = setOf(SituationId.UNINTENDED_ACCEL, SituationId.BREAKDOWN, SituationId.SUDDEN_STOP)
     }
 }
 
@@ -744,6 +766,11 @@ internal class SceneSim(private val config: TrainingConfig) {
     private var ringM = 0f
     private var ringPassMs = 0L
     private var ringAhead = false
+    /** 수막현상: 물 고인 곳이 시작되는 곳까지 남은 거리(m, 들어서면 음수). */
+    private var puddleM = 0f
+    private var puddleAhead = false
+    val puddleOn: Boolean get() = puddleAhead && puddleM <= 0f && puddleM > -config.hydroPuddleM
+    val puddlePassed: Boolean get() = puddleAhead && puddleM <= -config.hydroPuddleM
     /** 도는 차가 지나가 회전교차로가 비었다. */
     val ringClear: Boolean get() = ringAhead && ringPassMs <= -config.roundaboutClearAfterMs
     /** 양보선을 넘어 회전교차로에 들어섰다. */
@@ -789,9 +816,11 @@ internal class SceneSim(private val config: TrainingConfig) {
         }
         // 수막현상: 물 위에 뜬 동안 차가 좌우로 흔들린다. 브레이크를 밟거나 핸들을 꺾으면 더 크게 미끄러진다
         slip = when {
-            on(SituationId.HYDROPLANING) && active -> {
-                val panic = state.brakePressed == true || kotlin.math.abs(state.steeringAngleDeg ?: 0f) > config.hydroSteerDeg
-                approach(slip, if (panic) 1f else 0.5f, 1.5f, dt)
+            // 물 고인 곳 위에서만 흔들린다. 줄이고 들어왔으면 조금, 밟거나 꺾으면(또는 줄이지 않고 들어왔으면) 크게
+            on(SituationId.HYDROPLANING) && phase == TrainingPhase.FAIL -> approach(slip, 1f, 3f, dt)
+            on(SituationId.HYDROPLANING) && active && puddleOn -> {
+                val rough = state.brakePressed == true || kotlin.math.abs(state.steeringAngleDeg ?: 0f) > config.hydroSteerDeg
+                approach(slip, if (rough) 1f else 0.3f, 1.5f, dt)
             }
             else -> approach(slip, 0f, 0.5f, dt)
         }
@@ -885,6 +914,16 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.ROUNDABOUT_ENTRY) && phase == TrainingPhase.FAIL -> approach(speed, 0f, 40f, dt)
             on(SituationId.ROUNDABOUT_ENTRY) && braking && ringM > config.roundaboutStopM ->
                 approach(speed, config.roundaboutCreepKmh, config.brakeDecelKmhPerSec, dt)
+            // 수막현상: 계속 밟고 있어도 평소 속도의 절반 아래로는 줄지 않는다(멈춰 서서 물 고인 곳에 닿지 못하는 일이 없게)
+            on(SituationId.HYDROPLANING) -> {
+                val floor = cruiseKmh * 0.5f
+                when {
+                    speed < floor -> approach(speed, floor, 15f, dt)
+                    braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(floor)
+                    "slow_down" in doneSteps -> speed
+                    else -> approach(speed, cruiseKmh, if (speed > cruiseKmh) 12f else 6f, dt)
+                }
+            }
             // 앞차 급정거: 한 번 밟았으면 발을 떼도 앞차 뒤에 멈춰 선다(다시 80으로 올라가지 않는다)
             on(SituationId.SUDDEN_STOP) && (braking || "brake" in doneSteps) -> (speed - config.suddenStopDecelKmhPerSec * dt).coerceAtLeast(0f)
             braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
@@ -898,8 +937,6 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.SCHOOL_ZONE) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.schoolApproachKmh, 25f, dt)
             // 앞이 안 보여 속도를 줄였으면 그 상황이 끝날 때까지 줄인 속도로 간다
             inSit && "slow_down" in doneSteps -> speed
-            // 물 위에 뜬 동안은 발을 떼면 속도가 천천히 준다
-            on(SituationId.HYDROPLANING) && active -> approach(speed, config.cruiseSpeedKmh * 0.6f, 5f, dt)
             // 평소 속도는 장소를 따른다. 더 빠르게 달리던 중이면 조금 더 빨리 줄인다
             else -> approach(speed, cruiseKmh, if (speed > cruiseKmh) 12f else 6f, dt)
         }
@@ -925,6 +962,15 @@ internal class SceneSim(private val config: TrainingConfig) {
             }
         } else {
             ringAhead = false
+        }
+
+        if (on(SituationId.HYDROPLANING)) {
+            if (!puddleAhead) puddleM = config.hydroApproachM
+            puddleAhead = true
+            // 물 고인 곳은 상황이 터진 뒤부터 다가온다. 끝난 뒤에는 그 자리에 둔다
+            if (active) puddleM -= speed / 3.6f * dt
+        } else {
+            puddleAhead = false
         }
 
         val doneFraction = if (stepCount == 0) 0f else doneSteps.size.toFloat() / stepCount
@@ -955,6 +1001,7 @@ internal class SceneSim(private val config: TrainingConfig) {
         slip = slip,
         place = place,
         ringPassSec = if (ringAhead) ringPassMs / 1000f else null,
+        puddleM = if (puddleAhead) puddleM else null,
     )
 
     private fun approach(cur: Float, target: Float, ratePerSec: Float, dt: Float): Float {
@@ -973,5 +1020,5 @@ private fun StepDef.shuffled(random: kotlin.random.Random): StepDef {
     if (c.replyKind != ReplyKind.CHOICE || c.options.size < 3) return this
     val order = c.options.indices.shuffled(random)
     val mixed = ChoiceDef(c.question, order.map { c.options[it] }, order.indexOf(c.correct), c.wrongLine, c.replyKind, c.penaltyFree)
-    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio, needsClearRing)
+    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio, needsClearRing, needsPuddlePassed)
 }

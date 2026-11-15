@@ -184,6 +184,8 @@ object Scene3dCommand {
         sb.append(",\"lane\":").append(lane)
         // 회전교차로: 도는 차가 내 진입 지점을 지나가기까지 남은 시간
         sb.append(",\"ringT\":").append(s.ringPassSec?.let { f2(it) } ?: "null")
+        // 수막현상: 물 고인 곳까지 남은 거리
+        sb.append(",\"puddle\":").append(s.puddleM?.let { f1(it) } ?: "null")
         // 일반 차로 요금소: 통행권을 받고 창문을 올리면 차단기가 올라간다
         sb.append(",\"gateOpen\":").append(sit == SituationId.TOLL_BOOTH && (done("window_close") || view.phase == TrainingPhase.SUCCESS))
         // 맞은편 차는 한 번 출발하면 지나갈 때까지 둔다(끄는 값은 보내지 않는다)

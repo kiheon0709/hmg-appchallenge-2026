@@ -57,9 +57,15 @@ data class TrainingConfig(
     val mergeSignalHoldMs: Long = 3_000,
     /** 합류: 이 각도 이상 왼쪽으로 돌리면 통과. 세워 둔 차라 작게 잡는다. */
     val mergeSteerDeg: Float = 10f,
-    /** 수막현상: 브레이크 없이 핸들을 hydroSteerDeg 안으로 유지한 채 버틸 시간. */
-    val hydroHoldMs: Long = 4_000,
+    /**
+     * 수막현상: 물 고인 곳에 닿기 전에 평소 속도의 이 비율 아래로 줄인다(비가 내려 노면이 젖어 있으면 20% 감속, 시행규칙 제19조 제2항 제1호).
+     * 물 위에서 핸들을 [hydroSteerDeg]보다 크게 꺾거나 브레이크를 밟으면 타비가 한마디 한다(채점하지 않는다).
+     * 상황이 시작될 때 물 고인 곳까지의 거리와 그 길이(m). 시속 100이면 줄이지 않고 5.4초 만에 닿는다.
+     */
+    val hydroSlowRatio: Float = 0.8f,
     val hydroSteerDeg: Float = 10f,
+    val hydroApproachM: Float = 150f,
+    val hydroPuddleM: Float = 50f,
     /** 우회전 접근·하이패스 통과 때의 화면 속 속도. */
     val slowApproachKmh: Float = 30f,
     /** S12 급브레이크: 상황 뒤 이 시간 안에 밟아 이만큼 유지. */
@@ -172,7 +178,7 @@ data class TrainingConfig(
             // 나눠서 지그시 밟아 멈추는 데 3초쯤 걸려 넉넉히 준다
             SituationId.RIGHT_TURN_CROSSWALK to 8_000,
             SituationId.HIGHWAY_MERGE to 10_000,
-            SituationId.HYDROPLANING to 8_000,
+            SituationId.HYDROPLANING to 0, // 물 고인 곳에 닿기 전까지가 기한이다
             SituationId.HIPASS_WRONG_LANE to 0, // 말로 답하는 상황
             // 양보선에서 도는 차를 보내고(6초) 들어가야 해서 넉넉히 준다
             SituationId.ROUNDABOUT_ENTRY to 14_000,

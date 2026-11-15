@@ -48,6 +48,8 @@ class StepDef(
     val doneWithSpeedRatio: ((VehicleState, Float) -> Boolean)? = null,
     /** 회전교차로: 도는 차가 내 진입 지점을 지나간 뒤에만 인정한다. */
     val needsClearRing: Boolean = false,
+    /** 수막현상: 물 고인 구간을 다 지나간 뒤에만 인정한다. */
+    val needsPuddlePassed: Boolean = false,
 )
 
 class ChoiceDef(
@@ -106,6 +108,9 @@ object SituationCatalog {
     private const val SLOW_FIRST = "먼저 브레이크를 나눠서 지그시 밟아 속도를 줄여요."
     private const val GENTLE_BRAKE = "브레이크를 급하게 밟지 말고 나눠서 지그시 밟아"
 /** 회전교차로에서 도는 차보다 먼저 들어갔을 때와 힌트에서 하는 말. */
+    /** 수막현상: 줄이지 않고 물 고인 곳에 들어갔을 때, 물 위에서 밟거나 꺾었을 때 하는 말. */
+    internal const val HYDRO_TOO_FAST = "물 고인 곳에 닿기 전에 미리 속도를 줄여요. 브레이크는 나눠서 밟아요."
+    internal const val HYDRO_STEADY = "물 위에서는 급하게 밟거나 꺾지 않아요. 그대로 지나가요."
     internal const val ROUNDABOUT_YIELD_LINE = "회전교차로 안에서 도는 차가 먼저예요. 양보선에서 멈춰서 그 차를 보내요."
 
     private val lowBeamOn = StepDef(
@@ -239,10 +244,11 @@ object SituationCatalog {
         ),
         SituationDef(
             // 비상등은 일반 앱이 읽을 수 없어(실측) 스위치 판정 없이 순서 퀴즈로 한다.
-            // 출처: 국토교통부 2020-09-21 카드뉴스, 한국도로공사 "비트박스"(정책브리핑 2024-07-31).
+            // 순서는 한국도로공사 「2차사고 예방」 원문: 비상등 → 갓길 등 안전한 곳으로 이동 → (삼각대·불꽃신호기) → 가드레일 밖 대피 → 신고.
+            // 트렁크 열기는 국토교통부 2020-09-21 카드뉴스에 있어 한 줄로만 말한다. "비트박스" 기억법은 도로공사 현행 원문에 없어 쓰지 않는다. safety-sources.md 7번.
             id = SituationId.BREAKDOWN, title = "고속도로 고장",
             intro = "차가 멈췄어요. 여기는 고속도로예요!",
-            lesson = "비상등, 트렁크, 밖으로 대피, 스마트폰 신고. '비트박스'로 기억해요.",
+            lesson = "비상등을 켜고, 움직일 수 있으면 갓길로 옮기고, 가드레일 밖으로 피한 다음 신고해요. 트렁크를 열어 두면 뒤차가 알아보기 쉬워요.",
             steps = listOf(
                 quizStep(
                     "first", "먼저 할 일", essential = true,
@@ -255,14 +261,14 @@ object SituationCatalog {
                     wrongLine = "먼저 비상등이에요. 뒤차에 알려야 해요.",
                 ),
                 quizStep(
-                    "trunk", "그다음",
-                    question = "그다음엔요?",
+                    "shoulder", "차 옮기기",
+                    question = "그다음엔요? 차는 아직 움직여요.",
                     options = listOf(
-                        ChoiceOption("트렁크 열기", listOf("트렁크")),
-                        ChoiceOption("차 안에서 기다리기", listOf("안에서", "기다")),
+                        ChoiceOption("갓길 같은 안전한 곳으로 차 옮기기", listOf("갓길", "옮기", "안전한 곳")),
+                        ChoiceOption("그 자리에 서서 차 상태 살피기", listOf("자리", "상태", "살피")),
                         ChoiceOption("차 뒤에서 손 흔들기", listOf("뒤에서", "손", "흔들")),
                     ),
-                    wrongLine = "트렁크를 열어 고장 난 차라는 걸 알려요.",
+                    wrongLine = "차가 움직이면 갓길 같은 안전한 곳으로 먼저 옮겨요. 차로에 서 있으면 뒤차가 위험해요.",
                 ),
                 quizStep(
                     "evacuate", "대피",
@@ -270,7 +276,7 @@ object SituationCatalog {
                     options = listOf(
                         ChoiceOption("가드레일 밖 안전한 곳", listOf("가드레일", "밖", "안전")),
                         ChoiceOption("차 바로 앞", listOf("앞")),
-                        ChoiceOption("갓길에 세운 차 옆", listOf("옆", "갓길")),
+                        ChoiceOption("세운 차 옆", listOf("옆")),
                     ),
                     wrongLine = "차 근처는 위험해요. 가드레일 밖으로 먼저 피해요. 차 확인보다 대피가 먼저예요.",
                 ),
@@ -278,11 +284,11 @@ object SituationCatalog {
                     "report", "신고",
                     question = "마지막으로 할 일은요?",
                     options = listOf(
-                        ChoiceOption("112나 한국도로공사 콜센터에 신고", listOf("112", "119", "신고", "도로공사", "콜센터")),
+                        ChoiceOption("112나 119, 한국도로공사 콜센터에 신고", listOf("112", "119", "신고", "도로공사", "콜센터")),
                         ChoiceOption("차 사진 찍어 올리기", listOf("사진", "올리")),
                         ChoiceOption("견인차가 올 때까지 그냥 기다리기", listOf("견인", "그냥")),
                     ),
-                    wrongLine = "안전한 곳에서 스마트폰으로 112나 한국도로공사 콜센터에 신고해요.",
+                    wrongLine = "안전한 곳에서 112나 119, 한국도로공사 콜센터 1588-2504에 신고해요.",
                 ),
             ),
             loopSfx = listOf("hazard"), onceSfx = listOf("alarm"),
@@ -494,30 +500,31 @@ object SituationCatalog {
             ),
         ),
         SituationDef(
-            // "하지 않기"를 익히는 상황: 급하게 밟거나 꺾지 않고 버틴다.
-            // 출처: 도로교통공단·행정안전부(2025-06-27) "급제동하지 않도록", 한국도로공사 빗길 요령 "급출발, 급핸들, 급브레이크"는 미끄러짐의 원인,
-            // 현대 취급설명서 "급하게 제동하지 마십시오". "발을 떼고 핸들을 유지"하는 단계 절차는 공식 원문을 확인하지 못해 대사에 넣지 않았다.
-            // 브레이크 신호가 밟음/안 밟음뿐이라 세기를 읽을 수 없다. 그래서 밟으면 감점만 하고 실패로 보지는 않는다(버티는 시간도 그대로 센다).
-            // "발을 떼고 핸들을 곧게"라는 안내는 사용자 결정이다(safety-sources.md 19번).
+            // "미끄러지기 전에 미리 줄이기"를 익히는 상황. 미끄러지는 순간의 대처는 채점하지 않는다:
+            // 짧은 미끄럼 대처 훈련은 실력은 그대로 두고 자신감만 키운다는 연구가 있고, 서 있는 차로는 미끄러지는 감각을 줄 수 없다
+            // (docs/research/2026-11-15_feature-gap-review.md (c)절).
+            // 출처: 도로교통법 시행규칙 제19조 제2항 제1호(비가 내려 노면이 젖어 있으면 최고속도의 100분의 20을 줄인 속도),
+            // 한국도로공사 빗길 요령(브레이크는 여러 번 나누어 밟기, 급출발·급핸들·급브레이크 금지), 도로교통공단·행정안전부(2025-06-27) "급제동하지 않도록".
+            // safety-sources.md 19번.
             id = SituationId.HYDROPLANING, title = "수막현상",
-            intro = "차가 물 위에서 미끄러져요! 급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요.",
-            lesson = "빗길에서 미끄러질 땐 급브레이크와 급핸들이 더 위험해요. 급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요. 비 오는 날은 미리 속도를 줄여 두는 게 먼저예요.",
-            successLine = "잘 버텼어요. 급하게 밟지 않고 핸들을 곧게 잡는 게 먼저예요.",
+            intro = "비가 와요. 앞에 물이 고여 있어요. 닿기 전에 브레이크를 나눠 밟아 속도를 줄여요.",
+            lesson = "물이 고인 곳에서는 타이어가 물 위에 떠서 미끄러질 수 있어요. 그래서 닿기 전에 미리 속도를 줄여요. 물 위에서는 급하게 밟거나 꺾지 않아요.",
+            successLine = "미리 줄였어요. 실제 도로에서는 훨씬 어려워요. 그래서 미리 줄이는 거예요.",
             steps = listOf(
                 StepDef(
-                    id = "hold_steady", label = "발 떼고 핸들 곧게", essential = true, holdMs = config.hydroHoldMs,
-                    hint = "급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요.",
-                    available = { it.brakePressed != null && it.steeringAngleDeg != null },
-                    done = { kotlin.math.abs(it.steeringAngleDeg ?: 0f) <= config.hydroSteerDeg },
+                    id = "slow_down", label = "물 고인 곳 전에 속도 줄이기", essential = true,
+                    hint = "$GENTLE_BRAKE 물 고인 곳에 닿기 전에 속도를 줄여요.",
+                    available = { it.brakePressed != null },
+                    doneWithSpeedRatio = { _, r -> r <= config.hydroSlowRatio },
+                ),
+                StepDef(
+                    id = "cross_steady", label = "물 위는 그대로 지나가기", essential = true, after = "slow_down",
+                    hint = "물 위에서는 브레이크와 핸들을 크게 쓰지 않고 그대로 지나가요.",
+                    available = { it.brakePressed != null }, done = { true },
+                    needsPuddlePassed = true,
                 ),
             ),
-            penalties = listOf(
-                PenaltyDef("HYDRO_BRAKE", "급하게 밟지 말고 발을 떼요. 핸들은 곧게 잡아요.") { _ -> PenaltyDetector { st, _, _, _ -> st.brakePressed == true } },
-                PenaltyDef("HYDRO_STEER", "핸들을 급하게 꺾지 말고 똑바로 잡아요.") { c ->
-                    PenaltyDetector { st, _, _, _ -> kotlin.math.abs(st.steeringAngleDeg ?: 0f) > c.hydroSteerDeg }
-                },
-            ),
-            loopSfx = listOf("rain"), onceSfx = listOf("tire"),
+            loopSfx = listOf("rain"),
             noHint = true,
         ),
         SituationDef(

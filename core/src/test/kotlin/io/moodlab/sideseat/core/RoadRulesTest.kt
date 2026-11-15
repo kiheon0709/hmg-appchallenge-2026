@@ -68,49 +68,56 @@ class RoadRulesTest {
     }
 
     @Test
-    fun `hydroplaning is passed by not braking hard and keeping the wheel straight`() {
+    fun `hydroplaning is passed by slowing down before the standing water and crossing it steadily`() {
+        val c = TrainingConfig()
         val d = active(SituationId.HYDROPLANING)
         assertTrue(d.view.scene.rain > 0f)
-        d.advance(3_900)
+        assertEquals(listOf("slow_down", "cross_steady"), d.view.steps.map { it.id })
+        assertEquals(c.hydroApproachM, d.view.scene.puddleM!!, 3f)
+        assertEquals(0f, d.view.scene.slip, 0.01f) // 물 고인 곳에 닿기 전에는 미끄러지지 않는다
+        val cruise = d.view.virtualSpeedKmh
+        // 비가 내려 노면이 젖어 있으면 20% 감속
+        d.set { it.copy(brakePressed = true) }
+        d.until { v -> v.steps.first { it.id == "slow_down" }.done }
+        assertEquals(cruise * c.hydroSlowRatio, d.view.virtualSpeedKmh, 1.5f)
+        assertTrue(d.view.scene.puddleM!! > 0f)
+        d.set { it.copy(brakePressed = false) }
+        // 물 위를 다 지나가야 끝난다
+        d.until { it.scene.puddleM!! <= 0f }
         assertEquals(TrainingPhase.ACTIVE, d.view.phase)
-        assertTrue(d.view.scene.slip > 0.3f)
-        d.advance(200)
-        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        d.advance(1_000)
+        assertTrue(d.view.scene.slip > 0.1f)
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        assertTrue(d.view.scene.puddleM!! <= -c.hydroPuddleM)
         assertEquals(3, d.view.lastResult?.stars)
-        assertNull(d.view.lastResult?.reactionMs) // 버티는 상황은 걸린 시간을 재지 않는다
-        assertTrue("잘 버텼어요. 급하게 밟지 않고 핸들을 곧게 잡는 게 먼저예요." in d.says())
-        assertTrue(d.says().any { it.endsWith("급하게 밟지 말고 발을 떼고 핸들을 곧게 잡아요.") })
+        assertNull(d.view.lastResult?.reactionMs) // 걸린 시간을 재지 않는다
+        assertTrue("미리 줄였어요. 실제 도로에서는 훨씬 어려워요. 그래서 미리 줄이는 거예요." in d.says())
+        assertTrue(d.says().none { "완벽" in it })
     }
 
     @Test
-    fun `braking while hydroplaning costs stars but is not a failure and steering restarts the hold`() {
-        // 세기를 읽을 수 없어 밟으면 감점만 한다. 버티는 시간은 그대로 센다
+    fun `reaching the standing water without slowing down fails and rough inputs on the water are only remarked on`() {
         val d = active(SituationId.HYDROPLANING)
-        d.advance(2_000)
-        d.clearEvents()
-        d.set { it.copy(brakePressed = true) }
-        assertTrue("급하게 밟지 말고 발을 떼요. 핸들은 곧게 잡아요." in d.says())
-        d.advance(500)
-        d.set { it.copy(brakePressed = false) }
-        d.advance(1_400)
-        assertEquals(TrainingPhase.ACTIVE, d.view.phase)
-        d.advance(200)
-        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
-        assertEquals(listOf("HYDRO_BRAKE"), d.view.lastResult?.penalties)
-        assertEquals(1, d.view.lastResult?.stars)
+        d.until { it.phase == TrainingPhase.FAIL }
+        assertTrue(d.view.scene.puddleM!! <= 0f)
+        assertTrue(d.says().any { "물 고인 곳에 닿기 전에 미리 속도를 줄여요." in it }, d.says().toString())
+        assertEquals(0, d.view.lastResult?.stars)
 
-        // 끝까지 밟고 있어도 실패(★0)가 아니라 감점(★1)이다
-        val held = active(SituationId.HYDROPLANING)
-        held.set { it.copy(brakePressed = true) }
-        held.until { it.phase == TrainingPhase.SUCCESS || it.phase == TrainingPhase.FAIL }
-        assertEquals(TrainingPhase.SUCCESS, held.view.phase)
-        assertEquals(1, held.view.lastResult?.stars)
-
+        // 줄이고 들어간 뒤 물 위에서 밟거나 꺾으면 한마디만 하고 감점하지 않는다
         val s = active(SituationId.HYDROPLANING)
+        s.slowDownFirst(confirmHazard = false)
+        s.until { it.scene.puddleM!! <= 0f }
+        s.clearEvents()
         s.set { it.copy(steeringAngleDeg = 25f) }
-        s.set { it.copy(steeringAngleDeg = 0f) }
+        assertTrue("물 위에서는 급하게 밟거나 꺾지 않아요. 그대로 지나가요." in s.says())
+        s.advance(300)
+        assertTrue(s.view.scene.slip > 0.3f)
+        s.set { it.copy(steeringAngleDeg = 0f, brakePressed = true) }
+        assertEquals(1, s.says().count { "급하게 밟거나 꺾지 않아요" in it }) // 한 번만 말한다
+        s.set { it.copy(brakePressed = false) }
         s.until { it.phase == TrainingPhase.SUCCESS }
-        assertEquals(listOf("HYDRO_STEER"), s.view.lastResult?.penalties)
+        assertEquals(emptyList(), s.view.lastResult?.penalties)
+        assertEquals(3, s.view.lastResult?.stars)
     }
 
     @Test

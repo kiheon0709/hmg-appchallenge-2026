@@ -328,7 +328,12 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                     Spacer(Modifier.height(sz.dp(12f)))
                 }
                 Text(
-                    if (checkOnly) "확인 완료" else when (result?.stars) { 3 -> "완벽해요!"; 2 -> "좋아요!"; else -> "됐어요!" },
+                    // 비상 상황은 별 3개여도 "완벽"이라고 하지 않는다(숙달했다는 말이 과신을 키운다)
+                    if (checkOnly) "확인 완료" else when (result?.stars) {
+                        3 -> if (result.id in EMERGENCY_RESULTS) "순서를 지켰어요" else "완벽해요!"
+                        2 -> "좋아요!"
+                        else -> "됐어요!"
+                    },
                     color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold,
                 )
                 result?.reactionMs?.takeIf { !checkOnly }?.let {
@@ -414,3 +419,8 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
         }
     }
 }
+
+/** 결과 화면에서 "완벽해요!" 대신 사실 문장을 쓰는 상황. */
+private val EMERGENCY_RESULTS = setOf(
+    SituationId.HYDROPLANING, SituationId.UNINTENDED_ACCEL, SituationId.SUDDEN_STOP, SituationId.BREAKDOWN,
+)
