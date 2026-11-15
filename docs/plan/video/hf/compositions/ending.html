@@ -27,7 +27,7 @@
       FX.words(tl, "#en-s .w", 1.9, 0.1);
       FX.rise(tl, "#en-s2", 2.7);
       FX.rise(tl, "#en-f", 3.4);
-      window.__timelines["ending"] = tl;
+      window.__timelines["ending"] = FX.fit("ending", tl);
     })();
   </script>
 </template>

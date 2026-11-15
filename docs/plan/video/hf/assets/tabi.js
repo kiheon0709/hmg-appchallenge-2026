@@ -86,6 +86,20 @@ window.FX = {
   pop(tl, sel, at, st) { tl.fromTo(sel, { opacity: 0, scale: 0.86, y: 26 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", stagger: st || 0.14 }, at); },
   rise(tl, sel, at, st) { tl.fromTo(sel, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: st || 0.1 }, at); },
   out(tl, sel, at) { tl.to(sel, { opacity: 0, y: -16, duration: 0.3, ease: "power2.in" }, at); },
+  // 장면을 정해진 길이에 맞춰 빠르게 돌린다. window.__FIT[id]가 배율(index.html에서 build.mjs가 넣는다)
+  fit(id, tl) {
+    const c = (window.__FIT || {})[id];
+    if (!c) return tl;
+    // 원래 시간축에서 남길 구간만 차례로 k배 빠르게 재생한다(cuts는 화면이 멈춰 있는 구간이라 건너뛰어도 티가 나지 않는다)
+    tl.pause(0);
+    const o = new gsap.core.Timeline({ paused: true }); // 등록은 장면 파일에서 한다(window.__timelines[id] = FX.fit(id, tl))
+    let from = 0, pos = 0;
+    for (const [a, b] of c.cuts.concat([[c.orig, c.orig]])) {
+      if (a > from) { o.fromTo(tl, { time: from }, { time: a, duration: (a - from) / c.k, ease: "none", immediateRender: false }, pos); pos += (a - from) / c.k; }
+      from = b;
+    }
+    return o;
+  },
   // 타비를 장면 길이 D 동안 움직인다. keys는 [[시각, 기분], ...]
   tabi(tl, canvas, D, keys) {
     const m = window.TabiMascot(canvas), st = { t: 0 };

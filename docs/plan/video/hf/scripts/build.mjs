@@ -54,34 +54,41 @@ for (const c of cuts.clips) {
 const clip = Object.fromEntries(clips.map((c) => [c.id, c]));
 
 // ---------- 2. 장면 순서 ----------
-const g = (id, dur, sfx = []) => ({ id, dur, sfx, kind: "g" });
+// 그래픽 장면: 애니메이션은 원래 길이(orig) 기준으로 짜여 있고, 실제 길이(dur)에 맞춰 빠르게 돌린다(FX.fit)
+// HOLD: 아무것도 움직이지 않는 구간 중 잘라 낼 부분(장면 원래 시간축의 초). 렌더한 뒤 scripts/qa.py가 찾은 1.5초 넘는 정지 구간에서 1.3초만 남기고 뺀 값
+const HOLD = {"problem": [[14.39, 16.39], [21.48, 23.03], [30.11, 31.0]], "who": [[6.8, 7.2], [9.8, 12.0]], "moments": [[4.27, 4.64], [7.2, 7.75], [10.77, 13.0]], "train-intro": [[5.1, 8.5]], "sdk": [[13.68, 14.82], [17.86, 19.0]], "numbers": [[11.06, 14.5]], "roadmap": [[3.77, 4.46], [9.77, 12.0]]};
+const g = (id, orig, dur0, sfx = []) => {
+  const k = orig / dur0, cuts = HOLD[id] || [];
+  const map = (t) => (t - cuts.reduce((n, [a, b]) => n + Math.max(0, Math.min(t, b) - a), 0)) / k; // 원래 시각 → 줄인 뒤 시각
+  return { id, dur: +map(orig).toFixed(3), fit: { k: +k.toFixed(4), orig, cuts }, sfx: sfx.map(([at, n, v]) => [map(at), n, v]), kind: "g" };
+};
 const seenGroup = new Set();
 // 클립 장면. 그 묶음(챕터)의 첫 클립 앞에는 이름표 장면을 넣는다
 const c = (id) => {
   const k = clip[id];
   if (!k) return [];
   const out = [];
-  if (k.group && !seenGroup.has(k.group)) { seenGroup.add(k.group); out.push({ id: `chap-${k.group}`, dur: 4, kind: "chap", group: cuts.groups[k.group], sfx: [[0.1, "impact-bass-1", 0.35]] }); }
+  if (k.group && !seenGroup.has(k.group)) { seenGroup.add(k.group); out.push({ id: `chap-${k.group}`, dur: 2.2, kind: "chap", group: cuts.groups[k.group], sfx: [[0.1, "impact-bass-1", 0.35]] }); }
   out.push({ id: `clip-${id}`, dur: k.dur, kind: "c", clip: k, sfx: [] });
   return out;
 };
 const scenes = [
-  g("title", 7.5, [[0.15, "pop", 0.4], [1.3, "whoosh", 0.3]]),
-  g("problem", 31, [[0.5, "pop", 0.35], [1.5, "click-soft", 0.5], [6.4, "whoosh-cinematic", 0.3], [17.5, "pop", 0.4], [18.0, "pop", 0.4], [18.5, "pop", 0.4], [24.4, "pop", 0.45]]),
-  g("who", 12, [[1.4, "pop", 0.4], [2.7, "pop", 0.4], [4.0, "pop", 0.4]]),
-  g("moments", 13, [[1.4, "pop", 0.4], [4.6, "pop", 0.4], [7.8, "pop", 0.4]]),
+  g("title", 7.5, 3.5, [[0.15, "pop", 0.4], [1.3, "whoosh", 0.3]]),
+  g("problem", 31, 14, [[0.5, "pop", 0.35], [1.5, "click-soft", 0.5], [6.4, "whoosh-cinematic", 0.3], [17.5, "pop", 0.4], [18.0, "pop", 0.4], [18.5, "pop", 0.4], [24.4, "pop", 0.45]]),
+  g("who", 12, 6, [[1.4, "pop", 0.4], [2.7, "pop", 0.4], [4.0, "pop", 0.4]]),
+  g("moments", 13, 7, [[1.4, "pop", 0.4], [4.6, "pop", 0.4], [7.8, "pop", 0.4]]),
   ...c("onboard"),
-  g("train-intro", 8.5, [[0.1, "impact-bass-1", 0.4]]),
+  g("train-intro", 8.5, 4, [[0.1, "impact-bass-1", 0.4]]),
   ...c("rain"), ...c("fog"), ...c("stop"),
   ...c("tunnel"), ...c("glare"), ...c("drowsy"),
   ...c("roundabout"), ...c("school"), ...c("merge"), ...c("toll"), ...c("hipass"),
-  ...c("breakdown"),
-  g("route", 12, [[1.6, "pop", 0.4], [3.0, "click-soft", 0.5], [3.8, "click-soft", 0.5], [4.6, "click-soft", 0.5], [6.2, "whoosh-short", 0.3]]),
+  ...c("breakdown"), ...c("accel"),
+  g("route", 12, 7, [[1.6, "pop", 0.4], [3.0, "click-soft", 0.5], [3.8, "click-soft", 0.5], [4.6, "click-soft", 0.5], [6.2, "whoosh-short", 0.3]]),
   ...c("coach"), ...c("review"), ...c("talk"),
-  g("sdk", 19, [[1.5, "pop", 0.4], [3.9, "pop", 0.4], [6.3, "pop", 0.4], [8.7, "pop", 0.4], [11.1, "pop", 0.4]]),
-  g("numbers", 14.5, [[1.4, "click-soft", 0.5], [3.6, "click-soft", 0.5], [5.8, "click-soft", 0.5], [8.0, "click-soft", 0.5]]),
-  g("roadmap", 12, [[1.4, "pop", 0.4], [4.4, "pop", 0.4], [7.4, "pop", 0.4]]),
-  g("ending", 10, [[0.2, "impact-bass-1", 0.4]]),
+  g("sdk", 19, 10, [[1.5, "pop", 0.4], [3.9, "pop", 0.4], [6.3, "pop", 0.4], [8.7, "pop", 0.4], [11.1, "pop", 0.4]]),
+  g("numbers", 14.5, 8, [[1.4, "click-soft", 0.5], [3.6, "click-soft", 0.5], [5.8, "click-soft", 0.5], [8.0, "click-soft", 0.5]]),
+  g("roadmap", 12, 7, [[1.4, "pop", 0.4], [4.4, "pop", 0.4], [7.4, "pop", 0.4]]),
+  g("ending", 10, 5, [[0.2, "impact-bass-1", 0.4]]),
 ];
 let t = 0;
 for (const s of scenes) { s.start = +t.toFixed(3); t += s.dur; }
@@ -107,7 +114,8 @@ for (const s of scenes.filter((x) => x.kind === "c")) {
     #${id}-h { position: absolute; left: 60px; top: 98px; font-size: 62px; color: var(--color-ink); }
     #${id}-v { position: absolute; left: 60px; top: 184px; width: ${VW}px; height: ${VH}px; border-radius: 26px; overflow: hidden; background: #0B0E13; box-shadow: 0 24px 60px rgba(16,18,22,0.2); }
     #${id}-v video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
-    #${id}-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: ${VH}px; border-radius: 26px; background: #fff; box-shadow: 0 24px 60px rgba(16,18,22,0.1); padding: 30px 36px; }
+    #${id}-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: ${VH}px; border-radius: 26px; background: #E6EEFF; border: 4px solid #B9CEFF; padding: 30px 36px; }
+    #${id}-p .tg { position: absolute; right: 30px; top: 34px; padding: 6px 20px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 30px; }
     #${id}-m { width: 170px; height: 170px; }
     #${id}-m canvas { width: 170px; height: 170px; display: block; }
     #${id}-p h5 { margin-top: 6px; font-size: 40px; font-weight: 400; color: var(--color-accent); }
@@ -124,8 +132,9 @@ ${k.quiet ? "" : `    <audio id="${id}-a" class="clip" data-start="0" data-durat
     <div id="${id}-v"><video id="${id}-vd" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="2" muted playsinline src="assets/media/${k.id}.mp4"></video><div class="fl" id="${id}-fl"></div>${k.parts.map((p, i) => (p.speed > 1 ? `<div class="sx" id="${id}-sx${i}">${p.speed}배속</div>` : "")).join("")}</div>
 ${k.parts.map((p, i) => (p.label ? `    <div class="cp" id="${id}-cp${i}">${esc(p.label)}</div>\n` : "")).join("")}
     <div id="${id}-p">
+      <div class="tg">타비의 설명</div>
       <div id="${id}-m"><canvas id="${id}-cv" width="340" height="340"></canvas></div>
-      <h5>여기를 보세요</h5>
+      <h5>이 장면에서는</h5>
 ${k.watch.map((w) => `      <div class="wl"><i></i><span>${esc(w)}</span></div>`).join("\n")}
     </div>
     <div id="${id}-n">${esc(k.note || "실제 앱 화면을 녹화한 것이에요. 차량 신호는 에뮬레이터의 가상 콘솔로 넣었어요")}</div>
@@ -208,6 +217,7 @@ writeFileSync(join(root, "index.html"), `<!doctype html>
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
     <script src="assets/tabi.js"></script>
+    <script>window.__FIT = ${JSON.stringify(Object.fromEntries(scenes.filter((x) => x.fit).map((x) => [x.id, x.fit])))};</script>
     <style>
       @font-face { font-family: "Jua"; src: url("assets/fonts/Jua.ttf") format("truetype"); font-display: block; }
       :root { --color-ground: #F2F4F8; --color-ink: #101216; --color-accent: #2563EB; --ink2: #5B616B; --line: #DADDE2; }

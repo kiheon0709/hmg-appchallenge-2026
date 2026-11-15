@@ -32,7 +32,7 @@
         tl.to(o, { v: to, duration: 1.2, ease: "power2.out", onUpdate: () => { el.textContent = o.v.toFixed(fx); } }, 1.5 + i * 2.2);
       });
       FX.rise(tl, "#nm-n", 10.4);
-      window.__timelines["numbers"] = tl;
+      window.__timelines["numbers"] = FX.fit("numbers", tl);
     })();
   </script>
 </template>

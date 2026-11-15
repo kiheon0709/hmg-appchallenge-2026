@@ -38,7 +38,7 @@
       tl.fromTo("#rt-sh", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.7, ease: "expo.out" }, 6.2);
       tl.fromTo("#rt-sh img", { scale: 1, x: 0, y: 0 }, { scale: 1.25, x: -20, y: -200, transformOrigin: "0 0", duration: 3.0, ease: "power2.inOut" }, 7.4);
       FX.rise(tl, "#rt-c", 6.8);
-      window.__timelines["route"] = tl;
+      window.__timelines["route"] = FX.fit("route", tl);
     })();
   </script>
 </template>

@@ -6,7 +6,8 @@
     #clip-glare-h { position: absolute; left: 60px; top: 98px; font-size: 62px; color: var(--color-ink); }
     #clip-glare-v { position: absolute; left: 60px; top: 184px; width: 1160px; height: 822px; border-radius: 26px; overflow: hidden; background: #0B0E13; box-shadow: 0 24px 60px rgba(16,18,22,0.2); }
     #clip-glare-v video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
-    #clip-glare-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: 822px; border-radius: 26px; background: #fff; box-shadow: 0 24px 60px rgba(16,18,22,0.1); padding: 30px 36px; }
+    #clip-glare-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: 822px; border-radius: 26px; background: #E6EEFF; border: 4px solid #B9CEFF; padding: 30px 36px; }
+    #clip-glare-p .tg { position: absolute; right: 30px; top: 34px; padding: 6px 20px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 30px; }
     #clip-glare-m { width: 170px; height: 170px; }
     #clip-glare-m canvas { width: 170px; height: 170px; display: block; }
     #clip-glare-p h5 { margin-top: 6px; font-size: 40px; font-weight: 400; color: var(--color-accent); }
@@ -18,14 +19,15 @@
     #clip-glare-v .sx { position: absolute; right: 24px; top: 24px; padding: 8px 20px; border-radius: 30px; background: rgba(16,18,22,0.8); color: #fff; font-size: 30px; opacity: 0; }
   </style>
   <div id="root" data-composition-id="clip-glare" data-width="1920" data-height="1080">
-    <audio id="clip-glare-a" class="clip" data-start="0" data-duration="15.2" data-track-index="9" data-volume="1" src="assets/media/glare.m4a"></audio>
+    <audio id="clip-glare-a" class="clip" data-start="0" data-duration="12.72" data-track-index="9" data-volume="1" src="assets/media/glare.m4a"></audio>
     <div id="clip-glare-k">출발 전 연습 · 밤 고속도로</div>
     <div id="clip-glare-h">맞은편 차</div>
-    <div id="clip-glare-v"><video id="clip-glare-vd" class="clip" data-start="0" data-duration="15.2" data-track-index="2" muted playsinline src="assets/media/glare.mp4"></video><div class="fl" id="clip-glare-fl"></div></div>
+    <div id="clip-glare-v"><video id="clip-glare-vd" class="clip" data-start="0" data-duration="12.72" data-track-index="2" muted playsinline src="assets/media/glare.mp4"></video><div class="fl" id="clip-glare-fl"></div></div>
 
     <div id="clip-glare-p">
+      <div class="tg">타비의 설명</div>
       <div id="clip-glare-m"><canvas id="clip-glare-cv" width="340" height="340"></canvas></div>
-      <h5>여기를 보세요</h5>
+      <h5>이 장면에서는</h5>
       <div class="wl"><i></i><span>맞은편에서 차가 오는데 상향등이 켜져 있어요</span></div>
       <div class="wl"><i></i><span>레버를 어떻게 움직이는지 타비가 알려 줘요</span></div>
       <div class="wl"><i></i><span>상향등을 끄면 성공이에요</span></div>
@@ -35,11 +37,11 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("clip-glare-cv"), 15.2, [[0, "speaking"], [3, "idle"], [11.70, "happy"]]);
+      FX.tabi(tl, document.getElementById("clip-glare-cv"), 12.72, [[0, "speaking"], [3, "idle"], [9.22, "happy"]]);
       tl.fromTo("#clip-glare-k, #clip-glare-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
       tl.fromTo("#clip-glare-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
       tl.fromTo("#clip-glare-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
-      const at = [1.2,4.93,8.67];
+      const at = [1.2,4.11,7.01];
       document.querySelectorAll("#clip-glare-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#clip-glare-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
 

@@ -12,7 +12,7 @@
   </style>
   <div id="root" data-composition-id="sdk" data-width="1920" data-height="1080">
     <div id="sd-k">차량용 앱으로 만든 이유</div>
-    <div id="sd-h"><span class="sp">Pleos Connect SDK 다섯 가지로 차를 읽어요</span></div>
+    <div id="sd-h"><span class="sp">공모전에서 쓸 수 있는 Pleos SDK 다섯 가지를 모두 썼어요</span></div>
     <div class="sd-c" style="left:160px;top:270px;width:1000px"><h4>Vehicle</h4><p style="font-size:31px">와이퍼, 전조등·상향등, 깜빡이, 브레이크, 조향각, 성에 제거·에어컨·내기순환,<br>창문, 안전벨트, 문, 사이드미러 열선, 주행 거리, 배터리 잔량</p><span>출발 전 연습의 판정과 운전 중 코치에 써요</span></div>
     <div class="sd-c" style="left:1200px;top:270px;width:560px"><h4>NaviHelper</h4><p>회전 안내, 주의 지점,<br>정체, 도착</p><span>가는 길 미리 연습</span></div>
     <div class="sd-c" style="left:160px;top:580px;width:500px"><h4>TextToSpeech</h4><p>타비의 모든 말</p><span>문장 단위로 이어 말하기</span></div>
@@ -29,7 +29,7 @@
       FX.words(tl, "#sd-h .w", 0.3, 0.07);
       FX.pop(tl, ".sd-c", 1.5, 2.4);
       FX.words(tl, "#sd-b .w", 14.6, 0.08);
-      window.__timelines["sdk"] = tl;
+      window.__timelines["sdk"] = FX.fit("sdk", tl);
     })();
   </script>
 </template>

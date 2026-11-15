@@ -17,17 +17,25 @@ for id, s, d in sc:
     tail = [round(db(s + d - 1 + i / 10, s + d - 1 + (i + 1) / 10)) for i in range(10)]
     flag = ("시작 확인 " if head[0] > -50 else "") + ("끝 확인" if tail[-1] > -50 else "")
     print(f"{id:18s} {s:7.1f}~{s + d:7.1f}  앞 {head}  뒤 {tail}  {flag}")
-print("== 5초 넘게 멈춘 구간(영상 칸 기준) ==")
-out = subprocess.run(["ffmpeg", "-v", "info", "-i", f, "-vf", "crop=1160:822:60:184,freezedetect=n=0.002:d=5", "-an", "-f", "null", "-"], capture_output=True, text=True).stderr
-st = None; n = 0
-for line in out.splitlines():
-    m = re.search(r"freeze_start: ([0-9.]+)", line)
-    if m: st = float(m.group(1))
-    m = re.search(r"freeze_end: ([0-9.]+)", line)
-    if m and st is not None:
-        en = float(m.group(1)); who = [i for i, s, d in sc if s <= st < s + d]
-        if who:
-            quiet = db(st, en) < -50
-            print(f"{st:7.1f}~{en:7.1f} ({en - st:.1f}초) {who[0]} {'소리도 없음 ← 고칠 곳' if quiet else '말·소리는 있음'}"); n += 1
-        st = None
+def freezes(vf, d):
+    out = subprocess.run(["ffmpeg", "-v", "info", "-i", f, "-vf", vf + f",freezedetect=n=0.003:d={d}", "-an", "-f", "null", "-"], capture_output=True, text=True).stderr
+    st = [float(x) for x in re.findall(r"freeze_start: ([0-9.]+)", out)]; en = [float(x) for x in re.findall(r"freeze_end: ([0-9.]+)", out)]
+    return list(zip(st, en))
+al = [(m.group(1), float(m.group(2)), float(m.group(3))) for m in re.finditer(r'<div id="([a-z0-9-]+)" data-composition-id="[^"]+" data-composition-src="[^"]+" data-start="([0-9.]+)" data-duration="([0-9.]+)"', h)]
+print("== 그래픽 장면에서 1.5초 넘게 멈춘 구간(화면 전체) ==")
+n = 0
+for st, en in freezes("null", 1.5):
+    who = [i for i, s, d in al if s <= st < s + d and not i.startswith("clip-")]
+    if who: print(f"{st:7.1f}~{en:7.1f} ({en - st:.1f}초) {who[0]}"); n += 1
+print("없음" if n == 0 else f"{n}곳")
+print("== 클립에서 영상 칸이 3초 넘게 멈추고 그동안 소리도 없는 구간 ==")
+n = 0
+for st, en in freezes("crop=1160:822:60:184", 3):
+    who = [i for i, s, d in sc if s <= st < s + d]
+    if not who: continue
+    # 멈춘 구간 안에서 가장 길게 조용한 시간
+    best = 0; cur = 0; t = st
+    while t < en:
+        cur = cur + 0.1 if db(t, t + 0.1) < -50 else 0; best = max(best, cur); t += 0.1
+    if best >= 3: print(f"{st:7.1f}~{en:7.1f} 멈춤 {en - st:.1f}초, 그중 조용한 시간 {best:.1f}초  {who[0]}"); n += 1
 print("없음" if n == 0 else f"{n}곳")

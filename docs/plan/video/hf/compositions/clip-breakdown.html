@@ -6,7 +6,8 @@
     #clip-breakdown-h { position: absolute; left: 60px; top: 98px; font-size: 62px; color: var(--color-ink); }
     #clip-breakdown-v { position: absolute; left: 60px; top: 184px; width: 1160px; height: 822px; border-radius: 26px; overflow: hidden; background: #0B0E13; box-shadow: 0 24px 60px rgba(16,18,22,0.2); }
     #clip-breakdown-v video { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
-    #clip-breakdown-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: 822px; border-radius: 26px; background: #fff; box-shadow: 0 24px 60px rgba(16,18,22,0.1); padding: 30px 36px; }
+    #clip-breakdown-p { position: absolute; left: 1260px; top: 184px; width: 600px; height: 822px; border-radius: 26px; background: #E6EEFF; border: 4px solid #B9CEFF; padding: 30px 36px; }
+    #clip-breakdown-p .tg { position: absolute; right: 30px; top: 34px; padding: 6px 20px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 30px; }
     #clip-breakdown-m { width: 170px; height: 170px; }
     #clip-breakdown-m canvas { width: 170px; height: 170px; display: block; }
     #clip-breakdown-p h5 { margin-top: 6px; font-size: 40px; font-weight: 400; color: var(--color-accent); }
@@ -18,35 +19,33 @@
     #clip-breakdown-v .sx { position: absolute; right: 24px; top: 24px; padding: 8px 20px; border-radius: 30px; background: rgba(16,18,22,0.8); color: #fff; font-size: 30px; opacity: 0; }
   </style>
   <div id="root" data-composition-id="clip-breakdown" data-width="1920" data-height="1080">
-    <audio id="clip-breakdown-a" class="clip" data-start="0" data-duration="68" data-track-index="9" data-volume="1" src="assets/media/breakdown.m4a"></audio>
+    <audio id="clip-breakdown-a" class="clip" data-start="0" data-duration="62.1" data-track-index="9" data-volume="1" src="assets/media/breakdown.m4a"></audio>
     <div id="clip-breakdown-k">출발 전 연습 · 멈춰야 할 때</div>
-    <div id="clip-breakdown-h">고속도로 고장, 의도치 않은 가속</div>
-    <div id="clip-breakdown-v"><video id="clip-breakdown-vd" class="clip" data-start="0" data-duration="68" data-track-index="2" muted playsinline src="assets/media/breakdown.mp4"></video><div class="fl" id="clip-breakdown-fl"></div></div>
-    <div class="cp" id="clip-breakdown-cp0">고속도로에서 차가 멈췄을 때</div>
-    <div class="cp" id="clip-breakdown-cp1">차가 계속 빨라질 때</div>
+    <div id="clip-breakdown-h">고속도로 고장</div>
+    <div id="clip-breakdown-v"><video id="clip-breakdown-vd" class="clip" data-start="0" data-duration="62.1" data-track-index="2" muted playsinline src="assets/media/breakdown.mp4"></video><div class="fl" id="clip-breakdown-fl"></div></div>
 
     <div id="clip-breakdown-p">
+      <div class="tg">타비의 설명</div>
       <div id="clip-breakdown-m"><canvas id="clip-breakdown-cv" width="340" height="340"></canvas></div>
-      <h5>여기를 보세요</h5>
-      <div class="wl"><i></i><span>차가 멈췄을 때 할 일 네 가지를 순서대로 답해요</span></div>
+      <h5>이 장면에서는</h5>
+      <div class="wl"><i></i><span>고속도로에서 차가 멈췄을 때 할 일 네 가지를 순서대로 답해요</span></div>
       <div class="wl"><i></i><span>비상등 켜고 트렁크 열기 → 갓길로 옮기기 → 가드레일 밖으로 피하기 → 신고</span></div>
+      <div class="wl"><i></i><span>말로 답하거나 화면에서 골라요</span></div>
       <div class="wl"><i></i><span>보기 순서는 할 때마다 바뀌어요</span></div>
-      <div class="wl"><i></i><span>차가 계속 빨라지면 브레이크를 끝까지 밟고 떼지 않아요</span></div>
     </div>
     <div id="clip-breakdown-n">실제 앱 화면을 녹화한 것이에요. 차량 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("clip-breakdown-cv"), 68, [[0, "speaking"], [3, "idle"], [64.50, "happy"]]);
+      FX.tabi(tl, document.getElementById("clip-breakdown-cv"), 62.1, [[0, "speaking"], [3, "idle"], [58.60, "happy"]]);
       tl.fromTo("#clip-breakdown-k, #clip-breakdown-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
       tl.fromTo("#clip-breakdown-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
       tl.fromTo("#clip-breakdown-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
-      const at = [1.5,9,24,49.5];
+      const at = [1.5,8,18,30];
       document.querySelectorAll("#clip-breakdown-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#clip-breakdown-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
-      tl.set("#clip-breakdown-cp0", { opacity: 1 }, 0.30); tl.set("#clip-breakdown-cp0", { opacity: 0 }, 47.38);
-      tl.set("#clip-breakdown-cp1", { opacity: 1 }, 47.40); tl.set("#clip-breakdown-cp1", { opacity: 0 }, 67.98);
+      tl.to("#clip-breakdown-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, 37.00); tl.to("#clip-breakdown-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, 37.10);
       window.__timelines["clip-breakdown"] = tl;
     })();
   </script>

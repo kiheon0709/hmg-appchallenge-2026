@@ -12,12 +12,12 @@
     <div id="chap-c3-m"><canvas id="chap-c3-cv" width="630" height="630"></canvas></div>
     <div id="chap-c3-k">출발 전 연습 4</div>
     <div id="chap-c3-h">멈춰야 할 때</div>
-    <div id="chap-c3-s">차가 고장 났을 때의 순서를 말로 답해요</div>
+    <div id="chap-c3-s">고속도로 고장 · 의도치 않은 가속</div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("chap-c3-cv"), 4, [[0, "cheer"]]);
+      FX.tabi(tl, document.getElementById("chap-c3-cv"), 2.2, [[0, "cheer"]]);
       tl.fromTo("#chap-c3-m", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.05);
       tl.fromTo("#chap-c3-k", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 0.25);
       tl.fromTo("#chap-c3-h", { opacity: 0, x: 60, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.4);

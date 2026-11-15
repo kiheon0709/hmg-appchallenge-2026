@@ -8,7 +8,7 @@
   <div id="root" data-composition-id="train-intro" data-width="1920" data-height="1080">
     <div id="ti-k">출발 전 연습</div>
     <div id="ti-h"><span class="sp">이 차의 와이퍼, 전조등, 브레이크를</span><br><span class="sp">직접 움직여 연습해요</span></div>
-    <div id="ti-s">연습은 5챕터 18상황이고, 그중 15개는 실제 차량 신호로 성공 여부를 판정해요.<br>지금부터 나오는 화면은 실제 앱을 녹화한 것이고, 차량 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
+    <div id="ti-s">5챕터 18상황 가운데 15개를 실제 차량 신호로 판정해요</div>
   </div>
   <script>
     (function () {
@@ -18,7 +18,7 @@
       FX.rise(tl, "#ti-k", 0.15);
       FX.words(tl, "#ti-h .w", 0.4, 0.09);
       FX.rise(tl, "#ti-s", 2.0);
-      window.__timelines["train-intro"] = tl;
+      window.__timelines["train-intro"] = FX.fit("train-intro", tl);
     })();
   </script>
 </template>

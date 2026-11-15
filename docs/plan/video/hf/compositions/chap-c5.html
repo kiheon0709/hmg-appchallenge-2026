@@ -17,7 +17,7 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("chap-c5-cv"), 4, [[0, "cheer"]]);
+      FX.tabi(tl, document.getElementById("chap-c5-cv"), 2.2, [[0, "cheer"]]);
       tl.fromTo("#chap-c5-m", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.05);
       tl.fromTo("#chap-c5-k", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 0.25);
       tl.fromTo("#chap-c5-h", { opacity: 0, x: 60, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.4);

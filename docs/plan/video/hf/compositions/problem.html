@@ -26,11 +26,11 @@
     .pb-t small { margin-bottom: 14px; padding: 6px 24px; border-radius: 40px; background: var(--color-accent); color: #fff; font-size: 38px; }
   </style>
   <div id="root" data-composition-id="problem" data-width="1920" data-height="1080">
-    <div id="pb-1" class="pb clip" data-start="0" data-duration="6.4" data-track-index="1">
+    <div id="pb-1" class="pb">
       <div class="pb-cap"><span class="sp">면허는 땄어요.</span><br><em class="sp">하지만 실제 도로는 처음이에요</em></div>
       <div id="pb-lic"><div class="t">자동차운전면허증</div><div class="n">1종 보통</div><div class="ph"></div><div class="ok">합격</div></div>
     </div>
-    <div id="pb-2" class="pb clip" data-start="6.4" data-duration="10.2" data-track-index="2">
+    <div id="pb-2" class="pb">
       <div id="pb-night">
         <div id="pb-road"></div>
         <div class="pb-dash" style="bottom:20px;height:90px"></div><div class="pb-dash" style="bottom:150px;height:60px;width:10px;margin-left:-5px"></div><div class="pb-dash" style="bottom:240px;height:40px;width:7px;margin-left:-3px"></div>
@@ -39,13 +39,13 @@
         <div id="pb-by">타비를 만든 사람의 첫 장거리 운전</div>
       </div>
     </div>
-    <div id="pb-3" class="pb clip" data-start="16.6" data-duration="6.6" data-track-index="3">
+    <div id="pb-3" class="pb">
       <div class="pb-cap"><span class="sp">이런 상황을</span> <em class="sp">미리 연습해 볼 곳이 없었어요</em></div>
       <div class="pb-chip" style="left:150px"><b>!</b>첫 비 오는 밤길</div>
       <div class="pb-chip" style="left:720px"><b>!</b>첫 고속도로</div>
       <div class="pb-chip" style="left:1290px"><b>!</b>처음 타는 차</div>
     </div>
-    <div id="pb-4" class="pb clip" data-start="23.2" data-duration="7.8" data-track-index="4">
+    <div id="pb-4" class="pb">
       <div class="pb-cap"><span class="sp">그래서</span> <em class="sp">타비를 만들었어요</em></div>
       <div class="pb-t" style="left:150px"><small>출발 전</small>미리 연습해요</div>
       <div class="pb-t" style="left:720px"><small>운전 중</small>옆에서 알려 줘요</div>
@@ -80,7 +80,7 @@
       FX.tabi(tl, document.getElementById("pb-cv"), 31, [[0, "idle"], [24.6, "happy"], [28.4, "cheer"]]);
       FX.pop(tl, ".pb-t", 24.9, 0.9);
       tl.fromTo("#pb-m", { y: 300, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "back.out(1.4)" }, 24.0);
-      window.__timelines["problem"] = tl;
+      window.__timelines["problem"] = FX.fit("problem", tl);
     })();
   </script>
 </template>

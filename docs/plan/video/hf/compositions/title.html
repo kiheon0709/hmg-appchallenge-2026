@@ -30,7 +30,7 @@
       tl.fromTo("#tt-name .ch", { opacity: 0, filter: "blur(10px)", y: 30 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.26, ease: "power4.out", stagger: 0.1 }, 1.9);
       FX.words(tl, "#tt-sub .w", 2.9, 0.08);
       FX.rise(tl, "#tt-sub2", 3.8);
-      window.__timelines["title"] = tl;
+      window.__timelines["title"] = FX.fit("title", tl);
     })();
   </script>
 </template>
