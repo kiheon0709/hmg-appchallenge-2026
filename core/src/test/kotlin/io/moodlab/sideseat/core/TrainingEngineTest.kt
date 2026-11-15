@@ -894,3 +894,57 @@ fun solveAll(s: VehicleState, id: SituationId): VehicleState = when (id) {
     SituationId.SCHOOL_ZONE -> s.copy(brakePressed = true)
     SituationId.TOLL_BOOTH -> s.copy(brakePressed = true, driverWindowOpenPct = 30)
 }
+
+/** v28 7번: 타비의 말이 끝난 뒤에 다음 장면으로 넘어간다. */
+class VoiceGateTest {
+    @Test
+    fun `next situation waits until the lesson is spoken plus a short pause, with an upper bound`() {
+        val c = TrainingConfig()
+        val d = TrainingDriver(DefaultTrainingEngine(c))
+        d.engine.start("C1", d.now)
+        d.untilActive(SituationId.HEAVY_RAIN)
+        d.set { solveAll(it, SituationId.HEAVY_RAIN) }
+        d.answerUntilSuccess(SituationId.HEAVY_RAIN)
+        d.until { it.phase == TrainingPhase.CRUISE }
+        // 한 줄 정리를 말하는 중
+        d.engine.voiceBusy(true, d.now)
+        val cruiseAt = d.now
+        d.advance(c.cruiseMs + 3_000)
+        assertEquals(TrainingPhase.CRUISE, d.view.phase)
+        // 말이 끝나도 바로 넘어가지 않고 조금 쉰다
+        d.engine.voiceBusy(false, d.now)
+        val doneAt = d.now
+        d.advance(c.voicePauseMs - 100)
+        assertEquals(TrainingPhase.CRUISE, d.view.phase)
+        d.until { it.phase == TrainingPhase.BRIEFING }
+        assertTrue(d.now - doneAt in c.voicePauseMs..c.voicePauseMs + 100)
+        assertTrue(d.now - cruiseAt < c.voiceWaitMaxMs)
+
+        // 말이 끝나지 않아도(TTS가 멈춤) 상한이 지나면 넘어간다
+        val e = TrainingDriver(DefaultTrainingEngine(c))
+        e.engine.start("C1", e.now)
+        e.untilActive(SituationId.HEAVY_RAIN)
+        e.set { solveAll(it, SituationId.HEAVY_RAIN) }
+        e.answerUntilSuccess(SituationId.HEAVY_RAIN)
+        e.until { it.phase == TrainingPhase.CRUISE }
+        val start = e.now
+        e.engine.voiceBusy(true, e.now)
+        e.until(30_000) { it.phase == TrainingPhase.BRIEFING }
+        assertTrue(e.now - start in c.voiceWaitMaxMs - 100..c.voiceWaitMaxMs + 100, "${e.now - start}")
+    }
+
+    @Test
+    fun `retry after a failure starts after the question is spoken`() {
+        val c = TrainingConfig()
+        val d = TrainingDriver(DefaultTrainingEngine(c))
+        d.engine.start("C1", d.now)
+        d.untilActive(SituationId.HEAVY_RAIN)
+        d.until { it.phase == TrainingPhase.FAIL }
+        d.engine.voiceBusy(true, d.now)
+        d.advance(c.failHoldMs + 2_000)
+        assertEquals(TrainingPhase.FAIL, d.view.phase)
+        d.engine.voiceBusy(false, d.now)
+        d.until { it.phase == TrainingPhase.BRIEFING }
+        assertEquals(SituationId.HEAVY_RAIN, d.view.situation)
+    }
+}

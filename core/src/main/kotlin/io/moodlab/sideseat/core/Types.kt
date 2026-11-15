@@ -226,6 +226,12 @@ interface TrainingEngine {
     /** 가려져서 멈췄던 훈련이 다시 보인다. 멈춘 동안 꺼 둔 반복 소리와 떠 있던 질문을 다음 [tick]에서 다시 낸다. */
     fun resumed(nowMs: Long)
 
+    /**
+     * 타비가 말하는 중인지(앱의 TTS 상태). 상황 사이 전환(다음 상황 브리핑, 챕터 끝, 실패 뒤 다시 하기)은
+     * 말이 끝나고 조금 쉰 뒤에 한다. 부르지 않으면(테스트·말 없음) 지금처럼 시간으로만 넘어간다.
+     */
+    fun voiceBusy(busy: Boolean, nowMs: Long) {}
+
     /** 프레임마다 또는 신호가 바뀔 때 호출. 뷰와 그 사이 생긴 이벤트를 돌려준다. */
     fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>>
 

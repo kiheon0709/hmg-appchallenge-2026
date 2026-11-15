@@ -13,6 +13,9 @@ data class TrainingConfig(
     /** 시작 전에 스위치를 되돌려 달라고 기다리는 최대 시간. 넘으면 이미 된 단계는 된 것으로 친다. */
     val setupTimeoutMs: Long = 8_000,
     val successHoldMs: Long = 3_000,
+    /** 말이 끝난 뒤 다음 장면으로 넘어가기 전에 쉬는 시간과, 말이 길어져도 이만큼 지나면 넘어가는 상한(그 단계가 시작된 때부터). */
+    val voicePauseMs: Long = 1_200,
+    val voiceWaitMaxMs: Long = 20_000,
     val failHoldMs: Long = 4_500,
     /** 제한 시간의 이 비율이 지나면 힌트. */
     val hintAtFraction: Float = 0.5f,

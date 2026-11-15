@@ -312,6 +312,8 @@ class SideSeatController(
 
     private fun trainingTick() {
         val state = _ui.value.vehicle
+        // 타비가 말하는 중이면 다음 장면으로 넘어가지 않게 엔진에 알린다
+        engine.voiceBusy(voice.speaking.value, clock())
         val (view, events) = engine.tick(state, clock())
         val prev = _ui.value.training
         if (prev != null && prev.situation == view.situation) {

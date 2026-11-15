@@ -69,6 +69,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private var lastState: VehicleState? = null
     private var lastTickMs: Long? = null
     private var lessonPending: String? = null
+    private var voiceBusy = false
+    private var voiceIdleSinceMs = Long.MIN_VALUE / 2
     /** 끊긴 챕터마다 이어 하기 지점을 따로 기억한다. 가장 최근에 끊긴 것이 맨 뒤다. */
     private val resumes = LinkedHashMap<String, ResumePoint>()
     /** 평온 주행 동안 미리 정해 둔 다음 상황(장소를 미리 맞춰 두려고). */
@@ -167,6 +169,15 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             .forEach { resumes[it.chapterId] = ResumePoint(it.chapterId, it.remaining, it.results) }
     }
 
+    override fun voiceBusy(busy: Boolean, nowMs: Long) {
+        if (voiceBusy && !busy) voiceIdleSinceMs = nowMs
+        voiceBusy = busy
+    }
+
+    /** 타비의 말이 끝나고 [TrainingConfig.voicePauseMs]만큼 쉬었거나, 이 단계가 시작된 뒤 상한이 지났다. */
+    private fun voiceSettled(nowMs: Long): Boolean =
+        nowMs - phaseStartMs >= config.voiceWaitMaxMs || (!voiceBusy && nowMs - voiceIdleSinceMs >= config.voicePauseMs)
+
     override fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>> {
         val dtMs = lastTickMs?.let { (nowMs - it).coerceIn(0, 1_000) } ?: 0
         lastTickMs = nowMs
@@ -176,7 +187,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             TrainingPhase.BRIEFING -> onBriefing(state, nowMs)
             TrainingPhase.ACTIVE, TrainingPhase.HINT -> onActive(state, nowMs)
             TrainingPhase.SUCCESS -> if (nowMs - phaseStartMs >= config.successHoldMs) afterSuccess(nowMs)
-            TrainingPhase.FAIL -> if (nowMs - phaseStartMs >= config.failHoldMs) afterFail(nowMs)
+            // "한 번 더 해 볼까요?"가 끝난 뒤에 다시 하거나 넘어간다
+            TrainingPhase.FAIL -> if (nowMs - phaseStartMs >= config.failHoldMs && voiceSettled(nowMs)) afterFail(nowMs)
             TrainingPhase.IDLE, TrainingPhase.CHAPTER_DONE -> Unit
         }
         val r = run
@@ -308,6 +320,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             return
         }
         if (nowMs - phaseStartMs < wait) return
+        // 한 줄 정리(교훈)가 끝나고 조금 쉰 뒤에 다음 상황이나 챕터 끝으로 넘어간다
+        if (!voiceSettled(nowMs)) return
         while (true) {
             val next = nextSituation()
             if (next == null) {
