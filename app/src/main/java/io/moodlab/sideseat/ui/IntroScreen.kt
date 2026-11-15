@@ -40,7 +40,7 @@ import io.moodlab.sideseat.voice.Persona
 private const val PAGES = 3
 
 /**
- * 첫 실행 소개. 타비가 무엇을 하는 앱인지 세 장으로 보여 준다: 누구인지, 언제 무엇을 하는지, 진짜 스위치로 한다는 것.
+ * 첫 실행 소개. 타비가 무엇을 하는 앱인지 세 장으로 보여 준다: 누구인지, 언제 무엇을 하는지, 차를 직접 조작해 연습한다는 것.
  * 한 번 보면 다시 뜨지 않고, 홈의 "타비 소개 다시 보기"로 다시 연다. 정차 중에만 보인다.
  */
 @Composable
@@ -123,7 +123,7 @@ private fun IntroText(page: Int) {
                 Moment("3", "도착하면", "오늘 운전을 같이 돌아보고, 필요한 것만 1분 연습해요.")
             }
             else -> {
-                Headline("화면이 아니라,\n이 차의 진짜 스위치로 해요")
+                Headline("이 차의 와이퍼와 브레이크로\n직접 연습해요")
                 Body("와이퍼 레버, 전조등, 브레이크를 실제로 움직이면 ${name}가 알아봐요. 손이 스위치 자리를 기억하게 하는 연습이에요.")
                 Column(verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
                     Bullet("연습은 주차(P)에 두고 세워 둔 동안에만 해요.")
@@ -206,7 +206,7 @@ private fun IntroVisual(page: Int, modifier: Modifier) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Tabi(TabiMood.CHEER, size = sz.dp(64f))
                     Spacer(Modifier.width(sz.dp(12f)))
-                    Text("차의 진짜 스위치로 해요", color = Color(0xFFA6ABB5), fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
+                    Text("차를 직접 조작해요", color = Color(0xFFA6ABB5), fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
                 }
                 Check("와이퍼 빠르게", done = true)
                 Check("전조등 켜기", done = true)

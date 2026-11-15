@@ -157,7 +157,7 @@ object UiSamples {
     )
 
     val home = HomeUi(
-        greeting = "오늘은 뭘 익혀 볼까요?", subGreeting = "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요.",
+        greeting = "오늘은 뭘 익혀 볼까요?", subGreeting = "세워 둔 김에, 이 차를 직접 조작해 한 판 해요.",
         chapters = chapters, progress = progress, recommendedChapterId = "C2", recommendReason = "지난번에 전조등을 늦게 켰어요 · 약 4분",
         miniGamesUnlocked = true,
         vehicleChoices = listOf(

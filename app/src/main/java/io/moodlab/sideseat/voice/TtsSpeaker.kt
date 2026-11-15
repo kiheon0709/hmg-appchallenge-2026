@@ -251,13 +251,13 @@ internal class TtsSpeaker(
 
     private suspend fun playLine(text: String) {
         Log.i(MEASURE_TAG, "tts speak chars=${text.length}")
-        tts.speak(text, true)
+        tts.speak(io.moodlab.sideseat.core.SpeechText.forTts(text), true)
         awaitFinished(estimateMs(text.length))
     }
 
     private suspend fun playSequential(sentences: Flow<String>) {
         sentences.collect { s ->
-            tts.speak(s, true)
+            tts.speak(io.moodlab.sideseat.core.SpeechText.forTts(s), true)
             Log.i(MEASURE_TAG, "tts speak(seq) chars=${s.length}")
             awaitFinished(estimateMs(s.length))
         }
@@ -274,17 +274,17 @@ internal class TtsSpeaker(
             pumpEvents()
             if (!sentFirst) {
                 sentFirst = true
-                tts.speak(s, false)
+                tts.speak(io.moodlab.sideseat.core.SpeechText.forTts(s), false)
                 Log.i(MEASURE_TAG, "tts chunk first chars=${s.length} at=${SystemClock.elapsedRealtime() - t0}ms")
             } else {
-                held?.let { tts.speak(it, false) }
+                held?.let { tts.speak(io.moodlab.sideseat.core.SpeechText.forTts(it), false) }
                 held = s
             }
         }
         if (!sentFirst) return
         val last = held
         if (last != null) {
-            tts.speak(last, true)
+            tts.speak(io.moodlab.sideseat.core.SpeechText.forTts(last), true)
         } else {
             // 문장이 하나뿐이면 이미 isFinal=false로 보냈다. 발화를 닫는 마침표를 보낸다(실측 대상).
             tts.speak(".", true)

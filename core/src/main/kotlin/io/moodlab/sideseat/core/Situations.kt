@@ -222,7 +222,7 @@ object SituationCatalog {
         SituationDef(
             id = SituationId.TUNNEL, title = "터널 진입",
             intro = "터널이에요. 어두워져요.",
-            lesson = "터널 들어가기 전에 전조등부터 켜요.",
+            lesson = "터널 들어가기 전에 전조등부터 켜요. 낮에 터널을 나올 때는 갑자기 밝아져 앞이 잘 안 보여요. 속도를 올리지 말아요.",
             // 출처: 도로교통법 제37조(터널 안 등화). 감점 조작 없음(명세 5.2).
             steps = listOf(lowBeamOn.copyEssential()),
         ),
@@ -249,20 +249,20 @@ object SituationCatalog {
         SituationDef(
             // 비상등은 일반 앱이 읽을 수 없어(실측) 스위치 판정 없이 순서 퀴즈로 한다.
             // 순서는 한국도로공사 「2차사고 예방」 원문: 비상등 → 갓길 등 안전한 곳으로 이동 → (삼각대·불꽃신호기) → 가드레일 밖 대피 → 신고.
-            // 트렁크 열기는 국토교통부 2020-09-21 카드뉴스에 있어 한 줄로만 말한다. "비트박스" 기억법은 도로공사 현행 원문에 없어 쓰지 않는다. safety-sources.md 7번.
+            // 트렁크 열기는 국토교통부 2020-09-21 카드뉴스(비상등 → 트렁크)에 따라 첫 단계에 함께 넣었다(v28, 사용자 결정). "비트박스" 기억법은 쓰지 않는다. safety-sources.md 7번.
             id = SituationId.BREAKDOWN, title = "고속도로 고장",
             intro = "차가 멈췄어요. 여기는 고속도로예요!",
-            lesson = "비상등을 켜고, 움직일 수 있으면 갓길로 옮기고, 가드레일 밖으로 피한 다음 신고해요. 트렁크를 열어 두면 뒤차가 알아보기 쉬워요.",
+            lesson = "비상등을 켜고 트렁크를 열어 뒤차에 알려요. 움직일 수 있으면 갓길로 옮기고, 가드레일 밖으로 피한 다음 신고해요.",
             steps = listOf(
                 quizStep(
                     "first", "먼저 할 일", essential = true,
                     question = "가장 먼저 할 일은 뭘까요?",
                     options = listOf(
-                        ChoiceOption("비상등 켜기", listOf("비상등", "비상")),
+                        ChoiceOption("비상등 켜고 트렁크 열기", listOf("비상등", "비상", "트렁크")),
                         ChoiceOption("차에서 내려 차 상태 보기", listOf("내려", "상태", "살펴")),
                         ChoiceOption("보험사에 전화하기", listOf("보험", "전화")),
                     ),
-                    wrongLine = "먼저 비상등이에요. 뒤차에 알려야 해요.",
+                    wrongLine = "먼저 비상등을 켜고 트렁크를 열어요. 뒤차에 고장 난 차라는 걸 알려야 해요.",
                 ),
                 quizStep(
                     "shoulder", "차 옮기기",

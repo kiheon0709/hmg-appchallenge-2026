@@ -259,7 +259,7 @@ class DriveCoachTest {
         assertEquals(2, summary.observations["NO_SIGNAL_TURN"])
         // v25: 첫 번째 직후 한 번만 말하고(K18), 같은 주행에서는 다시 말하지 않는다
         assertEquals(listOf("K18"), d.ids())
-        assertEquals("방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요.", d.said.single().text)
+        assertEquals("방금은 깜빡이 없이 차로를 바꿨어요. 다음엔 먼저 켜요.", d.said.single().text)
     }
 
     @Test
@@ -304,7 +304,7 @@ class DriveCoachTest {
         assertEquals(
             listOf(
                 "비 오는 길에서도 전조등을 잘 챙겼어요.",
-                "깜빡이 없이 크게 돈 게 1번 있었어요. 돌기 전에 먼저 켜 봐요.",
+                "깜빡이 없이 차로를 바꾼 게 1번 있었어요. 바꾸기 전에 먼저 켜 봐요.",
                 "다음에 세웠을 때 앞유리 김서림 훈련을 1분만 해 볼까요?",
             ),
             s.ruleBasedReview,

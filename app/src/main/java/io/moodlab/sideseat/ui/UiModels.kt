@@ -27,7 +27,7 @@ data class HomeUi(
     /** 선배 인사. 예: "이 차는 처음이시네요." */
     val greeting: String = "안녕하세요. 타비예요.",
     /** 인사 아래 한 줄. 예: "3분만 같이 해 볼까요?" */
-    val subGreeting: String = "세워 둔 지금, 진짜 스위치로 연습해 봐요.",
+    val subGreeting: String = "세워 둔 지금, 차를 직접 조작해 연습해 봐요.",
     val chapters: List<ChapterInfo> = emptyList(),
     val progress: TrainingProgress = TrainingProgress(),
     /** "이 차 면허"를 나눠 세는 차종 키. */

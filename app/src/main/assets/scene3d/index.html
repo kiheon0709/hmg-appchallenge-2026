@@ -1247,7 +1247,7 @@ function set(o) {
       case 'tunnelDist': P.tunnelDist = clamp(+v, 30, 400); break;
       case 'landmark': { const kind = LM_DIST[v] ? v : null;
         if (kind !== P.landmark) { P.landmark = kind;
-          if (kind) { S.lmKind = kind; S.lmW = -LM_DIST[kind] - S.dist; S.pedX = 5.6; S.rbA = -1.9; emit('landmark', { kind }); }
+          if (kind) { S.lmKind = kind; S.lmW = -LM_DIST[kind] - S.dist; S.pedX = 5.6; S.rbA = -1.9; S.gateHeld = false; emit('landmark', { kind }); }
           // 회전교차로는 지나가는 대신 장면을 넘긴다. 그사이 다음 표지물이 놓였으면 그것은 지우지 않는다
           else if (S.lmKind === 'roundabout' && S.lmW !== null) cut(() => { if (!P.landmark) { S.lmW = null; S.lmZ = -5000; } });
         } break; }
@@ -1344,7 +1344,11 @@ function update(dt) {
   if (P.hostSpeed !== null && Math.abs(S.steerS) < 3 && !S.hydro) S.x = ease(S.x, 0, 0.35, dt); // 핸들을 풀면 차로 가운데로 돌아온다
   // 일반 차로 요금소가 앞에 있는 동안은 오른쪽 일반 차로로 간다(지나갈 때까지)
   S.laneX = ease(S.laneX, (S.lmW !== null && S.lmKind === 'tollbooth' ? 1 : P.lane) * 3.6, 0.9, dt);
-  S.armA = ease(S.armA, P.gateOpen ? 1 : 0, 2.5, dt);
+  // 차단기는 한 번 올라가면 요금소를 다 지나갈 때까지 올린 채로 둔다(상황이 끝나 gateOpen·hold가 돌아가도 내려오지 않게).
+  // 일반 차로는 창문을 올린 뒤(gateOpen), 하이패스 차로는 지나가기로 한 뒤(hold 풀림) 올라간다
+  if (S.lmW !== null && (P.gateOpen || (S.lmKind === 'tollgate' && P.landmark === 'tollgate' && !P.hold))) S.gateHeld = true;
+  if (S.lmW === null) S.gateHeld = false;
+  S.armA = ease(S.armA, S.gateHeld ? 1 : 0, 2.5, dt);
   const edge = S.x > 1.25 ? 1 : S.x < -1.25 ? -1 : 0; S.x = clamp(S.x, -1.25, 1.25);
   if (edge && edge !== S.edge) emit('laneEdge', { side: edge > 0 ? 'right' : 'left' }); S.edge = edge;
   S.pitch = ease(S.pitch, -S.acc * 0.0021, 8, dt);

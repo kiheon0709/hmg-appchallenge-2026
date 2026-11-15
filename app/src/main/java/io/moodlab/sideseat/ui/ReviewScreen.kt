@@ -32,7 +32,7 @@ import io.moodlab.sideseat.core.DriveSummary
 import io.moodlab.sideseat.voice.Persona
 
 private val observationLabels = mapOf(
-    "NO_SIGNAL_TURN" to "깜빡이 없이 크게 돌린 핸들",
+    "NO_SIGNAL_TURN" to "깜빡이 없이 차로 변경",
     "HARD_BRAKE" to "급하게 밟은 브레이크",
 )
 

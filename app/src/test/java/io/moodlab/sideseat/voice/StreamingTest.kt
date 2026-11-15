@@ -173,7 +173,7 @@ class SeniorInstructorTest {
         ins.review(summary).toList()
         assertEquals(LlmClient.Route.REVIEW, llm.calls.single().first)
         assertTrue(llm.calls.single().second.contains("주행 시간: 42분"))
-        assertTrue(llm.calls.single().second.contains("깜빡이 없이 크게 핸들을 돌림: 1번"))
+        assertTrue(llm.calls.single().second.contains("깜빡이 없이 차로 변경: 1번"))
     }
 
     @Test fun reviewIncludesSpeedingAndSchoolZone() = runTest {

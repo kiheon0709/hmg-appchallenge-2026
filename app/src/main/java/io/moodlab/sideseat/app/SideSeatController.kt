@@ -634,8 +634,8 @@ class SideSeatController(
             justDrove -> "잘 다녀왔어요." to
                 if (fromDrive != null) "오늘 길에서 나온 것만 1분 연습해 볼까요?" else "세워 둔 김에 한 가지만 더 익혀 봐요."
             vehicleJustChanged -> (vehicleName?.let { "$it, 이 차는 처음이네요." } ?: "이 차는 처음이네요.") to "스위치 자리부터 손에 익혀 봐요."
-            firstTime -> "세워 둔 차에서 연습해요." to "비·안개·급정거 같은 상황을 이 차의 진짜 스위치로 미리 겪어 봐요."
-            else -> "오늘은 뭘 익혀 볼까요?" to "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요."
+            firstTime -> "세워 둔 차에서 연습해요." to "비·안개·급정거 같은 상황을 이 차를 직접 조작하며 미리 겪어 봐요."
+            else -> "오늘은 뭘 익혀 볼까요?" to "세워 둔 김에, 이 차를 직접 조작해 한 판 해요."
         }.let { (g, sub) ->
             // v25: 차가 알려 준 것(배터리·연료·오일류·타이어)이 있으면 인사 아래 한 줄을 그것으로 바꾼다
             val note = io.moodlab.sideseat.core.DefaultDriveCoach.carNotes(state).firstOrNull()

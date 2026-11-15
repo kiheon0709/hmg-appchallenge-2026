@@ -409,7 +409,7 @@ class TrainingEngineTest {
         val ask = d.events.filterIsInstance<CoachEvent.Say>().last()
         assertEquals(ReplyKind.CHOICE, ask.expectReply)
         // 보기 순서는 낼 때마다 섞인다: 번호와 함께 세 보기를 모두 읽는다
-        assertTrue(ask.text.contains("1번, ") && ask.text.contains("3번, ") && ask.text.contains("비상등 켜기."), ask.text)
+        assertTrue(ask.text.contains("1번, ") && ask.text.contains("3번, ") && ask.text.contains("비상등 켜고 트렁크 열기."), ask.text)
 
         d.engine.answer("비상등", d.now)
         assertEquals("그다음엔요? 차는 아직 움직여요.", d.tick().choice?.question)

@@ -279,7 +279,7 @@ private fun Moments() {
     val sz = LocalSz.current
     Row(Modifier.fillMaxWidth().card().padding(horizontal = sz.dp(10f), vertical = sz.dp(14f))) {
         listOf(
-            Triple("출발 전", "스위치로 연습", true),
+            Triple("출발 전", "직접 조작해 연습", true),
             Triple("달릴 때", "한 문장으로 코치", false),
             Triple("도착하면", "같이 돌아보기", false),
         ).forEachIndexed { i, (whenText, what, now) ->

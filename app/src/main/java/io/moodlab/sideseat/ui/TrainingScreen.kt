@@ -196,7 +196,7 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
             Panel {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("차의 진짜 스위치로 해요", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
+                        Text("차를 직접 조작해요", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
                         Text("${view.steps.count { it.done && !it.optional }} / ${view.steps.count { !it.optional }}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Medium)
                     }
                     Timer(view)
@@ -235,7 +235,7 @@ private fun BoxScope.SceneLoading() {
         SeniorBadge(size = sz.dp(120f), mood = TabiMood.IDLE)
         Spacer(Modifier.height(sz.dp(20f)))
         Text("길을 준비하는 중이에요…", color = Color.White, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
-        Text("화면 말고 이 차의 진짜 스위치로 해요", color = Color(0xFFD5D9E0), fontSize = sz.body, modifier = Modifier.padding(top = sz.dp(8f)))
+        Text("화면을 누르지 않아요. 이 차의 와이퍼, 전조등, 브레이크를 직접 움직여요.", color = Color(0xFFD5D9E0), fontSize = sz.body, modifier = Modifier.padding(top = sz.dp(8f)))
     }
 }
 
@@ -398,7 +398,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
             Tabi(TabiMood.SPEAKING, size = sz.dp(110f), animated = false)
             Spacer(Modifier.width(sz.dp(20f)))
             Column(modifier = Modifier.widthIn(max = sz.dp(700f))) {
-                Text("화면 말고, 이 차의 진짜 스위치로 해요", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Bold, lineHeight = sz.title * 1.25f)
+                Text("화면을 누르지 않아요. 이 차의 와이퍼, 전조등, 브레이크를 직접 움직여요.", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Bold, lineHeight = sz.title * 1.25f)
                 Text(
                     "와이퍼, 전조등, 브레이크를 실제로 움직이면 ${Persona.NAME}가 알아봐요. 화면의 조작 목록은 누르는 곳이 아니에요.",
                     color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.35f, modifier = Modifier.padding(top = sz.dp(10f)),
