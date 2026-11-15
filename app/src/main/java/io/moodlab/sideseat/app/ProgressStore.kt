@@ -24,6 +24,13 @@ class ProgressStore(context: Context) {
 
     fun saveLastDrive(s: DriveSummary) = write("last_drive.json", json.encodeToString(StoredSummary.serializer(), StoredSummary.of(s)))
 
+    /** 끊긴 챕터의 이어 하기 지점. 없으면 null. */
+    fun loadResume(): io.moodlab.sideseat.core.ResumeState? =
+        read("resume.json") { it.takeIf { t -> t.isNotBlank() }?.let { t -> json.decodeFromString(io.moodlab.sideseat.core.ResumeState.serializer(), t) } }
+
+    fun saveResume(r: io.moodlab.sideseat.core.ResumeState?) =
+        write("resume.json", r?.let { json.encodeToString(io.moodlab.sideseat.core.ResumeState.serializer(), it) }.orEmpty())
+
     /** 사용자가 고른 차종 아이디. 아직 안 골랐으면 null, "그 밖의 차"를 골랐으면 빈 문자열. */
     fun loadVehicleChoice(): String? = read("vehicle_choice.txt") { it.trim() }
 
@@ -56,6 +63,9 @@ class ProgressStore(context: Context) {
         val longestSpeedingSec: Int = 0,
         val schoolZonePasses: Int = 0,
         val schoolZoneMaxKmh: Int? = null,
+        val durationSec: Int = 0,
+        val rainSec: Int = 0,
+        val nightSec: Int = 0,
     ) {
         fun toSummary() = DriveSummary(
             durationMin, rainMin, nightMin,
@@ -64,6 +74,7 @@ class ProgressStore(context: Context) {
             suggestedSituation?.let { runCatching { SituationId.valueOf(it) }.getOrNull() },
             ruleBasedReview,
             speedingCount, longestSpeedingSec, schoolZonePasses, schoolZoneMaxKmh,
+            durationSec, rainSec, nightSec,
         )
 
         companion object {
@@ -72,6 +83,7 @@ class ProgressStore(context: Context) {
                 s.utterances.map { StoredUtterance(it.ruleId, it.text, it.urgent) },
                 s.observations, s.suggestedSituation?.name, s.ruleBasedReview,
                 s.speedingCount, s.longestSpeedingSec, s.schoolZonePasses, s.schoolZoneMaxKmh,
+                s.durationSec, s.rainSec, s.nightSec,
             )
         }
     }

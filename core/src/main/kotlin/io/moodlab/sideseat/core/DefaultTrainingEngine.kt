@@ -29,6 +29,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         var setupClearedAt: Long? = null
         var choiceAsked: String? = null
         var retryPending = false
+        var overtimeSaid = false
 
         val signalSteps get() = steps.filter { it.choice == null }
         val choiceSteps get() = steps.filter { it.choice != null }
@@ -68,6 +69,13 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private var lastTickMs: Long? = null
     private var lessonPending: String? = null
     private var resume: ResumePoint? = null
+    /** 평온 주행 동안 미리 정해 둔 다음 상황(장소를 미리 맞춰 두려고). */
+    private var upcoming: SituationId? = null
+    /** 교관 대결에서 이 상황 하나만 하고 끝낸다(리뷰의 "1분 연습"). */
+    private var single = false
+    /** "비상등은 제가 볼 수 없어서 여쭤봐요"는 한 번의 훈련에서 한 번만 말한다. */
+    private var hazardExplained = false
+    private var wiperSfxOn = false
     private val events = mutableListOf<CoachEvent>()
     private val scene = SceneSim(config)
 
@@ -110,17 +118,50 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         enterCruise(nowMs, first = true)
     }
 
-    override fun inject(situation: SituationId, nowMs: Long) {
+    override fun startVersus(nowMs: Long) {
+        reset(Mode.VERSUS)
+        say("교관 대결이에요. 옆자리에서 상황을 골라 주세요.")
+        events += CoachEvent.Ambient(AmbientMood.CALM)
+        enterCruise(nowMs, first = false)
+    }
+
+    override fun inject(situation: SituationId, nowMs: Long, single: Boolean) {
         if (mode != Mode.VERSUS || phase == TrainingPhase.IDLE || phase == TrainingPhase.CHAPTER_DONE) {
             reset(Mode.VERSUS)
             events += CoachEvent.Ambient(AmbientMood.CALM)
             enterCruise(nowMs, first = false)
         }
+        this.single = single
         if (!isPlayable(situation, lastState)) {
             say("그 상황은 이 차에서 아직 연습할 수 없어요.")
+            if (single) finishSingle(nowMs)
             return
         }
         if (phase == TrainingPhase.CRUISE) enterBriefing(situation, nowMs, attempt = 0) else queue.addLast(situation)
+    }
+
+    override fun skip(nowMs: Long) {
+        val r = run ?: return
+        when {
+            phase == TrainingPhase.FAIL && r.retryPending -> {
+                r.retryPending = false
+                afterFail(nowMs)
+            }
+            r.attempt > 0 && (phase == TrainingPhase.BRIEFING || phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT) -> {
+                // 다시 하던 상황을 접는다. 결과는 앞선 실패 그대로 남는다
+                r.def.loopSfx.forEach { events += CoachEvent.StopSfx(it) }
+                events += CoachEvent.Ambient(AmbientMood.CALM)
+                say("괜찮아요. 다음 상황으로 넘어갈게요.", priority = 2)
+                enterCruise(nowMs, first = false)
+            }
+        }
+    }
+
+    override fun resumeState(): ResumeState? = resume?.let { ResumeState(it.chapterId, it.remaining, it.results) }
+
+    override fun restoreResume(state: ResumeState?) {
+        resume = state?.takeIf { s -> s.remaining.isNotEmpty() && ChapterCatalog.chapters.any { it.id == s.chapterId } }
+            ?.let { ResumePoint(it.chapterId, it.remaining, it.results) }
     }
 
     override fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>> {
@@ -140,6 +181,13 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             dtMs = dtMs, phase = phase, situation = r?.def?.id, doneSteps = r?.doneAt?.keys.orEmpty(),
             stepCount = r?.steps?.size ?: 0, state = state,
         )
+        // 비가 오는 장면에서 와이퍼를 켜면 와이퍼 소리가 난다
+        val wiping = phase != TrainingPhase.IDLE && phase != TrainingPhase.CHAPTER_DONE &&
+            scene.raining && (state.wiper ?: WiperLevel.OFF) != WiperLevel.OFF
+        if (wiping != wiperSfxOn) {
+            wiperSfxOn = wiping
+            events += if (wiping) CoachEvent.Sfx("wiper", loop = true) else CoachEvent.StopSfx("wiper")
+        }
         val out = events.toList()
         events.clear()
         return view(nowMs) to out
@@ -181,6 +229,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             }
             events += CoachEvent.Ambient(AmbientMood.OFF)
         }
+        if (wiperSfxOn) {
+            wiperSfxOn = false
+            events += CoachEvent.StopSfx("wiper")
+        }
         run = null
         queue.clear()
         mode = null
@@ -208,6 +260,9 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         chapterResult = null
         lessonPending = null
         lastSituation = null
+        upcoming = null
+        single = false
+        hazardExplained = false
     }
 
     private fun enterCruise(nowMs: Long, first: Boolean) {
@@ -215,11 +270,26 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         phaseStartMs = nowMs
         firstCruise = first
         run = null
+        // 다음 상황을 미리 정해 그 장소에서 평온하게 달리다가 상황을 맞는다(상황이 터질 때 장소가 갑자기 바뀌지 않게)
+        upcoming = when (mode) {
+            Mode.CHAPTER -> queue.firstOrNull()
+            Mode.SURPRISE -> pickSurprise()
+            else -> null
+        }
+        upcoming?.let { scene.prepare(it, allowedPlaces(), jump = first) }
     }
+
+    /** 챕터 이름과 장소가 어긋나지 않게 챕터마다 나올 수 있는 장소를 좁힌다("밤 고속도로"는 고속도로만). */
+    private fun allowedPlaces(): List<String>? = if (mode == Mode.CHAPTER) chapter?.let { config.chapterPlaces[it.id] } else null
 
     private fun onCruise(nowMs: Long) {
         val wait = if (firstCruise) config.firstCruiseMs else config.cruiseMs
         if (mode == Mode.VERSUS) {
+            // 하나만 하기로 한 연습은 그 상황이 끝나면 닫는다
+            if (single && lastResult != null && queue.isEmpty()) {
+                finishSingle(nowMs)
+                return
+            }
             // 교관 대결은 친구가 고를 때까지 계속 달린다.
             queue.removeFirstOrNull()?.let { enterBriefing(it, nowMs, 0) }
             return
@@ -236,15 +306,17 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     }
 
     private fun nextSituation(): SituationId? = when (mode) {
-        Mode.SURPRISE -> {
-            val pool = SituationId.entries.filter {
-                // 말로 푸는 상황은 빼고, 확인만 하는 단계(비상등 켰나요?)는 enterBriefing에서 뺀다
-                it !in config.surpriseExclude && isPlayable(it, lastState) && defs.getValue(it).steps.none { s -> s.choice != null && !s.choice.penaltyFree }
-            }
-            val choices = pool.filter { it != lastSituation }.ifEmpty { pool }
-            if (choices.isEmpty()) null else choices[config.random.nextInt(choices.size)]
-        }
+        Mode.SURPRISE -> (upcoming ?: pickSurprise()).also { upcoming = null }
         else -> queue.removeFirstOrNull()
+    }
+
+    private fun pickSurprise(): SituationId? {
+        val pool = SituationId.entries.filter {
+            // 말로 푸는 상황은 빼고, 확인만 하는 단계(비상등 켰나요?)는 enterBriefing에서 뺀다
+            it !in config.surpriseExclude && isPlayable(it, lastState) && defs.getValue(it).steps.none { s -> s.choice != null && !s.choice.penaltyFree }
+        }
+        val choices = pool.filter { it != lastSituation }.ifEmpty { pool }
+        return if (choices.isEmpty()) null else choices[config.random.nextInt(choices.size)]
     }
 
     /** @return 상황을 시작했으면 true. 필요한 신호가 없으면 false(건너뜀). */
@@ -253,6 +325,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         if (!isPlayable(id, lastState)) return false
         val state = lastState
         val steps = def.steps.filter { (state == null || it.available(state)) && !(mode == Mode.SURPRISE && it.choice != null) }
+            .map { it.shuffled(config.random) }
+        scene.prepare(id, allowedPlaces(), jump = false)
         run = Run(def, steps, attempt)
         lastSituation = id
         phase = TrainingPhase.BRIEFING
@@ -336,14 +410,25 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             if (missing.choice == null) say(missing.hint, priority = 1)
         }
         val deadline = r.deadlineMs()
-        if (deadline != null && sinceActive >= deadline) fail(r, nowMs)
+        if (deadline != null && sinceActive >= deadline) {
+            fail(r, nowMs)
+            return
+        }
+        // 제한 시간이 지나면 바로 알려 준다(그 뒤로도 같은 시간만큼은 끝낼 수 있다)
+        if (!r.overtimeSaid && r.limitMs > 0 && r.def.id != SituationId.SUDDEN_STOP && sinceActive >= r.limitMs) {
+            r.overtimeSaid = true
+            say("시간이 지났어요. 괜찮아요, 천천히 끝까지 해 봐요.", priority = 1)
+        }
     }
 
     private fun askChoice(r: Run, step: StepDef) {
         val c = step.choice ?: return
         r.choiceAsked = step.id
         if (c.replyKind == ReplyKind.YES_NO) {
-            say(c.question, priority = 1, expectReply = ReplyKind.YES_NO)
+            // 비상등 신호는 앱이 읽을 수 없어 말로 확인한다. 왜 묻는지 처음 한 번 알려 준다
+            val why = if (step.id == "hazard_confirm" && !hazardExplained) "비상등은 제가 볼 수 없어서 여쭤봐요. " else ""
+            if (step.id == "hazard_confirm") hazardExplained = true
+            say(why + c.question, priority = 1, expectReply = ReplyKind.YES_NO)
             return
         }
         val options = c.options.mapIndexed { i, o -> "${i + 1}번, ${o.text}." }.joinToString(" ")
@@ -354,7 +439,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         r.endMs = nowMs
         val measured = r.doneAt.filterKeys { it !in r.preDone }.values
         val reaction = when {
-            r.def.id == SituationId.SUDDEN_STOP -> r.doneAt["brake"]?.minus(r.activeStartMs)
+            // 밟은 채로 시작했으면 반응 시간을 잴 수 없다
+            r.def.id == SituationId.SUDDEN_STOP -> r.doneAt["brake"]?.minus(r.activeStartMs)?.takeIf { "brake" !in r.preDone }
+            // 확인만 하는 상황(내리기 전)은 시간을 재지 않는다
+            r.def.id == SituationId.BEFORE_EXIT -> null
             r.def.successLine != null -> null // 버티는 상황은 걸린 시간을 재지 않는다
             else -> measured.maxOrNull()?.minus(r.activeStartMs)
         }
@@ -397,7 +485,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         if (r.limitMs <= 0) return 3
         val rt = reaction ?: 0
         return when {
-            rt <= r.limitMs * config.threeStarFraction -> 3
+            rt <= (config.threeStarMs[r.def.id] ?: (r.limitMs * config.threeStarFraction).toLong()) -> 3
             rt <= r.limitMs -> 2
             else -> 1
         }
@@ -432,10 +520,9 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     }
 
     private fun afterSuccess(nowMs: Long) {
-        if (mode == Mode.VERSUS || mode == Mode.SURPRISE || queue.isNotEmpty()) {
-            events += CoachEvent.Ambient(AmbientMood.CALM)
-            lessonPending?.let { say(it) }
-        }
+        if (mode == Mode.VERSUS || mode == Mode.SURPRISE || queue.isNotEmpty()) events += CoachEvent.Ambient(AmbientMood.CALM)
+        // 챕터의 마지막 상황도 교훈을 말한다(끝 인사는 평온 주행 뒤에 이어진다)
+        lessonPending?.let { say(it) }
         lessonPending = null
         enterCruise(nowMs, first = false)
     }
@@ -475,9 +562,11 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         resume = null
         events += CoachEvent.Sfx("success")
         events += CoachEvent.Ambient(AmbientMood.CALM)
-        val weakest = res.results.minByOrNull { it.stars }?.takeIf { it.stars < 3 }
+        val checkOnly = res.results.isNotEmpty() && res.results.all { it.id == SituationId.BEFORE_EXIT }
+        val weakest = res.results.minByOrNull { it.stars }?.takeIf { it.stars < 3 && !checkOnly }
         val parts = buildList {
-            add("${ch.title} 끝! 별 ${res.totalStars}개예요.")
+            // 확인만 하는 챕터(내리기 전에)는 별을 말하지 않는다
+            add(if (checkOnly) "${ch.title} 끝! 확인을 마쳤어요." else "${ch.title} 끝! 별 ${res.totalStars}개예요.")
             if (newlyLicensed) add("이 차 숙련 배지를 받았어요!")
             weakest?.let { add("다음엔 ${defs.getValue(it.id).title} 상황을 한 번 더 해 봐요.") }
         }
@@ -512,7 +601,23 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         phase = TrainingPhase.CHAPTER_DONE
         phaseStartMs = nowMs
         events += CoachEvent.Ambient(AmbientMood.CALM)
-        say(if (newBest) "${survived}개 버텼어요. 최고 기록이에요!" else "${survived}개 버텼어요.", priority = 1)
+        say(
+            when {
+                survived == 0 -> "이번엔 버티지 못했어요. 괜찮아요, 한 번 더 해 봐요."
+                newBest -> "${survived}개 버텼어요. 최고 기록이에요!"
+                else -> "${survived}개 버텼어요."
+            },
+            priority = 1,
+        )
+    }
+
+    /** 하나만 하는 연습(리뷰의 "1분 연습")이 끝났다. 결과 화면으로 넘어갈 수 있게 챕터 끝과 같은 상태로 둔다. */
+    private fun finishSingle(nowMs: Long) {
+        chapterResult = ChapterResult(ChapterCatalog.VERSUS, results.toList(), results.sumOf { it.stars })
+        phase = TrainingPhase.CHAPTER_DONE
+        phaseStartMs = nowMs
+        single = false
+        events += CoachEvent.Ambient(AmbientMood.CALM)
     }
 
     private fun updateSurpriseBest() {
@@ -538,6 +643,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         val r = run
         val elapsed = when {
             r == null || phase == TrainingPhase.BRIEFING -> 0
+            // 앞차 급정거의 초시계는 브레이크를 밟은 순간 멈춘다(그 뒤의 비상등 확인은 시간을 재지 않는다)
+            r.def.id == SituationId.SUDDEN_STOP && "brake" in r.doneAt -> r.doneAt.getValue("brake") - r.activeStartMs
             else -> (r.endMs ?: nowMs) - r.activeStartMs
         }
         val choice = if (r != null && (phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT)) {
@@ -570,6 +677,11 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             choice = choice,
             chapterResult = chapterResult,
             surviveCount = if (mode == Mode.SURPRISE || chapterResult?.chapterId == ChapterCatalog.SURPRISE) results.count { it.stars > 0 } else 0,
+            canSkip = r != null && ((phase == TrainingPhase.FAIL && r.retryPending) ||
+                (r.attempt > 0 && (phase == TrainingPhase.BRIEFING || phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT))),
+            overtime = r != null && (phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT) && r.limitMs > 0 &&
+                r.def.id != SituationId.SUDDEN_STOP && elapsed >= r.limitMs,
+            opening = phase == TrainingPhase.CRUISE && firstCruise && mode != Mode.VERSUS,
         )
     }
 
@@ -604,6 +716,23 @@ internal class SceneSim(private val config: TrainingConfig) {
     /** 지금 장소의 평소 속도. */
     val cruiseKmh: Float get() = config.cruiseKmhAt(place)
     private var placedFor: SituationId? = null
+    /** 주차장 장면에서 챕터가 끝나면 끝 화면도 주차장이다. */
+    private var parked = false
+    /** 비가 보이는 중(와이퍼 소리를 낼지). */
+    val raining: Boolean get() = rain > 0.25f
+
+    /**
+     * 다음 상황 [next]의 장소를 미리 정한다. 평온 주행이 시작될 때 불러서, 그 장소를 달리다가 상황을 맞게 한다.
+     * @param allowed 챕터가 허락하는 장소. null이면 제한 없음 @param jump 처음 시작이라 속도를 그 장소의 평소 속도로 바로 맞춘다
+     */
+    fun prepare(next: SituationId, allowed: List<String>?, jump: Boolean) {
+        if (next == placedFor) return
+        placedFor = next
+        var options = config.places[next].orEmpty().ifEmpty { listOf(ScenePlace.HIGHWAY) }
+        if (allowed != null) options = options.filter { it in allowed }.ifEmpty { options }
+        place = options[config.placeRandom.nextInt(options.size)]
+        if (jump) speed = cruiseKmh
+    }
 
     fun update(
         dtMs: Long,
@@ -619,13 +748,9 @@ internal class SceneSim(private val config: TrainingConfig) {
         val briefing = phase == TrainingPhase.BRIEFING
         fun on(id: SituationId) = inSit && situation == id
 
-        // 장소는 상황이 시작될 때 한 번 고르고, 다음 상황이 시작될 때까지 그대로 둔다
+        // 장소는 엔진이 상황을 시작하기 전에 [prepare]로 정해 둔다. 혹시 빠졌으면 여기서 정한다
         val current = situation.takeIf { inSit }
-        if (current != null && current != placedFor) {
-            val options = config.places[current].orEmpty()
-            place = if (options.isEmpty()) ScenePlace.HIGHWAY else options[config.placeRandom.nextInt(options.size)]
-        }
-        placedFor = current
+        if (current != null && current != placedFor) prepare(current, null, jump = false)
 
         rain = when {
             on(SituationId.HEAVY_RAIN) -> approach(rain, if (briefing) 0.6f else 1f, 0.8f, dt)
@@ -703,7 +828,12 @@ internal class SceneSim(private val config: TrainingConfig) {
         }
         tunnel = on(SituationId.TUNNEL)
         warning = if (on(SituationId.WARNING_LIGHT) && !briefing) "TPMS" else null
-        parkingLot = on(SituationId.BEFORE_EXIT)
+        parked = when {
+            on(SituationId.BEFORE_EXIT) -> true
+            inSit || phase == TrainingPhase.IDLE -> false
+            else -> parked
+        }
+        parkingLot = parked
 
         val braking = state.brakePressed == true
         speed = when {
@@ -711,7 +841,9 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.BREAKDOWN) && !briefing -> approach(speed, 0f, 20f, dt)
             on(SituationId.UNINTENDED_ACCEL) && active ->
                 if (braking) (speed - (18f + if (state.epbOn()) 12f else 0f) * dt).coerceAtLeast(0f) else (speed + 10f * dt).coerceAtMost(170f)
-            braking -> (speed - (if (on(SituationId.SUDDEN_STOP)) config.suddenStopDecelKmhPerSec else config.brakeDecelKmhPerSec) * dt).coerceAtLeast(0f)
+            // 앞차 급정거: 한 번 밟았으면 발을 떼도 앞차 뒤에 멈춰 선다(다시 80으로 올라가지 않는다)
+            on(SituationId.SUDDEN_STOP) && (braking || "brake" in doneSteps) -> (speed - config.suddenStopDecelKmhPerSec * dt).coerceAtLeast(0f)
+            braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
             // 우회전하러 들어서거나 요금소를 지날 때는 천천히 간다. 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
@@ -766,4 +898,13 @@ internal class SceneSim(private val config: TrainingConfig) {
     private companion object {
         val IN_SITUATION = setOf(TrainingPhase.BRIEFING, TrainingPhase.ACTIVE, TrainingPhase.HINT, TrainingPhase.SUCCESS, TrainingPhase.FAIL)
     }
+}
+
+/** 보기가 셋 이상인 퀴즈는 낼 때마다 보기 순서를 섞는다(정답이 늘 1번이면 읽지 않고 맞힐 수 있다). "네/아직" 확인 질문은 그대로 둔다. */
+private fun StepDef.shuffled(random: kotlin.random.Random): StepDef {
+    val c = choice ?: return this
+    if (c.replyKind != ReplyKind.CHOICE || c.options.size < 3) return this
+    val order = c.options.indices.shuffled(random)
+    val mixed = ChoiceDef(c.question, order.map { c.options[it] }, order.indexOf(c.correct), c.wrongLine, c.replyKind, c.penaltyFree)
+    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio)
 }

@@ -474,4 +474,43 @@ class DriveCoachTest {
         assertEquals(1, s.schoolZonePasses)
         assertEquals("어린이 보호구역 1곳을 천천히 지났어요.", s.ruleBasedReview[0])
     }
+
+    // ---------- 점검(11-15)에서 나온 것 ----------
+
+    @Test
+    fun `rules that give the same advice speak only once`() {
+        // 밤에 비가 온다: K01(비)과 K02(어두움)가 둘 다 "전조등을 켜 주세요"다. 더 급한 K01만 말한다
+        val d = drive(day.copy(minuteOfDay = 21 * 60, wiper = WiperLevel.LOW))
+        d.run(5 * min)
+        assertEquals(listOf("K01"), d.ids())
+        // 10분 뒤 한 번 더 말할 때도 둘 중 하나만
+        d.run(10 * min)
+        assertEquals(2, d.ids().size)
+        assertTrue(d.ids().all { it == "K01" || it == "K02" })
+        d.run(20 * min)
+        assertEquals(2, d.ids().size)
+    }
+
+    @Test
+    fun `short drives report seconds and do not suggest from a moment of night`() {
+        val d = drive(day.copy(minuteOfDay = 21 * 60, lowBeamOn = true, wiper = WiperLevel.LOW))
+        d.run(45_000)
+        val s = d.coach.onDriveEnd(d.now)
+        assertEquals(0, s.durationMin)
+        assertEquals(45, s.durationSec)
+        assertEquals(45, s.rainSec)
+        assertEquals(45, s.nightSec)
+        assertNull(s.suggestedSituation) // 1분도 안 달린 밤길로 "눈부심 상황이 있었어요"라고 하지 않는다
+        assertFalse(s.ruleBasedReview.any { "0분" in it }, "${s.ruleBasedReview}")
+    }
+
+    @Test
+    fun `review does not open with praise when there was speeding`() {
+        val d = drive(day.copy(speedLimitKmh = 50, speedKmhEstimate = 80f))
+        d.run(2 * min)
+        val s = d.coach.onDriveEnd(d.now)
+        assertTrue(s.speedingCount > 0)
+        assertFalse("침착하게 잘 왔어요" in s.ruleBasedReview[0], s.ruleBasedReview[0])
+        assertTrue("과속" in s.ruleBasedReview[1], s.ruleBasedReview[1])
+    }
 }

@@ -92,6 +92,13 @@ data class TrainingConfig(
     /** 도심의 평소 속도(일반도로 도시부 제한속도). 고속도로·내리막은 [cruiseSpeedKmh], 보호구역은 [schoolApproachKmh]. */
     val cityCruiseKmh: Float = 50f,
     val schoolLimitKmh: Float = 30f,
+    /**
+     * ★3 기준을 따로 두는 상황(없으면 제한 시간 × [threeStarFraction]). 조작 자체에 시간이 드는 상황은
+     * 바로 움직여도 절반 안에 못 끝낸다: 보호구역은 시속 50에서 멈추는 데만 3.6초, 합류는 깜빡이를 3초 켜 둔 뒤에 조향한다.
+     */
+    val threeStarMs: Map<SituationId, Long> = mapOf(SituationId.SCHOOL_ZONE to 7_500, SituationId.HIGHWAY_MERGE to 7_000),
+    /** 챕터마다 나올 수 있는 장소. 없는 챕터는 제한이 없다. "밤 고속도로"는 고속도로에서만 일어난다. */
+    val chapterPlaces: Map<String, List<String>> = mapOf("C2" to listOf(ScenePlace.HIGHWAY)),
 ) {
     fun limitOf(id: SituationId): Long = limitsMs[id] ?: 10_000
 

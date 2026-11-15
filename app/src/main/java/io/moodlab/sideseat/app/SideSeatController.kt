@@ -71,7 +71,11 @@ class SideSeatController(
     zones: SchoolZoneIndex = SchoolZoneIndex.EMPTY,
 ) {
     private val engine: TrainingEngine = DefaultTrainingEngine()
-    private var progress: TrainingProgress = store.loadProgress().also { engine.restore(it) }
+    private var progress: TrainingProgress = store.loadProgress().also {
+        engine.restore(it)
+        // 끊긴 챕터의 이어 하기 지점도 앱을 다시 열었을 때 남아 있게 한다
+        engine.restoreResume(store.loadResume())
+    }
     private val coach: DriveCoach = DefaultDriveCoach(zones = zones, practiced = ::practicedSituations)
     private val safeDial = DefaultSafeDialGame()
     private val turnGame = DefaultTurnSignalGame()
@@ -296,6 +300,11 @@ class SideSeatController(
             view.steps.filter { s -> s.done && prev.steps.firstOrNull { it.id == s.id }?.done == false }
                 .forEach { Log.i(TAG, "app step done ${view.situation} ${it.id}") }
         }
+        // 지난 주행을 보고 권한 상황을 방금 해냈으면 그 추천은 내린다(홈에 같은 추천이 남지 않게)
+        val done = view.lastResult
+        if (done != null && done != prev?.lastResult && done.stars > 0 && done.id == lastDrive?.suggestedSituation) {
+            lastDrive = lastDrive?.copy(suggestedSituation = null)?.also { store.saveLastDrive(it) }
+        }
         if (prev?.phase != view.phase || prev.situation != view.situation) {
             Log.i(TAG, "app training ${view.chapterId} ${view.situation} ${view.phase} steps=${view.steps.joinToString { "${it.id}:${if (it.done) 1 else 0}" }} result=${view.lastResult?.let { "${it.id}★${it.stars} ${it.reactionMs}ms miss=${it.missedStepIds} pen=${it.penalties}" }}")
         }
@@ -306,6 +315,11 @@ class SideSeatController(
             saveProgress()
             _ui.update { it.copy(result = view.chapterResult, progress = progress) }
             Log.i(TAG, "app chapter done ${view.chapterResult}")
+            // 상황 하나만 하는 연습(리뷰의 "1분 연습")은 끝 판 없이 바로 결과로 간다
+            if (view.chapterResult?.chapterId == io.moodlab.sideseat.core.ChapterCatalog.VERSUS) {
+                stopLoop()
+                setMode(AppMode.RESULT)
+            }
         }
     }
 
@@ -314,7 +328,8 @@ class SideSeatController(
         talkJob?.cancel()
         voice.stopSpeaking()
         begin(now())
-        _ui.update { it.copy(result = null, training = null) }
+        // 결과 화면이 "첫 기록 / 새 기록"을 가릴 수 있게 시작 전의 최고 기록을 남겨 둔다
+        _ui.update { it.copy(result = null, training = null, bestBefore = progress.bestReactionMs) }
         setMode(AppMode.TRAINING)
         startLoop(periodMs = 33) { trainingTick() }
     }
@@ -407,7 +422,15 @@ class SideSeatController(
         val context = questionContext()
         talkJob = scope.launch {
             instructor.prepareQuestion(parked, context)
-            val q = listenOnce(ReplyKind.FREE, pcm) ?: return@launch
+            val q = listenOnce(ReplyKind.FREE, pcm)?.takeIf { it.isNotBlank() }
+            if (q == null) {
+                // 아무 말도 못 들었으면 그냥 돌아가지 않고 알려 준다
+                val line = "잘 못 들었어요. 다시 눌러 말해 주세요."
+                updateTalk { it.copy(partialText = null, thinking = false, answerText = line) }
+                if (_ui.value.mode == AppMode.COACH) _ui.update { s -> s.copy(coach = s.coach.copy(lastLine = coachLine(line))) }
+                voice.say("잘 못 들었어요.")
+                return@launch
+            }
             updateTalk { it.copy(thinking = true, answerText = null) }
             voice.sayStreaming(instructor.answer(q, parked, context).onEach { line ->
                 updateTalk { it.copy(thinking = false, answerText = listOfNotNull(it.answerText, line).joinToString(" ")) }
@@ -448,25 +471,29 @@ class SideSeatController(
             is UiAction.StartChapter -> startTraining { engine.start(a.chapterId, it, a.from) }
             UiAction.StartSurprise -> startTraining { engine.startSurprise(it) }
             // 교관 대결: 엔진은 친구가 첫 상황을 던질 때(Inject) 시작한다. 그전까지 훈련 화면은 IDLE 뷰로 상황 고르는 판을 보여 준다.
-            UiAction.StartVersus -> startTraining { }
+            UiAction.StartVersus -> startTraining { engine.startVersus(it) }
             is UiAction.Inject -> engine.inject(a.situation, now())
-            is UiAction.StartSituation -> startTraining { engine.inject(a.situation, it) }
+            // 리뷰가 권한 상황 하나만 하고 결과로 간다(교관 대결 판에 남지 않는다)
+            is UiAction.StartSituation -> startTraining { engine.inject(a.situation, it, single = true) }
+            UiAction.SkipSituation -> engine.skip(now())
             is UiAction.Answer -> when (_ui.value.mode) {
                 AppMode.MINIGAME -> windowGame.answer(a.text, now())
                 else -> engine.answer(a.text, now())
             }
-            UiAction.AbortTraining -> {
-                engine.abort(now())
-                engine.tick(_ui.value.vehicle, now()).second.let { e -> dispatch(e.filterNot { it is CoachEvent.Say }) }
-                sfx.stopAll()
-                saveProgress()
-                goHome()
+            UiAction.AbortTraining -> abortTraining()
+            // Back 키로 훈련을 나가도 "그만하기"와 같게 이어 하기 지점을 남긴다
+            UiAction.GoHome -> if (trainingInProgress()) abortTraining() else goHome()
+            // 훈련·미니게임 중에 앱이 뒤로 가면 멈춘다(화면 없이 힌트 음성과 제한 시간이 흐르지 않게)
+            UiAction.Background -> when {
+                trainingInProgress() -> abortTraining()
+                _ui.value.mode == AppMode.MINIGAME -> goHome()
+                else -> Unit
             }
             UiAction.ShowResult -> if (_ui.value.result != null) {
                 stopLoop()
                 setMode(AppMode.RESULT)
             }
-            UiAction.GoHome, UiAction.CloseMiniGame, UiAction.DismissReview -> goHome()
+            UiAction.CloseMiniGame, UiAction.DismissReview -> goHome()
             UiAction.OpenSafeDial -> startMiniGame(MiniGameKind.SAFE_DIAL)
             UiAction.OpenTurnSignalGame -> startMiniGame(MiniGameKind.TURN_SIGNAL)
             UiAction.OpenWindowBuzzer -> startMiniGame(MiniGameKind.WINDOW_BUZZER)
@@ -481,13 +508,30 @@ class SideSeatController(
         }
     }
 
+    private fun trainingInProgress(): Boolean {
+        val phase = _ui.value.training?.phase
+        return _ui.value.mode == AppMode.TRAINING && phase != null && phase != TrainingPhase.CHAPTER_DONE && phase != TrainingPhase.IDLE
+    }
+
+    private fun abortTraining() {
+        engine.abort(now())
+        engine.tick(_ui.value.vehicle, now()).second.let { e -> dispatch(e.filterNot { it is CoachEvent.Say }) }
+        sfx.stopAll()
+        saveProgress()
+        goHome()
+    }
+
     private fun goHome() {
         stopLoop()
         talkJob?.cancel()
         sfx.stopAll()
         if (_ui.value.mode == AppMode.TRAINING) voice.stopSpeaking()
         setAmbient(AmbientMood.CALM)
-        _ui.update { it.copy(training = null, miniGame = null, review = null) }
+        // 홈 말풍선에 지난 화면(훈련·리뷰·미니게임)의 말이 남지 않게 비운다
+        _ui.update {
+            it.copy(training = null, miniGame = null, review = null,
+                home = it.home.copy(talk = it.home.talk.copy(answerText = null, partialText = null, thinking = false)))
+        }
         if (!_ui.value.vehicle.parked) return
         refreshHome()
         setMode(AppMode.HOME)
@@ -502,14 +546,19 @@ class SideSeatController(
         val chapters = engine.chapters()
         val firstTime = progress.totalStarsEarned == 0
         val fromDrive = lastDrive?.suggestedSituation
-        val recommended = when {
-            fromDrive != null -> chapters.firstOrNull { fromDrive in it.situations && !it.locked }
-            else -> chapters.firstOrNull { !it.locked && (progress.chapterBestStars[it.id] ?: 0) == 0 }
-        } ?: chapters.firstOrNull { !it.locked }
+        val open = chapters.filter { !it.locked }
+        fun stars(ch: io.moodlab.sideseat.core.ChapterInfo) = progress.chapterBestStars[ch.id] ?: 0
+        val driveChapter = fromDrive?.let { s -> open.firstOrNull { s in it.situations } }
+        val unplayed = open.firstOrNull { stars(it) == 0 }
+        // 별이 다 있으면 별을 가장 덜 모은 챕터를 권한다(가득 채운 챕터는 뺀다)
+        val weakest = open.filter { stars(it) < it.situations.size * 3 }.minByOrNull { stars(it).toFloat() / (it.situations.size * 3) }
+        val recommended = driveChapter ?: unplayed ?: weakest ?: open.firstOrNull()
         val reason = when {
-            fromDrive != null -> "지난 주행에서 ${situationTitle(fromDrive)} 상황이 있었어요."
+            driveChapter != null -> "지난 주행을 보고 골랐어요. ${situationTitle(fromDrive!!)} 연습이에요."
             firstTime -> "처음이라면 여기서 시작해요."
-            else -> "아직 별이 없는 챕터예요."
+            unplayed != null -> "아직 해 보지 않은 챕터예요."
+            weakest != null -> "별을 더 모을 수 있는 챕터예요."
+            else -> "별을 다 모았어요. 한 번 더 해 볼까요?"
         }
         // 내비에 경로가 있고 가는 길에 연습할 만한 것이 있으면 그것을 먼저 권한다.
         val onRoute = route?.let { RouteTraining.recommend(it, chapters, practicedSituations()) }
@@ -519,7 +568,8 @@ class SideSeatController(
                 progress = progress,
                 home = it.home.copy(
                     greeting = if (firstTime) "이 차는 처음이시네요." else "다시 왔네요. 반가워요.",
-                    subGreeting = if (firstTime) "3분만 같이 해 볼까요?" else "오늘도 세워 둔 김에 한 판 해요.",
+                    subGreeting = if (firstTime) "3분만 같이 해 볼까요? 화면 말고 이 차의 진짜 스위치로 연습해요."
+                    else "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요.",
                     chapters = chapters,
                     progress = progress,
                     vehicleModelKey = key,
@@ -541,6 +591,7 @@ class SideSeatController(
     private fun saveProgress() {
         progress = engine.progress()
         store.saveProgress(progress)
+        store.saveResume(engine.resumeState())
         _ui.update { it.copy(progress = progress) }
     }
 
@@ -576,25 +627,5 @@ fun coachLine(text: String, max: Int = 24): String {
     return sentences.last()
 }
 
-/** 화면·로그에 쓰는 상황 이름. */
-fun situationTitle(id: SituationId): String = when (id) {
-    SituationId.HEAVY_RAIN -> "폭우"
-    SituationId.FOGGED_WINDSHIELD -> "앞유리 김서림"
-    SituationId.SUDDEN_STOP -> "앞차 급정거"
-    SituationId.TUNNEL -> "터널"
-    SituationId.DENSE_FOG -> "짙은 안개"
-    SituationId.ONCOMING_GLARE -> "맞은편 눈부심"
-    SituationId.BREAKDOWN -> "고속도로 고장"
-    SituationId.WARNING_LIGHT -> "경고등"
-    SituationId.DROWSY -> "졸음"
-    SituationId.UNINTENDED_ACCEL -> "의도치 않은 가속"
-    SituationId.BEFORE_EXIT -> "내리기 전"
-    SituationId.WIPER_DEBRIS -> "앞유리 이물질"
-    SituationId.RIGHT_TURN_CROSSWALK -> "우회전 횡단보도"
-    SituationId.HIGHWAY_MERGE -> "고속도로 합류"
-    SituationId.HYDROPLANING -> "수막현상"
-    SituationId.HIPASS_WRONG_LANE -> "하이패스 차로 오진입"
-    SituationId.ROUNDABOUT_ENTRY -> "회전교차로"
-    SituationId.SCHOOL_ZONE -> "어린이 보호구역"
-    SituationId.TOLL_BOOTH -> "일반 차로 요금소"
-}
+/** 화면·로그에 쓰는 상황 이름. 훈련 화면·홈·리뷰가 같은 이름을 쓰게 core의 상황 정의 한 곳에서 가져온다. */
+fun situationTitle(id: SituationId): String = io.moodlab.sideseat.core.SituationCatalog.title(id)

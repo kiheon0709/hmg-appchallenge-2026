@@ -121,7 +121,7 @@ class RoadRulesTest {
         d.engine.answer("차를 세우고 후진해요", d.now)
         d.tick()
         assertEquals(listOf(false, false), d.view.steps.map { it.done })
-        d.engine.answer("1번", d.now)
+        d.engine.answer("멈추지 않고 그대로 지나가요", d.now)
         d.tick()
         assertEquals("그럼 요금은 어떻게 할까요?", d.view.choice?.question)
         d.engine.answer("나중에 정산해요", d.now)

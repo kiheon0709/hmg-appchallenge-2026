@@ -23,6 +23,8 @@ data class AppUi(
     val home: HomeUi = HomeUi(),
     val training: TrainingView? = null,
     val result: ChapterResult? = null,
+    /** 이번 훈련을 시작하기 전의 상황별 최고 반응 시간. 결과 화면이 "첫 기록"과 "새 기록"을 가린다. */
+    val bestBefore: Map<String, Long> = emptyMap(),
     val progress: TrainingProgress = TrainingProgress(),
     val coach: CoachUi = CoachUi(),
     val review: ReviewUi? = null,

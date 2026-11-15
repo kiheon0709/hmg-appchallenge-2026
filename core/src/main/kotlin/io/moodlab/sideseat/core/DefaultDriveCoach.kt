@@ -69,6 +69,11 @@ class DefaultDriveCoach(
     /** @param exempt 30분당 말수 제한·말 간격에서 빼고, 자기 규칙(구역당 1번, 3분에 1번)으로만 제한한다. */
     private class Rule(val id: String, val safety: Boolean, val urgent: Boolean, val exempt: Boolean = false)
 
+    /** 같은 조치를 권하는 규칙 묶음. 한 묶음에서는 하나만 말한다(비 + 어두움 → "전조등을 켜 주세요"는 한 번). */
+    private val sameAdvice = listOf(setOf("K01", "K02"), setOf("K03", "K04"))
+
+    private fun adviceGroup(id: String): Set<String> = sameAdvice.firstOrNull { id in it } ?: setOf(id)
+
     private val rules = listOf(
         Rule("K10", safety = true, urgent = true),
         Rule("K11", safety = true, urgent = true, exempt = true),
@@ -213,6 +218,9 @@ class DefaultDriveCoach(
             observations = obs,
             suggestedSituation = suggestion,
             ruleBasedReview = review(durationMin, rainMin, nightMin, obs, suggestion),
+            durationSec = ((nowMs - driveStartMs) / 1000).toInt(),
+            rainSec = (rainMs / 1000).toInt(),
+            nightSec = (nightMs / 1000).toInt(),
             speedingCount = speedingCount,
             longestSpeedingSec = (longestSpeedingMs / 1000).toInt(),
             schoolZonePasses = zonePasses,
@@ -270,7 +278,8 @@ class DefaultDriveCoach(
     /** 말수 제한(6.1). 같은 규칙은 한 번, 안전 규칙은 10분 뒤 한 번 더. K10은 경고등마다. */
     private fun canSpeak(rule: Rule, nowMs: Long): Boolean {
         if (rule.exempt) return true
-        val times = spokenAt[rule.id].orEmpty()
+        // 같은 조치를 권하는 규칙끼리는 횟수와 간격을 함께 센다(목록에서 앞선, 더 급한 규칙이 먼저 말한다)
+        val times = adviceGroup(rule.id).flatMap { spokenAt[it].orEmpty() }.sorted()
         if (rule.id != "K10") {
             val allowed = if (rule.safety) 2 else 1
             if (times.size >= allowed) return false
@@ -448,20 +457,25 @@ class DefaultDriveCoach(
         )
         utterances.firstNotNullOfOrNull { byRule[it.ruleId] }?.let { return it }
         if ((obs["HARD_BRAKE"] ?: 0) > 0) return SituationId.SUDDEN_STOP
-        if (rainMs > 0) return SituationId.HEAVY_RAIN
-        if (nightMs > 0) return SituationId.ONCOMING_GLARE
+        // 비·밤만으로 권할 때는 1분 넘게 그 길을 달렸을 때만(잠깐 움직인 것으로 "지난 주행에서…"라고 하지 않게)
+        if (rainMs >= CoachConfig.MIN) return SituationId.HEAVY_RAIN
+        if (nightMs >= CoachConfig.MIN) return SituationId.ONCOMING_GLARE
         return null
     }
 
     private fun review(durationMin: Int, rainMin: Int, nightMin: Int, obs: Map<String, Int>, suggestion: SituationId?): List<String> {
         val said = utterances.map { it.ruleId }.toSet()
+        // 과속이나 보호구역 초과가 있었으면 첫 문장에서 "침착하게 잘 왔어요"라고 하지 않는다
+        val violated = zoneOverLimit != null || speedingCount > 0
+        val span = if (durationMin >= 1) "${durationMin}분 동안" else "짧은 길이었지만"
         val good = when {
             zonePasses > 0 && zoneOverLimit == null && zoneMaxKmh != null ->
                 "어린이 보호구역 ${zonePasses}곳을 천천히 지났어요."
             rainMin > 0 && "K01" !in said -> "비 오는 길에서도 전조등을 잘 챙겼어요."
             nightMin > 0 && "K02" !in said -> "어두워지자 전조등을 바로 켰어요."
+            violated -> "$span 끝까지 같이 왔어요. 속도는 한 가지 짚을게요."
             utterances.isEmpty() -> "오늘은 제가 한 번도 끼어들 일이 없었어요."
-            else -> "${durationMin}분 동안 침착하게 잘 왔어요."
+            else -> "$span 침착하게 잘 왔어요."
         }
         val noSignal = obs["NO_SIGNAL_TURN"] ?: 0
         val hardBrake = obs["HARD_BRAKE"] ?: 0

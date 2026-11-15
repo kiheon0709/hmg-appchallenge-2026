@@ -117,6 +117,10 @@ sealed interface UiAction {
     /** 훈련 중 선택지 답(S07·S08). */
     data class Answer(val text: String) : UiAction
     data object AbortTraining : UiAction
+    /** 다시 하는 상황을 접고 다음 상황으로 넘어간다. */
+    data object SkipSituation : UiAction
+    /** 앱이 뒤로 갔다(화면이 보이지 않는다). 훈련·미니게임을 멈춘다. */
+    data object Background : UiAction
     /** 챕터가 끝난 뒤 결과 화면으로. */
     data object ShowResult : UiAction
     data object GoHome : UiAction

@@ -51,6 +51,8 @@ fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((Vehicle
     // 홈 미리보기 그림(3D 훈련 장면 캡처). 못 읽으면 홈이 예전처럼 주행 장면을 그린다
     val context = LocalContext.current
     val homeArt = remember { runCatching { context.assets.open("home/hero.jpg").use { BitmapFactory.decodeStream(it) }.asImageBitmap() }.getOrNull() }
+    // 앱이 뒤로 가면 알려서 훈련·미니게임을 멈추게 한다
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_STOP) { onAction(UiAction.Background) }
     CompositionLocalProvider(
         LocalHomeArt provides homeArt,
         LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) },
@@ -68,7 +70,7 @@ private fun AppScreensBody(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChang
         when (ui.mode) {
             AppMode.HOME -> HomeScreen(ui.home, onAction)
             AppMode.TRAINING -> ui.training?.let { TrainingScreen(it, ui.vehicle, onAction) } ?: Waiting()
-            AppMode.RESULT -> ui.result?.let { ResultScreen(it, ui.progress, onAction) } ?: Waiting()
+            AppMode.RESULT -> ui.result?.let { ResultScreen(it, ui.progress, onAction, ui.bestBefore) } ?: Waiting()
             AppMode.COACH -> CoachScreen(ui.coach, onAction, ui.vehicle)
             AppMode.REVIEW -> ui.review?.let { ReviewScreen(it, onAction) } ?: Waiting()
             AppMode.MINIGAME -> when (ui.miniGame) {

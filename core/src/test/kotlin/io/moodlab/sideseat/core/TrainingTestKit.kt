@@ -79,15 +79,22 @@ fun TrainingDriver.slowDownFirst(confirmHazard: Boolean = true) {
     if (confirmHazard) confirmHazard()
 }
 
+/** 지금 떠 있는 질문의 정답 보기 문장. 보기 순서는 낼 때마다 섞이므로 번호가 아니라 문장으로 답한다. */
+fun TrainingDriver.correctAnswer(): String {
+    val q = view.choice!!.question
+    val c = SituationCatalog.all().flatMap { it.steps }.mapNotNull { it.choice }.first { it.question == q }
+    return c.options[c.correct].text
+}
+
 /**
- * 선택지는 모두 1번(정답)으로 답하며 성공할 때까지 간다.
+ * 선택지는 모두 정답으로 답하며 성공할 때까지 간다.
  * 일반 차로 요금소는 통행권을 받은 뒤 창문을 올려야 끝나므로 그 조작도 해 준다.
  */
 fun TrainingDriver.answerUntilSuccess(id: SituationId) {
     while (true) {
         val v = until { it.choice != null || it.phase == TrainingPhase.SUCCESS || (id == SituationId.TOLL_BOOTH && it.steps.any { s -> s.id == "ticket_confirm" && s.done }) }
         if (v.phase == TrainingPhase.SUCCESS) return
-        if (v.choice != null) { engine.answer("1", now); tick() } else set { it.copy(driverWindowOpenPct = 0) }
+        if (v.choice != null) { engine.answer(correctAnswer(), now); tick() } else set { it.copy(driverWindowOpenPct = 0) }
     }
 }
 

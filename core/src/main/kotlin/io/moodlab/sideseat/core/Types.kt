@@ -104,6 +104,12 @@ data class TrainingView(
     val chapterResult: ChapterResult? = null,
     /** 돌발 모드에서 버틴 개수. */
     val surviveCount: Int = 0,
+    /** 같은 상황을 다시 하는 중(또는 다시 하기 직전)이라 "다음 상황으로"를 고를 수 있다. */
+    val canSkip: Boolean = false,
+    /** 제한 시간이 지났지만 아직 끝낼 수 있다(천천히 끝까지). */
+    val overtime: Boolean = false,
+    /** 챕터의 첫 평온 주행(아직 아무 상황도 하지 않음). 화면이 "진짜 스위치로 해요"를 보여 준다. */
+    val opening: Boolean = false,
 )
 
 /** 주행 화면이 그릴 장면 값. 0f~1f는 강도. UI는 이것만 보고 그린다. */
@@ -135,6 +141,7 @@ data class SceneParams(
     val place: String = ScenePlace.HIGHWAY,
 )
 
+@Serializable
 data class SituationResult(
     val id: SituationId,
     val stars: Int,
@@ -142,6 +149,10 @@ data class SituationResult(
     val missedStepIds: List<String>,
     val penalties: List<String>,
 )
+
+/** 끊긴 챕터에서 남은 상황과 그때까지의 결과. */
+@Serializable
+data class ResumeState(val chapterId: String, val remaining: List<SituationId>, val results: List<SituationResult>)
 
 data class ChapterResult(val chapterId: String, val results: List<SituationResult>, val totalStars: Int)
 
@@ -170,8 +181,20 @@ interface TrainingEngine {
     /** 돌발 모드. */
     fun startSurprise(nowMs: Long)
 
-    /** 교관 대결. */
-    fun inject(situation: SituationId, nowMs: Long)
+    /** 교관 대결을 연다. 이전 훈련의 상태를 지우고, 상황을 던질 때까지 평온하게 달린다. */
+    fun startVersus(nowMs: Long)
+
+    /** 교관 대결에서 상황을 던진다. [single]이면 그 상황 하나만 하고 끝낸다(리뷰의 "1분 연습"). */
+    fun inject(situation: SituationId, nowMs: Long, single: Boolean = false)
+
+    /** 실패 뒤 다시 하는 중이거나 다시 하기 직전이면 그 상황을 접고 다음으로 넘어간다. */
+    fun skip(nowMs: Long)
+
+    /** 끊긴 챕터의 이어 하기 지점(앱이 저장한다). 없으면 null. */
+    fun resumeState(): ResumeState?
+
+    /** 저장해 둔 이어 하기 지점을 불러온다. 앱 시작 때 한 번. */
+    fun restoreResume(state: ResumeState?)
 
     /** 프레임마다 또는 신호가 바뀔 때 호출. 뷰와 그 사이 생긴 이벤트를 돌려준다. */
     fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>>
@@ -269,6 +292,10 @@ data class DriveSummary(
     val schoolZonePasses: Int = 0,
     /** 보호구역 안에서의 최고 속도(km/h). 통과가 없거나 속도를 모르면 null. */
     val schoolZoneMaxKmh: Int? = null,
+    /** 초 단위 시간. 1분이 안 되는 주행·비·밤을 "0분"으로 보이지 않게 화면이 쓴다. 이전 기록에는 없어 0이다. */
+    val durationSec: Int = 0,
+    val rainSec: Int = 0,
+    val nightSec: Int = 0,
 )
 
 // ---------- 미니게임 ----------

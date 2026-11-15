@@ -407,7 +407,8 @@ class TrainingEngineTest {
         assertEquals("가장 먼저 할 일은 뭘까요?", choice.question)
         val ask = d.events.filterIsInstance<CoachEvent.Say>().last()
         assertEquals(ReplyKind.CHOICE, ask.expectReply)
-        assertTrue(ask.text.contains("1번, 비상등 켜기."))
+        // 보기 순서는 낼 때마다 섞인다: 번호와 함께 세 보기를 모두 읽는다
+        assertTrue(ask.text.contains("1번, ") && ask.text.contains("3번, ") && ask.text.contains("비상등 켜기."), ask.text)
 
         d.engine.answer("비상등", d.now)
         assertEquals("그다음엔요?", d.tick().choice?.question)
@@ -455,11 +456,31 @@ class TrainingEngineTest {
         d.untilActive(SituationId.WARNING_LIGHT)
         assertEquals("TPMS", d.view.scene.warningLight)
         assertEquals("이 경고등은 무슨 뜻일까요?", d.view.choice?.question)
-        d.engine.answer("1번", d.now)
+        d.engine.answer("타이어 공기압이 낮아요", d.now)
         assertEquals("그럼 어떻게 할까요?", d.tick().choice?.question)
         d.engine.answer("속도 줄이고 안전한 곳에 세울게", d.now)
         assertEquals(TrainingPhase.SUCCESS, d.tick().phase)
         assertEquals(3, d.view.lastResult?.stars)
+    }
+
+    @Test
+    fun `quiz options are shuffled so the answer is not always number one`() {
+        val firsts = mutableSetOf<Int>()
+        for (seed in 0 until 12) {
+            val d = TrainingDriver(DefaultTrainingEngine(TrainingConfig(random = kotlin.random.Random(seed))))
+            d.tick()
+            d.engine.inject(SituationId.WARNING_LIGHT, d.now)
+            d.untilActive(SituationId.WARNING_LIGHT)
+            val options = d.view.choice!!.options
+            assertEquals(setOf("타이어 공기압이 낮아요", "엔진 오일이 부족해요", "브레이크가 고장 났어요"), options.toSet())
+            val at = options.indexOf("타이어 공기압이 낮아요")
+            firsts += at
+            // 번호로 답하면 화면에 보이는 순서의 번호다
+            d.engine.answer("${at + 1}번", d.now)
+            assertEquals("그럼 어떻게 할까요?", d.tick().choice?.question)
+            assertTrue(d.view.lastResult == null && d.says().none { it.startsWith("이건 타이어") })
+        }
+        assertEquals(setOf(0, 1, 2), firsts)
     }
 
     @Test
@@ -658,6 +679,152 @@ class TrainingEngineTest {
             assertTrue(d.view.lastResult!!.stars >= 2, "$id stars=${d.view.lastResult}")
             d.until { it.phase != TrainingPhase.SUCCESS }
         }
+    }
+    // ---------- 점검(11-15)에서 나온 것 ----------
+
+    @Test
+    fun `sudden stop clock freezes at the brake and the car stays stopped`() {
+        val d = driver()
+        d.engine.inject(SituationId.SUDDEN_STOP, d.now)
+        d.untilActive(SituationId.SUDDEN_STOP)
+        d.advance(600)
+        d.set { it.copy(brakePressed = true) }
+        d.advance(200)
+        d.set { it.copy(brakePressed = false) }
+        val at = d.view.elapsedMs
+        d.advance(8_000) // 비상등 질문에 답하지 않고 기다린다
+        assertEquals(at, d.view.elapsedMs)
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f) // 발을 떼도 다시 80으로 올라가지 않는다
+        assertTrue(d.says().any { it.startsWith("비상등은 제가 볼 수 없어서 여쭤봐요.") })
+        d.confirmHazard()
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        assertEquals(at, d.view.lastResult?.reactionMs)
+    }
+
+    @Test
+    fun `versus starts clean after a finished chapter`() {
+        val d = driver()
+        d.engine.start("C4", d.now)
+        d.until { it.phase == TrainingPhase.ACTIVE }
+        d.set { it.copy(lowBeamOn = false, driverWindowOpenPct = 0) }
+        d.answerUntilSuccess(SituationId.BEFORE_EXIT)
+        d.until { it.phase == TrainingPhase.CHAPTER_DONE }
+        assertTrue(d.view.scene.parkingLot) // 끝 화면도 주차장 그대로
+        assertTrue(d.says().any { it == "내리기 전에 끝! 확인을 마쳤어요." }, "${d.says()}")
+        assertNull(d.view.lastResult?.reactionMs) // 확인만 하는 상황은 시간을 재지 않는다
+        d.engine.startVersus(d.now)
+        d.tick()
+        assertEquals(TrainingPhase.CRUISE, d.view.phase)
+        assertEquals(ChapterCatalog.VERSUS, d.view.chapterId)
+        assertEquals("교관 대결", d.view.title)
+        assertNull(d.view.chapterResult)
+    }
+
+    @Test
+    fun `a single practice ends by itself with a result`() {
+        val d = driver()
+        d.engine.inject(SituationId.TUNNEL, d.now, single = true)
+        d.untilActive(SituationId.TUNNEL)
+        d.set { it.copy(lowBeamOn = true) }
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        d.until { it.phase == TrainingPhase.CHAPTER_DONE }
+        val res = assertNotNull(d.view.chapterResult)
+        assertEquals(ChapterCatalog.VERSUS, res.chapterId)
+        assertEquals(listOf(SituationId.TUNNEL), res.results.map { it.id })
+    }
+
+    @Test
+    fun `after a fail the retry can be skipped to the next situation`() {
+        val d = driver()
+        d.engine.start("C2", d.now)
+        d.until { it.phase == TrainingPhase.FAIL }
+        assertTrue(d.view.canSkip)
+        assertTrue(d.says().any { it.startsWith("시간이 지났어요.") }) // 제한 시간이 지난 순간 바로 알려 준다
+        d.engine.skip(d.now)
+        d.tick()
+        assertEquals(TrainingPhase.CRUISE, d.view.phase)
+        val next = d.until { it.phase == TrainingPhase.BRIEFING }
+        assertEquals(SituationId.ONCOMING_GLARE, next.situation)
+        // 다시 하는 중에도 넘어갈 수 있다
+        d.until { it.phase == TrainingPhase.FAIL }
+        d.until { it.phase == TrainingPhase.ACTIVE }
+        assertTrue(d.view.canSkip)
+        d.engine.skip(d.now)
+        assertEquals(TrainingPhase.CRUISE, d.tick().phase)
+    }
+
+    @Test
+    fun `resume point survives a restart and the last situation still gets its lesson`() {
+        val d = driver()
+        d.engine.start("C2", d.now)
+        d.untilActive(SituationId.TUNNEL)
+        d.set { it.copy(lowBeamOn = true) }
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        d.until { it.phase == TrainingPhase.BRIEFING }
+        d.engine.abort(d.now)
+        val saved = assertNotNull(d.engine.resumeState())
+        assertEquals("C2", saved.chapterId)
+        assertEquals(SituationId.ONCOMING_GLARE, saved.remaining.first())
+        // 앱을 다시 열었다
+        val again = driver()
+        again.engine.restoreResume(saved)
+        assertEquals("C2", again.engine.resumableChapter())
+        again.engine.start("C2", again.now)
+        assertEquals(SituationId.ONCOMING_GLARE, again.until { it.phase == TrainingPhase.BRIEFING }.situation)
+        // 마지막 상황(졸음)을 끝내면 교훈을 말한다
+        again.until(maxMs = 300_000) { it.situation == SituationId.DROWSY && it.phase == TrainingPhase.ACTIVE }
+        again.set { it.copy(recirculationOn = false, driverWindowOpenPct = 20) }
+        again.until { it.phase == TrainingPhase.SUCCESS }
+        again.clearEvents()
+        again.until { it.phase == TrainingPhase.CHAPTER_DONE }
+        assertTrue(again.says().any { it.startsWith("외기와 창문은 잠깐 버티는 방법이에요.") }, "${again.says()}")
+    }
+
+    @Test
+    fun `night highway chapter stays on the highway and the cruise is already in the next place`() {
+        for (seed in 0 until 8) {
+            val d = driver(TrainingConfig(placeRandom = Random(seed)))
+            d.engine.start("C2", d.now)
+            d.until { it.phase == TrainingPhase.BRIEFING }
+            assertEquals(ScenePlace.HIGHWAY, d.view.scene.place)
+        }
+        // 폭우가 도심으로 뽑히면 첫 평온 주행부터 도심이고, 속도도 이미 도심 속도다
+        val city = driver(TrainingConfig(places = mapOf(SituationId.HEAVY_RAIN to listOf(ScenePlace.CITY))))
+        city.engine.start("C1", city.now)
+        city.advance(1_000)
+        assertEquals(TrainingPhase.CRUISE, city.view.phase)
+        assertTrue(city.view.opening)
+        assertEquals(ScenePlace.CITY, city.view.scene.place)
+        assertEquals(50f, city.view.virtualSpeedKmh, 0.5f)
+    }
+
+    @Test
+    fun `school zone and merge give three stars to a prompt driver`() {
+        val c = TrainingConfig()
+        assertEquals(7_500, c.threeStarMs[SituationId.SCHOOL_ZONE])
+        assertEquals(7_000, c.threeStarMs[SituationId.HIGHWAY_MERGE])
+        val d = driver()
+        d.engine.inject(SituationId.SCHOOL_ZONE, d.now)
+        d.untilActive(SituationId.SCHOOL_ZONE)
+        d.advance(1_000) // 1초 뒤에 밟는다
+        d.set { it.copy(brakePressed = true) }
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        assertEquals(3, d.view.lastResult?.stars, "${d.view.lastResult}")
+    }
+
+    @Test
+    fun `wiper sound plays while it rains and the wiper is on`() {
+        val d = driver()
+        d.engine.inject(SituationId.HEAVY_RAIN, d.now)
+        d.untilActive(SituationId.HEAVY_RAIN)
+        d.advance(1_000)
+        assertFalse(d.events.any { it == CoachEvent.Sfx("wiper", loop = true) })
+        d.set { it.copy(wiper = WiperLevel.HIGH) }
+        d.advance(200)
+        assertTrue(d.events.any { it == CoachEvent.Sfx("wiper", loop = true) })
+        d.set { it.copy(wiper = WiperLevel.OFF) }
+        d.advance(200)
+        assertTrue(d.events.any { it == CoachEvent.StopSfx("wiper") })
     }
 }
 

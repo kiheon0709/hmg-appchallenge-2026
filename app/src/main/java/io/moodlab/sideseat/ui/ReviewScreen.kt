@@ -61,6 +61,9 @@ fun ReviewScreen(state: ReviewUi, onAction: (UiAction) -> Unit) {
     }
 }
 
+/** 1분이 안 되면 "0분"이 아니라 초로 보여 준다. 초 값이 없는 이전 기록은 분 그대로. */
+private fun span(min: Int, sec: Int): String = if (min == 0 && sec in 1..59) "${sec}초" else "${min}분"
+
 private fun delta(now: Int, before: Int?, unit: String): String? {
     if (before == null) return null
     val d = now - before
@@ -78,12 +81,12 @@ private fun Today(state: ReviewUi) {
     val p = state.previous
     Text("오늘 운전", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
-        StatTile("${s.durationMin}분", "주행 시간", Modifier.weight(1f), delta(s.durationMin, p?.durationMin, "분"))
+        StatTile(span(s.durationMin, s.durationSec), "주행 시간", Modifier.weight(1f), delta(s.durationMin, p?.durationMin, "분"))
         StatTile("${s.utterances.size}번", "${Persona.NAME}가 말한 횟수", Modifier.weight(1f), delta(s.utterances.size, p?.utterances?.size, "번"))
     }
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
-        StatTile("${s.rainMin}분", "비 오는 길", Modifier.weight(1f), delta(s.rainMin, p?.rainMin, "분"))
-        StatTile("${s.nightMin}분", "밤길", Modifier.weight(1f), delta(s.nightMin, p?.nightMin, "분"))
+        StatTile(span(s.rainMin, s.rainSec), "비 오는 길", Modifier.weight(1f), delta(s.rainMin, p?.rainMin, "분"))
+        StatTile(span(s.nightMin, s.nightSec), "밤길", Modifier.weight(1f), delta(s.nightMin, p?.nightMin, "분"))
     }
     val keys = (observationLabels.keys + s.observations.keys).distinct()
     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(sz.radius)).background(Sc.surface).padding(sz.dp(20f)), verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
@@ -121,7 +124,8 @@ private fun Today(state: ReviewUi) {
             Text("달리면서 한 말", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.Medium)
             s.utterances.take(6).forEach { u ->
                 Row {
-                    Dot(if (u.urgent) Sc.danger else Sc.text, sz.dp(10f), Modifier.padding(top = sz.dp(10f), end = sz.dp(12f)))
+                    // 잘못을 표시하는 것처럼 보이지 않게 점은 중립 색 하나로
+                    Dot(Sc.textDim, sz.dp(10f), Modifier.padding(top = sz.dp(10f), end = sz.dp(12f)))
                     Text(u.text, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
                 }
             }
@@ -172,7 +176,7 @@ private fun Senior(state: ReviewUi, onAction: (UiAction) -> Unit, modifier: Modi
     if (suggested != null) {
         BigButton(
             "지금 1분만 연습할까요?", Modifier.fillMaxWidth(), primary = true,
-            sub = state.suggestedTitle ?: SituationTexts.title(suggested),
+            sub = SituationTexts.title(suggested),
         ) { onAction(UiAction.StartSituation(suggested)) }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
