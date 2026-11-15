@@ -515,4 +515,38 @@ class RoadRulesTest {
         assertEquals(listOf("ROUNDABOUT_NO_SIGNAL"), n.view.lastResult?.penalties)
         assertTrue("들어가기 전에 왼쪽 깜빡이를 먼저 켜요." in n.says())
     }
+
+    @Test
+    fun `roundabout never crosses the yield line while braking even with sparse ticks and a retry starts from the beginning`() {
+        // 장면이 20fps로 떨어지고 신호가 늦게 와 tick 간격이 400ms로 벌어진 경우
+        for (step in listOf(50L, 200L, 400L, 1_000L)) {
+            val d = active(SituationId.ROUNDABOUT_ENTRY)
+            d.advance(1_600, step)
+            d.set { it.copy(turnSignal = TurnSignal.LEFT) }
+            d.advance(1_000, step)
+            d.set { it.copy(brakePressed = true) }
+            d.until(step = step) { it.phase != TrainingPhase.ACTIVE && it.phase != TrainingPhase.HINT || it.steps.first { s -> s.id == "yield_slow" }.done }
+            assertTrue(d.view.steps.first { it.id == "yield_slow" }.done, "step=$step phase=${d.view.phase}")
+            d.advance(3_000, step) // 밟은 채 오래 있어도 선을 넘지 않는다
+            assertTrue(d.view.phase == TrainingPhase.ACTIVE || d.view.phase == TrainingPhase.HINT, "step=$step ${d.view.phase}")
+            assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+            d.set { it.copy(brakePressed = false) }
+            assertEquals(TrainingPhase.SUCCESS, d.view.phase, "step=$step")
+        }
+
+        // 다시 하기: 밟지 않고 선을 넘어 실패 → 브리핑 뒤 양보선·도는 차가 처음 자리에서 다시 시작한다
+        val c = driver()
+        c.engine.start("C5", c.now, SituationId.ROUNDABOUT_ENTRY)
+        c.untilActive(SituationId.ROUNDABOUT_ENTRY)
+        c.until { it.phase == TrainingPhase.FAIL }
+        c.until { it.phase == TrainingPhase.BRIEFING && it.situation == SituationId.ROUNDABOUT_ENTRY }
+        c.untilActive(SituationId.ROUNDABOUT_ENTRY)
+        assertEquals(TrainingConfig().roundaboutPassMs / 1000f, c.view.scene.ringPassSec!!, 0.2f)
+        c.advance(400)
+        assertEquals(TrainingPhase.ACTIVE, c.view.phase) // 0.4초 만의 실패가 없다
+        c.set { it.copy(turnSignal = TurnSignal.LEFT, brakePressed = true) }
+        c.until { v -> v.steps.first { it.id == "yield_slow" }.done }
+        c.set { it.copy(brakePressed = false) }
+        assertEquals(TrainingPhase.SUCCESS, c.view.phase)
+    }
 }

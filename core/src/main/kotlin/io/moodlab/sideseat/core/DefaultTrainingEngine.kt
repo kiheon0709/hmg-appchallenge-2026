@@ -968,7 +968,8 @@ internal class SceneSim(private val config: TrainingConfig) {
         }
 
         if (on(SituationId.ROUNDABOUT_ENTRY)) {
-            if (!ringAhead) {
+            // 처음과 다시 하기(실패 뒤 브리핑) 모두 양보선·도는 차를 처음 자리로 돌린다
+            if (!ringAhead || briefing) {
                 ringM = config.roundaboutApproachM
                 ringPassMs = config.roundaboutPassMs
             }
@@ -976,7 +977,16 @@ internal class SceneSim(private val config: TrainingConfig) {
             // 도는 차와 양보선까지의 거리는 상황이 터진 뒤부터 움직인다(브리핑 동안은 멀리 있다)
             if (!briefing) {
                 ringPassMs -= dtMs
-                ringM = (ringM - speed / 3.6f * dt).coerceAtLeast(0f)
+                val next = ringM - speed / 3.6f * dt
+                // 진입 전에 브레이크를 밟고 있으면 tick 간격(프레임 속도·신호 지연)과 상관없이 선 0.5m 앞에서 멈춘다.
+                // 선을 넘는 실패는 밟지 않은 채 넘었을 때만 생긴다
+                val stopLine = minOf(ringM, ROUNDABOUT_STOP_GAP_M)
+                if (braking && "enter" !in doneSteps && next <= stopLine) {
+                    ringM = stopLine
+                    speed = 0f
+                } else {
+                    ringM = next.coerceAtLeast(0f)
+                }
             }
         } else {
             ringAhead = false
@@ -1035,6 +1045,8 @@ internal class SceneSim(private val config: TrainingConfig) {
     }
 
     private companion object {
+        /** 회전교차로: 브레이크를 밟고 있으면 양보선에서 이만큼 앞에 선다(m). */
+        const val ROUNDABOUT_STOP_GAP_M = 0.5f
         val IN_SITUATION = setOf(TrainingPhase.BRIEFING, TrainingPhase.ACTIVE, TrainingPhase.HINT, TrainingPhase.SUCCESS, TrainingPhase.FAIL)
     }
 }
