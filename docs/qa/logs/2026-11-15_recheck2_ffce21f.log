@@ -1,0 +1,150 @@
+11-15 14:05:21.220 D/AndroidRuntime( 8196): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:21.225 I/AndroidRuntime( 8196): Using default boot image
+11-15 14:05:21.226 I/AndroidRuntime( 8196): Leaving lock profiling enabled
+11-15 14:05:21.331 D/AndroidRuntime( 8196): Calling main entry com.android.commands.monkey.Monkey
+11-15 14:05:21.373 I/AndroidRuntime( 8196): VM exiting with result code 0.
+11-15 14:05:21.388 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000339), distractionOptimized: true)
+11-15 14:05:22.156 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsAc
+11-15 14:05:26.760 D/AndroidRuntime( 9375): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:26.764 I/AndroidRuntime( 9375): Using default boot image
+11-15 14:05:26.764 I/AndroidRuntime( 9375): Leaving lock profiling enabled
+11-15 14:05:26.834 D/AndroidRuntime( 9375): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:27.863 D/AndroidRuntime( 9375): Shutting down VM
+11-15 14:05:33.838 D/AndroidRuntime(10780): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:33.840 I/AndroidRuntime(10780): Using default boot image
+11-15 14:05:33.840 I/AndroidRuntime(10780): Leaving lock profiling enabled
+11-15 14:05:33.903 D/AndroidRuntime(10780): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:34.932 D/AndroidRuntime(10780): Shutting down VM
+11-15 14:05:38.408 D/AndroidRuntime(11680): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:38.410 I/AndroidRuntime(11680): Using default boot image
+11-15 14:05:38.410 I/AndroidRuntime(11680): Leaving lock profiling enabled
+11-15 14:05:38.475 D/AndroidRuntime(11680): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:39.491 D/AndroidRuntime(11680): Shutting down VM
+11-15 14:05:42.949 D/AndroidRuntime(12575): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:42.952 I/AndroidRuntime(12575): Using default boot image
+11-15 14:05:42.952 I/AndroidRuntime(12575): Leaving lock profiling enabled
+11-15 14:05:43.011 D/AndroidRuntime(12575): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:44.035 D/AndroidRuntime(12575): Shutting down VM
+11-15 14:05:44.959 I/SideSeatMeasure( 8287): app permissions {android.permission.RECORD_AUDIO=true, pleos.car.permission.FUSED_LOCATION=true, android.permission.POST_NOTIFICATIONS=true}
+11-15 14:05:44.960 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsAc
+11-15 14:05:45.022 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000340), distractionOptimized: true)
+11-15 14:05:45.103 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000339)
+11-15 14:05:45.120 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 14:05:49.994 D/AndroidRuntime(13957): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:49.997 I/AndroidRuntime(13957): Using default boot image
+11-15 14:05:49.997 I/AndroidRuntime(13957): Leaving lock profiling enabled
+11-15 14:05:50.058 D/AndroidRuntime(13957): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:51.076 D/AndroidRuntime(13957): Shutting down VM
+11-15 14:05:57.274 D/AndroidRuntime(15375): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:05:57.277 I/AndroidRuntime(15375): Using default boot image
+11-15 14:05:57.277 I/AndroidRuntime(15375): Leaving lock profiling enabled
+11-15 14:05:57.341 D/AndroidRuntime(15375): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:05:58.366 D/AndroidRuntime(15375): Shutting down VM
+11-15 14:05:59.259 I/SideSeatMeasure( 8287): app vehicle choice grandeur_gn7
+11-15 14:06:01.709 I/SideSeatMeasure( 8287): app mode HOME -> COACH
+11-15 14:06:01.712 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=true, activeRestrictions=80 (0x50) [UX_
+11-15 14:06:33.728 I/SideSeatMeasure( 8287): app coach say rule=K01 urgent=true '비가 와요. 전조등을 켜 주세요.'
+11-15 14:07:02.301 I/SideSeatMeasure( 8287): app mode COACH -> REVIEW
+11-15 14:07:02.304 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=false, activeRestrictions=0 (0x0) []
+11-15 14:07:04.938 D/AndroidRuntime(28477): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:07:04.946 I/AndroidRuntime(28477): Using default boot image
+11-15 14:07:04.946 I/AndroidRuntime(28477): Leaving lock profiling enabled
+11-15 14:07:05.062 D/AndroidRuntime(28477): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:07:06.352 D/AndroidRuntime(28477): Shutting down VM
+11-15 14:07:07.274 I/SideSeatMeasure( 8287): app mode REVIEW -> HOME
+11-15 14:07:09.388 D/AndroidRuntime(29360): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:07:09.390 I/AndroidRuntime(29360): Using default boot image
+11-15 14:07:09.390 I/AndroidRuntime(29360): Leaving lock profiling enabled
+11-15 14:07:09.452 D/AndroidRuntime(29360): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:07:10.483 D/AndroidRuntime(29360): Shutting down VM
+11-15 14:07:11.404 I/SideSeatMeasure( 8287): app mode HOME -> TRAINING
+11-15 14:07:14.549 I/SideSeatMeasure( 8287): scene3d perf {"fps":30,"ms":0.46,"q":1,"calls":12,"w":1683,"h":1210}
+11-15 14:07:21.474 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=true, activeRestrictions=80 (0x50) [UX_
+11-15 14:07:21.487 I/SideSeatMeasure( 8287): app mode TRAINING -> COACH
+11-15 14:07:25.275 I/SideSeatMeasure( 8287): app mode COACH -> REVIEW
+11-15 14:07:25.279 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=false, activeRestrictions=0 (0x0) []
+11-15 14:07:44.386 D/AndroidRuntime( 6807): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:07:44.393 I/AndroidRuntime( 6807): Using default boot image
+11-15 14:07:44.393 I/AndroidRuntime( 6807): Leaving lock profiling enabled
+11-15 14:07:44.481 D/AndroidRuntime( 6807): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:07:45.508 D/AndroidRuntime( 6807): Shutting down VM
+11-15 14:07:46.411 I/SideSeatMeasure( 8287): app mode REVIEW -> HOME
+11-15 14:07:46.559 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000340)
+11-15 14:07:47.425 D/AndroidRuntime( 7442): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:07:47.428 I/AndroidRuntime( 7442): Using default boot image
+11-15 14:07:47.428 I/AndroidRuntime( 7442): Leaving lock profiling enabled
+11-15 14:07:47.494 D/AndroidRuntime( 7442): Calling main entry com.android.commands.monkey.Monkey
+11-15 14:07:47.518 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000341), distractionOptimized: true)
+11-15 14:07:47.522 I/AndroidRuntime( 7442): VM exiting with result code 0.
+11-15 14:07:48.209 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsAc
+11-15 14:07:58.678 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsAc
+11-15 14:07:58.680 I/SideSeatMeasure( 7504): app permissions {android.permission.RECORD_AUDIO=false, pleos.car.permission.FUSED_LOCATION=false, android.permission.POST_NOTIFICATIONS=false}
+11-15 14:07:58.724 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000342), distractionOptimized: true)
+11-15 14:07:58.780 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 14:07:58.811 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000341)
+11-15 14:08:13.070 D/AndroidRuntime(12621): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:08:13.073 I/AndroidRuntime(12621): Using default boot image
+11-15 14:08:13.073 I/AndroidRuntime(12621): Leaving lock profiling enabled
+11-15 14:08:13.135 D/AndroidRuntime(12621): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:08:14.157 D/AndroidRuntime(12621): Shutting down VM
+11-15 14:08:15.053 I/SideSeatMeasure( 7504): app vehicle choice grandeur_gn7
+11-15 14:08:17.089 I/SideSeatMeasure( 7504): app mode HOME -> COACH
+11-15 14:08:17.093 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=true, activeRestrictions=80 (0x50) [UX_
+11-15 14:08:21.351 I/SideSeatMeasure( 7504): app mode COACH -> REVIEW
+11-15 14:08:21.354 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=false, activeRestrictions=0 (0x0) []
+11-15 14:08:35.020 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000342)
+11-15 14:08:35.774 D/AndroidRuntime(17043): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:08:35.777 I/AndroidRuntime(17043): Using default boot image
+11-15 14:08:35.777 I/AndroidRuntime(17043): Leaving lock profiling enabled
+11-15 14:08:35.845 D/AndroidRuntime(17043): Calling main entry com.android.commands.monkey.Monkey
+11-15 14:08:35.863 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000343), distractionOptimized: true)
+11-15 14:08:35.864 I/AndroidRuntime(17043): VM exiting with result code 0.
+11-15 14:08:36.492 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 14:08:41.977 D/AndroidRuntime(18329): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:08:41.980 I/AndroidRuntime(18329): Using default boot image
+11-15 14:08:41.980 I/AndroidRuntime(18329): Leaving lock profiling enabled
+11-15 14:08:42.048 D/AndroidRuntime(18329): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:08:43.072 D/AndroidRuntime(18329): Shutting down VM
+11-15 14:08:43.969 I/SideSeatMeasure(17092): app vehicle choice ray_tam
+11-15 14:08:46.001 I/SideSeatMeasure(17092): app mode HOME -> COACH
+11-15 14:08:46.008 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=true, activeRestrictions=80 (0x50) [UX_
+11-15 14:08:50.317 D/AndroidRuntime(19963): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:08:50.319 I/AndroidRuntime(19963): Using default boot image
+11-15 14:08:50.319 I/AndroidRuntime(19963): Leaving lock profiling enabled
+11-15 14:08:50.380 D/AndroidRuntime(19963): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:08:51.406 D/AndroidRuntime(19963): Shutting down VM
+11-15 14:09:04.154 I/SideSeatMeasure(17092): app mode COACH -> REVIEW
+11-15 14:09:04.220 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=false, activeRestrictions=0 (0x0) []
+11-15 14:09:06.268 D/AndroidRuntime(23057): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:09:06.271 I/AndroidRuntime(23057): Using default boot image
+11-15 14:09:06.271 I/AndroidRuntime(23057): Leaving lock profiling enabled
+11-15 14:09:06.338 D/AndroidRuntime(23057): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:09:08.689 D/AndroidRuntime(23057): Shutting down VM
+11-15 14:09:09.589 I/SideSeatMeasure(17092): app mode REVIEW -> HOME
+11-15 14:09:11.704 D/AndroidRuntime(24126): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:09:11.708 I/AndroidRuntime(24126): Using default boot image
+11-15 14:09:11.708 I/AndroidRuntime(24126): Leaving lock profiling enabled
+11-15 14:09:11.778 D/AndroidRuntime(24126): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:09:12.808 D/AndroidRuntime(24126): Shutting down VM
+11-15 14:09:13.706 I/SideSeatMeasure(17092): app mode HOME -> TRAINING
+11-15 14:09:16.516 I/SideSeatMeasure(17092): scene3d perf {"fps":30,"ms":0.53,"q":1,"calls":12,"w":1683,"h":1210}
+11-15 14:09:25.964 I/SideSeatMeasure(17092): app training C3 WARNING_LIGHT SUCCESS steps=meaning:1, action:1 result=WARNING_LIGHT★3 5722ms miss=[] pen=[]
+11-15 14:09:26.751 I/SideSeatMeasure(17092): scene3d perf {"fps":27.1,"ms":0.34,"q":1,"calls":12,"w":1683,"h":1210}
+11-15 14:09:29.010 I/SideSeatMeasure(17092): app mode TRAINING -> HOME
+11-15 14:09:31.108 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskRemoved] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (taskId: 1000343)
+11-15 14:09:31.173 D/AndroidRuntime(27929): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:09:31.176 I/AndroidRuntime(27929): Using default boot image
+11-15 14:09:31.176 I/AndroidRuntime(27929): Leaving lock profiling enabled
+11-15 14:09:31.252 D/AndroidRuntime(27929): Calling main entry com.android.commands.monkey.Monkey
+11-15 14:09:31.276 I/AndroidRuntime(27929): VM exiting with result code 0.
+11-15 14:09:31.308 I/HOME_SCREEN( 2843): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000344), distractionOptimized: true)
+11-15 14:09:32.024 I/HOME_SCREEN( 2843): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity}
+11-15 14:09:36.774 D/AndroidRuntime(29095): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-15 14:09:36.777 I/AndroidRuntime(29095): Using default boot image
+11-15 14:09:36.777 I/AndroidRuntime(29095): Leaving lock profiling enabled
+11-15 14:09:36.839 D/AndroidRuntime(29095): Calling main entry com.android.commands.uiautomator.Launcher
+11-15 14:09:37.871 D/AndroidRuntime(29095): Shutting down VM
+11-15 14:09:38.773 I/SideSeatMeasure(27988): app mode HOME -> COACH
+11-15 14:09:38.787 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=true, activeRestrictions=80 (0x50) [UX_
+11-15 14:09:43.061 I/SideSeatMeasure(27988): app mode COACH -> REVIEW
+11-15 14:09:43.072 D/HOME_SCREEN( 2843): [HOME_SCREEN][UxRestrictionRepositoryImpl::uxRestrictionsListener$lambda$0] UxRestrictionRepositoryImpl : isRequiresDistractionOptimization=false, activeRestrictions=0 (0x0) []
