@@ -86,7 +86,8 @@ fun CoachScreen(state: CoachUi, onAction: (UiAction) -> Unit, vehicle: VehicleSt
 private fun Header(state: CoachUi) {
     val sz = LocalSz.current
     Row(verticalAlignment = Alignment.CenterVertically) {
-        SeniorBadge(size = sz.dp(52f), speaking = state.talk.speaking)
+        // 주행 중에는 움직이지 않는다(작게, 가만히)
+        SeniorBadge(size = sz.dp(56f), still = true)
         Spacer(Modifier.width(sz.dp(16f)))
         Column {
             Text(Persona.NAME, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, maxLines = 1)

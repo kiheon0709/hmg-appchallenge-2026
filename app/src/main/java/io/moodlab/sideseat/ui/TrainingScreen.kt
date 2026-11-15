@@ -224,7 +224,7 @@ private fun BoxScope.SceneLoading() {
     Column(
         Modifier.fillMaxSize().background(Color(0xFF0B0E13)), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        SeniorBadge(size = sz.dp(96f))
+        SeniorBadge(size = sz.dp(120f), mood = TabiMood.IDLE)
         Spacer(Modifier.height(sz.dp(20f)))
         Text("길을 준비하는 중이에요…", color = Color.White, fontSize = sz.h2, fontWeight = FontWeight.SemiBold)
         Text("화면 말고 이 차의 진짜 스위치로 해요", color = Color(0xFFD5D9E0), fontSize = sz.body, modifier = Modifier.padding(top = sz.dp(8f)))
@@ -295,7 +295,11 @@ private fun HintBanner(view: TrainingView, modifier: Modifier) {
     // 힌트는 장면 효과(안개·김서림) 위에 바로 또렷하게 뜬다
     AnimatedVisibility(hint != null, modifier, enter = fadeIn(tween(120)) + slideInVertically(tween(160)) { it / 4 }, exit = fadeOut(tween(150)) + slideOutVertically(tween(150)) { it / 4 }) {
         AccentPanel(Sc.warn) {
-            Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Tabi(TabiMood.SPEAKING, size = sz.dp(40f), animated = false)
+                Spacer(Modifier.width(sz.dp(8f)))
+                Text("이렇게 해요", color = Sc.warn, fontSize = sz.caption, fontWeight = FontWeight.Medium)
+            }
             Text(hint.orEmpty(), color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.SemiBold, lineHeight = sz.body * 1.3f)
             if (where != null) Text(where, color = Sc.text, fontSize = sz.label, lineHeight = sz.label * 1.35f)
         }
@@ -312,7 +316,11 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
 
     AnimatedVisibility(view.phase == TrainingPhase.SUCCESS && result != null, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         AccentPanel(Sc.ok, padding = sz.dp(28f)) {
-            Column(modifier = Modifier.widthIn(min = sz.dp(340f))) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            // 장면 위에서는 타비가 멈춘 한 장면으로만 나온다(다시 그리는 횟수를 늘리지 않게)
+            Tabi(TabiMood.HAPPY, size = sz.dp(96f), animated = false)
+            Spacer(Modifier.width(sz.dp(18f)))
+            Column(modifier = Modifier.widthIn(min = sz.dp(300f))) {
                 // 내리기 전 확인은 점수를 매기지 않는다
                 val checkOnly = result?.id == SituationId.BEFORE_EXIT
                 if (!checkOnly) {
@@ -333,6 +341,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                     )
                 }
             }
+          }
         }
     }
     // 실패 판은 아래 힌트 판과 겹치지 않게 조금 위에 둔다
@@ -343,18 +352,25 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
         enter = enter, exit = exit,
     ) {
         AccentPanel(Sc.warn, padding = sz.dp(28f)) {
-            Column(modifier = Modifier.widthIn(min = sz.dp(340f), max = sz.dp(480f))) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Tabi(TabiMood.CHEER, size = sz.dp(96f), animated = false)
+            Spacer(Modifier.width(sz.dp(18f)))
+            Column(modifier = Modifier.widthIn(min = sz.dp(260f), max = sz.dp(400f))) {
                 Text("괜찮아요", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold)
                 Text(
                     if (view.canSkip) "한 번 더 해 볼게요. 넘어가려면 '다음 상황으로'를 눌러요." else "다음으로 넘어갈게요.",
                     color = Sc.textDim, fontSize = sz.body, fontWeight = FontWeight.Medium, lineHeight = sz.body * 1.3f,
                 )
             }
+          }
         }
     }
     // 챕터를 시작할 때 이 앱의 핵심을 한 번 크게 알려 준다: 화면이 아니라 이 차의 스위치로 답한다
     AnimatedVisibility(view.opening, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
         AccentPanel(Sc.accent, padding = sz.dp(30f)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Tabi(TabiMood.SPEAKING, size = sz.dp(110f), animated = false)
+            Spacer(Modifier.width(sz.dp(20f)))
             Column(modifier = Modifier.widthIn(max = sz.dp(700f))) {
                 Text("화면 말고, 이 차의 진짜 스위치로 해요", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Bold, lineHeight = sz.title * 1.25f)
                 Text(
@@ -362,6 +378,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                     color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.35f, modifier = Modifier.padding(top = sz.dp(10f)),
                 )
             }
+          }
         }
     }
     AnimatedVisibility(view.phase == TrainingPhase.CHAPTER_DONE, Modifier.align(Alignment.Center), enter = enter, exit = exit) {
@@ -370,6 +387,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                 val res = view.chapterResult
                 // 끝내지 못한 상황이 있으면 "완료!"라고 하지 않고, 하나도 못 버텼으면 "버텼어요!"라고 하지 않는다
                 val unfinished = res?.results?.any { it.stars == 0 } == true
+                Tabi(if (unfinished || (view.chapterId == ChapterCatalog.SURPRISE && view.surviveCount == 0)) TabiMood.CHEER else TabiMood.HAPPY, size = sz.dp(96f), animated = false)
                 Text(
                     when {
                         view.chapterId == ChapterCatalog.SURPRISE && view.surviveCount == 0 -> "이번엔 못 버텼어요"

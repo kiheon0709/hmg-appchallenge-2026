@@ -154,7 +154,7 @@ private fun Senior(state: ReviewUi, onAction: (UiAction) -> Unit, modifier: Modi
         verticalArrangement = Arrangement.spacedBy(sz.dp(14f)),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            SeniorBadge(speaking = state.talk.speaking)
+            SeniorBadge(size = sz.dp(88f), mood = state.talk.mood())
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
                 Text("${Persona.NAME} 한마디", color = Sc.text, fontSize = sz.h2, fontWeight = FontWeight.Medium)

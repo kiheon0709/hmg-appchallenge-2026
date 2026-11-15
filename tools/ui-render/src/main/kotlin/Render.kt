@@ -1,3 +1,5 @@
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -98,6 +100,8 @@ fun main(args: Array<String>) {
         val res = UiSamples.chapterResult.copy(results = UiSamples.chapterResult.results.map { if (it.id == SituationId.SUDDEN_STOP) it.copy(stars = 0, reactionMs = null, missedStepIds = listOf("brake")) else it })
         TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = res), c) {}
     }
+    // v22: 타비 캐릭터의 상태 일곱 가지
+    for (dark in listOf(false, true)) if (want("v22_tabi")) shoot("v22_tabi_moods${if (dark) "_night" else ""}", 1682, 520, dark, 0f, 0.3f) { TabiSheet() }
     // v21: 소개 → 차종 고르기 → 홈(상태별)
     for (dark in listOf(false, true)) {
         val n = if (dark) "_night" else ""
@@ -152,4 +156,26 @@ fun main(args: Array<String>) {
     coach("c_k01_night", true, UiSamples.coach)
     coach("c_long_night", true, CoachUi(lastLine = "앞유리에 김이 설 수 있어요. 외기로 바꾸거나 에어컨을 켜 보세요.", wake = WakeUi.YIELDED))
     coach("c_portrait", false, UiSamples.coach, w = 835, h = 1210)
+}
+
+@Composable
+fun TabiSheet() {
+    SideSeatFrame { sz ->
+        androidx.compose.foundation.layout.Row(
+            androidx.compose.ui.Modifier.fillMaxSize().padding(sz.pad),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            val names = mapOf(
+                TabiMood.IDLE to "가만히", TabiMood.SPEAKING to "말하는 중", TabiMood.LISTENING to "듣는 중", TabiMood.HAPPY to "기쁨",
+                TabiMood.SURPRISED to "놀람", TabiMood.THINKING to "생각 중", TabiMood.CHEER to "격려",
+            )
+            TabiMood.entries.forEach { m ->
+                androidx.compose.foundation.layout.Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Tabi(m, size = androidx.compose.ui.unit.Dp(150f), animated = false)
+                    androidx.compose.material3.Text(names.getValue(m), color = Sc.text, fontSize = sz.label)
+                }
+            }
+        }
+    }
 }

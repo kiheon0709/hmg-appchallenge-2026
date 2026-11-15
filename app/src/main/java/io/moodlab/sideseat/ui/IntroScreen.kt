@@ -184,7 +184,7 @@ private fun IntroVisual(page: Int, modifier: Modifier) {
         when (page) {
             0 -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 // 세로 창은 그림 자리가 낮아서 작게 그린다
-                SeniorBadge(size = sz.dp(if (sz.wide) 200f else 104f))
+                SeniorBadge(size = sz.dp(if (sz.wide) 230f else 110f), mood = TabiMood.HAPPY)
                 Spacer(Modifier.height(sz.dp(if (sz.wide) 22f else 8f)))
                 Text(Persona.NAME, color = Color.White, fontSize = if (sz.wide) sz.display else sz.title, fontWeight = FontWeight.Bold)
                 Text("옆자리 운전 코치", color = Color(0xFFD5D9E0), fontSize = if (sz.wide) sz.h2 else sz.label, fontWeight = FontWeight.Medium)
@@ -192,7 +192,7 @@ private fun IntroVisual(page: Int, modifier: Modifier) {
             1 -> Column(Modifier.align(Alignment.BottomStart).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.dp(12f))) {
                 // 달릴 때의 화면처럼: 타비가 한 문장으로 말한다
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SeniorBadge(size = sz.dp(64f))
+                    SeniorBadge(size = sz.dp(84f), mood = TabiMood.SPEAKING)
                     Spacer(Modifier.width(sz.dp(14f)))
                     Text(Persona.NAME, color = Color.White, fontSize = sz.h2, fontWeight = FontWeight.Bold)
                 }
@@ -203,7 +203,11 @@ private fun IntroVisual(page: Int, modifier: Modifier) {
                 verticalArrangement = Arrangement.spacedBy(sz.dp(14f)),
             ) {
                 // 훈련 화면의 조작 목록처럼: 실제 스위치를 움직이면 체크된다
-                Text("차의 진짜 스위치로 해요", color = Color(0xFFA6ABB5), fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Tabi(TabiMood.CHEER, size = sz.dp(64f))
+                    Spacer(Modifier.width(sz.dp(12f)))
+                    Text("차의 진짜 스위치로 해요", color = Color(0xFFA6ABB5), fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
+                }
                 Check("와이퍼 빠르게", done = true)
                 Check("전조등 켜기", done = true)
                 Check("비상등 켜기", done = false)

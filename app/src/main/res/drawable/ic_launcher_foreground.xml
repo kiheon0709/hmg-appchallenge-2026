@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 앱 아이콘 앞 그림: 홈의 타비 표식과 같다(운전자 옆자리에 앉은 타비). 좌표는 108dp 틀의 가운데 60dp 안. -->
+<!-- 앱 아이콘 앞 그림: 타비 캐릭터(ui/Tabi.kt와 같은 모양). 좌표는 108dp 틀의 가운데 66dp 안. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#73FFFFFF" android:pathData="M34.5,52.2 a4.5,4.5 0 1,0 9.0,0 a4.5,4.5 0 1,0 -9.0,0 Z" />
-    <path android:fillColor="#73FFFFFF" android:pathData="M39.0,58.8 H39.0 A7.2,7.2 0 0 1 46.2,66.0 V71.4 A3,3 0 0 1 43.2,74.4 H34.8 A3,3 0 0 1 31.8,71.4 V66.0 A7.2,7.2 0 0 1 39.0,58.8 Z" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M63.0,36 H63.0 A13.2,13.2 0 0 1 76.2,49.2 V68.4 A6,6 0 0 1 70.2,74.4 H55.8 A6,6 0 0 1 49.8,68.4 V49.2 A13.2,13.2 0 0 1 63.0,36 Z" />
-    <path android:fillColor="#FF2563EB" android:pathData="M56.0,50.4 a2.5,2.5 0 1,0 5.0,0 a2.5,2.5 0 1,0 -5.0,0 Z" />
-    <path android:fillColor="#FF2563EB" android:pathData="M65.0,50.4 a2.5,2.5 0 1,0 5.0,0 a2.5,2.5 0 1,0 -5.0,0 Z" />
-    <path android:strokeColor="#FF2563EB" android:strokeWidth="2.1" android:strokeLineCap="round"
-        android:pathData="M66.53,56.89 A3.9,3.3 0 0 1 59.47,56.89" />
+    <path android:strokeColor="#FF2F6BF2" android:strokeWidth="5.61" android:strokeLineCap="round" android:pathData="M73.8,58.62 L82.99,52.18" />
+    <path android:fillColor="#FF2F6BF2" android:pathData="M54.0,30.9 C69.84,29.58 79.08,44.1 77.76,58.62 C77.1,71.82 67.2,77.1 54.0,77.1 C39.48,77.1 30.24,70.5 30.9,57.3 C31.56,41.46 40.8,31.56 54.0,30.9 Z M49.38,33.54 C47.4,27.6 50.04,23.64 54.0,24.3 C53.34,27.6 55.32,30.24 58.62,32.22 Z" />
+    <path android:fillColor="#FF0B1533" android:pathData="M43.84,51.36 a3.56,6.47 0 1,0 7.13,0 a3.56,6.47 0 1,0 -7.13,0 Z" />
+    <path android:fillColor="#FF0B1533" android:pathData="M58.36,51.36 a3.56,6.47 0 1,0 7.13,0 a3.56,6.47 0 1,0 -7.13,0 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M47.07,48.46 a1.39,1.39 0 1,0 2.77,0 a1.39,1.39 0 1,0 -2.77,0 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M61.59,48.46 a1.39,1.39 0 1,0 2.77,0 a1.39,1.39 0 1,0 -2.77,0 Z" />
 </vector>

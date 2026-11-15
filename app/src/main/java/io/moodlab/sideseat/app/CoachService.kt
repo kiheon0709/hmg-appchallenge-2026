@@ -62,7 +62,7 @@ class CoachService : Service() {
             PendingIntent.FLAG_IMMUTABLE,
         )
         return Notification.Builder(this, CHANNEL)
-            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setSmallIcon(io.moodlab.sideseat.R.drawable.ic_stat_tabi)
             .setContentTitle("타비")
             .setContentText(text)
             .setContentIntent(open)

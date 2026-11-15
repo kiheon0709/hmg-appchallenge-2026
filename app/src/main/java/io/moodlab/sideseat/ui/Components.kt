@@ -298,32 +298,13 @@ fun TalkCaption(talk: TalkUi, modifier: Modifier = Modifier, maxLines: Int = 4) 
 }
 
 /**
- * 앱 표식. 앱과 코치의 이름이 같은 "타비"라서 표식도 타비다: 운전자(왼쪽, 흐리게) 옆자리에 앉은 둥근 얼굴의 타비.
- * 캐릭터 그림이 정해지면 여기만 바꾼다(홈·코치·리뷰가 같이 쓴다).
+ * 타비가 나오는 자리(홈·코치·리뷰·소개). 캐릭터는 [Tabi]가 그린다.
+ * @param mood 기분을 직접 정할 때. 없으면 [speaking]으로 말하는 중인지 가만히인지만 가린다
+ * @param still 움직이지 않는다(주행 중 화면)
  */
 @Composable
-fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f), speaking: Boolean = false) {
-    val path = remember { Path() }
-    Canvas(modifier.size(size)) {
-        val s = this.size.minDimension
-        // 표식 색은 주간·야간에 같다
-        val c = Color.White; val tile = Color(0xFF2563EB)
-        drawRoundRect(tile, size = Size(s, s), cornerRadius = CornerRadius(s * 0.3f))
-        // 운전자: 머리와 어깨
-        val dim = c.copy(alpha = 0.45f)
-        drawCircle(dim, s * 0.075f, Offset(s * 0.25f, s * 0.47f))
-        path.rewind()
-        path.addRoundRect(RoundRect(Rect(s * 0.13f, s * 0.58f, s * 0.37f, s * 0.84f), topLeft = CornerRadius(s * 0.12f), topRight = CornerRadius(s * 0.12f), bottomRight = CornerRadius(s * 0.05f), bottomLeft = CornerRadius(s * 0.05f)))
-        drawPath(path, dim)
-        // 타비: 둥근 몸에 두 눈과 웃는 입
-        path.rewind()
-        path.addRoundRect(RoundRect(Rect(s * 0.43f, s * 0.2f, s * 0.87f, s * 0.84f), topLeft = CornerRadius(s * 0.22f), topRight = CornerRadius(s * 0.22f), bottomRight = CornerRadius(s * 0.1f), bottomLeft = CornerRadius(s * 0.1f)))
-        drawPath(path, c)
-        drawCircle(tile, s * 0.042f, Offset(s * 0.575f, s * 0.44f))
-        drawCircle(tile, s * 0.042f, Offset(s * 0.725f, s * 0.44f))
-        drawArc(tile, 25f, 130f, false, Offset(s * 0.585f, s * 0.47f), Size(s * 0.13f, s * 0.11f), style = Stroke(s * 0.035f, cap = StrokeCap.Round))
-        if (speaking) drawRoundRect(c.copy(alpha = 0.7f), Offset(s * 0.04f, s * 0.04f), Size(s * 0.92f, s * 0.92f), CornerRadius(s * 0.26f), style = Stroke(s * 0.035f))
-    }
+fun SeniorBadge(modifier: Modifier = Modifier, size: Dp = LocalSz.current.dp(72f), speaking: Boolean = false, mood: TabiMood? = null, still: Boolean = false) {
+    Tabi(mood ?: if (speaking) TabiMood.SPEAKING else TabiMood.IDLE, modifier, size, animated = !still)
 }
 
 @Composable

@@ -107,6 +107,8 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
                     Image(art, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop, alignment = BiasAlignment(0f, 0.5f))
                     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to HeroBase.copy(alpha = 0.12f), 0.55f to HeroBase.copy(alpha = 0f), 1f to HeroBase)))
                 }
+                // 타비가 대표 카드에서 살아 움직인다: 듣는 중·생각 중·말하는 중이 그대로 보인다
+                Tabi(state.talk.mood(), Modifier.align(Alignment.BottomEnd).padding(end = sz.dp(22f)), size = sz.dp(if (sz.wide) 150f else 104f))
             }
             HeroText(state, onAction)
         }
@@ -115,7 +117,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
                 .padding(start = sz.dp(10f), top = sz.dp(10f), end = sz.dp(22f), bottom = sz.dp(10f)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SeniorBadge(size = sz.dp(60f), speaking = state.talk.speaking)
+            SeniorBadge(size = sz.dp(60f), still = true)
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
                 Text(Persona.NAME, color = HeroWhite, fontSize = sz.sp(28f), fontWeight = FontWeight.Bold)
@@ -221,7 +223,7 @@ private fun TalkArea(state: HomeUi, onAction: (UiAction) -> Unit) {
         // 타비가 한 말(또는 듣는 중인 내 말)은 말풍선 카드로, 질문하기는 그 아래 버튼으로 나눈다
         if (!state.talk.partialText.isNullOrBlank() || !state.talk.answerText.isNullOrBlank()) {
             Row(Modifier.fillMaxWidth().card().padding(sz.dp(18f))) {
-                SeniorBadge(size = sz.dp(44f), speaking = state.talk.speaking)
+                SeniorBadge(size = sz.dp(56f), mood = state.talk.mood())
                 Spacer(Modifier.width(sz.dp(14f)))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(sz.dp(4f))) {
                     Text(Persona.NAME, color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold)

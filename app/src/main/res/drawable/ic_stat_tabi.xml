@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 알림 아이콘: 타비의 윤곽(한 가지 색, 눈은 뚫려 있다). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="2.04" android:strokeLineCap="round" android:pathData="M19.2,13.68 L22.54,11.34" />
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd" android:pathData="M12.0,3.6 C17.76,3.12 21.12,8.4 20.64,13.68 C20.4,18.48 16.8,20.4 12.0,20.4 C6.72,20.4 3.36,18.0 3.6,13.2 C3.84,7.44 7.2,3.84 12.0,3.6 Z M10.32,4.56 C9.6,2.4 10.56,0.96 12.0,1.2 C11.76,2.4 12.48,3.36 13.68,4.08 Z M8.3,11.04 a1.3,2.35 0 1,0 2.59,0 a1.3,2.35 0 1,0 -2.59,0 Z M13.58,11.04 a1.3,2.35 0 1,0 2.59,0 a1.3,2.35 0 1,0 -2.59,0 Z" />
+</vector>

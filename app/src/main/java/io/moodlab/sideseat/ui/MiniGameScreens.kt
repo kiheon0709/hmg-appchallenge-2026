@@ -72,7 +72,11 @@ fun SafeDialScreen(view: SafeDialView, onAction: (UiAction) -> Unit) {
         val info: @Composable (Modifier) -> Unit = { m ->
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                 Chip("미니게임", color = Sc.textDim, bg = Sc.surface)
-                Text("금고 다이얼", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Tabi(if (view.done) TabiMood.HAPPY else TabiMood.IDLE, size = sz.dp(88f))
+                    Spacer(Modifier.width(sz.dp(14f)))
+                    Text("금고 다이얼", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(sz.dp(12f))) {
                     view.targetsDeg.forEachIndexed { i, _ ->
                         val solved = i < view.solved || view.done
@@ -211,7 +215,11 @@ fun TurnSignalGameScreen(view: TurnSignalGameView, onAction: (UiAction) -> Unit)
             verticalArrangement = Arrangement.spacedBy(sz.gap), horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Chip("미니게임 · ${view.round}라운드", color = Sc.textDim, bg = Sc.surface)
-            Text("깜빡이 모스", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                    Tabi(TabiMood.IDLE, size = sz.dp(88f))
+                    Spacer(Modifier.width(sz.dp(14f)))
+                    Text("깜빡이 모스", color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold)
+                }
             Text(
                 when (view.phase) {
                     MiniGamePhase.SHOW -> "순서를 잘 보세요"

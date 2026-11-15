@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +37,12 @@ fun ResultScreen(result: ChapterResult, progress: TrainingProgress, bestBefore: 
         val singleId = result.results.firstOrNull()?.id
         val summary: @Composable (Modifier) -> Unit = { m ->
             Column(m, verticalArrangement = Arrangement.spacedBy(sz.gap)) {
-                Chip(if (single) "1분 연습 결과" else "훈련 결과", color = Sc.textDim, bg = Sc.surface)
+                val earned = result.results.sumOf { it.stars }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Tabi(if (earned * 2 >= result.results.size * 3) TabiMood.HAPPY else TabiMood.CHEER, size = sz.dp(96f))
+                    Spacer(Modifier.width(sz.dp(14f)))
+                    Chip(if (single) "1분 연습 결과" else "훈련 결과", color = Sc.textDim, bg = Sc.surface)
+                }
                 Text(if (single && singleId != null) SituationTexts.title(singleId) else SituationTexts.chapterTitle(result.chapterId), color = Sc.text, fontSize = sz.display, fontWeight = FontWeight.SemiBold, maxLines = 2)
                 val scored = result.results.filter { it.id != SituationId.BEFORE_EXIT }
                 if (scored.isEmpty()) {
