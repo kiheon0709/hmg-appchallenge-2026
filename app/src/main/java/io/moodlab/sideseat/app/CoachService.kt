@@ -41,7 +41,8 @@ class CoachService : Service() {
         Log.i("SideSeatMeasure", "app coach service started")
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
+    // 프로세스가 정리된 뒤 시스템이 화면 없이 다시 띄우면 Android 14가 startForeground를 막아 앱이 죽는다 → 다시 띄우지 않게 한다
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -52,8 +53,14 @@ class CoachService : Service() {
 
     private fun startInForeground(text: String) {
         val n = notification(text)
-        if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        else startForeground(ID, n)
+        // 화면이 앞에 없을 때는 막힐 수 있다. 막히면 죽지 않고 서비스를 끝낸다(앱을 열면 다시 시작된다)
+        runCatching {
+            if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+            else startForeground(ID, n)
+        }.onFailure {
+            Log.w("SideSeatMeasure", "app coach service foreground not allowed: ${it.javaClass.simpleName}")
+            stopSelf()
+        }
     }
 
     private fun notification(text: String): Notification {
