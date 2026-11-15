@@ -388,3 +388,14 @@
 ### 정리 상태
 
 에뮬레이터를 끄기 전 release APK(`-g` 설치, 차종 레이, 경고등 ★3 기록)가 깔려 있었어요. Wi‑Fi는 켜 두었어요. `adb emu kill`로 껐어요(`adb devices` 비어 있음, `qemu-system-aarch64` 없음).
+
+### 재확인 2차 — 중간 보고 (14:06)
+
+차량 신호를 살린 에뮬레이터에서 1·2번을 먼저 확인했어요. **치명 1번은 수정본에서 고쳐진 것으로 확인했어요.**
+
+| # | 결과 | 증거 |
+| --- | --- | --- |
+| 1 | ✅ 앱을 지우고 `-g` 없이 설치 → 권한 셋을 화면에서 허용 → 새 태스크 1000340으로 다시 열리고 옛 태스크 1000339는 지워짐 → 차종(그랜저) → 홈 → Gear D: **코치 화면이 그대로 보임**(한 줄 안내, 전조등·와이퍼·공기, "질문하기", 호출어 안내). 홈 화면 로그에 주행 제한 영역(`updateDrivingRestrictionRegion`) 0건 | `shots/recheck2_1a_perm_dialog.jpg`, `recheck2_1b_home.jpg`, `recheck2_1c_drive_coach.jpg` |
+| 2 | ✅ 와이퍼 Low + 전조등 Off 20초 → K01 "비가 와요. 전조등을 켜 주세요."가 화면에 크게 뜨고 음성 재생(`tts start`), 와이퍼 "1단" 표시 | `shots/recheck2_2_k01.jpg` |
+
+**1차 재확인에서 차량 신호가 안 켜진 원인은 제 점검이었어요.** 첫 점검의 L9(네트워크 끊김) 시험에서 `svc wifi disable`과 함께 `svc data disable`을 했고, Wi‑Fi만 다시 켜고 모바일 데이터는 켜지 않았어요. 이 에뮬레이터에서는 모바일 데이터가 eth0를 쓰는 것으로 보여요. 그 순간(04:01:54) eth0 링크가 내려갔고(`EthernetTracker: interfaceLinkStateChanged, iface: eth0, up: false`), `mobile_data=0` 설정이 남아 그 뒤의 모든 부팅에서 eth0에 IPv4가 없었어요. 맥 네트워크 탓이라는 1차 추정은 틀렸어요. 부팅 직후 `adb shell svc data enable`로 되돌리자 eth0가 `10.0.2.15`를 받고 Virtual Console이 살아났어요(`bridge_ready=true`, `dds_ready.all=true`). 개발 쪽 부팅에서 차량 신호가 꺼져 있던 것도 같은 원인으로 보여요.
