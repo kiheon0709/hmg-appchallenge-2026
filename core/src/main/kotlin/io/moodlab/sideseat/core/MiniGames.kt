@@ -102,7 +102,7 @@ class DefaultTurnSignalGame(private val config: TurnSignalGameConfig = TurnSigna
         if (round >= config.maxRounds) {
             phase = MiniGamePhase.DONE
             events += CoachEvent.Sfx("success")
-            events += CoachEvent.Say("완벽해요! ${score}라운드 다 맞혔어요.")
+            events += CoachEvent.Say("칭찬해요! ${score}라운드 다 맞혔어요.")
         } else {
             phase = MiniGamePhase.ROUND_CLEAR
             phaseStartMs = nowMs

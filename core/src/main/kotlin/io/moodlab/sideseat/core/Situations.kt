@@ -123,6 +123,12 @@ object SituationCatalog {
     private const val MIRROR_LESSON = "사이드미러도 뿌옇게 돼요. 열선을 켜요."
     internal const val HYDRO_TOO_FAST = "물 고인 곳에 닿기 전에 미리 속도를 줄여요. 브레이크는 나눠서 밟아요."
     internal const val HYDRO_STEADY = "물 위에서는 급하게 밟거나 꺾지 않아요. 그대로 지나가요."
+    /**
+     * 감속(급정거는 브레이크)이 끝나면 타비가 한 번 권하는 말(v26). 비상등은 일반 앱이 읽을 수 없어 판정하지 않고, 묻지도 않는다.
+     * 법령 근거는 없는 통상 권고이고 사용자 결정으로 권한다(TrainingConfig.lowVisibilityHazardStep, safety-sources.md 16번).
+     */
+    internal const val HAZARD_TIP = "비상등도 켜 주세요."
+    internal const val ROUNDABOUT_NO_SIGNAL = "들어가기 전에 왼쪽 깜빡이를 먼저 켜요."
     internal const val ROUNDABOUT_YIELD_LINE = "회전교차로 안에서 도는 차가 먼저예요. 양보선에서 멈춰서 그 차를 보내요."
 
     private val lowBeamOn = StepDef(
@@ -141,23 +147,8 @@ object SituationCatalog {
         doneWithSpeedRatio = { _, ratio -> ratio <= fraction },
     )
 
-    private val hazardConfirm = StepDef(
-        id = "hazard_confirm", label = "비상등 켜기", hint = HAZARD_HINT,
-        choice = ChoiceDef(
-            question = "비상등 켰나요?",
-            options = listOf(
-                ChoiceOption("네, 켰어요", listOf("네", "응", "예", "켰", "그래")),
-                ChoiceOption("아직이요", listOf("아직", "아니", "안 켰", "안켰")),
-            ),
-            correct = 0,
-            wrongLine = "빨간 삼각형 비상등 버튼을 눌러요. 켰으면 '응'이라고 해 주세요.",
-            replyKind = ReplyKind.YES_NO,
-            penaltyFree = true,
-        ),
-    )
-
     private fun sightFirst(config: TrainingConfig, label: String, hint: String, fraction: Float = config.fogSlowFraction): List<StepDef> =
-        listOfNotNull(slowDown(config, label, hint, fraction), hazardConfirm.takeIf { config.lowVisibilityHazardStep })
+        listOf(slowDown(config, label, hint, fraction))
 
     private fun hazardWords(config: TrainingConfig) =
         if (config.lowVisibilityHazardStep) "급하게 밟지 말고 나눠서 지그시 속도부터 줄이고 비상등을 켜요." else "급하게 밟지 말고 나눠서 지그시 속도부터 줄여요."
@@ -221,7 +212,6 @@ object SituationCatalog {
                     hint = "앞차 브레이크등이 보이면 바로 브레이크예요.", setup = "브레이크에서 발을 떼 주세요",
                     available = { it.brakePressed != null }, done = { it.brakePressed == true },
                 ),
-                hazardConfirm.takeIf { config.lowVisibilityHazardStep },
             ),
             penalties = listOf(
                 PenaltyDef("STEER_JERK", "핸들을 급하게 꺾으면 더 위험해요. 브레이크가 먼저예요.") { c -> SteerJerkDetector(c) },

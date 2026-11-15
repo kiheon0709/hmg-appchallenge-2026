@@ -76,7 +76,6 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     /** 교관 대결에서 이 상황 하나만 하고 끝낸다(리뷰의 "1분 연습"). */
     private var single = false
     /** "비상등은 제가 볼 수 없어서 여쭤봐요"는 한 번의 훈련에서 한 번만 말한다. */
-    private var hazardExplained = false
     private var wiperSfxOn = false
     private val events = mutableListOf<CoachEvent>()
     private val scene = SceneSim(config)
@@ -277,7 +276,6 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         lastSituation = null
         upcoming = null
         single = false
-        hazardExplained = false
     }
 
     private fun enterCruise(nowMs: Long, first: Boolean) {
@@ -402,6 +400,10 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                 if (nowMs - since >= step.holdMs) {
                     r.doneAt[step.id] = since
                     events += CoachEvent.Sfx("click")
+                    // 감속이 끝나면 비상등을 권하기만 한다(묻거나 판정하지 않는다)
+                    if (config.lowVisibilityHazardStep && r.def.id in HAZARD_TIP_AFTER && step.id == HAZARD_TIP_AFTER[r.def.id]) {
+                        say(SituationCatalog.HAZARD_TIP, priority = 1)
+                    }
                 }
             } else {
                 r.holdSince.remove(step.id)
@@ -428,6 +430,13 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                 r.steadySaid = true
                 say(SituationCatalog.HYDRO_STEADY, priority = 1)
             }
+        }
+        // 회전교차로: 깜빡이 없이 들어갔으면(진입까지 했으면) 실패로 두지 않고 감점하고 끝낸다
+        if (r.def.id == SituationId.ROUNDABOUT_ENTRY && "enter" in r.doneAt && "signal_left" !in r.doneAt && r.steps.any { it.id == "signal_left" }) {
+            r.doneAt["signal_left"] = nowMs
+            if (r.penalties.add("ROUNDABOUT_NO_SIGNAL")) say(SituationCatalog.ROUNDABOUT_NO_SIGNAL, priority = 1)
+            succeed(r, nowMs)
+            return
         }
         // 회전교차로: 도는 차를 보내기 전에 양보선을 넘으면 실패
         if (r.def.id == SituationId.ROUNDABOUT_ENTRY && "yield_slow" !in r.doneAt && scene.ringEntered) {
@@ -458,9 +467,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         r.choiceAsked = step.id
         if (c.replyKind == ReplyKind.YES_NO) {
             // 비상등 신호는 앱이 읽을 수 없어 말로 확인한다. 왜 묻는지 처음 한 번 알려 준다
-            val why = if (step.id == "hazard_confirm" && !hazardExplained) "비상등은 제가 볼 수 없어서 여쭤봐요. " else ""
-            if (step.id == "hazard_confirm") hazardExplained = true
-            say(why + c.question, priority = 1, expectReply = ReplyKind.YES_NO)
+            say(c.question, priority = 1, expectReply = ReplyKind.YES_NO)
             return
         }
         val options = c.options.mapIndexed { i, o -> "${i + 1}번, ${o.text}." }.joinToString(" ")
@@ -535,9 +542,9 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         }
         return when {
             sec == null -> "좋아요."
-            // 비상 상황은 별 3개여도 "완벽"이라고 하지 않는다(숙달했다는 말이 과신을 키운다)
+            // 비상 상황은 별 3개여도 칭찬 대신 사실만 말한다(숙달했다는 말이 과신을 키운다)
             stars >= 3 && r.def.id in EMERGENCIES -> "순서를 지켰어요. ${sec}초 걸렸어요."
-            stars >= 3 -> "완벽해요. ${sec}초 걸렸어요."
+            stars >= 3 -> "칭찬해요. ${sec}초 걸렸어요."
             stars == 2 -> "좋아요. ${sec}초 걸렸어요."
             r.penalties.isNotEmpty() -> "됐어요. ${sec}초. 다음엔 감점 없이 해 봐요."
             else -> "됐어요. ${sec}초, 조금 늦었지만 다 했어요."
@@ -729,7 +736,12 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private companion object {
         /** 스위치를 되돌린 뒤 상황이 터지기까지 숨 고를 시간. */
         const val SETUP_SETTLE_MS = 1_000L
-        /** 별 3개여도 "완벽해요"라고 하지 않는 상황. 수막현상은 따로 정한 성공 대사를 쓴다. */
+        /** 별 3개여도 "칭찬해요" 대신 "순서를 지켰어요"라고 하는 상황. 수막현상은 따로 정한 성공 대사를 쓴다. */
+        /** 이 단계가 끝나면 "비상등도 켜 주세요."라고 권한다. */
+        val HAZARD_TIP_AFTER = mapOf(
+            SituationId.HEAVY_RAIN to "slow_down", SituationId.FOGGED_WINDSHIELD to "slow_down",
+            SituationId.DENSE_FOG to "slow_down", SituationId.SUDDEN_STOP to "brake",
+        )
         val EMERGENCIES = setOf(SituationId.UNINTENDED_ACCEL, SituationId.BREAKDOWN, SituationId.SUDDEN_STOP)
     }
 }
@@ -916,7 +928,10 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.ROUNDABOUT_ENTRY) && "enter" in doneSteps -> approach(speed, config.roundaboutEnterKmh, 15f, dt)
             on(SituationId.ROUNDABOUT_ENTRY) && phase == TrainingPhase.FAIL -> approach(speed, 0f, 40f, dt)
             on(SituationId.ROUNDABOUT_ENTRY) && braking && ringM > config.roundaboutStopM ->
-                approach(speed, config.roundaboutCreepKmh, config.brakeDecelKmhPerSec, dt)
+                minOf(approach(speed, config.roundaboutCreepKmh, config.brakeDecelKmhPerSec, dt), stopBeforeLineKmh())
+            // 양보선 앞에서 밟고 있으면 선을 넘지 않고 선다(늦게 밟아도 실제 차처럼 더 세게 밟아 선 앞에 멈춘다)
+            on(SituationId.ROUNDABOUT_ENTRY) && braking ->
+                minOf((speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f), stopBeforeLineKmh())
             // 수막현상: 계속 밟고 있어도 평소 속도의 절반 아래로는 줄지 않는다(멈춰 서서 물 고인 곳에 닿지 못하는 일이 없게)
             on(SituationId.HYDROPLANING) -> {
                 val floor = cruiseKmh * 0.5f
@@ -1006,6 +1021,13 @@ internal class SceneSim(private val config: TrainingConfig) {
         ringPassSec = if (ringAhead) ringPassMs / 1000f else null,
         puddleM = if (puddleAhead) puddleM else null,
     )
+
+    /** 회전교차로: 양보선 0.5m 앞에 설 수 있는 가장 빠른 속도(km/h). 보통 브레이크의 두 배 세기로 본다. */
+    private fun stopBeforeLineKmh(): Float {
+        val room = (ringM - 0.5f).coerceAtLeast(0f)
+        val decel = config.brakeDecelKmhPerSec / 3.6f * 2f
+        return kotlin.math.sqrt(2f * decel * room) * 3.6f
+    }
 
     private fun approach(cur: Float, target: Float, ratePerSec: Float, dt: Float): Float {
         val step = ratePerSec * dt

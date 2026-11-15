@@ -348,9 +348,9 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
                     Spacer(Modifier.height(sz.dp(12f)))
                 }
                 Text(
-                    // 비상 상황은 별 3개여도 "완벽"이라고 하지 않는다(숙달했다는 말이 과신을 키운다)
+                    // 비상 상황은 별 3개여도 칭찬 대신 사실만 말한다(숙달했다는 말이 과신을 키운다)
                     if (checkOnly) "확인 완료" else when (result?.stars) {
-                        3 -> if (result.id in EMERGENCY_RESULTS) "순서를 지켰어요" else "완벽해요!"
+                        3 -> if (result.id in EMERGENCY_RESULTS) "순서를 지켰어요" else "칭찬해요!"
                         2 -> "좋아요!"
                         else -> "됐어요!"
                     },
@@ -441,7 +441,7 @@ private fun BoxScope.CenterOverlays(view: TrainingView, onAction: (UiAction) -> 
     }
 }
 
-/** 결과 화면에서 "완벽해요!" 대신 사실 문장을 쓰는 상황. */
+/** 결과 화면에서 "칭찬해요!" 대신 사실 문장을 쓰는 상황. */
 private val EMERGENCY_RESULTS = setOf(
     SituationId.HYDROPLANING, SituationId.UNINTENDED_ACCEL, SituationId.SUDDEN_STOP, SituationId.BREAKDOWN,
 )

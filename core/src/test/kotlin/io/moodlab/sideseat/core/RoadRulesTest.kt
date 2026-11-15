@@ -194,53 +194,47 @@ class RoadRulesTest {
     }
 
     @Test
-    fun `hazard confirmation is asked right after slowing down`() {
+    fun `after slowing down Tabi only recommends the hazard lights without asking`() {
         val d = active(SituationId.HEAVY_RAIN)
-        assertEquals(listOf("slow_down", "hazard_confirm", "wiper_fast", "low_beam_on"), d.view.steps.map { it.id })
-        assertNull(d.view.choice) // 감속이 먼저다
+        assertEquals(listOf("slow_down", "wiper_fast", "low_beam_on"), d.view.steps.map { it.id })
         // 순서를 건너뛰어 와이퍼부터 켜도 그 단계는 인정된다
         d.set { it.copy(wiper = WiperLevel.HIGH) }
-        assertEquals(listOf(false, false, true, false), d.view.steps.map { it.done })
-        d.slowDownFirst(confirmHazard = false)
-        assertEquals("비상등 켰나요?", d.view.choice?.question)
-        d.engine.answer("아직이요", d.now)
-        d.tick()
-        assertFalse(d.view.steps[1].done)
-        d.engine.answer("응", d.now)
-        d.tick()
-        assertTrue(d.view.steps[1].done)
+        assertEquals(listOf(false, true, false), d.view.steps.map { it.done })
+        d.clearEvents()
+        d.slowDownFirst()
         assertNull(d.view.choice)
+        assertEquals(1, d.says().count { it == "비상등도 켜 주세요." })
         d.set { it.copy(lowBeamOn = true) }
         assertEquals(TrainingPhase.SUCCESS, d.view.phase)
-        assertEquals(emptyList(), d.view.lastResult?.penalties) // "아직이요"는 감점하지 않는다
+        assertTrue(d.says().none { "비상등 켰나요" in it || "여쭤봐요" in it })
     }
 
     @Test
-    fun `fogged windshield, dense fog and sudden stop also ask for the hazard lights after slowing`() {
+    fun `fogged windshield, dense fog and sudden stop also recommend the hazard lights after slowing`() {
         for (id in listOf(SituationId.FOGGED_WINDSHIELD, SituationId.DENSE_FOG)) {
             val d = active(id)
-            assertEquals(listOf("slow_down", "hazard_confirm"), d.view.steps.take(2).map { it.id }, "$id")
+            assertTrue(d.view.steps.none { it.id == "hazard_confirm" }, "$id")
+            d.clearEvents()
+            d.slowDownFirst()
+            assertTrue("비상등도 켜 주세요." in d.says(), "$id ${d.says()}")
         }
         val s = active(SituationId.SUDDEN_STOP)
-        assertEquals(listOf("brake", "hazard_confirm"), s.view.steps.map { it.id })
-        assertNull(s.view.choice)
+        assertEquals(listOf("brake"), s.view.steps.map { it.id })
         s.advance(600)
         s.set { it.copy(brakePressed = true) }
-        assertEquals("비상등 켰나요?", s.view.choice?.question)
-        // 밟은 뒤에는 1.5초 제한이 풀린다. 별은 브레이크 반응 시간으로만 매긴다
-        s.advance(8_000)
-        assertEquals(TrainingPhase.ACTIVE, s.view.phase)
-        s.confirmHazard()
+        // 브레이크만으로 성공. 별은 브레이크 반응 시간으로만 매긴다
         assertEquals(TrainingPhase.SUCCESS, s.view.phase)
         assertEquals(3, s.view.lastResult?.stars)
         assertEquals(600L, s.view.lastResult?.reactionMs)
+        assertTrue("비상등도 켜 주세요." in s.says())
     }
 
     @Test
     fun `hazard step can be switched off in one place`() {
         val off = TrainingConfig(lowVisibilityHazardStep = false)
-        assertEquals(listOf("slow_down", "wiper_fast", "low_beam_on"), active(SituationId.HEAVY_RAIN, off).view.steps.map { it.id })
-        assertEquals(listOf("brake"), active(SituationId.SUDDEN_STOP, off).view.steps.map { it.id })
+        val d = active(SituationId.HEAVY_RAIN, off)
+        d.slowDownFirst()
+        assertTrue(d.says().none { "비상등" in it }, "${d.says()}")
     }
 
     @Test
@@ -492,5 +486,33 @@ class RoadRulesTest {
         on.set { it.copy(sideMirrorHeatOn = true) }
         assertTrue(on.view.steps.first { it.id == "mirror_heat" }.done)
         assertEquals(TrainingPhase.ACTIVE, on.view.phase)
+    }
+
+    // ---------- v26: 회전교차로 녹화 자동 조작에서 나온 실패 ----------
+
+    @Test
+    fun `roundabout late brake still stops before the yield line and entering without the signal is a penalty not a failure`() {
+        // 녹화 자동 조작: 1.5초에 깜빡이, 2.5초부터 브레이크 유지 → 이전에는 4.3초에 선을 넘어 실패했다
+        val d = active(SituationId.ROUNDABOUT_ENTRY)
+        d.advance(1_500)
+        d.set { it.copy(turnSignal = TurnSignal.LEFT) }
+        d.advance(1_000)
+        d.set { it.copy(brakePressed = true) }
+        d.until { it.phase != TrainingPhase.ACTIVE && it.phase != TrainingPhase.HINT || it.steps.first { s -> s.id == "yield_slow" }.done }
+        assertTrue(d.view.steps.first { it.id == "yield_slow" }.done, "phase=${d.view.phase} ring=${d.view.scene.ringPassSec}")
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+        d.set { it.copy(brakePressed = false) }
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        assertEquals(emptyList(), d.view.lastResult?.penalties)
+
+        // 깜빡이를 안 켜고 (멈춰 보낸 뒤) 들어가면 실패가 아니라 감점
+        val n = active(SituationId.ROUNDABOUT_ENTRY)
+        n.set { it.copy(brakePressed = true) }
+        n.until { v -> v.steps.first { it.id == "yield_slow" }.done }
+        n.clearEvents()
+        n.set { it.copy(brakePressed = false) }
+        assertEquals(TrainingPhase.SUCCESS, n.view.phase)
+        assertEquals(listOf("ROUNDABOUT_NO_SIGNAL"), n.view.lastResult?.penalties)
+        assertTrue("들어가기 전에 왼쪽 깜빡이를 먼저 켜요." in n.says())
     }
 }
