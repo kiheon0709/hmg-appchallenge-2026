@@ -4,6 +4,7 @@
 
 - 목록과 띄우는 방법: `2026-11-15_screen-catalog-plan.md`
 - 찍으면서 본 문제: `2026-11-15_screen-catalog-issues.md`
+- 노션: [타비 화면 도감](https://app.notion.com/p/4193aab653418178af0ed6c58b49f781) ("타비 (TABI) — 최종 정리" 아래, 절별 하위 페이지 8개. 캡처는 절마다 번호 붙은 묶음 이미지로 올림)
 - 캡처: `shots-catalog/` 159장. 앱 창(1682×1210)만 잘라 1200 px로 줄였어요.
 
 ## 빌드와 환경
