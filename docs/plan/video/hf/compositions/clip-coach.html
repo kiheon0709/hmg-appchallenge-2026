@@ -1,5 +1,5 @@
 <template>
-  <!-- cuts.json에서 만든 장면(r5_coach_review.webm 4~47초). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
+  <!-- cuts.json에서 만든 장면(r5_coach_review.webm 2~62.4초). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
   <style>
     #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
     #clip-coach-k { position: absolute; left: 60px; top: 44px; padding: 6px 22px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 34px; }
@@ -15,28 +15,29 @@
     #clip-coach-n { position: absolute; left: 60px; top: 1018px; font-size: 28px; color: var(--ink2); }
   </style>
   <div id="root" data-composition-id="clip-coach" data-width="1920" data-height="1080">
-    <audio id="clip-coach-a" class="clip" data-start="0" data-duration="43" data-track-index="9" data-volume="1" src="assets/media/coach.m4a"></audio>
+    <audio id="clip-coach-a" class="clip" data-start="0" data-duration="60.4" data-track-index="9" data-volume="1" src="assets/media/coach.m4a"></audio>
     <div id="clip-coach-k">달릴 때</div>
     <div id="clip-coach-h">주행 중 코치</div>
-    <div id="clip-coach-v"><video id="clip-coach-vd" class="clip" data-start="0" data-duration="43" data-track-index="2" muted playsinline src="assets/media/coach.mp4"></video></div>
+    <div id="clip-coach-v"><video id="clip-coach-vd" class="clip" data-start="0" data-duration="60.4" data-track-index="2" muted playsinline src="assets/media/coach.mp4"></video></div>
     <div id="clip-coach-p">
       <div id="clip-coach-m"><canvas id="clip-coach-cv" width="340" height="340"></canvas></div>
       <h5>여기를 보세요</h5>
       <div class="wl"><i></i><span>기어를 D에 넣으면 코치 화면으로 바뀌어요</span></div>
-      <div class="wl"><i></i><span>화면에는 한 문장만 떠요</span></div>
-      <div class="wl"><i></i><span>비가 오는데 전조등이 꺼져 있으면 말해요</span></div>
-      <div class="wl"><i></i><span>움직이는 그림도, 긴 글도 없어요</span></div>
+      <div class="wl"><i></i><span>"안전벨트부터 매 주세요."</span></div>
+      <div class="wl"><i></i><span>필요할 때만 한 문장. 그 사이에는 조용해요</span></div>
+      <div class="wl"><i></i><span>"연습했던 거예요. 비가 와요. 전조등을 켜 주세요."</span></div>
+      <div class="wl"><i></i><span>"방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요."</span></div>
     </div>
     <div id="clip-coach-n">실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("clip-coach-cv"), 43.6, [[0, "speaking"], [3, "idle"], [39.50, "happy"]]);
+      FX.tabi(tl, document.getElementById("clip-coach-cv"), 60.4, [[0, "speaking"], [3, "idle"], [56.90, "happy"]]);
       tl.fromTo("#clip-coach-k, #clip-coach-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
       tl.fromTo("#clip-coach-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
       tl.fromTo("#clip-coach-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
-      const at = [1.2,10.95,20.7,30.45];
+      const at = [0.6,2.1,11.5,30.1,50.2];
       document.querySelectorAll("#clip-coach-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#clip-coach-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
       window.__timelines["clip-coach"] = tl;

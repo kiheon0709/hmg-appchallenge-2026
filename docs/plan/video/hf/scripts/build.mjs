@@ -14,6 +14,10 @@ const ff = (args) => execFileSync("ffmpeg", ["-v", "error", "-y", ...args], { st
 const VW = 1160, VH = 822; // 화면 안 영상 자리(앱 창 비율 1707:1210)
 
 // ---------- 1. 클립 자르기 ----------
+// 원본(webm)은 프레임 간격이 일정하지 않다. 먼저 영상과 소리를 함께 고정 30fps 중간 파일로 바꾸고(src_*.mp4),
+// 거기서 정확한 시각으로 잘라 낸다. 영상과 소리가 같은 시간축에서 잘려 싱크가 어긋나지 않는다.
+const sha = (v) => createHash("sha1").update(JSON.stringify(v)).digest("hex").slice(0, 10);
+const fresh = (file, key) => existsSync(file) && existsSync(file + ".key") && readFileSync(file + ".key", "utf8") === key;
 const clips = [];
 for (const c of cuts.clips) {
   const src = resolve(root, c.src.startsWith("..") ? c.src : join(cuts.source_dir, c.src));
@@ -21,15 +25,22 @@ for (const c of cuts.clips) {
   const dur = +(c.end - c.start).toFixed(3);
   const crop = c.crop === undefined ? cuts.crop : c.crop;
   const gain = c.gain_db === undefined ? cuts.gain_db : c.gain_db;
-  const key = createHash("sha1").update(JSON.stringify([c.src, c.start, c.end, crop, gain, statSync(src).mtimeMs, statSync(src).size, VW, VH])).digest("hex").slice(0, 10);
-  const stamp = join(media, `${c.id}.key`);
-  const mp4 = join(media, `${c.id}.mp4`), m4a = join(media, `${c.id}.m4a`);
-  if (!existsSync(mp4) || !existsSync(m4a) || !existsSync(stamp) || readFileSync(stamp, "utf8") !== key) {
-    console.log(`cut ${c.id}: ${c.src} ${c.start}~${c.end} (${dur}s)`);
+  const st = statSync(src);
+  const name = c.src.replace(/^.*\//, "").replace(/\.[^.]+$/, "");
+  const inter = join(media, `src_${name}.mp4`), ikey = sha([crop, st.mtimeMs, st.size, VW, VH]);
+  if (!fresh(inter, ikey)) {
+    console.log(`transcode ${c.src}`);
     const vf = (crop ? `crop=${crop},` : "") + `scale=${VW}:${VH}:force_original_aspect_ratio=increase,crop=${VW}:${VH},fps=30`;
-    ff(["-ss", String(c.start), "-t", String(dur), "-i", src, "-an", "-vf", vf, "-c:v", "libx264", "-crf", "18", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "30", "-movflags", "+faststart", mp4]);
-    ff(["-ss", String(c.start), "-t", String(dur), "-i", src, "-vn", "-af", `volume=${gain}dB,alimiter=limit=0.9`, "-c:a", "aac", "-b:a", "160k", m4a]);
-    writeFileSync(stamp, key);
+    ff(["-i", src, "-vf", vf, "-fps_mode", "cfr", "-af", "aresample=async=1:first_pts=0", "-c:v", "libx264", "-crf", "15", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "15", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", inter]);
+    writeFileSync(inter + ".key", ikey);
+  }
+  const mp4 = join(media, `${c.id}.mp4`), m4a = join(media, `${c.id}.m4a`), key = sha([ikey, c.start, c.end, gain]);
+  if (!fresh(mp4, key) || !existsSync(m4a)) {
+    console.log(`cut ${c.id}: ${c.src} ${c.start}~${c.end} (${dur}s)`);
+    // -ss를 -i 뒤에 두어 프레임 단위로 정확히 자른다
+    ff(["-i", inter, "-ss", String(c.start), "-t", String(dur), "-an", "-c:v", "libx264", "-crf", "17", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "30", "-movflags", "+faststart", mp4]);
+    ff(["-i", inter, "-ss", String(c.start), "-t", String(dur), "-vn", "-af", `volume=${gain}dB,alimiter=limit=0.9`, "-c:a", "aac", "-b:a", "160k", m4a]);
+    writeFileSync(mp4 + ".key", key);
   }
   clips.push({ ...c, dur });
 }
@@ -37,29 +48,42 @@ const clip = Object.fromEntries(clips.map((c) => [c.id, c]));
 
 // ---------- 2. 장면 순서 ----------
 const g = (id, dur, sfx = []) => ({ id, dur, sfx, kind: "g" });
-const c = (id) => clip[id] ? { id: `clip-${id}`, dur: clip[id].dur + 0.6, kind: "c", clip: clip[id], sfx: [] } : null;
+const seenGroup = new Set();
+// 클립 장면. 그 묶음(챕터)의 첫 클립 앞에는 이름표 장면을 넣는다
+const c = (id) => {
+  const k = clip[id];
+  if (!k) return [];
+  const out = [];
+  if (k.group && !seenGroup.has(k.group)) { seenGroup.add(k.group); out.push({ id: `chap-${k.group}`, dur: 4, kind: "chap", group: cuts.groups[k.group], sfx: [[0.1, "impact-bass-1", 0.35]] }); }
+  out.push({ id: `clip-${id}`, dur: k.dur, kind: "c", clip: k, sfx: [] });
+  return out;
+};
 const scenes = [
   g("title", 7.5, [[0.15, "pop", 0.4], [1.3, "whoosh", 0.3]]),
   g("problem", 29, [[0.5, "pop", 0.35], [1.5, "click-soft", 0.5], [6.4, "whoosh-cinematic", 0.3], [17.5, "pop", 0.4], [18.0, "pop", 0.4], [18.5, "pop", 0.4], [24.4, "pop", 0.45]]),
   g("who", 12, [[1.4, "pop", 0.4], [2.7, "pop", 0.4], [4.0, "pop", 0.4]]),
   g("moments", 13, [[1.4, "pop", 0.4], [4.6, "pop", 0.4], [7.8, "pop", 0.4]]),
-  g("train-intro", 5.5, [[0.1, "impact-bass-1", 0.4]]),
-  c("rain"), c("fog"), c("tunnel"), c("toll"),
+  ...c("onboard"),
+  g("train-intro", 8.5, [[0.1, "impact-bass-1", 0.4]]),
+  ...c("rain"), ...c("fog"), ...c("stop"),
+  ...c("tunnel"), ...c("glare"), ...c("drowsy"),
+  ...c("roundabout"), ...c("school"), ...c("merge"), ...c("toll"), ...c("hipass"),
+  ...c("breakdown"),
   g("route", 12, [[1.6, "pop", 0.4], [3.0, "click-soft", 0.5], [3.8, "click-soft", 0.5], [4.6, "click-soft", 0.5], [6.2, "whoosh-short", 0.3]]),
-  c("coach"), c("review"), c("talk"),
+  ...c("coach"), ...c("review"), ...c("talk"),
   g("sdk", 19, [[1.5, "pop", 0.4], [3.9, "pop", 0.4], [6.3, "pop", 0.4], [8.7, "pop", 0.4], [11.1, "pop", 0.4]]),
   g("numbers", 14.5, [[1.4, "click-soft", 0.5], [3.6, "click-soft", 0.5], [5.8, "click-soft", 0.5], [8.0, "click-soft", 0.5]]),
   g("roadmap", 12, [[1.4, "pop", 0.4], [4.4, "pop", 0.4], [7.4, "pop", 0.4]]),
   g("ending", 10, [[0.2, "impact-bass-1", 0.4]]),
-].filter(Boolean);
+];
 let t = 0;
 for (const s of scenes) { s.start = +t.toFixed(3); t += s.dur; }
 const total = +t.toFixed(3);
 const SFX = { pop: 0.72, whoosh: 0.575, "whoosh-short": 0.575, "whoosh-cinematic": 2.4, "click-soft": 0.366, "impact-bass-1": 2.116 };
 
 // ---------- 3. 음악: 그래픽 구간에만(클립에는 앱의 실제 소리만) ----------
-const firstClip = scenes.find((s) => s.kind === "c"), sdk = scenes.find((s) => s.id === "sdk");
-const introLen = +((firstClip ? firstClip.start : total) + 0.4).toFixed(2), outroStart = sdk.start - 0.4, outroLen = +(total - outroStart).toFixed(2);
+const firstClip = scenes.find((s) => s.kind === "c" && !s.clip.quiet), sdk = scenes.find((s) => s.id === "sdk");
+const introLen = Math.min(114, +((firstClip ? firstClip.start : total) + 0.4).toFixed(2)) /* bgm-a 길이 114.5초 */, outroStart = sdk.start - 0.4, outroLen = +(total - outroStart).toFixed(2);
 ff(["-i", join(root, "assets/music/bgm-a.mp3"), "-t", String(introLen), "-af", `afade=t=out:st=${(introLen - 2.2).toFixed(2)}:d=2.2`, join(root, "assets/music/bgm-intro.mp3")]);
 ff(["-i", join(root, "assets/music/bgm-b.mp3"), "-t", String(outroLen), "-af", `afade=t=in:st=0:d=1.2,afade=t=out:st=${(outroLen - 3).toFixed(2)}:d=3`, join(root, "assets/music/bgm-outro.mp3")]);
 
@@ -85,8 +109,7 @@ for (const s of scenes.filter((x) => x.kind === "c")) {
     #${id}-n { position: absolute; left: 60px; top: 1018px; font-size: 28px; color: var(--ink2); }
   </style>
   <div id="root" data-composition-id="${id}" data-width="1920" data-height="1080">
-    <audio id="${id}-a" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="9" data-volume="1" src="assets/media/${k.id}.m4a"></audio>
-    <div id="${id}-k">${esc(k.kicker)}</div>
+${k.quiet ? "" : `    <audio id="${id}-a" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="9" data-volume="1" src="assets/media/${k.id}.m4a"></audio>\n`}    <div id="${id}-k">${esc(k.kicker)}</div>
     <div id="${id}-h">${esc(k.title)}</div>
     <div id="${id}-v"><video id="${id}-vd" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="2" muted playsinline src="assets/media/${k.id}.mp4"></video></div>
     <div id="${id}-p">
@@ -94,7 +117,7 @@ for (const s of scenes.filter((x) => x.kind === "c")) {
       <h5>여기를 보세요</h5>
 ${k.watch.map((w) => `      <div class="wl"><i></i><span>${esc(w)}</span></div>`).join("\n")}
     </div>
-    <div id="${id}-n">실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
+    <div id="${id}-n">${esc(k.note || "실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요")}</div>
   </div>
   <script>
     (function () {
@@ -113,12 +136,46 @@ ${k.watch.map((w) => `      <div class="wl"><i></i><span>${esc(w)}</span></div>`
 `);
 }
 
+// ---------- 4-2. 챕터 이름표 장면 ----------
+for (const s of scenes.filter((x) => x.kind === "chap")) {
+  const id = s.id, gr = s.group;
+  writeFileSync(join(root, `compositions/${id}.html`), `<template>
+  <!-- cuts.json의 groups에서 만든 이름표 장면 -->
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-accent); overflow: hidden; }
+    #${id}-m { position: absolute; left: 190px; top: 330px; width: 420px; height: 420px; }
+    #${id}-m canvas { width: 420px; height: 420px; display: block; }
+    #${id}-k { position: absolute; left: 700px; top: 330px; font-size: 52px; color: #C9DBFF; }
+    #${id}-h { position: absolute; left: 700px; top: 410px; font-size: 150px; line-height: 1.1; color: #fff; }
+    #${id}-s { position: absolute; left: 700px; top: 630px; width: 1060px; font-size: 48px; line-height: 1.4; color: #DCE7FF; }
+  </style>
+  <div id="root" data-composition-id="${id}" data-width="1920" data-height="1080">
+    <div id="${id}-m"><canvas id="${id}-cv" width="630" height="630"></canvas></div>
+    <div id="${id}-k">${esc(gr.kicker)}</div>
+    <div id="${id}-h">${esc(gr.title)}</div>
+    <div id="${id}-s">${esc(gr.sub)}</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      FX.tabi(tl, document.getElementById("${id}-cv"), ${s.dur}, [[0, "cheer"]]);
+      tl.fromTo("#${id}-m", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.05);
+      tl.fromTo("#${id}-k", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 0.25);
+      tl.fromTo("#${id}-h", { opacity: 0, x: 60, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.4);
+      tl.fromTo("#${id}-s", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.9);
+      window.__timelines["${id}"] = tl;
+    })();
+  </script>
+</template>
+`);
+}
+
 // ---------- 5. index.html ----------
 const hosts = scenes.map((s) => `      <div id="${s.id}" data-composition-id="${s.id}" data-composition-src="compositions/${s.id}.html" data-start="${s.start}" data-duration="${s.dur}" data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080"></div>`).join("\n");
 let n = 0;
 const sfx = [];
 scenes.forEach((s, i) => {
-  if (i > 0) sfx.push([Math.max(0, s.start - 0.18), s.kind === "c" ? "whoosh-short" : "whoosh", 0.28]);
+  if (i > 0 && s.kind !== "chap") sfx.push([Math.max(0, s.start - 0.18), s.kind === "c" ? "whoosh-short" : "whoosh", 0.28]);
   for (const [at, name, vol] of s.sfx) sfx.push([s.start + at, name, vol]);
 });
 const sfxTags = sfx.sort((a, b) => a[0] - b[0]).map(([at, name, vol]) => `      <audio id="sfx-${String(++n).padStart(2, "0")}" class="clip" data-start="${at.toFixed(3)}" data-duration="${SFX[name]}" data-track-index="10" data-volume="${vol}" src="assets/sfx/${name}.mp3"></audio>`).join("\n");

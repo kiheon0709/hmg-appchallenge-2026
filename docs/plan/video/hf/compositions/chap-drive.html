@@ -1,0 +1,28 @@
+<template>
+  <!-- cuts.json의 groups에서 만든 이름표 장면 -->
+  <style>
+    #root { position: absolute; inset: 0; background: var(--color-accent); overflow: hidden; }
+    #chap-drive-m { position: absolute; left: 190px; top: 330px; width: 420px; height: 420px; }
+    #chap-drive-m canvas { width: 420px; height: 420px; display: block; }
+    #chap-drive-k { position: absolute; left: 700px; top: 330px; font-size: 52px; color: #C9DBFF; }
+    #chap-drive-h { position: absolute; left: 700px; top: 410px; font-size: 150px; line-height: 1.1; color: #fff; }
+    #chap-drive-s { position: absolute; left: 700px; top: 630px; width: 1060px; font-size: 48px; line-height: 1.4; color: #DCE7FF; }
+  </style>
+  <div id="root" data-composition-id="chap-drive" data-width="1920" data-height="1080">
+    <div id="chap-drive-m"><canvas id="chap-drive-cv" width="630" height="630"></canvas></div>
+    <div id="chap-drive-k">출발한 뒤</div>
+    <div id="chap-drive-h">달릴 때와 도착 후</div>
+    <div id="chap-drive-s">주행 중 코치 · 도착 후 리뷰</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      FX.tabi(tl, document.getElementById("chap-drive-cv"), 4, [[0, "cheer"]]);
+      tl.fromTo("#chap-drive-m", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.05);
+      tl.fromTo("#chap-drive-k", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 0.25);
+      tl.fromTo("#chap-drive-h", { opacity: 0, x: 60, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 0.4);
+      tl.fromTo("#chap-drive-s", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.9);
+      window.__timelines["chap-drive"] = tl;
+    })();
+  </script>
+</template>
