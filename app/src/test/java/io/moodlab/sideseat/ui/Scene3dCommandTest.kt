@@ -83,6 +83,19 @@ class Scene3dCommandTest {
         val rb = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.ROUNDABOUT_ENTRY, SceneParams(sign = "ROUNDABOUT", place = "CITY"), 30f), car)
         assertTrue(rb, "\"place\":\"city\"" in rb && "\"landmark\":\"roundabout\",\"hold\":true" in rb)
         assertEquals(400f, num(rb, "hostGap"), 0f)
+        assertTrue(rb, "\"ringT\":null" in rb)
+        // 도는 차가 지나가기까지 남은 시간을 넘기고, 들어가기 시작하면 정지 위치를 푼다
+        val waiting = view(
+            TrainingPhase.ACTIVE, SituationId.ROUNDABOUT_ENTRY, SceneParams(sign = "ROUNDABOUT", place = "CITY", ringPassSec = 3.5f), 0f,
+            listOf(StepView("yield_slow", "", false), StepView("enter", "", false)),
+        )
+        val w = Scene3dCommand.build(waiting, car)
+        assertEquals(3.5f, num(w, "ringT"), 0.01f)
+        assertTrue(w, "\"hold\":true" in w)
+        val entering = waiting.copy(scene = waiting.scene.copy(ringPassSec = -0.4f), steps = listOf(StepView("yield_slow", "", true), StepView("enter", "", true)))
+        val e = Scene3dCommand.build(entering, car)
+        assertEquals(-0.4f, num(e, "ringT"), 0.01f)
+        assertTrue(e, "\"hold\":false" in e)
         val school = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.SCHOOL_ZONE, SceneParams(sign = "SCHOOL", place = "SCHOOL"), 50f), car)
         assertTrue(school, "\"place\":\"school\"" in school && "\"landmark\":\"school\"" in school)
         val rain = Scene3dCommand.build(view(TrainingPhase.ACTIVE, SituationId.HEAVY_RAIN, SceneParams(rain = 1f, place = "DOWNHILL")), car)

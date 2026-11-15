@@ -249,6 +249,8 @@ class RoadRulesTest {
             d.untilActive(id)
             assertTrue(d.view.steps.none { it.id == "hazard_confirm" }, "$id")
             d.set { solveAll(it, id) }
+            // 회전교차로는 도는 차를 보낸 뒤 브레이크를 떼야 끝난다
+            if (id == SituationId.ROUNDABOUT_ENTRY) d.answerUntilSuccess(id)
             d.until { it.phase == TrainingPhase.CRUISE }
         }
         assertTrue(seen.containsAll(listOf(SituationId.HEAVY_RAIN, SituationId.FOGGED_WINDSHIELD, SituationId.DENSE_FOG, SituationId.SUDDEN_STOP)), "$seen")
@@ -272,24 +274,56 @@ class RoadRulesTest {
     // ---------- 장소가 다른 상황과 "장소 × 상황" ----------
 
     @Test
-    fun `entering a roundabout needs the left signal and slowing down to give way`() {
+    fun `entering a roundabout means waiting at the yield line until the circulating car has passed`() {
+        val c = TrainingConfig()
         val d = active(SituationId.ROUNDABOUT_ENTRY)
         assertEquals("ROUNDABOUT", d.view.scene.sign)
         assertEquals(ScenePlace.CITY, d.view.scene.place)
-        assertEquals(listOf("signal_left", "yield_slow"), d.view.steps.map { it.id })
-        d.advance(1_000)
-        assertEquals(TrainingConfig().slowApproachKmh, d.view.virtualSpeedKmh, 1f)
-        d.set { it.copy(turnSignal = TurnSignal.LEFT) }
-        assertEquals(listOf(true, false), d.view.steps.map { it.done })
-        d.set { it.copy(brakePressed = true) }
-        d.until { it.phase == TrainingPhase.SUCCESS }
-        assertTrue(d.view.virtualSpeedKmh <= TrainingConfig().roundaboutYieldKmh)
-        assertEquals(3, d.view.lastResult?.stars)
-        // 줄인 뒤 발을 떼도 상황이 끝날 때까지 다시 빨라지지 않는다
-        val slow = d.view.virtualSpeedKmh
+        assertEquals(listOf("signal_left", "yield_slow", "enter"), d.view.steps.map { it.id })
+        assertEquals(c.roundaboutPassMs / 1000f, d.view.scene.ringPassSec!!, 0.2f)
+        d.set { it.copy(turnSignal = TurnSignal.LEFT, brakePressed = true) }
+        // 양보선 앞에 멈춰도 도는 차가 지나가기 전에는 끝나지 않는다
+        d.until { it.virtualSpeedKmh <= 0.5f }
+        if (d.view.scene.ringPassSec!! > 0f) assertEquals(listOf(true, false, false), d.view.steps.map { it.done })
+        d.until { v -> v.steps.first { it.id == "yield_slow" }.done }
+        // 도는 차가 진입 지점을 지나가고 1초 뒤에야 비었다고 본다
+        assertEquals(-c.roundaboutClearAfterMs / 1000f, d.view.scene.ringPassSec!!, 0.1f)
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+        // 밟고 있는 동안은 들어가지 않는다
+        d.advance(300)
+        assertEquals(TrainingPhase.ACTIVE, d.view.phase)
+        assertEquals(listOf(true, true, false), d.view.steps.map { it.done })
+        // 비었으니 브레이크를 떼면 진입 → 성공
         d.set { it.copy(brakePressed = false) }
+        assertEquals(TrainingPhase.SUCCESS, d.view.phase)
+        assertEquals(3, d.view.lastResult?.stars)
         d.advance(1_000)
-        assertEquals(slow, d.view.virtualSpeedKmh)
+        assertEquals(15f, d.view.virtualSpeedKmh, 1f)
+    }
+
+    @Test
+    fun `releasing the brake before the circulating car has passed fails the roundabout`() {
+        val d = active(SituationId.ROUNDABOUT_ENTRY)
+        d.set { it.copy(turnSignal = TurnSignal.LEFT, brakePressed = true) }
+        d.advance(3_000)
+        assertTrue(d.view.scene.ringPassSec!! > 0f)
+        d.clearEvents()
+        d.set { it.copy(brakePressed = false) }
+        d.until { it.phase == TrainingPhase.FAIL }
+        assertTrue(d.view.scene.ringPassSec!! > 0f, "도는 차가 지나가기 전에 실패해야 한다")
+        assertTrue(d.says().any { "회전교차로 안에서 도는 차가 먼저예요" in it }, d.says().toString())
+        assertEquals(0, d.view.lastResult?.stars)
+        d.advance(1_000)
+        assertEquals(0f, d.view.virtualSpeedKmh, 0.5f)
+    }
+
+    @Test
+    fun `driving into the roundabout without braking fails before the circulating car has passed`() {
+        val d = active(SituationId.ROUNDABOUT_ENTRY)
+        d.set { it.copy(turnSignal = TurnSignal.LEFT) }
+        d.until { it.phase == TrainingPhase.FAIL }
+        assertTrue(d.view.scene.ringPassSec!! > 0f)
+        assertTrue(d.says().any { "회전교차로 안에서 도는 차가 먼저예요" in it })
     }
 
     @Test

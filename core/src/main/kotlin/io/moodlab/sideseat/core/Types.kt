@@ -139,6 +139,8 @@ data class SceneParams(
     val slip: Float = 0f,
     /** 장소([ScenePlace]의 이름). 문제 상황과 따로 정해져 "장소 × 상황"으로 조합된다. 3D 장면만 쓴다. */
     val place: String = ScenePlace.HIGHWAY,
+    /** 회전교차로: 도는 차가 내 진입 지점을 지나가기까지 남은 시간(초). 지나간 뒤에는 음수. 회전교차로가 아니면 null. 3D 장면만 쓴다. */
+    val ringPassSec: Float? = null,
 )
 
 @Serializable

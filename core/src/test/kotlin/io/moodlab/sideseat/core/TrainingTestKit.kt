@@ -89,12 +89,21 @@ fun TrainingDriver.correctAnswer(): String {
 /**
  * 선택지는 모두 정답으로 답하며 성공할 때까지 간다.
  * 일반 차로 요금소는 통행권을 받은 뒤 창문을 올려야 끝나므로 그 조작도 해 준다.
+ * 회전교차로는 도는 차를 보낸 뒤 브레이크를 떼야 끝나므로 그 조작도 해 준다.
  */
 fun TrainingDriver.answerUntilSuccess(id: SituationId) {
     while (true) {
-        val v = until { it.choice != null || it.phase == TrainingPhase.SUCCESS || (id == SituationId.TOLL_BOOTH && it.steps.any { s -> s.id == "ticket_confirm" && s.done }) }
-        if (v.phase == TrainingPhase.SUCCESS) return
-        if (v.choice != null) { engine.answer(correctAnswer(), now); tick() } else set { it.copy(driverWindowOpenPct = 0) }
+        val v = until {
+            it.choice != null || it.phase == TrainingPhase.SUCCESS ||
+                (id == SituationId.TOLL_BOOTH && it.steps.any { s -> s.id == "ticket_confirm" && s.done }) ||
+                (id == SituationId.ROUNDABOUT_ENTRY && it.steps.any { s -> s.id == "yield_slow" && s.done })
+        }
+        when {
+            v.phase == TrainingPhase.SUCCESS -> return
+            v.choice != null -> { engine.answer(correctAnswer(), now); tick() }
+            id == SituationId.ROUNDABOUT_ENTRY -> set { it.copy(brakePressed = false) }
+            else -> set { it.copy(driverWindowOpenPct = 0) }
+        }
     }
 }
 

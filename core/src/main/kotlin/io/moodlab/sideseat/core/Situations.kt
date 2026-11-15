@@ -46,6 +46,8 @@ class StepDef(
     val after: String? = null,
     /** 화면 속 속도를 그 장소의 평소 속도에 대한 비율(0~1)로 보고 판정할 때(감속: 절반으로). 있으면 [done]·[doneWithSpeed] 대신 쓴다. */
     val doneWithSpeedRatio: ((VehicleState, Float) -> Boolean)? = null,
+    /** 회전교차로: 도는 차가 내 진입 지점을 지나간 뒤에만 인정한다. */
+    val needsClearRing: Boolean = false,
 )
 
 class ChoiceDef(
@@ -103,6 +105,8 @@ object SituationCatalog {
     private const val HAZARD_HINT = "빨간 삼각형 비상등 버튼을 눌러요."
     private const val SLOW_FIRST = "먼저 브레이크를 나눠서 지그시 밟아 속도를 줄여요."
     private const val GENTLE_BRAKE = "브레이크를 급하게 밟지 말고 나눠서 지그시 밟아"
+/** 회전교차로에서 도는 차보다 먼저 들어갔을 때와 힌트에서 하는 말. */
+    internal const val ROUNDABOUT_YIELD_LINE = "회전교차로 안에서 도는 차가 먼저예요. 양보선에서 멈춰서 그 차를 보내요."
 
     private val lowBeamOn = StepDef(
         id = "low_beam_on", label = "전조등 켜기", hint = HEADLIGHT_HINT, setup = "전조등을 꺼 두세요",
@@ -420,19 +424,27 @@ object SituationCatalog {
             // 출처: 도로교통법 제25조의2 제2항(회전교차로에 진입하려면 서행하거나 일시정지, 이미 진행하는 차에 진로 양보),
             // 제38조 제1항·시행령 별표 2 제7호(진입하려는 때 30미터 전부터 왼쪽 방향지시기), 제8호(진출하려는 때 오른쪽). safety-sources.md 21번.
             id = SituationId.ROUNDABOUT_ENTRY, title = "회전교차로",
-            intro = "회전교차로예요. 왼쪽 깜빡이를 켜고, 속도를 줄여 돌고 있는 차에 먼저 양보해요.",
-            lesson = "회전교차로에 들어갈 땐 천천히 가거나 멈춰서, 이미 돌고 있는 차에 양보해요. 들어갈 땐 왼쪽, 나갈 땐 오른쪽 깜빡이예요.",
+            intro = "회전교차로예요. 안에 도는 차가 있어요. 왼쪽 깜빡이를 켜고, 양보선에서 멈춰 그 차를 먼저 보내요.",
+            lesson = "회전교차로에서는 안에서 이미 돌고 있는 차가 먼저예요. 들어가기 전에 천천히 가거나 멈춰서 그 차를 보내고, 비면 들어가요. 들어갈 땐 왼쪽, 나갈 땐 오른쪽 깜빡이예요.",
             steps = listOf(
                 StepDef(
                     id = "signal_left", label = "왼쪽 깜빡이 켜기",
                     hint = "왼쪽 깜빡이를 켜요.", setup = "깜빡이를 꺼 두세요",
                     available = { it.turnSignal != null }, done = { it.turnSignal == TurnSignal.LEFT },
                 ),
+                // 양보선 앞에서 거의 멈춘 채로, 도는 차가 내 진입 지점을 지나갈 때까지 기다려야 끝난다
                 StepDef(
-                    id = "yield_slow", label = "속도 줄여 양보하기", essential = true,
-                    hint = "$GENTLE_BRAKE 돌고 있는 차가 지나갈 때까지 기다려요.",
+                    id = "yield_slow", label = "양보선에서 멈춰 도는 차 보내기", essential = true,
+                    hint = ROUNDABOUT_YIELD_LINE,
                     available = { it.brakePressed != null },
-                    doneWithSpeed = { _, v -> v <= config.roundaboutYieldKmh },
+                    doneWithSpeed = { s, v -> s.brakePressed == true && v <= config.roundaboutYieldKmh },
+                    needsClearRing = true,
+                ),
+                // 가속 페달은 읽을 수 없어 "브레이크를 떼면 진입"으로 본다
+                StepDef(
+                    id = "enter", label = "비면 진입하기", essential = true, after = "yield_slow",
+                    hint = "도는 차가 지나갔어요. 브레이크에서 발을 떼고 들어가요.",
+                    available = { it.brakePressed != null }, done = { it.brakePressed == false },
                 ),
             ),
         ),

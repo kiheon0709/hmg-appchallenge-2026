@@ -16,6 +16,8 @@ class RouteTrainingTest {
         assertEquals(listOf(SituationId.HIGHWAY_MERGE), situations(turns = setOf("TURN_DEVIDE_MERGE")))
         assertEquals(listOf(SituationId.TUNNEL), situations(turns = setOf("TURN_TUNNEL")))
         assertEquals(listOf(SituationId.RIGHT_TURN_CROSSWALK), situations(turns = setOf("TURN_RIGHT")))
+        assertEquals(listOf(SituationId.ROUNDABOUT_ENTRY), situations(turns = setOf("TURN_ENTER_ROUNDABOUT_03", "TURN_EXIT_ROUNDABOUT")))
+        assertEquals(listOf(SituationId.SCHOOL_ZONE), situations(cautions = setOf("SCHOOL_ZONE")))
         assertEquals(listOf(SituationId.DENSE_FOG), situations(cautions = setOf("FOG_AREA")))
         assertEquals(listOf(SituationId.HYDROPLANING), situations(cautions = setOf("SLIPPERY_ROAD_ALERT")))
         assertEquals(listOf(SituationId.SUDDEN_STOP), situations(cautions = setOf("ACCIDENT_PRONE_AREA")))
@@ -25,7 +27,7 @@ class RouteTrainingTest {
 
     @Test fun unrelatedOrEmptyRouteGivesNothing() {
         assertEquals(emptyList(), situations())
-        assertEquals(emptyList(), situations(setOf("TURN_LEFT", "TURN_STRAIGHT", "TURN_EXIT_IC_R"), setOf("SCHOOL_ZONE", "NARROW_ROAD"), setOf("FAST", "MODERATE")))
+        assertEquals(emptyList(), situations(setOf("TURN_LEFT", "TURN_STRAIGHT", "TURN_EXIT_IC_R", "TURN_EXIT_ROUNDABOUT"), setOf("SPEED_BUMP", "NARROW_ROAD"), setOf("FAST", "MODERATE")))
         assertNull(RouteTraining.recommend(RouteFeatures(), chapters))
         assertNull(RouteTraining.recommend(RouteFeatures(turnTypes = setOf("TURN_LEFT")), chapters))
     }

@@ -144,7 +144,8 @@ object Scene3dCommand {
             else -> "null"
         }
         // 요금소는 "그대로 지나간다"를 고를 때까지 앞에서 기다리고, 횡단보도는 설 수 있는 거리보다 가까워지지 않는다
-        val hold = s.sign != "HIPASS" || !done("pass")
+        // 회전교차로는 도는 차를 보내고 들어가기 시작하면 풀린다
+        val hold = if (s.sign == "ROUNDABOUT") !done("enter") else s.sign != "HIPASS" || !done("pass")
         val lane = if (sit == SituationId.HIGHWAY_MERGE && live && !done("steer_left")) 1 else 0
         val wiper = when (v.wiper) {
             null, WiperLevel.OFF -> 0
@@ -181,6 +182,8 @@ object Scene3dCommand {
         sb.append(",\"landmark\":").append(landmark)
         sb.append(",\"hold\":").append(hold)
         sb.append(",\"lane\":").append(lane)
+        // 회전교차로: 도는 차가 내 진입 지점을 지나가기까지 남은 시간
+        sb.append(",\"ringT\":").append(s.ringPassSec?.let { f2(it) } ?: "null")
         // 일반 차로 요금소: 통행권을 받고 창문을 올리면 차단기가 올라간다
         sb.append(",\"gateOpen\":").append(sit == SituationId.TOLL_BOOTH && (done("window_close") || view.phase == TrainingPhase.SUCCESS))
         // 맞은편 차는 한 번 출발하면 지나갈 때까지 둔다(끄는 값은 보내지 않는다)

@@ -396,7 +396,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             }
             val ok = step.doneWithSpeedRatio?.invoke(state, scene.speed / scene.cruiseKmh)
                 ?: step.doneWithSpeed?.invoke(state, scene.speed) ?: step.done(state)
-            if (ok) {
+            if (ok && (!step.needsClearRing || scene.ringClear)) {
                 val since = r.holdSince.getOrPut(step.id) { nowMs }
                 if (nowMs - since >= step.holdMs) {
                     r.doneAt[step.id] = since
@@ -414,6 +414,11 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         r.currentChoice()?.let { if (r.choiceAsked != it.id) askChoice(r, it) }
         if (r.allDone) {
             succeed(r, nowMs)
+            return
+        }
+        // 회전교차로: 도는 차를 보내기 전에 양보선을 넘으면 실패
+        if (r.def.id == SituationId.ROUNDABOUT_ENTRY && "yield_slow" !in r.doneAt && scene.ringEntered) {
+            fail(r, nowMs, SituationCatalog.ROUNDABOUT_YIELD_LINE)
             return
         }
         val hintAt = if (r.limitMs > 0) (r.limitMs * config.hintAtFraction).toLong() else config.untimedHintMs
@@ -518,7 +523,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         }
     }
 
-    private fun fail(r: Run, nowMs: Long) {
+    private fun fail(r: Run, nowMs: Long, line: String? = null) {
         r.endMs = nowMs
         val missed = r.steps.filter { it.id !in r.doneAt }
         record(SituationResult(r.def.id, 0, null, missed.map { it.id }, r.penalties.toList()), r.attempt)
@@ -528,7 +533,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         r.def.loopSfx.forEach { events += CoachEvent.StopSfx(it) }
         events += CoachEvent.Sfx("fail")
         events += CoachEvent.Ambient(AmbientMood.CALM)
-        val tip = missed.firstOrNull()?.hint ?: ""
+        val tip = line ?: missed.firstOrNull()?.hint ?: ""
         val again = if (r.retryPending) " 한 번 더 해 볼까요?" else ""
         say("괜찮아요, 연습이에요. $tip$again".trim(), priority = 1)
     }
@@ -735,6 +740,14 @@ internal class SceneSim(private val config: TrainingConfig) {
     /** 일반 차로 요금소까지 남은 거리(m). 3D 장면이 요금소를 세우는 거리와 같은 값에서 시작해 화면 속 속도로 줄인다. */
     private var boothM = 0f
     private var boothAhead = false
+    /** 회전교차로: 양보선까지 남은 거리(m)와 도는 차가 내 진입 지점을 지나가기까지 남은 시간(ms, 지나가면 음수). */
+    private var ringM = 0f
+    private var ringPassMs = 0L
+    private var ringAhead = false
+    /** 도는 차가 지나가 회전교차로가 비었다. */
+    val ringClear: Boolean get() = ringAhead && ringPassMs <= -config.roundaboutClearAfterMs
+    /** 양보선을 넘어 회전교차로에 들어섰다. */
+    val ringEntered: Boolean get() = ringAhead && ringM <= 0f
     /** 비가 보이는 중(와이퍼 소리를 낼지). */
     val raining: Boolean get() = rain > 0.25f
 
@@ -866,6 +879,12 @@ internal class SceneSim(private val config: TrainingConfig) {
                 braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
                 else -> approach(speed, config.slowApproachKmh, 25f, dt)
             }
+            // 회전교차로: 들어간 뒤에는 천천히 돈다. 실패했으면 그 자리에 선다.
+            // 양보선에 닿기 전에 밟으면 천천히 굴러가다가 양보선 앞에 와서야 멈춘다(요금소와 같다)
+            on(SituationId.ROUNDABOUT_ENTRY) && "enter" in doneSteps -> approach(speed, config.roundaboutEnterKmh, 15f, dt)
+            on(SituationId.ROUNDABOUT_ENTRY) && phase == TrainingPhase.FAIL -> approach(speed, 0f, 40f, dt)
+            on(SituationId.ROUNDABOUT_ENTRY) && braking && ringM > config.roundaboutStopM ->
+                approach(speed, config.roundaboutCreepKmh, config.brakeDecelKmhPerSec, dt)
             // 앞차 급정거: 한 번 밟았으면 발을 떼도 앞차 뒤에 멈춰 선다(다시 80으로 올라가지 않는다)
             on(SituationId.SUDDEN_STOP) && (braking || "brake" in doneSteps) -> (speed - config.suddenStopDecelKmhPerSec * dt).coerceAtLeast(0f)
             braking -> (speed - config.brakeDecelKmhPerSec * dt).coerceAtLeast(0f)
@@ -873,8 +892,8 @@ internal class SceneSim(private val config: TrainingConfig) {
             on(SituationId.RIGHT_TURN_CROSSWALK) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.slowApproachKmh, 25f, dt)
             on(SituationId.HIPASS_WRONG_LANE) -> approach(speed, config.slowApproachKmh, 25f, dt)
 
-            // 회전교차로: 천천히 다가가고, 양보하려고 줄였으면 그 속도로 기다린다
-            on(SituationId.ROUNDABOUT_ENTRY) -> if ("yield_slow" in doneSteps) speed else approach(speed, config.slowApproachKmh, 25f, dt)
+            // 발을 떼면 다시 천천히 굴러가 양보선을 넘는다(도는 차가 지나가기 전이면 실패)
+            on(SituationId.ROUNDABOUT_ENTRY) -> approach(speed, config.slowApproachKmh, 25f, dt)
             // 보호구역: 시속 50으로 들어서고, 멈춘 뒤에는 상황이 끝날 때까지 서 있는다
             on(SituationId.SCHOOL_ZONE) -> if ("full_stop" in doneSteps) 0f else approach(speed, config.schoolApproachKmh, 25f, dt)
             // 앞이 안 보여 속도를 줄였으면 그 상황이 끝날 때까지 줄인 속도로 간다
@@ -891,6 +910,21 @@ internal class SceneSim(private val config: TrainingConfig) {
             boothM = (boothM - speed / 3.6f * dt).coerceAtLeast(0f)
         } else {
             boothAhead = false
+        }
+
+        if (on(SituationId.ROUNDABOUT_ENTRY)) {
+            if (!ringAhead) {
+                ringM = config.roundaboutApproachM
+                ringPassMs = config.roundaboutPassMs
+            }
+            ringAhead = true
+            // 도는 차와 양보선까지의 거리는 상황이 터진 뒤부터 움직인다(브리핑 동안은 멀리 있다)
+            if (!briefing) {
+                ringPassMs -= dtMs
+                ringM = (ringM - speed / 3.6f * dt).coerceAtLeast(0f)
+            }
+        } else {
+            ringAhead = false
         }
 
         val doneFraction = if (stepCount == 0) 0f else doneSteps.size.toFloat() / stepCount
@@ -920,6 +954,7 @@ internal class SceneSim(private val config: TrainingConfig) {
         sign = sign,
         slip = slip,
         place = place,
+        ringPassSec = if (ringAhead) ringPassMs / 1000f else null,
     )
 
     private fun approach(cur: Float, target: Float, ratePerSec: Float, dt: Float): Float {
@@ -938,5 +973,5 @@ private fun StepDef.shuffled(random: kotlin.random.Random): StepDef {
     if (c.replyKind != ReplyKind.CHOICE || c.options.size < 3) return this
     val order = c.options.indices.shuffled(random)
     val mixed = ChoiceDef(c.question, order.map { c.options[it] }, order.indexOf(c.correct), c.wrongLine, c.replyKind, c.penaltyFree)
-    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio)
+    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio, needsClearRing)
 }

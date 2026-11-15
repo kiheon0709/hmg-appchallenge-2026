@@ -87,6 +87,19 @@ data class TrainingConfig(
     val placeRandom: Random = Random.Default,
     /** 회전교차로: 이 속도 이하로 줄이면 "서행하거나 일시정지"로 본다. */
     val roundaboutYieldKmh: Float = 10f,
+    /**
+     * 회전교차로: 상황이 시작될 때 양보선까지의 거리, 멈추기 시작하는 거리, 그 전에 밟았을 때 굴러가는 속도,
+     * 도는 차가 내 진입 지점을 지나가는 때(상황 시작부터), 진입할 때의 속도.
+     * 밟지 않으면 시속 30으로 3.6초 만에 양보선에 닿으므로, 도는 차(5초)보다 먼저 들어가게 된다.
+     * 바로 밟으면 5초쯤에 양보선 앞에 서고, 도는 차가 지나가 비면(6초) 들어간다(힌트는 7초에 나온다).
+     */
+    val roundaboutApproachM: Float = 30f,
+    val roundaboutStopM: Float = 5f,
+    val roundaboutCreepKmh: Float = 20f,
+    val roundaboutPassMs: Long = 5_000,
+    /** 도는 차가 진입 지점을 지나가고 이만큼 더 지나야 "비었다"로 본다(차가 바로 앞에 있을 때 들어가지 않게). */
+    val roundaboutClearAfterMs: Long = 1_000,
+    val roundaboutEnterKmh: Float = 20f,
     /** 어린이 보호구역: 들어설 때의 화면 속 속도와 지켜야 할 속도(표지의 제한속도, 통상 시속 30km). */
     val schoolApproachKmh: Float = 50f,
     /** 도심의 평소 속도(일반도로 도시부 제한속도). 고속도로·내리막은 [cruiseSpeedKmh], 보호구역은 [schoolApproachKmh]. */
@@ -95,8 +108,11 @@ data class TrainingConfig(
     /**
      * ★3 기준을 따로 두는 상황(없으면 제한 시간 × [threeStarFraction]). 조작 자체에 시간이 드는 상황은
      * 바로 움직여도 절반 안에 못 끝낸다: 보호구역은 시속 50에서 멈추는 데만 3.6초, 합류는 깜빡이를 3초 켜 둔 뒤에 조향한다.
+     * 회전교차로는 도는 차가 지나가 비는 데만 6초가 걸린다.
      */
-    val threeStarMs: Map<SituationId, Long> = mapOf(SituationId.SCHOOL_ZONE to 7_500, SituationId.HIGHWAY_MERGE to 7_000),
+    val threeStarMs: Map<SituationId, Long> = mapOf(
+        SituationId.SCHOOL_ZONE to 7_500, SituationId.HIGHWAY_MERGE to 7_000, SituationId.ROUNDABOUT_ENTRY to 8_500,
+    ),
     /** 일반 차로 요금소: 요금소가 처음 보이는 거리(3D 장면의 값과 같다), 멈추기 시작하는 거리, 그 전에 밟았을 때 굴러가는 속도. */
     val tollApproachM: Float = 80f,
     val tollStopM: Float = 5f,
@@ -158,7 +174,8 @@ data class TrainingConfig(
             SituationId.HIGHWAY_MERGE to 10_000,
             SituationId.HYDROPLANING to 8_000,
             SituationId.HIPASS_WRONG_LANE to 0, // 말로 답하는 상황
-            SituationId.ROUNDABOUT_ENTRY to 10_000,
+            // 양보선에서 도는 차를 보내고(6초) 들어가야 해서 넉넉히 준다
+            SituationId.ROUNDABOUT_ENTRY to 14_000,
             SituationId.SCHOOL_ZONE to 10_000,
             SituationId.TOLL_BOOTH to 0, // 시간 제한 없음(차례대로 하는 절차)
         )

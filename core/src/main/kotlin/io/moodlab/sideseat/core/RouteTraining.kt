@@ -38,6 +38,8 @@ object RouteTraining {
         if ("SLIPPERY_ROAD_ALERT" in f.cautionTypes) out += RouteMatch(SituationId.HYDROPLANING, "미끄러운 길")
         if ("HEAVY" in f.congestion || "SLOW" in f.congestion) out += RouteMatch(SituationId.SUDDEN_STOP, "막히는 구간")
         else if ("ACCIDENT_PRONE_AREA" in f.cautionTypes) out += RouteMatch(SituationId.SUDDEN_STOP, "사고가 잦은 곳")
+        if (turns.any { it.startsWith("TURN_ENTER_ROUNDABOUT") }) out += RouteMatch(SituationId.ROUNDABOUT_ENTRY, "회전교차로")
+        if ("SCHOOL_ZONE" in f.cautionTypes) out += RouteMatch(SituationId.SCHOOL_ZONE, "어린이 보호구역")
         if ("TURN_RIGHT" in turns) out += RouteMatch(SituationId.RIGHT_TURN_CROSSWALK, "우회전")
         return out
     }

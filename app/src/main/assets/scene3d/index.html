@@ -31,6 +31,8 @@ const DEFAULTS = { speed: 100, brake: 0, steer: 0, turn: 'off', rain: 0, wiper: 
   fog: 0, headlights: 1, tunnel: false, leadBrake: false, gap: 32, leadSpeed: null, lead: true, hydroplane: 0, curve: 1, paused: false,
   // 앱(호스트)이 주는 값: 판정은 core가 하고 장면은 따라가기만 한다. null이면 장면이 스스로 계산한다
   hostSpeed: null, hostGap: null, crash: false, lane: 0, landmark: null, hold: true, blur: 0, tunnelDist: 180,
+  // ringT: 회전교차로에서 도는 차가 내 진입 지점을 지나가기까지 남은 시간(초, 지나가면 음수). null이면 장면이 알아서 돌린다
+  ringT: null,
   fpsCap: +Q.get('fps_cap') || 0,
   // place: 장소(highway 고속도로, city 도심, school 어린이 보호구역, downhill 내리막). 문제 상황(비·안개·앞차 등)과 따로 고른다
   place: 'highway',
@@ -1223,6 +1225,7 @@ function set(o) {
       case 'crash': if (v && !P.crash) S.shake = 1.2; P.crash = !!v; break;
       case 'lane': P.lane = clamp(+v, -1, 1); break;
       case 'hold': P.hold = !!v; break;
+      case 'ringT': P.ringT = v === null ? null : +v; break;
       case 'blur': P.blur = clamp(+v, 0, 1); break;
       case 'fpsCap': P.fpsCap = clamp(+v, 0, 240); break;
       case 'daylight': P.daylight = clamp(+v, 0, 1); break;
@@ -1319,7 +1322,10 @@ function update(dt) {
   S.steerS = ease(S.steerS, P.steer, 10, dt);
   let yawT = clamp(S.steerS, -90, 90) * 0.035 * Math.PI / 180 * (S.hydro ? 0.2 : 1);
   if (S.hydro) { S.hydroPh += dt; yawT += (Math.sin(S.hydroPh * 1.3) * 0.009 + Math.sin(S.hydroPh * 3.1) * 0.004) * P.hydroplane; }
-  S.yaw = ease(S.yaw, yawT, 5, dt);
+  // 회전교차로에 들어서면(hold가 풀리면) 고리를 따라 오른쪽으로 돌아 나간다
+  const ringIn = S.lmW !== null && S.lmKind === 'roundabout' && P.landmark && !P.hold ? clamp((S.lmZ + 5) / 9, 0, 1) : 0;
+  yawT += ringIn * 0.55;
+  S.yaw = ease(S.yaw, yawT, ringIn > 0 ? 1.6 : 5, dt);
   S.x += S.v * Math.sin(S.yaw) * dt + (S.hydro ? Math.sin(S.hydroPh * 0.8 + 1) * 0.3 * dt : 0);
   if (P.hostSpeed !== null && Math.abs(S.steerS) < 3 && !S.hydro) S.x = ease(S.x, 0, 0.35, dt); // 핸들을 풀면 차로 가운데로 돌아온다
   // 일반 차로 요금소가 앞에 있는 동안은 오른쪽 일반 차로로 간다(지나갈 때까지)
@@ -1337,8 +1343,11 @@ function update(dt) {
     let z = S.lmW + S.dist;
     // 일반 차로 요금소는 부스 창이 왼쪽 앞에 보이는 자리까지 들어가 선다(차단봉은 5m쯤 앞)
     if (P.landmark && P.hold) { const lim = S.lmKind === 'tollbooth' ? -1.8 - S.v * S.v / 7.8 : -(S.lmKind === 'tollgate' ? 27 : (S.lmKind === 'roundabout' ? 7 : 10.5) + S.v * S.v / 7.8); if (z > lim) { z = lim; S.lmW = z - S.dist; } }
+    // 회전교차로에 들어선 뒤에는 고리 차로까지만 나아간다(가운데 섬을 뚫고 가지 않게)
+    if (S.lmKind === 'roundabout' && P.landmark && !P.hold && z > 4) { z = 4; S.lmW = z - S.dist; }
     S.lmZ = z;
-    if (S.lmKind === 'roundabout') S.rbA += dt * 0.5;
+    // 도는 차: 앱이 남은 시간을 주면 그 시각에 진입 지점(각도 0)을 지나가게 맞춘다
+    if (S.lmKind === 'roundabout') { S.rbA += dt * 0.5; if (P.ringT !== null) S.rbA += (-0.5 * P.ringT - S.rbA) * Math.min(1, dt * 4); }
     if ((S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.3) { S.pedX -= 1.4 * dt; UP.uWalk.value = (UP.uWalk.value + dt * 5.6) % 6.2832; }
     if (z > 16) { S.lmW = null; S.lmZ = -5000; emit('landmarkPassed', { kind: S.lmKind }); }
   }
@@ -1428,16 +1437,18 @@ function render() {
   signalMast.visible = lmOn && S.lmKind === 'crosswalk' && S.placeId === 1; signalMast.position.set(0, 0, S.lmZ);
   schoolSigns.visible = lmOn && S.lmKind === 'school'; schoolSigns.position.set(0, 0, S.lmZ);
   const rbOn = lmOn && S.lmKind === 'roundabout';
+  // 앱이 도는 차의 시각을 줄 때는, 진입 지점을 지나간 차가 맞은편 출구로 빠져나가 다시 돌아오지 않는다(지나간 뒤 비어 보이게)
+  const ringCarOn = (a) => P.ringT === null || a < 2.3;
   island.visible = rbOn; island.position.set(0, 0, S.lmZ - 19);
   { // 주차된 차와 도는 차: 자리와 바닥 그림자
     let n = 0; const sh = U.uCarSh.value;
     PARKED.forEach((c) => { const z = ((c.userData.z + S.dist + 500) % 600 + 600) % 600 - 500;
       const on = S.placeId === 1 && !(lmOn && Math.abs(z - (S.lmZ - (S.lmKind === 'roundabout' ? 19 : 8))) < (S.lmKind === 'roundabout' ? 32 : 26));
       c.visible = on && z < 20; c.position.set(c.userData.x, 0, z); if (c.visible && n < 6) sh[n++].set(c.userData.x, z, 1); });
-    ringCars.forEach((c, i) => { if (rbOn && n < 8) { const a = S.rbA + i * 2.6; sh[n++].set(Math.sin(a) * 12.6, S.lmZ - 19 + Math.cos(a) * 12.6, 1); } });
+    ringCars.forEach((c, i) => { const a = S.rbA + i * 2.6; if (rbOn && ringCarOn(a) && n < 8) { sh[n++].set(Math.sin(a) * 12.6, S.lmZ - 19 + Math.cos(a) * 12.6, 1); } });
     for (; n < 8; n++) sh[n].z = 0;
   }
-  ringCars.forEach((c, i) => { const a = S.rbA + i * 2.6; c.visible = rbOn; c.position.set(Math.sin(a) * 12.6, 0, S.lmZ - 19 + Math.cos(a) * 12.6); c.rotation.y = a - Math.PI / 2; });
+  ringCars.forEach((c, i) => { const a = S.rbA + i * 2.6; c.visible = rbOn && ringCarOn(a); c.position.set(Math.sin(a) * 12.6, 0, S.lmZ - 19 + Math.cos(a) * 12.6); c.rotation.y = a - Math.PI / 2; });
   peds.visible = lmOn && (S.lmKind === 'crosswalk' || S.lmKind === 'school') && S.pedX > -5.25; peds.position.set(S.pedX, Math.abs(Math.cos(UP.uWalk.value)) * 0.022, S.lmZ);
   toll.visible = lmOn && (S.lmKind === 'tollgate' || S.lmKind === 'tollbooth'); toll.position.set(0, 0, S.lmZ);
   boothArm.visible = toll.visible; boothArm.position.set(2.24, 1.03, S.lmZ - 3.4); boothArm.rotation.z = S.armA * 1.45;
