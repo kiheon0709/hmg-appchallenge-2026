@@ -25,3 +25,7 @@ docs/plan/video/*.mp4
 docs/plan/video/**/*.webm
 .kotlin/
 _check.pdf
+
+# 저장소에 올리지 않는 로컬 문서
+CLAUDE.md
+기획서_초안.md
