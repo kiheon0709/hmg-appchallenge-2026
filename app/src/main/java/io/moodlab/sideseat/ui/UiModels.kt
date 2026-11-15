@@ -55,6 +55,8 @@ data class HomeUi(
     val vehicleChoiceId: String? = null,
     /** 차종을 한 번이라도 골랐다. false면 홈에 들어올 때 고르는 판이 먼저 뜬다. */
     val vehicleChosen: Boolean = true,
+    /** 첫 실행 소개를 봤다. false면 홈에 들어올 때 소개가 먼저 뜬다(그다음이 차종 고르기). */
+    val introSeen: Boolean = true,
     val talk: TalkUi = TalkUi(),
 )
 
@@ -140,4 +142,6 @@ sealed interface UiAction {
     data object ToggleDebugPanel : UiAction
     /** 이 차의 차종을 고른다. null이면 "그 밖의 차"(차종을 모르는 것으로 두고 공통 안내를 쓴다). */
     data class ChooseVehicle(val id: String?) : UiAction
+    /** 첫 실행 소개를 끝까지 봤거나 건너뛰었다. */
+    data object IntroDone : UiAction
 }

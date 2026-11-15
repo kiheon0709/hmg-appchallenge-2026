@@ -47,30 +47,39 @@ import io.moodlab.sideseat.core.VehicleState
 import io.moodlab.sideseat.ui.scene.DriveScene
 import io.moodlab.sideseat.voice.Persona
 
-/** 홈(정차). 가로: 왼쪽 선배 인사와 추천 훈련, 오른쪽 챕터·면허·미니게임. 세로: 위아래로 쌓는다. */
+/**
+ * 홈(정차). 처음에는 소개 → 차종 고르기 → 홈 순서로 보인다.
+ * 가로: 왼쪽 타비 인사와 추천 연습, 오른쪽 이 차·출발 전 연습 목록. 세로: 위아래로 쌓는다.
+ */
 @Composable
 fun HomeScreen(state: HomeUi, onAction: (UiAction) -> Unit) {
     SideSeatFrame { sz ->
         // 차종 고르기: 처음에는 먼저 뜨고, 그 뒤에는 "차종 바꾸기"로 연다. 정차 중에만 보인다
         var pickerOpen by remember { mutableStateOf(false) }
-        if (state.vehicleChoices.isNotEmpty() && state.canTrain && (!state.vehicleChosen || pickerOpen)) {
+        // 소개: 처음 한 번, 그 뒤에는 "타비 소개 다시 보기"로 연다. 정차 중에만 보인다
+        var introOpen by remember { mutableStateOf(false) }
+        if (state.canTrain && (!state.introSeen || introOpen)) {
+            IntroScreen { introOpen = false; onAction(UiAction.IntroDone) }
+        } else if (state.vehicleChoices.isNotEmpty() && state.canTrain && (!state.vehicleChosen || pickerOpen)) {
             VehiclePicker(state, onChoose = { pickerOpen = false; onAction(UiAction.ChooseVehicle(it)) }, onClose = { pickerOpen = false })
         } else if (sz.wide) {
             Row(Modifier.fillMaxSize().padding(sz.pad), horizontalArrangement = Arrangement.spacedBy(sz.pad)) {
                 Column(Modifier.weight(0.46f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                     Hero(state, onAction, Modifier.fillMaxWidth().weight(1f))
+                    Moments()
                     TalkArea(state, onAction)
                 }
                 Column(
                     Modifier.weight(0.54f).fillMaxHeight().verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(sz.gap),
-                ) { Catalog(state, onAction) { pickerOpen = true } }
+                ) { Catalog(state, onAction, onIntro = { introOpen = true }) { pickerOpen = true } }
             }
         } else {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(sz.pad), verticalArrangement = Arrangement.spacedBy(sz.gap)) {
                 Hero(state, onAction, Modifier.fillMaxWidth().height(sz.height * 0.5f))
+                Moments()
                 TalkArea(state, onAction)
-                Catalog(state, onAction) { pickerOpen = true }
+                Catalog(state, onAction, onIntro = { introOpen = true }) { pickerOpen = true }
             }
         }
     }
@@ -110,7 +119,7 @@ private fun Hero(state: HomeUi, onAction: (UiAction) -> Unit, modifier: Modifier
             Spacer(Modifier.width(sz.dp(14f)))
             Column {
                 Text(Persona.NAME, color = HeroWhite, fontSize = sz.sp(28f), fontWeight = FontWeight.Bold)
-                Text(state.vehicleName ?: "옆자리에 ${Persona.NAME}가 앉아요", color = HeroDim, fontSize = sz.caption)
+                Text("옆자리 운전 코치", color = HeroDim, fontSize = sz.caption)
             }
         }
     }
@@ -173,9 +182,16 @@ private fun VehiclePicker(state: HomeUi, onChoose: (String?) -> Unit, onClose: (
             Modifier.widthIn(max = sz.dp(1000f)).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(sz.gap),
         ) {
-            Text("어떤 차를 타고 있나요?", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SeniorBadge(size = sz.dp(84f))
+                Spacer(Modifier.width(sz.dp(20f)))
+                Column {
+                    Text("${Persona.NAME}가 물어봐요", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.SemiBold)
+                    Text("어떤 차를 타고 있나요?", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Bold)
+                }
+            }
             Text(
-                "스위치가 어디 있는지 이 차에 맞춰 알려 줄게요. 나중에 홈에서 바꿀 수 있어요.",
+                "와이퍼, 전조등, 비상등은 차마다 자리가 달라요. 고른 차에 맞춰 \"이 차에서는 어디\"까지 알려 줄게요. 나중에 홈에서 바꿀 수 있어요.",
                 color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.35f,
             )
             Spacer(Modifier.height(sz.dp(4f)))
@@ -218,7 +234,7 @@ private fun TalkArea(state: HomeUi, onAction: (UiAction) -> Unit) {
 }
 
 @Composable
-private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit, onPickVehicle: () -> Unit) {
+private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit, onIntro: () -> Unit, onPickVehicle: () -> Unit) {
     val sz = LocalSz.current
     // 이 차와 이 차 면허를 한 카드에 묶는다. 스위치 위치 안내가 이 차 기준으로 나온다
     Column(Modifier.fillMaxWidth().card().padding(horizontal = sz.dp(24f), vertical = sz.dp(18f)), verticalArrangement = Arrangement.spacedBy(sz.dp(14f))) {
@@ -235,7 +251,7 @@ private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit, onPickVehicle: 
         }
         LicenseBar(state.progress, state.vehicleModelKey, state.vehicleName, bare = true)
     }
-    SectionTitle("챕터")
+    SectionTitle("출발 전 연습 · 세워 둔 차에서")
     Column(verticalArrangement = Arrangement.spacedBy(sz.dp(10f))) {
         state.chapters.forEach { ch -> ChapterRow(ch, state) { onAction(UiAction.StartChapter(ch.id)) } }
     }
@@ -251,7 +267,33 @@ private fun Catalog(state: HomeUi, onAction: (UiAction) -> Unit, onPickVehicle: 
         BigButton("창문 버저", Modifier.weight(1f), enabled = open, sub = "창문으로 먼저 눌러요") { onAction(UiAction.OpenWindowBuzzer) }
     }
     if (!state.miniGamesUnlocked) Text("미니게임은 챕터를 하나 깨면 열려요.", color = Sc.textDim, fontSize = sz.caption)
+    BigButton("${Persona.NAME} 소개 다시 보기", Modifier.fillMaxWidth(), sub = "무엇을 하는 앱인지 세 장으로", onClick = onIntro)
     Text(OSM_CREDIT, color = Sc.textDim, fontSize = sz.caption)
+}
+
+/** 타비가 하는 일 세 가지 때. 홈만 봐도 연습(지금), 주행 코치, 도착 뒤 돌아보기가 있다는 것을 알 수 있게 한다. */
+@Composable
+private fun Moments() {
+    val sz = LocalSz.current
+    Row(Modifier.fillMaxWidth().card().padding(horizontal = sz.dp(10f), vertical = sz.dp(14f))) {
+        listOf(
+            Triple("출발 전", "진짜 스위치로 연습", true),
+            Triple("달릴 때", "한 문장으로 코치", false),
+            Triple("도착하면", "같이 돌아보기", false),
+        ).forEachIndexed { i, (whenText, what, now) ->
+            if (i > 0) Box(Modifier.width(sz.dp(1f)).height(sz.dp(52f)).background(Sc.outline))
+            Column(Modifier.weight(1f).padding(horizontal = sz.dp(14f)), verticalArrangement = Arrangement.spacedBy(sz.dp(2f))) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(whenText, color = if (now) Sc.accent else Sc.text, fontSize = sz.label, fontWeight = FontWeight.Bold, maxLines = 1)
+                    if (now) {
+                        Spacer(Modifier.width(sz.dp(8f)))
+                        Chip("지금", color = Sc.onAccent, bg = Sc.accent)
+                    }
+                }
+                Text(what, color = Sc.textDim, fontSize = sz.caption, lineHeight = sz.caption * 1.3f, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
 }
 
 @Composable
@@ -279,7 +321,8 @@ private fun ChapterRow(ch: ChapterInfo, state: HomeUi, onClick: () -> Unit) {
             Modifier.size(sz.dp(60f)).clip(RoundedCornerShape(sz.dp(16f))).background(if (recommended) Sc.accent else Sc.surfaceHi),
             contentAlignment = Alignment.Center,
         ) {
-            Text(ch.id, color = if (recommended) Sc.onAccent else if (enabled) Sc.text else Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Bold)
+            // 내부 번호(C1) 대신 순서만 보여 준다. 무엇을 익히는지는 제목과 상황 목록이 말한다
+            Text(ch.id.removePrefix("C"), color = if (recommended) Sc.onAccent else if (enabled) Sc.text else Sc.textDim, fontSize = sz.body, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.width(sz.dp(18f)))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(sz.dp(2f))) {

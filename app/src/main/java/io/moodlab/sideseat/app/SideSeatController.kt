@@ -90,6 +90,9 @@ class SideSeatController(
     private var talkJob: Job? = null
     private var lastAmbient: AmbientMood? = null
     private var firstState = true
+    /** 방금 주행을 마치고 돌아왔다 / 방금 차종을 바꿨다. 홈 인사가 그 상황에 맞게 나온다. 훈련을 시작하면 지운다. */
+    private var justDrove = false
+    private var vehicleJustChanged = false
     // 앱이 가려진 동안 훈련·미니게임을 멈춘다: 그 시간만큼 뒤로 물린 시계([clock])를 엔진에 넘겨서 초시계와 제한 시간이 서 있게 한다
     private var pausedAt: Long? = null
     private var pausedTotal = 0L
@@ -129,6 +132,7 @@ class SideSeatController(
         }
         wake?.let { w -> scope.launch { w.state.collect { st -> _ui.update { it.copy(coach = it.coach.copy(wake = wakeUi(st))) } } } }
         restoreVehicleChoice()
+        _ui.update { it.copy(home = it.home.copy(introSeen = store.loadIntroSeen())) }
         refreshHome()
     }
 
@@ -166,7 +170,10 @@ class SideSeatController(
         VoiceModule.forceVehicle(choice?.id)
         store.saveVehicleChoice(choice?.id)
         Log.i(TAG, "app vehicle choice ${choice?.id ?: "other"}")
+        // 차종을 바꿨을 때만(처음 고를 때는 아님) "이 차는 처음이네요"로 맞는다
+        vehicleJustChanged = _ui.value.home.vehicleChosen && _ui.value.home.vehicleChoiceId != choice?.id
         _ui.update { it.copy(home = it.home.copy(vehicleChoiceId = choice?.id, vehicleChosen = true, vehicleName = choice?.name)) }
+        refreshHome()
     }
 
     private fun isDebugGateway(g: VehicleGateway) = g.javaClass.simpleName.startsWith("Debug")
@@ -278,6 +285,7 @@ class SideSeatController(
         stopLoop()
         talkJob?.cancel()
         val summary = coach.onDriveEnd(now())
+        justDrove = true
         val previous = lastDrive
         lastDrive = summary
         store.saveLastDrive(summary)
@@ -338,6 +346,8 @@ class SideSeatController(
         talkJob?.cancel()
         voice.stopSpeaking()
         endPause()
+        justDrove = false
+        vehicleJustChanged = false
         begin(clock())
         // 결과 화면이 "첫 기록 / 새 기록"을 가릴 수 있게 시작 전의 최고 기록을 남겨 둔다
         _ui.update { it.copy(result = null, training = null, bestBefore = progress.bestReactionMs) }
@@ -513,6 +523,10 @@ class SideSeatController(
             }
             UiAction.ToggleDebugPanel -> _ui.update { it.copy(debugPanel = !it.debugPanel) }
             is UiAction.ChooseVehicle -> chooseVehicle(a.id)
+            UiAction.IntroDone -> {
+                store.saveIntroSeen()
+                _ui.update { it.copy(home = it.home.copy(introSeen = true)) }
+            }
         }
     }
 
@@ -611,13 +625,24 @@ class SideSeatController(
         // 내비에 경로가 있고 가는 길에 연습할 만한 것이 있으면 그것을 먼저 권한다.
         val onRoute = route?.let { RouteTraining.recommend(it, chapters, practicedSituations()) }
         if (onRoute != null) Log.i(TAG, "app route recommend chapter=${onRoute.chapterId} situation=${onRoute.situation} reason=${onRoute.reason}")
+        // 인사는 지금 상태에 맞게: 하던 연습 → 가는 길 → 방금 주행 → 방금 바꾼 차 → 처음 → 평소
+        val resumeTitle = engine.resumableChapter()?.let { id -> chapters.firstOrNull { it.id == id }?.title }
+        val vehicleName = _ui.value.home.vehicleName
+        val (greeting, subGreeting) = when {
+            resumeTitle != null -> "하던 연습이 남아 있어요." to "$resumeTitle, 남은 상황부터 이어서 해요."
+            onRoute != null -> "가는 길, 미리 해 봐요." to "출발 전에, 세워 둔 차에서 한 번 겪어 봐요."
+            justDrove -> "잘 다녀왔어요." to
+                if (fromDrive != null) "오늘 길에서 나온 것만 1분 연습해 볼까요?" else "세워 둔 김에 한 가지만 더 익혀 봐요."
+            vehicleJustChanged -> (vehicleName?.let { "$it, 이 차는 처음이네요." } ?: "이 차는 처음이네요.") to "스위치 자리부터 손에 익혀 봐요."
+            firstTime -> "세워 둔 차에서 연습해요." to "비·안개·급정거 같은 상황을 이 차의 진짜 스위치로 미리 겪어 봐요."
+            else -> "오늘은 뭘 익혀 볼까요?" to "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요."
+        }
         _ui.update {
             it.copy(
                 progress = progress,
                 home = it.home.copy(
-                    greeting = if (firstTime) "이 차는 처음이시네요." else "다시 왔네요. 반가워요.",
-                    subGreeting = if (firstTime) "3분만 같이 해 볼까요? 이 차의 진짜 스위치로 연습해요."
-                    else "세워 둔 김에, 이 차의 진짜 스위치로 한 판 해요.",
+                    greeting = greeting,
+                    subGreeting = subGreeting,
                     chapters = chapters,
                     progress = progress,
                     vehicleModelKey = key,

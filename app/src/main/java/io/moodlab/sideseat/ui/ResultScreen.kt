@@ -175,8 +175,8 @@ internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, ve
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(if (license.licensed) "이 차 숙련" else "이 차 면허", color = if (license.licensed) Sc.ok else Sc.text, fontSize = sz.label, fontWeight = FontWeight.Bold)
             ProgressBar(cleared / total.toFloat(), Modifier.weight(1f).padding(horizontal = sz.dp(18f)), color = color)
-            Text("$cleared", color = color, fontSize = sz.body, fontWeight = FontWeight.Bold)
-            Text(" / $total", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
+            Text("${total}개 중 ", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
+            Text("${cleared}개", color = color, fontSize = sz.body, fontWeight = FontWeight.Bold)
         }
         Text(
             (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "스위치를 익히는 챕터 ${total}개(C1~C4) 중 별 2개 이상으로 마친 수예요. 다른 차에서는 다시 따요.",

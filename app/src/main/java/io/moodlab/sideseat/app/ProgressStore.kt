@@ -38,6 +38,11 @@ class ProgressStore(context: Context) {
     fun saveResume(r: List<io.moodlab.sideseat.core.ResumeState>) =
         write("resume.json", json.encodeToString(kotlinx.serialization.builtins.ListSerializer(io.moodlab.sideseat.core.ResumeState.serializer()), r))
 
+    /** 첫 실행 소개를 봤는가. */
+    fun loadIntroSeen(): Boolean = read("intro_seen.txt") { true } ?: false
+
+    fun saveIntroSeen() = write("intro_seen.txt", "1")
+
     /** 사용자가 고른 차종 아이디. 아직 안 골랐으면 null, "그 밖의 차"를 골랐으면 빈 문자열. */
     fun loadVehicleChoice(): String? = read("vehicle_choice.txt") { it.trim() }
 

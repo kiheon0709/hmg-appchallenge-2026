@@ -98,6 +98,34 @@ fun main(args: Array<String>) {
         val res = UiSamples.chapterResult.copy(results = UiSamples.chapterResult.results.map { if (it.id == SituationId.SUDDEN_STOP) it.copy(stars = 0, reactionMs = null, missedStepIds = listOf("brake")) else it })
         TrainingScreen(v.copy(phase = TrainingPhase.CHAPTER_DONE, chapterId = "C1", chapterResult = res), c) {}
     }
+    // v21: 소개 → 차종 고르기 → 홈(상태별)
+    for (dark in listOf(false, true)) {
+        val n = if (dark) "_night" else ""
+        for (pg in 0..2) if (want("v21_intro")) shoot("v21_intro_${pg + 1}$n", W, H, dark, 0f, 0.3f) { IntroScreen(pg) {} }
+        if (want("v21_vehicle")) shoot("v21_vehicle$n", W, H, dark, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
+        val base = UiSamples.home.copy(talk = TalkUi())
+        fun home(name: String, s: HomeUi) { if (want("v21_home")) shoot("v21_home_$name$n", W, H, dark, 0f, 0.3f) { HomeScreen(s) {} } }
+        home("first", base.copy(
+            greeting = "세워 둔 차에서 연습해요.", subGreeting = "비·안개·급정거 같은 상황을 이 차의 진짜 스위치로 미리 겪어 봐요.",
+            progress = TrainingProgress(), recommendedChapterId = "C1", recommendReason = "처음이라면 여기서 시작해요.", miniGamesUnlocked = false,
+        ))
+        home("resume", base.copy(
+            greeting = "하던 연습이 남아 있어요.", subGreeting = "첫 빗길, 남은 상황부터 이어서 해요.", resumeChapterId = "C1", resumeChapterIds = setOf("C1"),
+        ))
+        home("route", base.copy(
+            greeting = "가는 길, 미리 해 봐요.", subGreeting = "출발 전에, 세워 둔 차에서 한 번 겪어 봐요.", recommendedChapterId = "C5",
+            recommendLabel = "가는 길 연습", recommendReason = "가는 길에 요금소가 있어요. 미리 연습해 볼까요?",
+        ))
+        home("after_drive", base.copy(
+            greeting = "잘 다녀왔어요.", subGreeting = "오늘 길에서 나온 것만 1분 연습해 볼까요?", recommendedChapterId = "C1",
+            recommendReason = "지난 주행을 보고 골랐어요. 폭우 연습이에요.", talk = TalkUi(answerText = "전조등은 와이퍼를 켤 때 같이 켜면 돼요."),
+        ))
+    }
+    if (want("v21_portrait")) {
+        shoot("v21_intro_1_portrait", 835, H, false, 0f, 0.3f) { IntroScreen(0) {} }
+        shoot("v21_intro_2_portrait", 835, H, false, 0f, 0.3f) { IntroScreen(1) {} }
+        shoot("v21_home_first_portrait", 835, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(talk = TalkUi(), greeting = "세워 둔 차에서 연습해요.", subGreeting = "비·안개·급정거 같은 상황을 이 차의 진짜 스위치로 미리 겪어 봐요.", progress = TrainingProgress(), recommendedChapterId = "C1", recommendReason = "처음이라면 여기서 시작해요.")) {} }
+    }
     if (want("h_home")) shoot("h_home", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
     if (want("h_home_night")) shoot("h_home_night", W, H, true, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
     if (want("h_home_portrait")) shoot("h_home_portrait", 835, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home) {} }
