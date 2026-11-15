@@ -1,0 +1,76 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>타비 대화 장면 촬영 시나리오</title>
+<style>
+@page{size:A4;margin:16mm 15mm}
+body{font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;color:#111;font-size:11pt;line-height:1.55}
+h1{font-size:20pt;margin:0 0 2mm}
+h2{font-size:13.5pt;margin:7mm 0 2mm;border-bottom:1.5px solid #2f6bf2;padding-bottom:1mm}
+.sub{color:#555;margin:0 0 4mm}
+table{width:100%;border-collapse:collapse;margin:2mm 0 3mm;font-size:10pt}
+th,td{border:1px solid #c9d0da;padding:2mm 2.4mm;vertical-align:top;text-align:left}
+th{background:#eef2f8}
+.say{font-weight:700;color:#1146c9}
+.box{background:#f4f7fb;border-left:4px solid #2f6bf2;padding:2.5mm 3.5mm;margin:2mm 0}
+.warn{background:#fff6e5;border-left:4px solid #e89b00;padding:2.5mm 3.5mm;margin:2mm 0}
+ol,ul{margin:1mm 0 2mm 5mm;padding-left:4mm}
+.scene{page-break-inside:avoid}
+small{color:#666}
+</style></head><body>
+<h1>타비 대화 장면 촬영 시나리오</h1>
+<p class="sub">직접 목소리로 타비와 대화하는 장면만 모았어요. 기능 클립(훈련, 주행 코치, 리뷰)은 따로 녹화해요. 전부 찍으면 6~8분, 영상에는 그 가운데 좋은 것만 써요.</p>
+
+<h2>1. 찍기 전에</h2>
+<div class="box">
+<b>준비는 제가 해 둘게요.</b> 촬영용 에뮬레이터 창을 하나 띄우고, AI가 답하는 개발 빌드를 설치하고, 차종을 "더 뉴 그랜저"로 골라 홈 화면까지 가 둔 상태로 드려요. 기어를 바꾸는 것(P ↔ D)과 다음 장면으로 넘기는 것도 말씀하시면 제가 해요.
+</div>
+<ol>
+<li><b>맥 화면 녹화를 켜요.</b> <code>Shift + Command + 5</code> → "선택 부분 기록"으로 에뮬레이터의 오른쪽 앱 영역을 잡고 → 옵션에서 <b>마이크: MacBook 마이크</b>를 고른 뒤 기록. 내 목소리와 스피커로 나오는 타비 목소리가 함께 들어가요.</li>
+<li><b>맥 소리를 평소 듣는 크기로 올려요.</b> 타비 목소리가 스피커로 나와야 녹음돼요. 이어폰은 빼요.</li>
+<li><b>조용한 곳에서, 화면에서 팔 하나 거리.</b> 타비가 말을 끝낸 뒤 반 박자 쉬고 말해요. 겹치면 편집이 어려워요.</li>
+<li>장면마다 <b>시작 전에 2초, 끝난 뒤 2초</b>를 가만히 둬요. 자르기 쉬워져요.</li>
+<li>마음에 안 들면 그 장면만 다시 해요. 녹화는 끊지 않아도 돼요.</li>
+</ol>
+<div class="warn"><b>처음 한 번:</b> 에뮬레이터가 맥 마이크를 쓰려면 권한이 필요해요. "시스템 설정 → 개인정보 보호 및 보안 → 마이크"에 에뮬레이터(qemu) 항목이 뜨면 허용해 주세요. 이건 제가 대신 할 수 없어요. 허용한 뒤 "질문하기"를 눌러 "듣고 있어요"에서 말했을 때 화면에 받아쓴 글자가 뜨면 된 거예요.</div>
+
+<h2>2. 장면</h2>
+<p><small>파란 글자가 직접 말하실 대사예요. 대사는 자연스럽게 바꿔도 돼요. 타비의 답은 AI가 그때그때 만들어서 아래 예시와 문장이 다를 수 있어요.</small></p>
+
+<div class="scene"><table>
+<tr><th style="width:8%">장면</th><th style="width:20%">상태</th><th style="width:36%">하는 것</th><th>화면에서 볼 것</th></tr>
+<tr><td>A1</td><td>정차(P), 홈</td><td>"질문하기"를 누르고<br><span class="say">"와이퍼는 어디에 있어?"</span></td><td>타비가 듣는 표정 → 생각 → 말하는 표정. 그랜저 기준 위치를 답해요("핸들 오른쪽 레버…").</td></tr>
+<tr><td>A2</td><td>정차(P), 홈</td><td>"질문하기"를 누르고<br><span class="say">"앞유리에 김이 서리면 어떻게 해?"</span></td><td>성에 제거, 에어컨, 외기 전환을 순서대로 알려 줘요.</td></tr>
+<tr><td>A3</td><td>정차(P), 홈</td><td>"질문하기"를 누르고<br><span class="say">"타이어 경고등이 떴는데 계속 가도 돼?"</span></td><td>대처 방법을 답해요. 이 차의 실제 경고등 상태는 타비가 볼 수 없다는 점도 말할 수 있어요.</td></tr>
+<tr><td>A4</td><td>정차(P), 홈</td><td>"질문하기"를 누르고<br><span class="say">"오늘 저녁 뭐 먹을까?"</span></td><td>운전과 상관없는 질문은 정중히 거절해요. "운전 이야기만 도와 드려요" 같은 답.</td></tr>
+</table></div>
+
+<div class="scene"><table>
+<tr><th style="width:8%">장면</th><th style="width:20%">상태</th><th style="width:36%">하는 것</th><th>화면에서 볼 것</th></tr>
+<tr><td>B1</td><td>주행(D), 코치 화면<br><small>기어는 제가 바꿔요</small></td><td>화면을 누르지 않고<br><span class="say">"타비야, 성에 제거 버튼 어디야?"</span></td><td>"타비야"에 확인음이 나고 상태가 "듣고 있어요"로 바뀌어요. 한두 문장으로 짧게 답해요.</td></tr>
+<tr><td>B2</td><td>주행(D)</td><td><span class="say">"타비야, 고속도로에서 졸리면 어떻게 해?"</span></td><td>창문 열기, 외기, 휴게소를 권해요.</td></tr>
+<tr><td>B3</td><td>주행(D)<br><small>와이퍼를 켜고 전조등을 끈 상태로 제가 맞춰 둬요</small></td><td>타비가 먼저 "비가 와요. 전조등을 켜 주세요."라고 말하면<br><span class="say">"타비야, 전조등은 어디서 켜?"</span></td><td>타비가 먼저 말을 건 뒤 이어서 묻는 흐름. 영상에서 가장 쓰기 좋은 장면이에요.</td></tr>
+<tr><td>B4</td><td>주행(D)</td><td><span class="say">"헤이 글레오, 음악 틀어 줘"</span></td><td>타비가 대답하지 않고 물러나요(차량 비서에 양보). 화면 상태 문구가 바뀌어요.</td></tr>
+</table></div>
+
+<div class="scene"><table>
+<tr><th style="width:8%">장면</th><th style="width:20%">상태</th><th style="width:36%">하는 것</th><th>화면에서 볼 것</th></tr>
+<tr><td>C1</td><td>정차(P), 훈련 "길 위의 규칙"의 일반 차로 요금소<br><small>브레이크와 창문 조작은 제가 해요</small></td><td>타비가 "통행권을 받아 주세요. 받았나요?"라고 물으면<br><span class="say">"네, 받았어요"</span></td><td>말로 답하면 조작 목록의 "통행권 받기"에 체크가 붙어요.</td></tr>
+<tr><td>C2</td><td>정차(P), 훈련 "멈춰야 할 때"의 고장 정차</td><td>타비가 보기를 읽어 주면 맞는 번호를<br><span class="say">"2번"</span> <small>(보기 순서는 매번 달라요. 화면을 보고 맞는 번호로)</small></td><td>말로 퀴즈에 답하는 장면.</td></tr>
+<tr><td>D1</td><td>주차(P) 뒤, 리뷰 화면</td><td>타비의 총평이 끝난 뒤 "질문하기"를 누르고<br><span class="say">"왜 외기로 바꿔야 해?"</span></td><td>방금 주행에서 들은 조언을 되묻는 흐름.</td></tr>
+<tr><td>D2</td><td>리뷰 화면</td><td><span class="say">"다음에는 뭘 연습하면 좋을까?"</span></td><td>주행 내용에 맞는 연습을 권해요.</td></tr>
+</table></div>
+
+<h2>3. 꼭 찍을 것과 여유 되면 찍을 것</h2>
+<ul>
+<li><b>꼭:</b> A1(스위치 위치), B3(타비가 먼저 말하고 이어서 대화), C1(훈련 중 말로 답), D1(리뷰에서 되묻기)</li>
+<li><b>여유 되면:</b> A2, A4, B1, B4, C2, D2</li>
+</ul>
+
+<h2>4. 잘 안 될 때</h2>
+<table>
+<tr><th style="width:38%">증상</th><th>이렇게 해요</th></tr>
+<tr><td>"듣고 있어요"에서 말해도 글자가 안 떠요</td><td>맥 마이크 권한을 확인해요(1번의 노란 상자). 그래도 안 되면 알려 주세요. 녹음한 목소리를 넣는 방식으로 바꿀 수 있어요.</td></tr>
+<tr><td>"타비야"를 못 알아들어요</td><td>"타비야"를 또렷하게 말하고 반 박자 쉰 뒤 질문해요. 두 번 해도 안 되면 화면의 "질문하기"를 눌러요.</td></tr>
+<tr><td>답이 늦거나 "정확히 몰라요"라고 해요</td><td>인터넷 연결 문제일 수 있어요. 알려 주시면 확인해요.</td></tr>
+<tr><td>타비 목소리가 녹화에 작게 들어가요</td><td>맥 소리를 올리고 다시 찍어요. 편집에서 키울 수도 있어요.</td></tr>
+</table>
+<p><small>녹화 파일은 프로젝트 폴더의 <code>docs/plan/video/clips-user/</code>에 넣어 주시면 돼요. 파일 이름은 아무거나 괜찮아요.</small></p>
+</body></html>
