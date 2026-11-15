@@ -1,5 +1,5 @@
 <template>
-  <!-- cuts.json에서 만든 장면(r5_coach_review.webm 2~62.4초). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
+  <!-- cuts.json에서 만든 장면(r5_coach_review.webm). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
   <style>
     #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
     #clip-coach-k { position: absolute; left: 60px; top: 44px; padding: 6px 22px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 34px; }
@@ -13,33 +13,50 @@
     #clip-coach-p .wl { margin-top: 18px; display: flex; gap: 16px; font-size: 37px; line-height: 1.36; color: var(--color-ink); }
     #clip-coach-p .wl i { flex: none; margin-top: 16px; width: 14px; height: 14px; border-radius: 50%; background: var(--color-accent); }
     #clip-coach-n { position: absolute; left: 60px; top: 1018px; font-size: 28px; color: var(--ink2); }
+    #clip-coach-v .fl { position: absolute; inset: 0; background: #F2F4F8; opacity: 0; }
+    #root .cp { position: absolute; right: 700px; top: 100px; padding: 12px 30px; border-radius: 22px; background: #101216; color: #fff; font-size: 42px; opacity: 0; }
+    #clip-coach-v .sx { position: absolute; right: 24px; top: 24px; padding: 8px 20px; border-radius: 30px; background: rgba(16,18,22,0.8); color: #fff; font-size: 30px; opacity: 0; }
   </style>
   <div id="root" data-composition-id="clip-coach" data-width="1920" data-height="1080">
-    <audio id="clip-coach-a" class="clip" data-start="0" data-duration="60.4" data-track-index="9" data-volume="1" src="assets/media/coach.m4a"></audio>
-    <div id="clip-coach-k">달릴 때</div>
-    <div id="clip-coach-h">주행 중 코치</div>
-    <div id="clip-coach-v"><video id="clip-coach-vd" class="clip" data-start="0" data-duration="60.4" data-track-index="2" muted playsinline src="assets/media/coach.mp4"></video></div>
+    <audio id="clip-coach-a" class="clip" data-start="0" data-duration="19.45" data-track-index="9" data-volume="1" src="assets/media/coach.m4a"></audio>
+    <div id="clip-coach-k">운전 중</div>
+    <div id="clip-coach-h">운전 중 코치</div>
+    <div id="clip-coach-v"><video id="clip-coach-vd" class="clip" data-start="0" data-duration="19.45" data-track-index="2" muted playsinline src="assets/media/coach.mp4"></video><div class="fl" id="clip-coach-fl"></div></div>
+    <div class="cp" id="clip-coach-cp0">상황 1. 안전벨트를 안 매고 출발</div>
+    <div class="cp" id="clip-coach-cp1">상황 2. 비가 오는데 전조등이 꺼져 있음</div>
+    <div class="cp" id="clip-coach-cp2">상황 2. 비가 오는데 전조등이 꺼져 있음</div>
+    <div class="cp" id="clip-coach-cp3">상황 2. 비가 오는데 전조등이 꺼져 있음</div>
+    <div class="cp" id="clip-coach-cp4">상황 3. 깜빡이 없이 차로 변경</div>
+
     <div id="clip-coach-p">
       <div id="clip-coach-m"><canvas id="clip-coach-cv" width="340" height="340"></canvas></div>
       <h5>여기를 보세요</h5>
       <div class="wl"><i></i><span>기어를 D에 넣으면 코치 화면으로 바뀌어요</span></div>
-      <div class="wl"><i></i><span>"안전벨트부터 매 주세요."</span></div>
-      <div class="wl"><i></i><span>필요할 때만 한 문장. 그 사이에는 조용해요</span></div>
-      <div class="wl"><i></i><span>"연습했던 거예요. 비가 와요. 전조등을 켜 주세요."</span></div>
-      <div class="wl"><i></i><span>"방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요."</span></div>
+      <div class="wl"><i></i><span>필요한 순간에만 한 문장으로 말해요</span></div>
+      <div class="wl"><i></i><span>연습한 상황이 실제로 오면 "연습했던 거예요"라고 알려 줘요</span></div>
+      <div class="wl"><i></i><span>화면 아래에 전조등, 와이퍼 상태가 보여요</span></div>
     </div>
-    <div id="clip-coach-n">실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요</div>
+    <div id="clip-coach-n">실제 앱 화면을 녹화한 것이에요. 말과 말 사이의 대기 시간(20~30초)은 잘라 냈어요</div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      FX.tabi(tl, document.getElementById("clip-coach-cv"), 60.4, [[0, "speaking"], [3, "idle"], [56.90, "happy"]]);
+      FX.tabi(tl, document.getElementById("clip-coach-cv"), 19.45, [[0, "speaking"], [3, "idle"], [15.95, "happy"]]);
       tl.fromTo("#clip-coach-k, #clip-coach-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
-      tl.fromTo("#clip-coach-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
+      tl.fromTo("#clip-coach-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, 0.2);
       tl.fromTo("#clip-coach-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
-      const at = [0.6,2.1,11.5,30.1,50.2];
+      const at = [0.8,2.5,6.5,11.5];
       document.querySelectorAll("#clip-coach-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#clip-coach-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
+      tl.set("#clip-coach-cp0", { opacity: 1 }, 0.30); tl.set("#clip-coach-cp0", { opacity: 0 }, 4.63);
+      tl.to("#clip-coach-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, 4.55); tl.to("#clip-coach-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, 4.65);
+      tl.set("#clip-coach-cp1", { opacity: 1 }, 4.65); tl.set("#clip-coach-cp1", { opacity: 0 }, 6.23);
+      tl.to("#clip-coach-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, 6.15); tl.to("#clip-coach-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, 6.25);
+      tl.set("#clip-coach-cp2", { opacity: 1 }, 6.25); tl.set("#clip-coach-cp2", { opacity: 0 }, 11.53);
+      tl.to("#clip-coach-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, 11.45); tl.to("#clip-coach-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, 11.55);
+      tl.set("#clip-coach-cp3", { opacity: 1 }, 11.55); tl.set("#clip-coach-cp3", { opacity: 0 }, 13.13);
+      tl.to("#clip-coach-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, 13.05); tl.to("#clip-coach-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, 13.15);
+      tl.set("#clip-coach-cp4", { opacity: 1 }, 13.15); tl.set("#clip-coach-cp4", { opacity: 0 }, 19.43);
       window.__timelines["clip-coach"] = tl;
     })();
   </script>

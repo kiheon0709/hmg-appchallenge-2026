@@ -5,13 +5,15 @@
     #en-m canvas { width: 600px; height: 600px; display: block; }
     #en-n { position: absolute; left: 0; right: 0; top: 660px; text-align: center; font-size: 150px; line-height: 1; color: var(--color-accent); }
     #en-n span { font-size: 64px; color: #5B8DF6; letter-spacing: 0.08em; margin-left: 24px; }
-    #en-s { position: absolute; left: 0; right: 0; top: 840px; text-align: center; font-size: 60px; color: var(--color-ink); }
-    #en-f { position: absolute; left: 0; right: 0; top: 960px; text-align: center; font-size: 36px; color: var(--ink2); }
+    #en-s { position: absolute; left: 0; right: 0; top: 826px; text-align: center; font-size: 60px; color: var(--color-ink); }
+    #en-s2 { position: absolute; left: 0; right: 0; top: 912px; text-align: center; font-size: 36px; color: var(--ink2); }
+    #en-f { position: absolute; left: 0; right: 0; top: 990px; text-align: center; font-size: 30px; color: var(--ink2); }
   </style>
   <div id="root" data-composition-id="ending" data-width="1920" data-height="1080">
     <div id="en-m"><canvas id="en-cv" width="900" height="900"></canvas></div>
     <div id="en-n">타비<span>TABI</span></div>
-    <div id="en-s"><span class="sp">면허는 땄지만 도로는 처음인 초보 운전자의 옆자리에.</span></div>
+    <div id="en-s"><span class="sp">초보 운전자를 위한 AI 운전 코치</span></div>
+    <div id="en-s2">출발 전에는 미리 연습하고, 운전 중에는 옆에서 알려 주고, 주차 후에는 같이 돌아봐요.</div>
     <div id="en-f">현대자동차그룹 차량용 앱 개발 공모전 출품작 · Pleos Connect</div>
   </div>
   <script>
@@ -23,7 +25,8 @@
       tl.fromTo("#en-m", { y: 300, opacity: 0, scale: 0.6 }, { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.5)" }, 0.2);
       FX.rise(tl, "#en-n", 1.1);
       FX.words(tl, "#en-s .w", 1.9, 0.1);
-      FX.rise(tl, "#en-f", 3.2);
+      FX.rise(tl, "#en-s2", 2.7);
+      FX.rise(tl, "#en-f", 3.4);
       window.__timelines["ending"] = tl;
     })();
   </script>

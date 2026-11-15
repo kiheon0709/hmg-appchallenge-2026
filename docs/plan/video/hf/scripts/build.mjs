@@ -22,7 +22,11 @@ const clips = [];
 for (const c of cuts.clips) {
   const src = resolve(root, c.src.startsWith("..") ? c.src : join(cuts.source_dir, c.src));
   if (c.enabled === false || !existsSync(src)) { console.log(`skip ${c.id} (${c.enabled === false ? "disabled" : "no file"})`); continue; }
-  const dur = +(c.end - c.start).toFixed(3);
+  // parts: 원본의 여러 구간을 이어 붙인다. speed가 1보다 크면 그 구간은 빨리 돌리고 소리를 끈다. label은 그 구간 동안 화면 아래에 뜨는 자막
+  const parts = (c.parts || [{ start: c.start, end: c.end }]).map((p) => ({ speed: 1, ...p }));
+  let off = 0;
+  for (const p of parts) { p.at = +off.toFixed(3); p.len = +((p.end - p.start) / p.speed).toFixed(3); off += p.len; }
+  const dur = +off.toFixed(3);
   const crop = c.crop === undefined ? cuts.crop : c.crop;
   const gain = c.gain_db === undefined ? cuts.gain_db : c.gain_db;
   const st = statSync(src);
@@ -34,15 +38,18 @@ for (const c of cuts.clips) {
     ff(["-i", src, "-vf", vf, "-fps_mode", "cfr", "-af", "aresample=async=1:first_pts=0", "-c:v", "libx264", "-crf", "15", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "15", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", inter]);
     writeFileSync(inter + ".key", ikey);
   }
-  const mp4 = join(media, `${c.id}.mp4`), m4a = join(media, `${c.id}.m4a`), key = sha([ikey, c.start, c.end, gain]);
+  const mp4 = join(media, `${c.id}.mp4`), m4a = join(media, `${c.id}.m4a`), key = sha([ikey, parts, gain]);
   if (!fresh(mp4, key) || !existsSync(m4a)) {
-    console.log(`cut ${c.id}: ${c.src} ${c.start}~${c.end} (${dur}s)`);
-    // -ss를 -i 뒤에 두어 프레임 단위로 정확히 자른다
-    ff(["-i", inter, "-ss", String(c.start), "-t", String(dur), "-an", "-c:v", "libx264", "-crf", "17", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "30", "-movflags", "+faststart", mp4]);
-    ff(["-i", inter, "-ss", String(c.start), "-t", String(dur), "-vn", "-af", `volume=${gain}dB,alimiter=limit=0.9`, "-c:a", "aac", "-b:a", "160k", m4a]);
+    console.log(`cut ${c.id}: ${c.src} ${parts.map((p) => `${p.start}~${p.end}${p.speed > 1 ? "x" + p.speed : ""}`).join(", ")} (${dur}s)`);
+    // 영상과 소리를 같은 입력에서 같은 구간으로 잘라 이어 붙인다(프레임 단위로 정확하게)
+    const fc = parts.map((p, i) =>
+      `[0:v]trim=start=${p.start}:end=${p.end},setpts=(PTS-STARTPTS)/${p.speed},fps=30[v${i}];` +
+      `[0:a]atrim=start=${p.start}:end=${p.end},asetpts=PTS-STARTPTS${p.speed > 1 ? `,atempo=${Math.min(p.speed, 2)}${p.speed > 2 ? `,atempo=${p.speed / 2}` : ""},volume=0` : ""}[a${i}];`).join("") +
+      parts.map((_, i) => `[v${i}][a${i}]`).join("") + `concat=n=${parts.length}:v=1:a=1[v][a0];[a0]volume=${gain}dB,alimiter=limit=0.9[a]`;
+    ff(["-i", inter, "-filter_complex", fc, "-map", "[v]", "-c:v", "libx264", "-crf", "17", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-g", "30", "-movflags", "+faststart", mp4, "-map", "[a]", "-c:a", "aac", "-b:a", "160k", m4a]);
     writeFileSync(mp4 + ".key", key);
   }
-  clips.push({ ...c, dur });
+  clips.push({ ...c, dur, parts });
 }
 const clip = Object.fromEntries(clips.map((c) => [c.id, c]));
 
@@ -60,7 +67,7 @@ const c = (id) => {
 };
 const scenes = [
   g("title", 7.5, [[0.15, "pop", 0.4], [1.3, "whoosh", 0.3]]),
-  g("problem", 29, [[0.5, "pop", 0.35], [1.5, "click-soft", 0.5], [6.4, "whoosh-cinematic", 0.3], [17.5, "pop", 0.4], [18.0, "pop", 0.4], [18.5, "pop", 0.4], [24.4, "pop", 0.45]]),
+  g("problem", 31, [[0.5, "pop", 0.35], [1.5, "click-soft", 0.5], [6.4, "whoosh-cinematic", 0.3], [17.5, "pop", 0.4], [18.0, "pop", 0.4], [18.5, "pop", 0.4], [24.4, "pop", 0.45]]),
   g("who", 12, [[1.4, "pop", 0.4], [2.7, "pop", 0.4], [4.0, "pop", 0.4]]),
   g("moments", 13, [[1.4, "pop", 0.4], [4.6, "pop", 0.4], [7.8, "pop", 0.4]]),
   ...c("onboard"),
@@ -93,7 +100,7 @@ for (const s of scenes.filter((x) => x.kind === "c")) {
   const k = s.clip, id = s.id, D = s.dur, n = k.watch.length;
   const at = k.watch_at || k.watch.map((_, i) => +(1.2 + (k.dur - 4) * i / n).toFixed(2));
   writeFileSync(join(root, `compositions/${id}.html`), `<template>
-  <!-- cuts.json에서 만든 장면(${k.src} ${k.start}~${k.end}초). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
+  <!-- cuts.json에서 만든 장면(${k.src}). 직접 고치지 말고 cuts.json을 고친 뒤 node scripts/build.mjs -->
   <style>
     #root { position: absolute; inset: 0; background: var(--color-ground); overflow: hidden; }
     #${id}-k { position: absolute; left: 60px; top: 44px; padding: 6px 22px; border-radius: 30px; background: var(--color-accent); color: #fff; font-size: 34px; }
@@ -107,28 +114,37 @@ for (const s of scenes.filter((x) => x.kind === "c")) {
     #${id}-p .wl { margin-top: 18px; display: flex; gap: 16px; font-size: 37px; line-height: 1.36; color: var(--color-ink); }
     #${id}-p .wl i { flex: none; margin-top: 16px; width: 14px; height: 14px; border-radius: 50%; background: var(--color-accent); }
     #${id}-n { position: absolute; left: 60px; top: 1018px; font-size: 28px; color: var(--ink2); }
+    #${id}-v .fl { position: absolute; inset: 0; background: #F2F4F8; opacity: 0; }
+    #root .cp { position: absolute; right: 700px; top: 100px; padding: 12px 30px; border-radius: 22px; background: #101216; color: #fff; font-size: 42px; opacity: 0; }
+    #${id}-v .sx { position: absolute; right: 24px; top: 24px; padding: 8px 20px; border-radius: 30px; background: rgba(16,18,22,0.8); color: #fff; font-size: 30px; opacity: 0; }
   </style>
   <div id="root" data-composition-id="${id}" data-width="1920" data-height="1080">
 ${k.quiet ? "" : `    <audio id="${id}-a" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="9" data-volume="1" src="assets/media/${k.id}.m4a"></audio>\n`}    <div id="${id}-k">${esc(k.kicker)}</div>
     <div id="${id}-h">${esc(k.title)}</div>
-    <div id="${id}-v"><video id="${id}-vd" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="2" muted playsinline src="assets/media/${k.id}.mp4"></video></div>
+    <div id="${id}-v"><video id="${id}-vd" class="clip" data-start="0" data-duration="${k.dur}" data-track-index="2" muted playsinline src="assets/media/${k.id}.mp4"></video><div class="fl" id="${id}-fl"></div>${k.parts.map((p, i) => (p.speed > 1 ? `<div class="sx" id="${id}-sx${i}">${p.speed}배속</div>` : "")).join("")}</div>
+${k.parts.map((p, i) => (p.label ? `    <div class="cp" id="${id}-cp${i}">${esc(p.label)}</div>\n` : "")).join("")}
     <div id="${id}-p">
       <div id="${id}-m"><canvas id="${id}-cv" width="340" height="340"></canvas></div>
       <h5>여기를 보세요</h5>
 ${k.watch.map((w) => `      <div class="wl"><i></i><span>${esc(w)}</span></div>`).join("\n")}
     </div>
-    <div id="${id}-n">${esc(k.note || "실제 앱 화면을 끊지 않고 녹화한 것이에요. 스위치 신호는 에뮬레이터의 가상 콘솔로 넣었어요")}</div>
+    <div id="${id}-n">${esc(k.note || "실제 앱 화면을 녹화한 것이에요. 차량 신호는 에뮬레이터의 가상 콘솔로 넣었어요")}</div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
       FX.tabi(tl, document.getElementById("${id}-cv"), ${D}, [[0, "speaking"], [3, "idle"], [${(k.dur - 3.5).toFixed(2)}, "happy"]]);
       tl.fromTo("#${id}-k, #${id}-h", { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out", stagger: 0.08 }, 0);
-      tl.fromTo("#${id}-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.05);
+      tl.fromTo("#${id}-v", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: ${k.reveal ? 0.3 : 0.6}, ease: "expo.out" }, ${k.reveal || 0.05});
       tl.fromTo("#${id}-p", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }, 0.15);
       const at = ${JSON.stringify(at)};
       document.querySelectorAll("#${id}-p .wl").forEach((el, i) => tl.fromTo(el, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, at[i]));
       tl.fromTo("#${id}-n", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.6);
+${k.parts.map((p, i) => [
+        i > 0 && p.start !== k.parts[i - 1].end ? `      tl.to("#${id}-fl", { opacity: 0.9, duration: 0.1, ease: "power1.in" }, ${Math.max(0, p.at - 0.1).toFixed(2)}); tl.to("#${id}-fl", { opacity: 0, duration: 0.22, ease: "power1.out" }, ${p.at.toFixed(2)});` : "",
+        p.label ? `      tl.set("#${id}-cp${i}", { opacity: 1 }, ${(p.at + (i > 0 ? 0 : 0.3)).toFixed(2)}); tl.set("#${id}-cp${i}", { opacity: 0 }, ${(p.at + p.len - 0.02).toFixed(2)});` : "",
+        p.speed > 1 ? `      tl.to("#${id}-sx${i}", { opacity: 1, duration: 0.15 }, ${(p.at + 0.05).toFixed(2)}); tl.to("#${id}-sx${i}", { opacity: 0, duration: 0.15 }, ${(p.at + p.len - 0.2).toFixed(2)});` : "",
+      ].filter(Boolean).join("\n")).filter(Boolean).join("\n")}
       window.__timelines["${id}"] = tl;
     })();
   </script>
