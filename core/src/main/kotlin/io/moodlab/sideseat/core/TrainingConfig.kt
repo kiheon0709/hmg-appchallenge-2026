@@ -40,9 +40,10 @@ data class TrainingConfig(
      * S02 앞유리 김이 걷히는 속도(초당 줄어드는 양, 김은 0~1). 성에 제거만으로는 느리고(다 걷히는 데 약 27초),
      * 에어컨을 더하면 약 15초, 외기까지 바꾸면 약 10초다. 화면 연출이고 판정(조작 완료)과는 무관하다.
      */
-    val fogClearDefrostPerSec: Float = 0.035f,
-    val fogClearAcPerSec: Float = 0.03f,
-    val fogClearFreshAirPerSec: Float = 0.03f,
+    // v29: 성에 제거만으로 2.5초 안에 절반 넘게 걷히고, 에어컨·외기까지 켜면 곧 맑아지게(장면 품질이 낮아도 보이게)
+    val fogClearDefrostPerSec: Float = 0.25f,
+    val fogClearAcPerSec: Float = 0.15f,
+    val fogClearFreshAirPerSec: Float = 0.15f,
     /**
      * 앞이 안 보이는 상황(폭우·김서림·짙은 안개)과 앞차 급정거에서 감속 다음에 "비상등 켰나요?"를 묻는다.
      * 비상등 신호는 읽을 수 없어 말·화면 선택으로 확인한다.

@@ -34,6 +34,11 @@ class TrainingDriver(val engine: TrainingEngine, var state: VehicleState = baseS
         val (v, e) = engine.tick(state.copy(timestampMs = now), now)
         view = v
         events += e
+        // v29: 고른 답은 약 1초 맞음·틀림 표시를 한 뒤에 반영된다. 시험에서는 그 1초를 바로 흘려보낸다
+        if (v.choice?.picked != null) {
+            now += 1_000
+            return tick()
+        }
         return v
     }
 

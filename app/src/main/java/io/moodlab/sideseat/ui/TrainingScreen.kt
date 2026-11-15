@@ -217,7 +217,14 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
                 Text(choice.question, color = Sc.text, fontSize = sz.body, fontWeight = FontWeight.Medium, lineHeight = sz.body * 1.3f)
                 Text("말로 답해도 돼요", color = Sc.textDim, fontSize = sz.caption, modifier = Modifier.padding(top = sz.dp(4f), bottom = sz.dp(12f)))
                 choice.options.forEachIndexed { i, option ->
-                    BigButton("${i + 1}. $option", Modifier.fillMaxWidth().padding(bottom = sz.dp(8f)), maxLines = 2) { onAction(UiAction.Answer(option)) }
+                    // 고른 답 표시(약 1초): 맞으면 초록 ✓, 틀리면 빨강 ✗와 정답 초록 ✓
+                    val right = choice.picked != null && i == choice.correctIndex
+                    val wrong = choice.picked == i && i != choice.correctIndex
+                    val mark = when { right -> "✓ "; wrong -> "✗ "; else -> "" }
+                    BigButton(
+                        "$mark${i + 1}. $option", Modifier.fillMaxWidth().padding(bottom = sz.dp(8f)), maxLines = 2,
+                        primary = right || wrong, color = if (right) Color(0xFF1E9E5A) else Color(0xFFD64545),
+                    ) { onAction(UiAction.Answer(option)) }
                 }
             }
         }

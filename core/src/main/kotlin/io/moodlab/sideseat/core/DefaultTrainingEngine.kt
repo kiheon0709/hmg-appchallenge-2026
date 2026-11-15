@@ -69,6 +69,9 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private var lastState: VehicleState? = null
     private var lastTickMs: Long? = null
     private var lessonPending: String? = null
+    /** 방금 고른 답의 표시(단계 id, 고른 보기, 정답 보기, 고른 때). 맞았으면 표시가 끝날 때 그 단계를 끝낸다. */
+    private var answerShown: AnswerShown? = null
+    private class AnswerShown(val stepId: String, val picked: Int, val correct: Int, val atMs: Long)
     private var voiceBusy = false
     private var voiceIdleSinceMs = Long.MIN_VALUE / 2
     /** 끊긴 챕터마다 이어 하기 지점을 따로 기억한다. 가장 최근에 끊긴 것이 맨 뒤다. */
@@ -213,13 +216,12 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         if (phase != TrainingPhase.ACTIVE && phase != TrainingPhase.HINT) return
         val step = r.currentChoice() ?: return
         val choice = step.choice ?: return
-        when (choice.match(choiceOrText)) {
+        if (answerShown != null) return // 정답 표시 중에는 다음 답을 받지 않는다
+        val m = choice.match(choiceOrText)
+        if (m != null) answerShown = AnswerShown(step.id, m, choice.correct, nowMs)
+        when (m) {
             null -> say("잘 못 들었어요. 번호로 말해도 돼요.", priority = 1)
-            choice.correct -> {
-                r.doneAt[step.id] = nowMs
-                events += CoachEvent.Sfx("click")
-                r.currentChoice()?.let { askChoice(r, it) }
-            }
+            choice.correct -> events += CoachEvent.Sfx("click") // 단계는 정답 표시가 끝날 때 끝난다
             else -> {
                 if (!choice.penaltyFree) r.penalties.add("WRONG_${step.id}")
                 say(choice.wrongLine, priority = 1, expectReply = choice.replyKind.takeIf { choice.penaltyFree })
@@ -400,6 +402,15 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     private fun onActive(state: VehicleState, nowMs: Long) {
         val r = run ?: return
+        answerShown?.let { a ->
+            if (nowMs - a.atMs >= ANSWER_SHOW_MS) {
+                answerShown = null
+                if (a.picked == a.correct && a.stepId !in r.doneAt) {
+                    r.doneAt[a.stepId] = a.atMs
+                    r.currentChoice()?.let { askChoice(r, it) }
+                }
+            }
+        }
         val sinceActive = nowMs - r.activeStartMs
         for (step in r.signalSteps) {
             if (step.id in r.doneAt) continue
@@ -497,6 +508,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             r.def.id == SituationId.SUDDEN_STOP -> r.doneAt["brake"]?.minus(r.activeStartMs)?.takeIf { "brake" !in r.preDone }
             // 확인만 하는 상황(내리기 전)은 시간을 재지 않는다
             r.def.id == SituationId.BEFORE_EXIT -> null
+            // 보기를 읽는 시간이 들어가 부정확하므로 퀴즈·질문이 있는 상황은 시간을 재지 않는다(v29)
+            r.def.id in NO_TIME -> null
             r.def.successLine != null -> null // 버티는 상황은 걸린 시간을 재지 않는다
             else -> measured.maxOrNull()?.minus(r.activeStartMs)
         }
@@ -555,6 +568,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             return "$head 세기는 재지 않았어요. 실제로는 끝까지 세게 밟아요."
         }
         return when {
+            sec == null && stars >= 3 && r.def.id in EMERGENCIES -> "순서를 지켰어요."
+            sec == null && stars >= 3 && r.def.id in NO_TIME -> "칭찬해요."
             sec == null -> "좋아요."
             // 비상 상황은 별 3개여도 칭찬 대신 사실만 말한다(숙달했다는 말이 과신을 키운다)
             stars >= 3 && r.def.id in EMERGENCIES -> "순서를 지켰어요. ${sec}초 걸렸어요."
@@ -709,7 +724,12 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             else -> (r.endMs ?: nowMs) - r.activeStartMs
         }
         val choice = if (r != null && (phase == TrainingPhase.ACTIVE || phase == TrainingPhase.HINT)) {
-            r.currentChoice()?.choice?.let { c -> ChoiceView(c.question, c.options.map { it.text }) }
+            r.currentChoice()?.let { st ->
+                st.choice?.let { c ->
+                    val a = answerShown?.takeIf { it.stepId == st.id }
+                    ChoiceView(c.question, c.options.map { it.text }, a?.picked, a?.correct)
+                }
+            }
         } else {
             null
         }
@@ -750,11 +770,17 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private companion object {
         /** 스위치를 되돌린 뒤 상황이 터지기까지 숨 고를 시간. */
         const val SETUP_SETTLE_MS = 1_000L
+        /** 고른 답을 맞음·틀림 색으로 보여 주는 시간. */
+        const val ANSWER_SHOW_MS = 1_000L
         /** 별 3개여도 "칭찬해요" 대신 "순서를 지켰어요"라고 하는 상황. 수막현상은 따로 정한 성공 대사를 쓴다. */
         /** 이 단계가 끝나면 "비상등도 켜 주세요."라고 권한다. */
         val HAZARD_TIP_AFTER = mapOf(
             SituationId.HEAVY_RAIN to "slow_down", SituationId.FOGGED_WINDSHIELD to "slow_down",
             SituationId.DENSE_FOG to "slow_down", SituationId.SUDDEN_STOP to "brake",
+        )
+        /** 퀴즈·질문이 들어가 걸린 시간을 말하지 않는 상황. */
+        val NO_TIME = setOf(
+            SituationId.WARNING_LIGHT, SituationId.BREAKDOWN, SituationId.HIPASS_WRONG_LANE, SituationId.TOLL_BOOTH, SituationId.BEFORE_EXIT,
         )
         val EMERGENCIES = setOf(SituationId.UNINTENDED_ACCEL, SituationId.BREAKDOWN, SituationId.SUDDEN_STOP)
     }
@@ -869,6 +895,8 @@ internal class SceneSim(private val config: TrainingConfig) {
                 (if (state.recirculationOn == false) config.fogClearFreshAirPerSec else 0f)
         } else 0f
         windshieldFog = when {
+            // 성공한 뒤에는 스위치를 꺼도 다시 뿌예지지 않고 걷힌다
+            on(SituationId.FOGGED_WINDSHIELD) && phase == TrainingPhase.SUCCESS -> approach(windshieldFog, 0f, 0.6f, dt)
             on(SituationId.FOGGED_WINDSHIELD) && briefing -> approach(windshieldFog, 0.85f, 0.6f, dt)
             on(SituationId.FOGGED_WINDSHIELD) && active && clearRate == 0f -> approach(windshieldFog, 1f, 0.06f, dt)
             else -> approach(windshieldFog, 0f, maxOf(clearRate, if (inSit && situation == SituationId.FOGGED_WINDSHIELD) 0f else 0.1f), dt)

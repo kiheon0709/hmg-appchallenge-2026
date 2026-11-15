@@ -103,7 +103,11 @@ data class StepView(val id: String, val label: String, val done: Boolean, val op
 enum class TrainingPhase { IDLE, CRUISE, BRIEFING, ACTIVE, HINT, SUCCESS, FAIL, CHAPTER_DONE }
 
 /** 화면에 띄울 선택지(S07·S08). 말로 답해도 되고 눌러도 된다. */
-data class ChoiceView(val question: String, val options: List<String>)
+/**
+ * @param picked 방금 고른 보기(정답 표시 동안만). @param correctIndex 정답 보기(정답 표시 동안만).
+ * 표시는 약 1초 뒤 사라지고, 맞았으면 그때 다음 질문·성공으로 넘어간다(v29).
+ */
+data class ChoiceView(val question: String, val options: List<String>, val picked: Int? = null, val correctIndex: Int? = null)
 
 /** UI가 그대로 그리는 훈련 상태. */
 data class TrainingView(

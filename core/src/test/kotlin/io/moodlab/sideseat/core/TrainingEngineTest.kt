@@ -358,14 +358,14 @@ class TrainingEngineTest {
         fogged.set { it.copy(defrostFrontOn = true) }
         fogged.advance(2_000)
         val withDefrost = fogged.view.scene.windshieldFog
-        // 성에 제거만으로는 천천히 걷힌다(2초에 0.07쯤). 실제 김서림은 몇 초 만에 사라지지 않는다
+        // v29: 성에 제거만으로 2.5초 안에 절반 넘게 걷힌다(2초에 0.5). 이전 설명: 실제 김서림은 몇 초 만에 사라지지 않는다
         val slow = noAction - withDefrost
-        assertTrue(slow in 0.04f..0.12f, "성에 제거만으로는 천천히 걷힌다: $noAction → $withDefrost")
+        assertTrue(slow in 0.4f..0.6f, "성에 제거만으로 눈에 띄게 걷힌다: $noAction → $withDefrost")
         // 에어컨과 외기를 더하면 눈에 띄게 빨라진다(세 조작을 다 해야 하는 이유)
         fogged.set { it.copy(acOn = true, recirculationOn = false) }
         fogged.advance(2_000)
-        val fast = withDefrost - fogged.view.scene.windshieldFog
-        assertTrue(fast > slow * 2f, "에어컨·외기를 더하면 빨라진다: 느릴 때 $slow, 다 켰을 때 $fast")
+        // v29: 에어컨·외기까지 켜면 2초 안에 다 걷힌다
+        assertTrue(fogged.view.scene.windshieldFog < 0.05f, "에어컨·외기를 더하면 맑아진다: ${fogged.view.scene.windshieldFog}")
         // 다 켠 뒤 10초쯤이면 다 걷힌다
         fogged.advance(9_000)
         assertTrue(fogged.view.scene.windshieldFog < 0.05f, "다 켜고 11초 뒤: ${fogged.view.scene.windshieldFog}")
@@ -414,10 +414,12 @@ class TrainingEngineTest {
         d.engine.answer("비상등", d.now)
         assertEquals("그다음엔요? 차는 아직 움직여요.", d.tick().choice?.question)
         d.engine.answer("갓길로 옮겨", d.now)
+        d.tick() // v29: 고른 답을 1초 보여 준 뒤 다음 질문
         d.engine.answer("차 바로 앞", d.now) // 틀림 → 바로잡는 말, 같은 질문 유지
         assertEquals("사람은 어디로 갈까요?", d.tick().choice?.question)
         assertTrue(d.says().any { it.startsWith("차 근처는 위험해요.") })
         d.engine.answer("가드레일 밖으로 대피", d.now)
+        d.tick()
         d.engine.answer("112에 신고", d.now)
         assertEquals(TrainingPhase.SUCCESS, d.tick().phase)
         assertEquals(2, d.view.lastResult?.stars)
