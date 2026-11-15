@@ -12,7 +12,11 @@
     <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />   <!-- 와이퍼·창문 -->
     <uses-permission android:name="pleos.car.permission.CAR_SAFETY" />    <!-- 경고등(Telltale) -->
     <uses-permission android:name="pleos.car.permission.CAR_SEATS" />     <!-- 착좌 -->
-    <uses-permission android:name="pleos.car.permission.CAR_INFO" />      <!-- 차종(이 차 면허) -->
+    <uses-permission android:name="pleos.car.permission.CAR_INFO" />
+    <!-- v25: 사이드미러 열선, 문, 연료·배터리 -->
+    <uses-permission android:name="pleos.car.permission.CAR_MIRRORS" />
+    <uses-permission android:name="pleos.car.permission.CAR_DOORS" />
+    <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />      <!-- 차종(이 차 면허) -->
     <!-- Pleos Vehicle 제어: 정차 중 앰비언트 조명 연출 -->
     <uses-permission android:name="pleos.car.permission.CONTROL_CAR_LIGHTS" />
     <!-- NaviHelper: 남은 시간·도착·휴게소 경유지 -->

@@ -34,7 +34,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
         val signalSteps get() = steps.filter { it.choice == null }
         val choiceSteps get() = steps.filter { it.choice != null }
-        val allDone get() = steps.all { it.id in doneAt }
+        val allDone get() = steps.all { it.optional || it.id in doneAt }
 
         /** 선택 단계는 목록에서 자기보다 앞에 있는 단계가 모두 끝나면 묻는다(끝에 있으면 신호 단계가 다 끝난 뒤). */
         fun currentChoice(): StepDef? {
@@ -438,7 +438,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         if (!r.def.noHint && !r.hinted && sinceActive >= hintAt) {
             r.hinted = true
             phase = TrainingPhase.HINT
-            val missing = r.steps.first { it.id !in r.doneAt }
+            val missing = r.steps.first { !it.optional && it.id !in r.doneAt }
             if (missing.choice == null) say(missing.hint, priority = 1)
         }
         val deadline = r.deadlineMs()
@@ -469,7 +469,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     private fun succeed(r: Run, nowMs: Long) {
         r.endMs = nowMs
-        val measured = r.doneAt.filterKeys { it !in r.preDone }.values
+        val optionalIds = r.steps.filter { it.optional }.map { it.id }.toSet()
+        val measured = r.doneAt.filterKeys { it !in r.preDone && it !in optionalIds }.values
         val reaction = when {
             // 밟은 채로 시작했으면 반응 시간을 잴 수 없다
             r.def.id == SituationId.SUDDEN_STOP -> r.doneAt["brake"]?.minus(r.activeStartMs)?.takeIf { "brake" !in r.preDone }
@@ -545,7 +546,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
 
     private fun fail(r: Run, nowMs: Long, line: String? = null) {
         r.endMs = nowMs
-        val missed = r.steps.filter { it.id !in r.doneAt }
+        val missed = r.steps.filter { !it.optional && it.id !in r.doneAt }
         record(SituationResult(r.def.id, 0, null, missed.map { it.id }, r.penalties.toList()), r.attempt)
         r.retryPending = mode == Mode.CHAPTER && config.retryOnFail && r.attempt == 0
         phase = TrainingPhase.FAIL
@@ -708,7 +709,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             chapterId = chapterId,
             situation = r?.def?.id,
             title = title,
-            steps = r?.steps?.map { StepView(it.id, it.label, it.id in r.doneAt) }.orEmpty(),
+            steps = r?.steps?.map { StepView(it.id, it.label, it.id in r.doneAt, it.optional) }.orEmpty(),
             elapsedMs = elapsed,
             limitMs = r?.shownLimitMs() ?: 0,
             virtualSpeedKmh = scene.speed,
@@ -1022,5 +1023,5 @@ private fun StepDef.shuffled(random: kotlin.random.Random): StepDef {
     if (c.replyKind != ReplyKind.CHOICE || c.options.size < 3) return this
     val order = c.options.indices.shuffled(random)
     val mixed = ChoiceDef(c.question, order.map { c.options[it] }, order.indexOf(c.correct), c.wrongLine, c.replyKind, c.penaltyFree)
-    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio, needsClearRing, needsPuddlePassed)
+    return StepDef(id, label, hint, setup, essential, holdMs, available, done, mixed, doneWithSpeed, after, doneWithSpeedRatio, needsClearRing, needsPuddlePassed, optional)
 }

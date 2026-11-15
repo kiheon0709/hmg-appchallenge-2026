@@ -110,6 +110,11 @@ private fun Today(state: ReviewUi) {
                 delta(s.speedingCount, p?.speedingCount, "번"),
             )
         }
+        // v25: 차가 잰 주행 거리(Odometer)와 차가 알려 준 것(배터리·연료·오일류). 읽을 수 있을 때만 보인다.
+        s.distanceKm?.let { km ->
+            ObservedRow("주행 거리 (차 계기판)", String.format(java.util.Locale.ROOT, "%.1fkm", km), Sc.text, null)
+        }
+        s.carNotes.forEach { note -> Text(note, color = Sc.warn, fontSize = sz.label, lineHeight = sz.label * 1.35f) }
         if (s.schoolZonePasses > 0) {
             ObservedRow(
                 "어린이 보호구역",

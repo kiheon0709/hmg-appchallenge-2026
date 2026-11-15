@@ -50,6 +50,8 @@ class StepDef(
     val needsClearRing: Boolean = false,
     /** 수막현상: 물 고인 구간을 다 지나간 뒤에만 인정한다. */
     val needsPuddlePassed: Boolean = false,
+    /** 하면 좋은 단계. 끝내지 않아도 성공하고, 걸린 시간·별에도 넣지 않는다(사이드미러 열선). */
+    val optional: Boolean = false,
 )
 
 class ChoiceDef(
@@ -109,6 +111,16 @@ object SituationCatalog {
     private const val GENTLE_BRAKE = "브레이크를 급하게 밟지 말고 나눠서 지그시 밟아"
 /** 회전교차로에서 도는 차보다 먼저 들어갔을 때와 힌트에서 하는 말. */
     /** 수막현상: 줄이지 않고 물 고인 곳에 들어갔을 때, 물 위에서 밟거나 꺾었을 때 하는 말. */
+    /**
+     * 사이드미러 열선(v25). 신호를 읽을 수 있는 차에서만 나오고, 하면 좋은 단계라 별 기준에 넣지 않는다.
+     * 버튼 위치는 차종 데이터에 없어 "뒷유리 열선과 같이 켜지는 차가 많다"까지만 말한다(위치를 단정하지 않는다).
+     */
+    private val mirrorHeatOn = StepDef(
+        id = "mirror_heat", label = "사이드미러 열선 (하면 좋아요)", optional = true,
+        hint = "사이드미러도 뿌옇게 돼요. 열선을 켜요. 뒷유리 열선 버튼과 같이 켜지는 차가 많아요.",
+        available = { it.sideMirrorHeatOn != null }, done = { it.sideMirrorHeatOn == true },
+    )
+    private const val MIRROR_LESSON = "사이드미러도 뿌옇게 돼요. 열선을 켜요."
     internal const val HYDRO_TOO_FAST = "물 고인 곳에 닿기 전에 미리 속도를 줄여요. 브레이크는 나눠서 밟아요."
     internal const val HYDRO_STEADY = "물 위에서는 급하게 밟거나 꺾지 않아요. 그대로 지나가요."
     internal const val ROUNDABOUT_YIELD_LINE = "회전교차로 안에서 도는 차가 먼저예요. 양보선에서 멈춰서 그 차를 보내요."
@@ -155,7 +167,7 @@ object SituationCatalog {
             id = SituationId.HEAVY_RAIN, title = "폭우",
             intro = "비가 쏟아져요. 앞이 안 보여요! $SLOW_FIRST",
             // 출처: 도로교통법 제37조(비 올 때 등화), 시행규칙 제19조(가시거리 100m 이내 50% 감속).
-            lesson = "앞이 안 보이면 ${hazardWords(config)} 그다음 와이퍼를 가장 빠르게, 전조등도 켜요.",
+            lesson = "앞이 안 보이면 ${hazardWords(config)} 그다음 와이퍼를 가장 빠르게, 전조등도 켜요. $MIRROR_LESSON",
             steps = sightFirst(config, "속도 절반으로 줄이기", "$GENTLE_BRAKE 속도를 절반으로 줄여요.") + listOf(
                 StepDef(
                     id = "wiper_fast", label = "와이퍼 빠르게", essential = true,
@@ -163,13 +175,14 @@ object SituationCatalog {
                     available = { it.wiper != null }, done = { (it.wiper?.ordinal ?: -1) >= config.heavyRainMinWiper.ordinal },
                 ),
                 lowBeamOn,
+                mirrorHeatOn,
             ),
             loopSfx = listOf("rain"), onceSfx = listOf("thunder"),
         ),
         SituationDef(
             id = SituationId.FOGGED_WINDSHIELD, title = "앞유리 김서림",
             intro = "터널을 나왔더니 앞유리가 뿌예져요! $SLOW_FIRST",
-            lesson = "앞유리가 뿌예지면 ${hazardWords(config)} 그다음 성에 제거, 에어컨, 외기. 이 세 개예요.",
+            lesson = "앞유리가 뿌예지면 ${hazardWords(config)} 그다음 성에 제거, 에어컨, 외기. 이 세 개예요. $MIRROR_LESSON",
             steps = sightFirst(config, "속도 줄이기", "$GENTLE_BRAKE 속도를 줄여요.", config.mistSlowFraction) + listOf(
                 StepDef(
                     id = "defrost_on", label = "앞유리 성에 제거", essential = true,
@@ -186,6 +199,7 @@ object SituationCatalog {
                     hint = "내기순환을 꺼서 바깥 공기가 들어오게 해요.", setup = "내기순환을 켜 두세요",
                     available = { it.recirculationOn != null }, done = { it.recirculationOn == false },
                 ),
+                mirrorHeatOn,
             ),
             penalties = listOf(
                 PenaltyDef("WIPER_ONLY", "안쪽 김이라 와이퍼로는 안 닦여요. 성에 제거 버튼이에요.") { _ -> WiperOnlyDetector() },

@@ -465,4 +465,32 @@ class RoadRulesTest {
         assertTrue(SituationCatalog.all().first { it.id == SituationId.TOLL_BOOTH }.lesson.contains("들어갈 땐 통행권"))
         assertTrue(SituationId.TOLL_BOOTH in TrainingConfig().surpriseExclude)
     }
+
+    // ---------- v25: 사이드미러 열선(하면 좋은 단계) ----------
+
+    @Test
+    fun `side mirror heater is an optional step that does not hold back success or stars`() {
+        val car = baseState.copy(sideMirrorHeatOn = false)
+        val d = driver(state = car)
+        d.engine.inject(SituationId.HEAVY_RAIN, d.now)
+        d.untilActive(SituationId.HEAVY_RAIN)
+        assertTrue(d.view.steps.any { it.id == "mirror_heat" && it.label.startsWith("사이드미러 열선") && it.optional })
+        d.advance(200)
+        d.set { solveAll(it, SituationId.HEAVY_RAIN) }
+        d.answerUntilSuccess(SituationId.HEAVY_RAIN)
+        assertTrue(d.view.lastResult!!.stars >= 2)
+        assertTrue(d.view.steps.none { it.id == "mirror_heat" && it.done })
+        // 신호를 못 읽는 차에서는 단계가 아예 없다
+        val none = driver()
+        none.engine.inject(SituationId.FOGGED_WINDSHIELD, none.now)
+        none.untilActive(SituationId.FOGGED_WINDSHIELD)
+        assertTrue(none.view.steps.none { it.id == "mirror_heat" })
+        // 켜면 체크된다
+        val on = driver(state = car)
+        on.engine.inject(SituationId.FOGGED_WINDSHIELD, on.now)
+        on.untilActive(SituationId.FOGGED_WINDSHIELD)
+        on.set { it.copy(sideMirrorHeatOn = true) }
+        assertTrue(on.view.steps.first { it.id == "mirror_heat" }.done)
+        assertEquals(TrainingPhase.ACTIVE, on.view.phase)
+    }
 }

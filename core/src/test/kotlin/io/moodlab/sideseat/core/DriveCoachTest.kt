@@ -257,7 +257,9 @@ class DriveCoachTest {
         d.run(1_000)
         val summary = d.coach.onDriveEnd(d.now)
         assertEquals(2, summary.observations["NO_SIGNAL_TURN"])
-        assertTrue(d.said.isEmpty(), "관찰은 말하지 않는다")
+        // v25: 첫 번째 직후 한 번만 말하고(K18), 같은 주행에서는 다시 말하지 않는다
+        assertEquals(listOf("K18"), d.ids())
+        assertEquals("방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요.", d.said.single().text)
     }
 
     @Test
@@ -295,8 +297,9 @@ class DriveCoachTest {
         assertEquals(30, s.durationMin)
         assertEquals(15, s.rainMin)
         assertEquals(30, s.nightMin)
-        assertEquals(listOf("K03"), s.utterances.map { it.ruleId })
-        assertTrue(s.utterances.single().text.startsWith("연습했던 거예요."))
+        // v25: 깜빡이 없이 돈 직후 한 번 말한다(K18)
+        assertEquals(listOf("K03", "K18"), s.utterances.map { it.ruleId })
+        assertTrue(s.utterances.first().text.startsWith("연습했던 거예요."))
         assertEquals(SituationId.FOGGED_WINDSHIELD, s.suggestedSituation)
         assertEquals(
             listOf(
@@ -543,5 +546,63 @@ class DriveCoachTest {
         val s = d.coach.onDriveEnd(d.now)
         assertEquals(0, s.schoolZonePasses)
         assertNull(s.schoolZoneMaxKmh)
+    }
+
+    // ---------- v25: Vehicle SDK 추가 신호 ----------
+
+    @Test
+    fun `K13 asks for the seat belt right after leaving P and stays quiet when it is fastened or unknown`() {
+        val d = drive(day.copy(driverSeatBeltBuckled = false))
+        d.run(3_000)
+        assertEquals(listOf("K13"), d.ids())
+        assertEquals("안전벨트부터 매 주세요.", d.said.single().text)
+        assertTrue(d.said.single().urgent)
+        assertTrue(drive(day.copy(driverSeatBeltBuckled = true)).also { it.run(60_000) }.said.isEmpty())
+        assertTrue(drive(day).also { it.run(60_000) }.said.isEmpty())
+    }
+
+    @Test
+    fun `K15 says an open door while driving and K14 says low tire pressure linked to the practiced warning light`() {
+        val d = drive(day.copy(driverSeatBeltBuckled = true, anyDoorOpen = false), practiced = setOf(SituationId.WARNING_LIGHT))
+        d.run(5_000)
+        d.set { it.copy(anyDoorOpen = true) }
+        d.run(3_000)
+        assertEquals(listOf("K15"), d.ids())
+        d.set { it.copy(anyDoorOpen = false, tirePressureLow = true) }
+        d.run(2_000)
+        assertEquals(listOf("K15", "K14"), d.ids())
+        assertEquals("연습했던 거예요. 타이어 공기압이 낮아요. 속도를 줄이고 가까운 곳에서 확인해요.", d.said.last().text)
+        assertEquals(SituationId.WARNING_LIGHT, d.coach.onDriveEnd(d.now).suggestedSituation)
+    }
+
+    @Test
+    fun `K16 suggests the side mirror heater once in lasting rain only when it can be read`() {
+        val rain = day.copy(wiper = WiperLevel.LOW, lowBeamOn = true, sideMirrorHeatOn = false)
+        val d = drive(rain)
+        d.run(3 * min)
+        assertEquals(listOf("K16"), d.ids())
+        assertEquals("비가 계속 와요. 사이드미러도 뿌옇게 돼요. 열선을 켜 보세요.", d.said.single().text)
+        d.run(30 * min)
+        assertEquals(1, d.ids().count { it == "K16" })
+        assertTrue(drive(rain.copy(sideMirrorHeatOn = null)).also { it.run(5 * min) }.said.isEmpty())
+        assertTrue(drive(rain.copy(sideMirrorHeatOn = true)).also { it.run(5 * min) }.said.isEmpty())
+    }
+
+    @Test
+    fun `review shows the odometer distance and what the car reported`() {
+        val d = drive(day.copy(odometerKm = 1200.0f, evBatteryPercent = 18, brakeFluidLow = true))
+        d.run(5 * min)
+        d.set { it.copy(odometerKm = 1203.4f) }
+        d.run(1_000)
+        val s = d.coach.onDriveEnd(d.now)
+        assertEquals(3.4f, s.distanceKm!!, 0.01f)
+        assertEquals(
+            listOf("브레이크액이 부족해요. 차를 움직이지 말고 정비소에 먼저 연락해요.", "배터리가 18% 남았어요. 다음 길에 충전해요."),
+            s.carNotes,
+        )
+        val unknown = drive().also { it.run(min) }.coach.onDriveEnd(min)
+        assertNull(unknown.distanceKm)
+        assertTrue(unknown.carNotes.isEmpty())
+        assertTrue(DefaultDriveCoach.carNotes(day.copy(fuelPercent = 40, evBatteryPercent = 80, washerFluidLow = false)).isEmpty())
     }
 }

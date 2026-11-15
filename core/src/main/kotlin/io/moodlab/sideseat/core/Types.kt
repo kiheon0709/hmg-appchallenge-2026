@@ -59,6 +59,25 @@ data class VehicleState(
     val sunriseMinute: Int? = null,
     /** "이 차 면허" 구분용. */
     val vehicleModelKey: String? = null,
+    // ---- v25: Vehicle SDK 추가 신호. 읽을 수 없는 차(권한·지원 없음)에서는 null이고, 그 신호가 필요한 규칙·단계는 빠진다. ----
+    /** 사이드미러 열선(SideMirror). */
+    val sideMirrorHeatOn: Boolean? = null,
+    /** 운전석 안전벨트(Seat.SeatBeltBuckled). */
+    val driverSeatBeltBuckled: Boolean? = null,
+    /** 타이어 공기압 낮음. TPMS 경고등을 읽을 수 있을 때만 값이 있다. */
+    val tirePressureLow: Boolean? = null,
+    /** 워셔액 부족 경고(Safety). */
+    val washerFluidLow: Boolean? = null,
+    /** 엔진오일·브레이크액 부족(Safety OilLevelState가 LOW·CRITICALLY_LOW). */
+    val engineOilLow: Boolean? = null,
+    val brakeFluidLow: Boolean? = null,
+    /** 문이 하나라도 열려 있다(Door 위치). */
+    val anyDoorOpen: Boolean? = null,
+    /** 누적 주행 거리(km, Odometer). */
+    val odometerKm: Float? = null,
+    /** 연료 잔량(%, Fuel), 전기차 배터리 잔량(%, EvBattery). */
+    val fuelPercent: Int? = null,
+    val evBatteryPercent: Int? = null,
 ) {
     /** 앞 또는 뒤 안개등. 둘 다 모르면 null. */
     val anyFogOn: Boolean?
@@ -78,7 +97,8 @@ enum class SituationId {
     TOLL_BOOTH,
 }
 
-data class StepView(val id: String, val label: String, val done: Boolean)
+/** @param optional 하면 좋은 단계(사이드미러 열선). 화면의 "○ / ○" 개수에 넣지 않는다. */
+data class StepView(val id: String, val label: String, val done: Boolean, val optional: Boolean = false)
 
 enum class TrainingPhase { IDLE, CRUISE, BRIEFING, ACTIVE, HINT, SUCCESS, FAIL, CHAPTER_DONE }
 
@@ -306,6 +326,10 @@ data class DriveSummary(
     val durationSec: Int = 0,
     val rainSec: Int = 0,
     val nightSec: Int = 0,
+    /** 이번 주행 거리(km). Odometer 값을 읽을 수 있을 때만. */
+    val distanceKm: Float? = null,
+    /** 주행이 끝났을 때 차가 알려 준 것(연료·배터리 부족, 엔진오일·브레이크액·워셔액 부족). "타비가 본 것"에 한 줄씩. */
+    val carNotes: List<String> = emptyList(),
 )
 
 // ---------- 미니게임 ----------

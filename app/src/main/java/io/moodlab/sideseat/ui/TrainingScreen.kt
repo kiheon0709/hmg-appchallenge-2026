@@ -197,7 +197,7 @@ private fun SidePanel(view: TrainingView, onAction: (UiAction) -> Unit, modifier
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("차의 진짜 스위치로 해요", color = Sc.textDim, fontSize = sz.caption, fontWeight = FontWeight.SemiBold)
-                        Text("${view.steps.count { it.done }} / ${view.steps.size}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Medium)
+                        Text("${view.steps.count { it.done && !it.optional }} / ${view.steps.count { !it.optional }}", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.Medium)
                     }
                     Timer(view)
                 }

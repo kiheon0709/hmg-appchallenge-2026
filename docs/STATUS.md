@@ -1,5 +1,43 @@
 # 진행 상황
 
+## v25: Vehicle SDK 추가 활용 (2026-11-15 17:50~18:10, 3D 장면 세션)
+
+심사 기준 "기술 활용성"을 위해 지금 안 쓰던 Vehicle SDK 영역을 붙였다. 모든 신호는 `checkXXXCapabilities`를 먼저 보고, 지원하지 않거나 권한이 없으면 로그만 남기고 값을 null로 둔다. null인 신호가 필요한 규칙·단계는 자동으로 빠진다(크래시 없음). 매니페스트에 `CAR_MIRRORS`, `CAR_DOORS`, `CAR_ENERGY`를 더했다(`CAR_SAFETY`·`CAR_SEATS`·`CAR_DRIVE`는 이미 있었다).
+
+**신호별 읽힘 여부 (emulator-5556, Pleos Connect 2.1, debug 빌드 로그 `cap … access=`)**
+
+| 영역 | API | 결과 | Virtual Console로 바꿀 수 있나 |
+| --- | --- | --- | --- |
+| SideMirror | `checkHvacSideMirrorHeatCapabilities` / `registerHvacSideMirrorHeatState` | **읽힘** (READ_WRITE, 왼쪽·오른쪽, 처음 값 꺼짐) | 없음 |
+| Seat | `checkSeatBeltBuckledCapabilities` / `registerSeatBeltBuckledState`(운전석) | **읽힘** (READ_WRITE, 처음 값 안 맴) | 없음 |
+| Door | `checkDoorPositionCapabilities` / `registerDoorPosition`(사람이 타는 문 4개) | **읽힘** (READ_WRITE) | 있음 `PUT /vehicle/body?door_fl=true` |
+| Odometer | `checkCurrentDistanceDrivenCapabilities` / `registerDistanceDriven` | **읽힘** (READ) | 있음 `PUT /vehicle/odometer?traveled_distance_km=…` |
+| EvBattery | `checkEvBatteryStateOfChargeCapabilities` / `registerEvBatteryStateOfCharge` | **읽힘** (READ) | 있음 `PUT /vehicle/ev-battery?field=soc&value=…` |
+| Safety 엔진오일 | `checkEngineOilLevelStateCapabilities` | 안 읽힘 `ERROR_NOT_SUPPORTED_PROPERTY` | - |
+| Safety 브레이크액 | `checkBrakeFluidLevelStateCapabilities` | 안 읽힘 `ERROR_NOT_SUPPORTED_PROPERTY` | - |
+| Safety 워셔액 | `checkLowWasherFluidWarningStateCapabilities` | 안 읽힘 `ERROR_NOT_SUPPORTED_PROPERTY` | - |
+| Fuel | `checkFuelPercentCapabilities` | 안 읽힘 `ERROR_NOT_SUPPORTED_PROPERTY` (에뮬레이터가 전기차) | - |
+| Safety 경고등(TPMS) | `registerTelltales` | 안 읽힘 `SecurityException`(이전과 같음) | 카탈로그에 `tire-pressure`(kPa)가 있지만 Tire API는 "낮음" 기준값만 준다 |
+
+**넣은 것**
+1. 사이드미러 열선: 폭우·앞유리 김서림 훈련에 **"사이드미러 열선 (하면 좋아요)"** 단계. 하면 좋은 단계라 성공·별·걸린 시간·조작 개수("0 / 4")에 넣지 않는다(새 `StepDef.optional`, `StepView.optional`). 힌트 "사이드미러도 뿌옇게 돼요. 열선을 켜요. 뒷유리 열선 버튼과 같이 켜지는 차가 많아요.", 두 훈련의 한 줄 정리 끝에 "사이드미러도 뿌옇게 돼요. 열선을 켜요." 주행 중 K16: 와이퍼가 2분 넘게 켜져 있는데 열선이 꺼져 있으면 한 번 "비가 계속 와요. 사이드미러도 뿌옇게 돼요. 열선을 켜 보세요."
+2. 안전벨트 K13(즉시 안전 규칙, 맨 앞): P를 벗어나 운전석 안전벨트가 2초 넘게 풀려 있으면 "안전벨트부터 매 주세요." 에뮬레이터에서 D 2초 뒤에 나왔다(`v25_coach_seatbelt.jpg`는 처음 문장 "안전벨트를 매 주세요. 출발하기 전에 먼저 매요."일 때 찍어 코치 화면에 뒤 문장만 보였다. 그래서 한 문장으로 줄였고, 줄인 문장은 화면으로 다시 보지 않았다).
+3. 타이어 공기압 K14: 낮음 신호가 오면 "(연습했던 거예요.) 타이어 공기압이 낮아요. 속도를 줄이고 가까운 곳에서 확인해요." 리뷰는 타이어 공기압 경고등 훈련을 권한다. 신호는 TPMS 경고등이라 이 에뮬레이터에서는 읽히지 않는다(코드만, 단위 테스트로 확인).
+4. 워셔액·엔진오일·브레이크액: 비 오는 주행 중 워셔액 부족이면 K17 "워셔액이 부족해요. 다음에 세웠을 때 채워 주세요." 정차 뒤 리뷰 "타비가 본 것"과 홈 인사 아래 줄에 "브레이크액이 부족해요. 차를 움직이지 말고 정비소에 먼저 연락해요." / "엔진오일이 부족해요. 다음에 운전하기 전에 점검해요." / "워셔액이 부족해요. 채워 두면 비 오는 날 편해요." 이 에뮬레이터에서는 셋 다 읽히지 않는다(코드만).
+5. 문 K15(즉시): 주행 중 문이 1초 넘게 열리면 "문이 열려 있어요. 안전한 곳에 세우고 닫아요." 에뮬레이터에서 운전석 문을 열자 나왔다.
+6. 주행 거리: 리뷰 "타비가 본 것"에 **"주행 거리 (차 계기판) 3.0km"**(Odometer 시작·끝 차이). 못 읽으면 줄이 없다. 에뮬레이터에서 1200 → 1203km로 바꿔 확인(`v25_review_odometer_distance.jpg`).
+7. 연료·배터리: 연료 15% 이하, 배터리 20% 이하면 리뷰와 홈 인사 아래 줄에 "배터리가 18% 남았어요. 다음 길에 충전해요."(연료는 "다음 길에 주유소를 들러요."). 에뮬레이터에서 배터리 18%로 확인(`v25_home_battery_note.jpg`).
+8. 깜빡이 없이 크게 조향 K18: 그 직후 5초 안에 한 번 "방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요." 말수 제한(30분 3번)과 말 간격에 들어가고, 같은 주행에서 다시 말하지 않는다. 리뷰 집계(`NO_SIGNAL_TURN`)는 그대로.
+
+**못 넣은 것**
+- 주행 시간을 SDK 값(Odometer `TripCurrentDrivingTime`)으로 바꾸는 것: 시간 부족으로 앱이 잰 시간 그대로.
+- 연료·배터리가 낮을 때 내비 경로에 주유소·충전소 경유지를 넣는 것: 기존 휴게소 경유지 흐름은 내비 검색 종류가 달라 이번에 하지 않았다. 리뷰·홈 한 줄만.
+- "내리기 전에"의 문 잠금 확인: 문은 내린 뒤에 잠그는 것이라 이 점검과 맞지 않아 넣지 않았다(Door 잠금 신호는 읽힌다).
+- 사이드미러 열선의 차종별 버튼 위치: 스위치 위치 데이터에 없어 "뒷유리 열선 버튼과 같이 켜지는 차가 많아요"까지만 말한다.
+- 사이드미러 열선·안전벨트는 Virtual Console에 조작 항목이 없어 "켜면 체크된다"·"매면 조용해진다"는 단위 테스트로만 확인했다.
+
+**확인**: core 146·app 123 테스트 통과. emulator-5556(debug)에서 K13·K15·주행 거리·배터리 줄·폭우의 사이드미러 단계를 직접 봤다. release APK `apk/MoodLab_TABI_release.apk` 28,290,757바이트, `sk-ant-` 0건. release는 에뮬레이터에 올려 보지 않았다.
+
 ## 최종 빌드: 캐릭터·주아체·절차 수정·도감 문제 수정(v22~v24), release APK 재갱신 (2026-11-15 16:20~17:15, 홈 UI 세션)
 
 `apk/MoodLab_TABI_release.apk`를 다시 만들었다: **28,241,533 바이트**(주아체 글꼴 2.1MB가 더해짐), SHA-256은 이 커밋의 파일 기준, `sk-ant-` 0건(APK 안 파일 전부와 파일 전체), 앱 이름 "타비", 아이콘 들어감. `./gradlew :core:test` **141개**·`:app:testDebugUnitTest` **123개** 통과.

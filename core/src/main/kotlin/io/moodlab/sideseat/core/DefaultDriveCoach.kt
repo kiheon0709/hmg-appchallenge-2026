@@ -51,6 +51,17 @@ data class CoachConfig(
     val k12CooldownMs: Long = 3 * MIN,
     /** 과속이 이 시간 넘게 풀려 있으면 한 구간이 끝난 것으로 본다. 늦은 위치 콜백으로 속도가 잠깐 낮게 잡혀도 이어 보려고 5초. */
     val speedingEndMs: Long = 5_000,
+    /** K13: P를 벗어난 뒤 운전석 안전벨트가 이 시간 넘게 풀려 있으면(신호가 잠깐 늦게 오는 것을 넘기려고 2초). */
+    val k13BeltMs: Long = 2_000,
+    /** K15: 주행 중 문이 이 시간 넘게 열려 있으면. */
+    val k15DoorMs: Long = 1_000,
+    /** K16: 와이퍼가 이 시간 넘게 켜져 있는데 사이드미러 열선이 꺼져 있으면. */
+    val k16WiperMs: Long = 2 * MIN,
+    /** K18: 깜빡이 없이 크게 조향한 뒤 이 시간 안에만 말한다(늦으면 무엇을 말하는지 모른다). */
+    val k18FreshMs: Long = 5_000,
+    /** 리뷰·홈: 연료·배터리가 이 % 이하면 한 줄. */
+    val lowFuelPct: Int = 15,
+    val lowBatteryPct: Int = 20,
 ) {
     companion object {
         const val MIN = 60_000L
@@ -77,6 +88,9 @@ class DefaultDriveCoach(
     private fun adviceGroup(id: String): Set<String> = sameAdvice.firstOrNull { id in it } ?: setOf(id)
 
     private val rules = listOf(
+        Rule("K13", safety = true, urgent = true),
+        Rule("K15", safety = true, urgent = true),
+        Rule("K14", safety = true, urgent = true),
         Rule("K10", safety = true, urgent = true),
         Rule("K11", safety = true, urgent = true, exempt = true),
         Rule("K01", safety = true, urgent = true),
@@ -88,6 +102,9 @@ class DefaultDriveCoach(
         Rule("K04", safety = false, urgent = false),
         Rule("K07", safety = false, urgent = false),
         Rule("K08", safety = false, urgent = false),
+        Rule("K16", safety = false, urgent = false),
+        Rule("K17", safety = false, urgent = false),
+        Rule("K18", safety = false, urgent = false),
     )
 
     private var driveStartMs = 0L
@@ -109,6 +126,12 @@ class DefaultDriveCoach(
     private val speedSamples = ArrayDeque<Pair<Long, Float>>()
     private var lastHardBrakeMs: Long? = null
     private var firstTick = true
+    /** K18: 깜빡이 없이 크게 조향한 순간. */
+    private var noSignalAt: Long? = null
+    /** 리뷰: 주행 시작·마지막 누적 거리(Odometer), 마지막 상태(차가 알려 준 것). */
+    private var odoStart: Float? = null
+    private var odoLast: Float? = null
+    private var lastState: VehicleState? = null
 
     // 위치 연계(명세 6.4)
     private val track = LocationTrack()
@@ -150,6 +173,10 @@ class DefaultDriveCoach(
         speedSamples.clear()
         lastHardBrakeMs = null
         firstTick = true
+        noSignalAt = null
+        odoStart = null
+        odoLast = null
+        lastState = null
         track.clear()
         speedKmh = null
         prevSpeedKmh = null
@@ -176,6 +203,8 @@ class DefaultDriveCoach(
         if (isNight(state)) nightMs += dt
         updateLocation(state, nowMs)
         observe(state, nowMs)
+        state.odometerKm?.let { if (odoStart == null) odoStart = it; odoLast = it }
+        lastState = state
 
         val newTelltale = newWarningTelltale(state)
         updateTimers(state, nowMs)
@@ -192,6 +221,7 @@ class DefaultDriveCoach(
                 zoneToAnnounce = null
             }
             "K12" -> lastK12Ms = nowMs
+            "K18" -> noSignalAt = null
         }
         if (!rule.exempt) {
             utteranceTimes += nowMs
@@ -227,6 +257,8 @@ class DefaultDriveCoach(
             longestSpeedingSec = (longestSpeedingMs / 1000).toInt(),
             schoolZonePasses = zonePasses,
             schoolZoneMaxKmh = zoneMaxKmh?.let { Math.round(it) },
+            distanceKm = odoStart?.let { a -> odoLast?.let { b -> (b - a).coerceAtLeast(0f) } },
+            carNotes = lastState?.let { carNotes(it, config) }.orEmpty(),
         )
     }
 
@@ -251,6 +283,8 @@ class DefaultDriveCoach(
         if (side != turnSide) since.remove("turn")
         turnSide = side
         timers["turn"] = track("turn", side != null, nowMs)
+        timers["belt"] = track("belt", s.driverSeatBeltBuckled == false, nowMs)
+        timers["door"] = track("door", s.anyDoorOpen == true, nowMs)
     }
 
     private fun lasted(key: String, ms: Long) = (timers[key] ?: -1) >= ms
@@ -267,6 +301,12 @@ class DefaultDriveCoach(
             "K07" -> lasted("fogOnly", config.k07FogMs)
             "K08" -> driving >= config.k08DrivingMs
             "K10" -> newTelltale != null
+            "K13" -> lasted("belt", config.k13BeltMs)
+            "K14" -> s.tirePressureLow == true
+            "K15" -> lasted("door", config.k15DoorMs)
+            "K16" -> s.sideMirrorHeatOn == false && lasted("wiper", config.k16WiperMs)
+            "K17" -> s.washerFluidLow == true && s.wiperOn()
+            "K18" -> noSignalAt?.let { nowMs - it <= config.k18FreshMs } == true
             "K11" -> zoneToAnnounce?.let { it.id !in announcedZones } == true
             "K12" -> {
                 val start = speedingStart
@@ -313,6 +353,12 @@ class DefaultDriveCoach(
             }
             "K12" -> "제한속도가 ${effectiveLimit}이에요. 조금 줄여요."
             // 경고등 색깔 일반 규칙은 공식 근거가 없어 쓰지 않는다(safety-sources.md 8절).
+            "K13" -> "안전벨트부터 매 주세요."
+            "K14" -> practicedPrefix(SituationId.WARNING_LIGHT, practicedSet) + "타이어 공기압이 낮아요. 속도를 줄이고 가까운 곳에서 확인해요."
+            "K15" -> "문이 열려 있어요. 안전한 곳에 세우고 닫아요."
+            "K16" -> "비가 계속 와요. 사이드미러도 뿌옇게 돼요. 열선을 켜 보세요."
+            "K17" -> "워셔액이 부족해요. 다음에 세웠을 때 채워 주세요."
+            "K18" -> "방금은 깜빡이 없이 움직였어요. 다음엔 먼저 켜요."
             "K10" -> if (newTelltale?.first == "TPMS") {
                 "타이어 공기압 경고등이 켜졌어요. 속도를 줄이고 가까운 곳에서 공기압을 확인해 주세요."
             } else {
@@ -427,7 +473,10 @@ class DefaultDriveCoach(
             if (o1Armed && abs >= config.o1SteerDeg) {
                 o1Armed = false
                 val signalled = lastSignalOnMs?.let { nowMs - it <= config.o1SignalLookbackMs } == true
-                if (!signalled) count("NO_SIGNAL_TURN")
+                if (!signalled) {
+                    count("NO_SIGNAL_TURN")
+                    noSignalAt = nowMs
+                }
             }
         }
         speedKmh?.let { v ->
@@ -460,7 +509,7 @@ class DefaultDriveCoach(
         )
         // 보호구역을 제한속도보다 빠르게 지났으면 그 연습을 먼저 권한다
         if (zoneOverLimit != null) return SituationId.SCHOOL_ZONE
-        utterances.firstNotNullOfOrNull { byRule[it.ruleId] }?.let { return it }
+        utterances.firstNotNullOfOrNull { byRule[it.ruleId] ?: if (it.ruleId == "K14") SituationId.WARNING_LIGHT else null }?.let { return it }
         if ((obs["HARD_BRAKE"] ?: 0) > 0) return SituationId.SUDDEN_STOP
         // 비·밤만으로 권할 때는 1분 넘게 그 길을 달렸을 때만(잠깐 움직인 것으로 "지난 주행에서…"라고 하지 않게)
         if (rainMs >= CoachConfig.MIN) return SituationId.HEAVY_RAIN
@@ -525,6 +574,19 @@ class DefaultDriveCoach(
     }
 
     companion object {
+        /**
+         * 차가 알려 준 것 한 줄씩(리뷰 "타비가 본 것"과 홈 인사 아래). 읽을 수 없는 신호는 null이라 나오지 않는다.
+         * 브레이크액은 안전 문제라 운전을 권하지 않는다. 문장은 취급설명서 수준의 일반 안내다.
+         */
+        fun carNotes(s: VehicleState, config: CoachConfig = CoachConfig()): List<String> = listOfNotNull(
+            "브레이크액이 부족해요. 차를 움직이지 말고 정비소에 먼저 연락해요.".takeIf { s.brakeFluidLow == true },
+            "타이어 공기압이 낮아요. 가까운 곳에서 공기압을 확인해요.".takeIf { s.tirePressureLow == true },
+            "엔진오일이 부족해요. 다음에 운전하기 전에 점검해요.".takeIf { s.engineOilLow == true },
+            s.fuelPercent?.takeIf { it <= config.lowFuelPct }?.let { "연료가 ${it}% 남았어요. 다음 길에 주유소를 들러요." },
+            s.evBatteryPercent?.takeIf { it <= config.lowBatteryPct }?.let { "배터리가 ${it}% 남았어요. 다음 길에 충전해요." },
+            "워셔액이 부족해요. 채워 두면 비 오는 날 편해요.".takeIf { s.washerFluidLow == true },
+        )
+
         private val YES = listOf("응", "네", "예", "그래", "좋아", "가자", "콜", "오케이", "ㅇㅇ")
         private val NO = listOf("아니", "괜찮", "나중", "됐어", "싫어", "안 가", "안가", "모르")
 

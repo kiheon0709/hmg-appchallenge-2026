@@ -15,6 +15,19 @@ import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
 import ai.pleos.playground.vehicle.Vehicle
 import ai.pleos.playground.vehicle.api.model.area.SeatArea
+import ai.pleos.playground.vehicle.api.model.area.DoorArea
+import ai.pleos.playground.vehicle.api.model.area.MirrorArea
+import ai.pleos.playground.vehicle.api.model.capability.AreaBounds
+import ai.pleos.playground.vehicle.constant.area.DoorValue
+import ai.pleos.playground.vehicle.constant.control.OilLevelState
+import ai.pleos.playground.vehicle.listener.DistanceDrivenListener
+import ai.pleos.playground.vehicle.listener.DoorPositionListener
+import ai.pleos.playground.vehicle.listener.EvBatteryStateOfChargeListener
+import ai.pleos.playground.vehicle.listener.FuelPercentListener
+import ai.pleos.playground.vehicle.listener.HvacSideMirrorHeatStateListener
+import ai.pleos.playground.vehicle.listener.LowWasherFluidWaringListener
+import ai.pleos.playground.vehicle.listener.OilLevelStateListener
+import ai.pleos.playground.vehicle.listener.SeatBeltBuckledStateListener
 import ai.pleos.playground.vehicle.api.model.area.WindowArea
 import ai.pleos.playground.vehicle.api.model.capability.AccessType
 import ai.pleos.playground.vehicle.api.model.capability.CapabilityConfig
@@ -157,6 +170,15 @@ class PleosVehicleGateway(
         val sunrise: Int? = null,
         val sunset: Int? = null,
         val modelKey: String? = null,
+        val mirrorHeat: Boolean? = null,
+        val seatBelt: Boolean? = null,
+        val washerLow: Boolean? = null,
+        val oilLow: Boolean? = null,
+        val brakeFluidLow: Boolean? = null,
+        val doorsOpen: Map<String, Boolean> = emptyMap(),
+        val odometerKm: Float? = null,
+        val fuelPct: Int? = null,
+        val evPct: Int? = null,
     )
 
     private val job = SupervisorJob()
@@ -217,6 +239,8 @@ class PleosVehicleGateway(
                 "brake" to ::startBrake, "steering" to ::startSteering, "hvac" to ::startHvac,
                 "windows" to ::startWindows, "seats" to ::startSeats, "telltales" to ::startTelltales,
                 "carInfo" to ::startCarInfo, "ambient" to ::prepareAmbient,
+                "sideMirror" to ::startSideMirror, "seatBelt" to ::startSeatBelt, "fluids" to ::startFluids,
+                "doors" to ::startDoors, "odometer" to ::startOdometer, "energy" to ::startEnergy,
             ).forEach { (name, f) -> runCatching { f(v) }.onFailure { log("FAIL $name threw $it") } }
         }
         runCatching { startCarApi() }.onFailure { log("FAIL car api $it") }
@@ -500,6 +524,158 @@ class PleosVehicleGateway(
             // VIN 전체는 기록하지 않는다. 앞 8자리(차종)만 쓴다.
             info.getVINInfo({ vin -> edit("modelKey", vehicleModelKeyFromVin(vin)) { it.copy(modelKey = vehicleModelKeyFromVin(vin)) } }, { fail("vin get", it) })
         }, { fail("cap vin", it) })
+    }
+
+    // ---------- v25: 사이드미러 열선·안전벨트·오일류·문·주행 거리·연료/배터리 ----------
+    // 모두 capability를 먼저 보고, 지원하지 않거나 권한이 없으면 로그만 남기고 값은 null로 둔다(규칙·단계가 빠진다).
+
+    private fun capLog(name: String, cfg: CapabilityConfig?) = log("cap $name access=${cfg?.accessType}")
+
+    private fun startSideMirror(v: Vehicle) {
+        val mirror = v.getSideMirror()
+        mirror.checkHvacSideMirrorHeatCapabilities({ cfg: CapabilityConfig, areas: Map<MirrorArea, AreaBounds<Int>> ->
+            capLog("sideMirrorHeat areas=${areas.keys.map { it.values.toList() }}", cfg)
+            if (!supported(cfg)) return@checkHvacSideMirrorHeatCapabilities
+            val levels = mutableMapOf<MirrorArea, Int>()
+            areas.keys.forEach { area ->
+                val l = object : HvacSideMirrorHeatStateListener {
+                    override fun onHvacSideMirrorHeatStateUpdated(level: Int?) {
+                        synchronized(levels) { if (level == null) levels.remove(area) else levels[area] = level }
+                        val on = synchronized(levels) { if (levels.isEmpty()) null else levels.values.any { it > 0 } }
+                        edit("sideMirrorHeat", on) { it.copy(mirrorHeat = on) }
+                    }
+                    override fun onFailed(e: Exception) = fail("sideMirrorHeat listener", e)
+                }
+                mirror.getHvacSideMirrorHeatState(area, { l.onHvacSideMirrorHeatStateUpdated(it) }, { fail("sideMirrorHeat get", it) })
+                mirror.registerHvacSideMirrorHeatState(area, l)
+                unregister += { mirror.unregisterHvacSideMirrorHeatState(area, l) }
+            }
+        }, { fail("cap sideMirrorHeat", it) })
+    }
+
+    private fun startSeatBelt(v: Vehicle) {
+        val seat = v.getSeat()
+        seat.checkSeatBeltBuckledCapabilities({ cfg: CapabilityConfig, areas: List<SeatArea> ->
+            capLog("seatBelt areas=${areas.map { it.values.toList() }}", cfg)
+            if (!supported(cfg)) return@checkSeatBeltBuckledCapabilities
+            val area = areas.firstOrNull { a -> a.values.any { it.toSeat() == Seat.DRIVER } } ?: return@checkSeatBeltBuckledCapabilities log("cap seatBelt no driver")
+            val l = object : SeatBeltBuckledStateListener {
+                override fun onSeatBeltBuckledStateUpdated(buckled: Boolean?) = edit("seatBelt", buckled) { it.copy(seatBelt = buckled) }
+                override fun onFailed(e: Exception) = fail("seatBelt listener", e)
+            }
+            seat.getCurrentSeatBeltBuckledState(area, { l.onSeatBeltBuckledStateUpdated(it) }, { fail("seatBelt get", it) })
+            seat.registerSeatBeltBuckledState(area, l)
+            unregister += { seat.unregisterSeatBeltBuckledState(area, l) }
+        }, { fail("cap seatBelt", it) })
+    }
+
+    private fun startFluids(v: Vehicle) {
+        val safety = v.getSafety()
+        fun low(s: OilLevelState?): Boolean? = when (s) {
+            null, OilLevelState.ERROR -> null
+            OilLevelState.LOW, OilLevelState.CRITICALLY_LOW -> true
+            else -> false
+        }
+        safety.checkEngineOilLevelStateCapabilities({ cfg: CapabilityConfig, _: List<OilLevelState> ->
+            capLog("engineOil", cfg)
+            if (!supported(cfg)) return@checkEngineOilLevelStateCapabilities
+            val l = object : OilLevelStateListener {
+                override fun onOilLevelUpdated(state: OilLevelState?) = edit("engineOil", state) { it.copy(oilLow = low(state)) }
+                override fun onFailed(e: Exception) = fail("engineOil listener", e)
+            }
+            safety.getEngineOilLevelState({ s -> edit("engineOil", s) { it.copy(oilLow = low(s)) } }, { fail("engineOil get", it) })
+            safety.registerEngineOilLevelState(l)
+            unregister += { safety.unregisterEngineOilLevelState(l) }
+        }, { fail("cap engineOil", it) })
+        safety.checkBrakeFluidLevelStateCapabilities({ cfg: CapabilityConfig, _: List<OilLevelState> ->
+            capLog("brakeFluid", cfg)
+            if (!supported(cfg)) return@checkBrakeFluidLevelStateCapabilities
+            val l = object : OilLevelStateListener {
+                override fun onOilLevelUpdated(state: OilLevelState?) = edit("brakeFluid", state) { it.copy(brakeFluidLow = low(state)) }
+                override fun onFailed(e: Exception) = fail("brakeFluid listener", e)
+            }
+            safety.getBrakeFluidLevelState({ s -> edit("brakeFluid", s) { it.copy(brakeFluidLow = low(s)) } }, { fail("brakeFluid get", it) })
+            safety.registerBrakeFluidLevelState(l)
+            unregister += { safety.unregisterBrakeFluidLevelState(l) }
+        }, { fail("cap brakeFluid", it) })
+        safety.checkLowWasherFluidWarningStateCapabilities({ cfg: CapabilityConfig ->
+            capLog("washerFluid", cfg)
+            if (!supported(cfg)) return@checkLowWasherFluidWarningStateCapabilities
+            val l = object : LowWasherFluidWaringListener {
+                override fun onLowWasherFluidWaringUpdated(low: Boolean?) = edit("washerLow", low) { it.copy(washerLow = low) }
+                override fun onFailed(e: Exception) = fail("washer listener", e)
+            }
+            safety.hasLowWasherFluidWarning({ l.onLowWasherFluidWaringUpdated(it) }, { fail("washer get", it) })
+            safety.registerLowWasherFluidWaringState(l)
+            unregister += { safety.unregisterLowWasherFluidWaringState(l) }
+        }, { fail("cap washerFluid", it) })
+    }
+
+    private fun startDoors(v: Vehicle) {
+        val door = v.getDoor()
+        door.checkDoorPositionCapabilities({ cfg: CapabilityConfig, areas: Map<DoorArea, AreaBounds<Int>> ->
+            capLog("doorPosition areas=${areas.keys.map { it.values.toList() }}", cfg)
+            if (!supported(cfg)) return@checkDoorPositionCapabilities
+            // 보닛·트렁크는 주행 중 "문이 열렸어요"와 다르니 사람이 타는 문만 본다
+            areas.keys.filter { a -> a.values.none { it == DoorValue.HOOD || it == DoorValue.REAR } }.forEach { area ->
+                val key = area.values.joinToString { it.name }
+                val l = object : DoorPositionListener {
+                    override fun onPositionUpdated(pos: Int?) = edit("door[$key]", pos) { r ->
+                        r.copy(doorsOpen = if (pos == null) r.doorsOpen - key else r.doorsOpen + (key to (pos > 0)))
+                    }
+                    override fun onFailed(e: Exception) = fail("door listener", e)
+                }
+                door.getCurrentDoorPosition(area, { l.onPositionUpdated(it) }, { fail("door get", it) })
+                door.registerDoorPosition(area, l)
+                unregister += { door.unregisterDoorPosition(area, l) }
+            }
+        }, { fail("cap doorPosition", it) })
+    }
+
+    private fun startOdometer(v: Vehicle) {
+        val odo = v.getOdometer()
+        odo.checkCurrentDistanceDrivenCapabilities({ cfg: CapabilityConfig ->
+            capLog("odometer", cfg)
+            if (!supported(cfg)) return@checkCurrentDistanceDrivenCapabilities
+            val l = object : DistanceDrivenListener {
+                override fun onDistanceDrivenUpdated(km: Float?) {
+                    // 같은 값이 자주 오므로 0.1km 단위로만 바꾼다(로그가 넘치지 않게)
+                    val rounded = km?.let { kotlin.math.round(it * 10f) / 10f }
+                    if (rounded != synchronized(lock) { raw.odometerKm }) edit("odometerKm", rounded) { it.copy(odometerKm = rounded) }
+                }
+                override fun onFailed(e: Exception) = fail("odometer listener", e)
+            }
+            odo.getCurrentDistanceDriven({ l.onDistanceDrivenUpdated(it) }, { fail("odometer get", it) })
+            odo.registerDistanceDriven(l)
+            unregister += { odo.unregisterDistanceDriven(l) }
+        }, { fail("cap odometer", it) })
+    }
+
+    private fun startEnergy(v: Vehicle) {
+        val fuel = v.getFuel()
+        fuel.checkFuelPercentCapabilities({ cfg: CapabilityConfig ->
+            capLog("fuelPercent", cfg)
+            if (!supported(cfg)) return@checkFuelPercentCapabilities
+            val l = object : FuelPercentListener {
+                override fun onFuelPercentUpdated(pct: Int?) = edit("fuelPct", pct) { it.copy(fuelPct = pct) }
+                override fun onFailed(e: Exception) = fail("fuel listener", e)
+            }
+            fuel.getFuelPercent({ l.onFuelPercentUpdated(it) }, { fail("fuel get", it) })
+            fuel.registerFuelPercent(l)
+            unregister += { fuel.unregisterFuelPercent(l) }
+        }, { fail("cap fuelPercent", it) })
+        val ev = v.getEvBattery()
+        ev.checkEvBatteryStateOfChargeCapabilities({ cfg: CapabilityConfig ->
+            capLog("evBattery", cfg)
+            if (!supported(cfg)) return@checkEvBatteryStateOfChargeCapabilities
+            val l = object : EvBatteryStateOfChargeListener {
+                override fun onEvBatteryStateOfChargeUpdated(pct: Int?) = edit("evPct", pct) { it.copy(evPct = pct) }
+                override fun onFailed(e: Exception) = fail("ev listener", e)
+            }
+            ev.getEvBatteryStateOfCharge({ l.onEvBatteryStateOfChargeUpdated(it) }, { fail("ev get", it) })
+            ev.registerEvBatteryStateOfCharge(l)
+            unregister += { ev.unregisterEvBatteryStateOfCharge(l) }
+        }, { fail("cap evBattery", it) })
     }
 
     // ---------- 주행 규제(정차 판정) ----------
@@ -878,6 +1054,16 @@ class PleosVehicleGateway(
             sunsetMinute = r.sunset,
             sunriseMinute = r.sunrise,
             vehicleModelKey = r.modelKey,
+            sideMirrorHeatOn = r.mirrorHeat,
+            driverSeatBeltBuckled = r.seatBelt,
+            tirePressureLow = r.telltaleOn("TPMS"),
+            washerFluidLow = r.washerLow,
+            engineOilLow = r.oilLow,
+            brakeFluidLow = r.brakeFluidLow,
+            anyDoorOpen = if (r.doorsOpen.isEmpty()) null else r.doorsOpen.values.any { it },
+            odometerKm = r.odometerKm,
+            fuelPercent = r.fuelPct,
+            evBatteryPercent = r.evPct,
         )
         // 시각 외에 바뀐 것이 있을 때만 내보낸다.
         if (next.copy(timestampMs = 0) != state.value.copy(timestampMs = 0)) state.value = next
