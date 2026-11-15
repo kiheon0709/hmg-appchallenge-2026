@@ -107,6 +107,9 @@ fun main(args: Array<String>) {
         )) {}
     }
     if (want("r_result")) shoot("r_result", W, H, false, 0f, 2f) { ResultScreen(UiSamples.chapterResult, UiSamples.progress) {} }
+    if (want("r_result_zero")) shoot("r_result_zero", W, H, false, 0f, 2f) {
+        ResultScreen(UiSamples.chapterResult.copy(results = UiSamples.chapterResult.results.map { it.copy(stars = 0, reactionMs = null, missedStepIds = listOf("wiper_fast").takeIf { _ -> it.id == SituationId.HEAVY_RAIN }.orEmpty()) }), UiSamples.progress) {}
+    }
     if (want("r_review")) shoot("r_review", W, H, false, 0f, 0.3f) { ReviewScreen(UiSamples.review) {} }
     if (want("h_vehicle")) shoot("h_vehicle", W, H, false, 0f, 0.3f) { HomeScreen(UiSamples.home.copy(vehicleChosen = false, vehicleChoiceId = null, vehicleName = null)) {} }
     val car = VehicleState(0, parked = false, wiper = WiperLevel.LOW, lowBeamOn = false, recirculationOn = true, speedLimitKmh = 80, speedKmhEstimate = 93f)

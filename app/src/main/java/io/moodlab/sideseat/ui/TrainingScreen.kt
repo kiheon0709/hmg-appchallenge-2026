@@ -85,6 +85,8 @@ fun TrainingScreen(liveView: TrainingView, liveVehicle: VehicleState, onAction: 
         if (sz.wide) {
             Box(Modifier.fillMaxSize()) {
                 DriveScene(view, vehicle, Modifier.fillMaxSize())
+                // 준비 표시는 장면 자리만 덮는다(위의 판과 버튼은 그대로 쓸 수 있다)
+                if (seeThrough && !SceneRender.ready) SceneLoading()
                 EdgeGlow(glowColor, glow)
                 SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.pad).widthIn(max = sz.width * 0.42f))
                 SidePanel(
@@ -95,7 +97,6 @@ fun TrainingScreen(liveView: TrainingView, liveVehicle: VehicleState, onAction: 
                     hint = true,
                 )
                 CenterOverlays(view, onAction)
-                if (seeThrough && !SceneRender.ready) SceneLoading()
                 Row(Modifier.align(Alignment.BottomStart).padding(sz.pad), horizontalArrangement = Arrangement.spacedBy(sz.gap)) {
                     BigButton("그만하기") { onAction(UiAction.AbortTraining) }
                     if (view.canSkip) BigButton("다음 상황으로") { onAction(UiAction.SkipSituation) }
@@ -105,9 +106,9 @@ fun TrainingScreen(liveView: TrainingView, liveVehicle: VehicleState, onAction: 
             Column(Modifier.fillMaxSize()) {
                 Box(Modifier.fillMaxWidth().weight(0.5f)) {
                     DriveScene(view, vehicle, Modifier.fillMaxSize())
+                    if (seeThrough && !SceneRender.ready) SceneLoading()
                     SituationCard(view, Modifier.align(Alignment.TopStart).padding(sz.gap).widthIn(max = sz.width * 0.68f))
                     CenterOverlays(view, onAction)
-                    if (seeThrough && !SceneRender.ready) SceneLoading()
                     // 빛 띠는 주행 화면에만 두른다(아래 체크리스트 판은 시스템 바탕 그대로)
                     EdgeGlow(glowColor, glow)
                     // 세로에서는 아래 판이 길어져도 항상 보이게 주행 화면 위에 둔다

@@ -41,6 +41,10 @@ fun ResultScreen(result: ChapterResult, progress: TrainingProgress, bestBefore: 
                 val scored = result.results.filter { it.id != SituationId.BEFORE_EXIT }
                 if (scored.isEmpty()) {
                     Text("확인 완료", color = Sc.ok, fontSize = sz.sp(84f), fontWeight = FontWeight.SemiBold)
+                } else if (scored.sumOf { it.stars } == 0 && !surprise) {
+                    // 하나도 끝내지 못했을 때 큰 "0"부터 보이지 않게 한다
+                    Text("아직 손에 안 익었어요", color = Sc.text, fontSize = sz.title, fontWeight = FontWeight.SemiBold, lineHeight = sz.title * 1.25f)
+                    Text("놓친 조작과 이 차의 스위치 위치부터 같이 봐요.", color = Sc.textDim, fontSize = sz.body, lineHeight = sz.body * 1.35f)
                 } else {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text("${scored.sumOf { it.stars }}", color = Sc.text, fontSize = sz.sp(110f), fontWeight = FontWeight.SemiBold)
@@ -175,7 +179,7 @@ internal fun LicenseBar(progress: TrainingProgress, vehicleModelKey: String?, ve
             Text(" / $total", color = Sc.textDim, fontSize = sz.label, fontWeight = FontWeight.Medium)
         }
         Text(
-            (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "이 차의 스위치를 익히는 챕터 ${total}개(C1~C4) 가운데 별 2개 이상으로 마친 수예요. 다른 차에서는 다시 따요.",
+            (vehicleName?.let { "$it · " } ?: "") + if (license.licensed) "모든 챕터를 별 2개 이상으로 깼어요." else "스위치를 익히는 챕터 ${total}개(C1~C4) 중 별 2개 이상으로 마친 수예요. 다른 차에서는 다시 따요.",
             color = Sc.textDim, fontSize = sz.caption, lineHeight = sz.caption * 1.4f,
         )
     }
