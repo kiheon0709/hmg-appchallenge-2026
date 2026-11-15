@@ -54,7 +54,9 @@ fun AppScreens(ui: AppUi, onAction: (UiAction) -> Unit, onDebugChange: ((Vehicle
     // 앱이 가려지면 훈련·미니게임을 멈추고, 다시 보이면 이어 가게 알린다
     androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_STOP) { onAction(UiAction.Background) }
     androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_START) { onAction(UiAction.Foreground) }
+    val appFont = remember { androidx.compose.ui.text.font.FontFamily(androidx.compose.ui.text.font.Font(io.moodlab.sideseat.R.font.jua_regular)) }
     CompositionLocalProvider(
+        io.moodlab.sideseat.ui.LocalAppFont provides appFont,
         LocalHomeArt provides homeArt,
         LocalSwitchLocation provides { id -> VoiceModule.switchLocation(id) },
         LocalSceneBackdrop provides backdrop,

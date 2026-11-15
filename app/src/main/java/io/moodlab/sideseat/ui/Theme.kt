@@ -104,8 +104,9 @@ class Sz(val scale: Float, val wide: Boolean, val width: Dp, val height: Dp) {
     val title get() = sp(42f)
     val h2 get() = sp(32f)
     val body get() = sp(26f)
-    val label get() = sp(22f)
-    val caption get() = sp(18f)
+    // 주아체는 획이 굵고 폭이 좁아 작은 글씨가 뭉쳐 보인다. 설명 줄과 이름표를 한 단계 키웠다(22 → 24, 18 → 20)
+    val label get() = sp(24f)
+    val caption get() = sp(20f)
     val pad get() = dp(28f)
     val gap get() = dp(16f)
     /** 카드·버튼의 둥근 모서리. */
@@ -113,6 +114,9 @@ class Sz(val scale: Float, val wide: Boolean, val width: Dp, val height: Dp) {
     val line get() = dp(1.5f)
     val touch get() = dp(84f)
 }
+
+/** 앱 글꼴. 앱은 res/font/jua_regular.ttf를, 화면 렌더 도구는 같은 파일을 넣어 준다. 없으면 기기 기본 글꼴. */
+val LocalAppFont = staticCompositionLocalOf<androidx.compose.ui.text.font.FontFamily?> { null }
 
 val LocalSz = staticCompositionLocalOf { Sz(1f, true, 1280.dp, 800.dp) }
 
@@ -147,7 +151,10 @@ fun SideSeatFrame(
             // 세로(창 1칸)는 폭이 좁아도 글자가 가로 화면과 비슷한 크기가 되게 폭 640dp를 기준으로 잡는다
             val raw = if (wide) short / 900.dp else minOf(maxWidth / 640.dp, maxHeight / 900.dp)
             val sz = Sz(raw.coerceIn(0.5f, 1.5f), wide, maxWidth, maxHeight)
-            CompositionLocalProvider(LocalSz provides sz) { content(sz) }
+            // 앱 글꼴(주아). 주아는 굵기가 한 가지라 굵게를 지정한 곳도 가짜 굵게 없이 같은 굵기로 그린다
+            val base = androidx.compose.material3.LocalTextStyle.current
+            val text = LocalAppFont.current?.let { base.copy(fontFamily = it, fontSynthesis = androidx.compose.ui.text.font.FontSynthesis.None) } ?: base
+            CompositionLocalProvider(LocalSz provides sz, androidx.compose.material3.LocalTextStyle provides text) { content(sz) }
         }
     }
 }

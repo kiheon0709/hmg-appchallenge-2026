@@ -59,3 +59,4 @@
 
 - 제한속도·어린이 보호구역 자료: OpenStreetMap(ODbL). 앱 화면에 "© OpenStreetMap contributors" 표기(`ui/ReviewScreen.kt`의 `OSM_CREDIT`).
 - 효과음(`assets/sfx/`): 코드로 합성(`tools/sfx/`).
+- 글꼴(`app/src/main/res/font/jua_regular.ttf`): 주아체(Jua-Regular), 2,119,352바이트. SIL Open Font License 1.1. 출처는 github.com/google/fonts의 `ofl/jua`. 앱 전체 글자에 쓴다(`ui/Theme.kt`의 `LocalAppFont`). 3D 장면 안의 글자(표지판)와 계기판 속도 숫자는 이 글꼴이 아니다.

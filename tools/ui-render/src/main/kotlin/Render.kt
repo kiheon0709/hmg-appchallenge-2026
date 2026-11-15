@@ -14,13 +14,14 @@ import java.io.File
 
 var simT by mutableFloatStateOf(0f)
 val stillBackdrop = StillSceneBackdrop(File("../../app/src/main/assets"))
+val appFont = androidx.compose.ui.text.font.FontFamily(androidx.compose.ui.text.platform.Font(File("../../app/src/main/res/font/jua_regular.ttf")))
 val homeArt = org.jetbrains.skia.Image.makeFromEncoded(File("../../app/src/main/assets/home/hero.jpg").readBytes()).toComposeImageBitmap()
 
 fun shoot(name: String, w: Int, h: Int, dark: Boolean, t0: Float, t1: Float, content: @Composable () -> Unit) {
     SideSeatUiDebug.forceDark = dark
     val scene = ImageComposeScene(w, h, Density(1.25f)) {
         // 벡터 도로로 보려면 환경 변수 SIDESEAT_VECTOR=1
-        androidx.compose.runtime.CompositionLocalProvider(LocalHomeArt provides homeArt) {
+        androidx.compose.runtime.CompositionLocalProvider(LocalHomeArt provides homeArt, LocalAppFont provides appFont) {
             if (System.getenv("SIDESEAT_VECTOR") == "1") content()
             else androidx.compose.runtime.CompositionLocalProvider(io.moodlab.sideseat.ui.scene.LocalSceneBackdrop provides stillBackdrop) { content() }
         }
