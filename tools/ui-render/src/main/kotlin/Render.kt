@@ -88,6 +88,9 @@ fun main(args: Array<String>) {
     state("t_opening") { it.copy(phase = TrainingPhase.CRUISE, situation = null, steps = emptyList(), opening = true, title = "첫 빗길") }
     state("t_versus") { it.copy(phase = TrainingPhase.CRUISE, chapterId = ChapterCatalog.VERSUS, situation = null, steps = emptyList(), title = "교관 대결") }
     state("t_fail_skip") { it.copy(phase = TrainingPhase.FAIL, canSkip = true) }
+    val hazardQ = ChoiceView("비상등 켰나요?", listOf("네, 켰어요", "아직이요"))
+    state("t_hazard_q") { it.copy(phase = TrainingPhase.ACTIVE, choice = hazardQ) }
+    state("t_hazard_q_hint") { it.copy(phase = TrainingPhase.HINT, choice = hazardQ, canSkip = true) }
     state("t_overtime") { it.copy(phase = TrainingPhase.HINT, overtime = true, elapsedMs = it.limitMs + 2_300) }
     state("t_overtime_portrait", w = 835) { it.copy(phase = TrainingPhase.HINT, overtime = true, canSkip = true, elapsedMs = it.limitMs + 2_300) }
     if (want("t_done_unfinished")) shoot("t_done_unfinished", W, H, false, 0f, 3f) {

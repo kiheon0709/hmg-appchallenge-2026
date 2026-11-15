@@ -24,12 +24,19 @@ class ProgressStore(context: Context) {
 
     fun saveLastDrive(s: DriveSummary) = write("last_drive.json", json.encodeToString(StoredSummary.serializer(), StoredSummary.of(s)))
 
-    /** 끊긴 챕터의 이어 하기 지점. 없으면 null. */
-    fun loadResume(): io.moodlab.sideseat.core.ResumeState? =
-        read("resume.json") { it.takeIf { t -> t.isNotBlank() }?.let { t -> json.decodeFromString(io.moodlab.sideseat.core.ResumeState.serializer(), t) } }
+    /** 끊긴 챕터들의 이어 하기 지점. 없으면 빈 목록. */
+    fun loadResume(): List<io.moodlab.sideseat.core.ResumeState> = read("resume.json") { text ->
+        val one = io.moodlab.sideseat.core.ResumeState.serializer()
+        when {
+            text.isBlank() -> emptyList()
+            // v19의 파일은 지점 하나만 담았다
+            text.trimStart().startsWith("{") -> listOf(json.decodeFromString(one, text))
+            else -> json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(one), text)
+        }
+    }.orEmpty()
 
-    fun saveResume(r: io.moodlab.sideseat.core.ResumeState?) =
-        write("resume.json", r?.let { json.encodeToString(io.moodlab.sideseat.core.ResumeState.serializer(), it) }.orEmpty())
+    fun saveResume(r: List<io.moodlab.sideseat.core.ResumeState>) =
+        write("resume.json", json.encodeToString(kotlinx.serialization.builtins.ListSerializer(io.moodlab.sideseat.core.ResumeState.serializer()), r))
 
     /** 사용자가 고른 차종 아이디. 아직 안 골랐으면 null, "그 밖의 차"를 골랐으면 빈 문자열. */
     fun loadVehicleChoice(): String? = read("vehicle_choice.txt") { it.trim() }

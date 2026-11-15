@@ -90,6 +90,15 @@ class SideSeatController(
     private var talkJob: Job? = null
     private var lastAmbient: AmbientMood? = null
     private var firstState = true
+    // 앱이 가려진 동안 훈련·미니게임을 멈춘다: 그 시간만큼 뒤로 물린 시계([clock])를 엔진에 넘겨서 초시계와 제한 시간이 서 있게 한다
+    private var pausedAt: Long? = null
+    private var pausedTotal = 0L
+    private var pauseTimeout: Job? = null
+    private var loopPeriod = 0L
+    private var loopBody: (() -> Unit)? = null
+
+    /** 훈련 엔진과 미니게임이 보는 시각. 가려져 있던 시간은 빠진다. */
+    private fun clock(): Long = (pausedAt ?: now()) - pausedTotal
     /** 내비 경로에서 읽은 것. 없으면 null(기존 "오늘의 추천"). */
     private var route: RouteFeatures? = null
     private val debugRoute = MutableStateFlow<RouteFeatures?>(null)
@@ -203,10 +212,11 @@ class SideSeatController(
     /** P를 벗어남: 훈련·미니게임을 즉시 닫고 코치로(명세 4장). */
     private fun enterCoach(state: VehicleState) {
         val t = now()
+        endPause()
         when (_ui.value.mode) {
             AppMode.TRAINING -> {
-                engine.abort(t)
-                val (_, events) = engine.tick(state, t)
+                engine.abort(clock())
+                val (_, events) = engine.tick(state, clock())
                 dispatch(events.filterNot { it is CoachEvent.Say || it is CoachEvent.Ambient })
                 saveProgress()
             }
@@ -294,7 +304,7 @@ class SideSeatController(
 
     private fun trainingTick() {
         val state = _ui.value.vehicle
-        val (view, events) = engine.tick(state, now())
+        val (view, events) = engine.tick(state, clock())
         val prev = _ui.value.training
         if (prev != null && prev.situation == view.situation) {
             view.steps.filter { s -> s.done && prev.steps.firstOrNull { it.id == s.id }?.done == false }
@@ -327,7 +337,8 @@ class SideSeatController(
         if (!_ui.value.vehicle.parked) return
         talkJob?.cancel()
         voice.stopSpeaking()
-        begin(now())
+        endPause()
+        begin(clock())
         // 결과 화면이 "첫 기록 / 새 기록"을 가릴 수 있게 시작 전의 최고 기록을 남겨 둔다
         _ui.update { it.copy(result = null, training = null, bestBefore = progress.bestReactionMs) }
         setMode(AppMode.TRAINING)
@@ -338,7 +349,8 @@ class SideSeatController(
 
     private fun startMiniGame(kind: MiniGameKind) {
         if (!_ui.value.vehicle.parked) return
-        val t = now()
+        endPause()
+        val t = clock()
         when (kind) {
             MiniGameKind.SAFE_DIAL -> safeDial.start(t)
             MiniGameKind.TURN_SIGNAL -> turnGame.start(t)
@@ -348,7 +360,7 @@ class SideSeatController(
         setMode(AppMode.MINIGAME)
         startLoop(periodMs = 33) {
             val s = _ui.value.vehicle
-            val n = now()
+            val n = clock()
             when (kind) {
                 MiniGameKind.SAFE_DIAL -> safeDial.tick(s.steeringAngleDeg, n).let { (v, e) ->
                     val old = _ui.value.safeDial
@@ -375,8 +387,8 @@ class SideSeatController(
                     talkJob = scope.launch {
                         val answer = listenOnce(kind) ?: return@launch
                         when (_ui.value.mode) {
-                            AppMode.TRAINING -> engine.answer(answer, now())
-                            AppMode.MINIGAME -> windowGame.answer(answer, now())
+                            AppMode.TRAINING -> engine.answer(answer, clock())
+                            AppMode.MINIGAME -> windowGame.answer(answer, clock())
                             else -> Unit
                         }
                     }
@@ -472,23 +484,19 @@ class SideSeatController(
             UiAction.StartSurprise -> startTraining { engine.startSurprise(it) }
             // 교관 대결: 엔진은 친구가 첫 상황을 던질 때(Inject) 시작한다. 그전까지 훈련 화면은 IDLE 뷰로 상황 고르는 판을 보여 준다.
             UiAction.StartVersus -> startTraining { engine.startVersus(it) }
-            is UiAction.Inject -> engine.inject(a.situation, now())
+            is UiAction.Inject -> engine.inject(a.situation, clock())
             // 리뷰가 권한 상황 하나만 하고 결과로 간다(교관 대결 판에 남지 않는다)
             is UiAction.StartSituation -> startTraining { engine.inject(a.situation, it, single = true) }
-            UiAction.SkipSituation -> engine.skip(now())
+            UiAction.SkipSituation -> engine.skip(clock())
             is UiAction.Answer -> when (_ui.value.mode) {
-                AppMode.MINIGAME -> windowGame.answer(a.text, now())
-                else -> engine.answer(a.text, now())
+                AppMode.MINIGAME -> windowGame.answer(a.text, clock())
+                else -> engine.answer(a.text, clock())
             }
             UiAction.AbortTraining -> abortTraining()
             // Back 키로 훈련을 나가도 "그만하기"와 같게 이어 하기 지점을 남긴다
             UiAction.GoHome -> if (trainingInProgress()) abortTraining() else goHome()
-            // 훈련·미니게임 중에 앱이 뒤로 가면 멈춘다(화면 없이 힌트 음성과 제한 시간이 흐르지 않게)
-            UiAction.Background -> when {
-                trainingInProgress() -> abortTraining()
-                _ui.value.mode == AppMode.MINIGAME -> goHome()
-                else -> Unit
-            }
+            UiAction.Background -> pause()
+            UiAction.Foreground -> resume()
             UiAction.ShowResult -> if (_ui.value.result != null) {
                 stopLoop()
                 setMode(AppMode.RESULT)
@@ -514,14 +522,54 @@ class SideSeatController(
     }
 
     private fun abortTraining() {
-        engine.abort(now())
-        engine.tick(_ui.value.vehicle, now()).second.let { e -> dispatch(e.filterNot { it is CoachEvent.Say }) }
+        engine.abort(clock())
+        engine.tick(_ui.value.vehicle, clock()).second.let { e -> dispatch(e.filterNot { it is CoachEvent.Say }) }
         sfx.stopAll()
         saveProgress()
         goHome()
     }
 
+    // ---------- 가려지면 멈추고, 다시 보이면 이어 간다 ----------
+    // 시스템이 내비를 앞으로 올리거나 통화·카메라 창이 떠도 훈련이 끝나지 않게 한다. 오래 안 보일 때만 정리한다.
+
+    private fun pause() {
+        if (pausedAt != null) return
+        if (!trainingInProgress() && _ui.value.mode != AppMode.MINIGAME) return
+        pausedAt = now()
+        Log.i(TAG, "app paused mode=${_ui.value.mode}")
+        loopJob?.cancel()
+        loopJob = null
+        talkJob?.cancel()
+        voice.stopSpeaking()
+        sfx.stopAll()
+        pauseTimeout = scope.launch {
+            delay(PAUSE_GIVE_UP_MS)
+            if (pausedAt == null) return@launch
+            Log.i(TAG, "app paused too long, closing")
+            // 오래 안 보이면 이어 하기 지점을 남기고 정리한다
+            if (_ui.value.mode == AppMode.TRAINING) abortTraining() else goHome()
+        }
+    }
+
+    private fun resume() {
+        val at = pausedAt ?: return
+        Log.i(TAG, "app resumed after=${now() - at}ms mode=${_ui.value.mode}")
+        endPause()
+        if (_ui.value.mode == AppMode.TRAINING) engine.resumed(clock())
+        val body = loopBody ?: return
+        if (_ui.value.mode == AppMode.TRAINING || _ui.value.mode == AppMode.MINIGAME) startLoop(loopPeriod, body)
+    }
+
+    /** 멈춤을 푼다: 가려져 있던 시간을 시계에서 뺀다. */
+    private fun endPause() {
+        pauseTimeout?.cancel()
+        pauseTimeout = null
+        pausedAt?.let { pausedTotal += now() - it }
+        pausedAt = null
+    }
+
     private fun goHome() {
+        endPause()
         stopLoop()
         talkJob?.cancel()
         sfx.stopAll()
@@ -578,6 +626,7 @@ class SideSeatController(
                     recommendedSituation = onRoute?.situation,
                     recommendLabel = if (onRoute != null) "가는 길 연습" else "오늘의 추천",
                     resumeChapterId = engine.resumableChapter(),
+                    resumeChapterIds = engine.resumableChapters().toSet(),
                     canTrain = state.parked,
                     miniGamesUnlocked = progress.chapterBestStars.values.any { s -> s > 0 },
                 ),
@@ -591,13 +640,15 @@ class SideSeatController(
     private fun saveProgress() {
         progress = engine.progress()
         store.saveProgress(progress)
-        store.saveResume(engine.resumeState())
+        store.saveResume(engine.resumeStates())
         _ui.update { it.copy(progress = progress) }
     }
 
     // ---------- 루프 ----------
 
     private fun startLoop(periodMs: Long, body: () -> Unit) {
+        loopPeriod = periodMs
+        loopBody = body
         loopJob?.cancel()
         loopJob = scope.launch {
             while (isActive) {
@@ -610,6 +661,12 @@ class SideSeatController(
     private fun stopLoop() {
         loopJob?.cancel()
         loopJob = null
+        loopBody = null
+    }
+
+    private companion object {
+        /** 가려진 채 이만큼 지나면 훈련·미니게임을 정리한다. */
+        const val PAUSE_GIVE_UP_MS = 30_000L
     }
 }
 

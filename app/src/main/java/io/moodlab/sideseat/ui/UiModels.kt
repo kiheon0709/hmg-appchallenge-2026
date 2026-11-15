@@ -43,6 +43,8 @@ data class HomeUi(
     val recommendLabel: String = "오늘의 추천",
     /** 이어 할 수 있는 챕터(P를 벗어나 끊긴 훈련). */
     val resumeChapterId: String? = null,
+    /** 이어 할 수 있는 챕터 전부. 챕터마다 따로 기억한다. */
+    val resumeChapterIds: Set<String> = emptySet(),
     /** 정차 중이라 훈련을 시작할 수 있다. */
     val canTrain: Boolean = true,
     /** 미니게임이 열렸다(챕터를 하나라도 깸). */
@@ -119,8 +121,10 @@ sealed interface UiAction {
     data object AbortTraining : UiAction
     /** 다시 하는 상황을 접고 다음 상황으로 넘어간다. */
     data object SkipSituation : UiAction
-    /** 앱이 뒤로 갔다(화면이 보이지 않는다). 훈련·미니게임을 멈춘다. */
+    /** 앱이 가려졌다(화면이 보이지 않는다). 훈련·미니게임을 그 자리에서 멈춘다. */
     data object Background : UiAction
+    /** 앱이 다시 보인다. 멈췄던 훈련·미니게임을 이어 간다. */
+    data object Foreground : UiAction
     /** 챕터가 끝난 뒤 결과 화면으로. */
     data object ShowResult : UiAction
     data object GoHome : UiAction

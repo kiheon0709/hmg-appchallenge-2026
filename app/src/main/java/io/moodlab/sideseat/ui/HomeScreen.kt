@@ -289,6 +289,11 @@ private fun ChapterRow(ch: ChapterInfo, state: HomeUi, onClick: () -> Unit) {
                     Spacer(Modifier.width(sz.dp(12f)))
                     Chip(state.recommendLabel, color = Sc.accent, bg = Sc.accent.copy(alpha = 0.12f))
                 }
+                // 끊긴 챕터는 누르면 남은 상황부터 이어 한다
+                if (ch.id in state.resumeChapterIds) {
+                    Spacer(Modifier.width(sz.dp(8f)))
+                    Chip("이어서", color = Sc.text, bg = Sc.surfaceHi)
+                }
             }
             Text(
                 ch.situations.joinToString(" · ") { SituationTexts.title(it) }, color = Sc.textDim, fontSize = sz.caption,

@@ -68,7 +68,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
     private var lastState: VehicleState? = null
     private var lastTickMs: Long? = null
     private var lessonPending: String? = null
-    private var resume: ResumePoint? = null
+    /** 끊긴 챕터마다 이어 하기 지점을 따로 기억한다. 가장 최근에 끊긴 것이 맨 뒤다. */
+    private val resumes = LinkedHashMap<String, ResumePoint>()
     /** 평온 주행 동안 미리 정해 둔 다음 상황(장소를 미리 맞춰 두려고). */
     private var upcoming: SituationId? = null
     /** 교관 대결에서 이 상황 하나만 하고 끝낸다(리뷰의 "1분 연습"). */
@@ -92,7 +93,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         chapter = ch
         val playable = ch.situations.filter { isPlayable(it, lastState) }
         val first = from?.takeIf { it in playable }
-        val saved = resume?.takeIf { it.chapterId == chapterId && first == null }
+        val saved = resumes[chapterId]?.takeIf { first == null }
         if (first != null) {
             // 추천한 상황부터 하고, 나머지는 원래 순서대로 이어 간다(챕터 전체를 하므로 별·면허 계산은 그대로다)
             queue.add(first)
@@ -106,7 +107,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
             queue.addAll(playable)
             say("${ch.title}. ${ch.story}")
         }
-        resume = null
+        // 이 챕터의 지점만 지운다(다른 챕터의 이어 하기는 남는다)
+        resumes.remove(chapterId)
         events += CoachEvent.Ambient(AmbientMood.CALM)
         enterCruise(nowMs, first = true)
     }
@@ -157,11 +159,12 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         }
     }
 
-    override fun resumeState(): ResumeState? = resume?.let { ResumeState(it.chapterId, it.remaining, it.results) }
+    override fun resumeStates(): List<ResumeState> = resumes.values.map { ResumeState(it.chapterId, it.remaining, it.results) }
 
-    override fun restoreResume(state: ResumeState?) {
-        resume = state?.takeIf { s -> s.remaining.isNotEmpty() && ChapterCatalog.chapters.any { it.id == s.chapterId } }
-            ?.let { ResumePoint(it.chapterId, it.remaining, it.results) }
+    override fun restoreResume(states: List<ResumeState>) {
+        resumes.clear()
+        states.filter { s -> s.remaining.isNotEmpty() && ChapterCatalog.chapters.any { it.id == s.chapterId } }
+            .forEach { resumes[it.chapterId] = ResumePoint(it.chapterId, it.remaining, it.results) }
     }
 
     override fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>> {
@@ -221,8 +224,8 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
                     val current = r?.def?.id?.takeIf { phase != TrainingPhase.SUCCESS }
                     val remaining = listOfNotNull(current) + queue
                     val kept = results.filter { it.id !in remaining }
-                    resume = if (remaining.isEmpty()) null else ResumePoint(ch.id, remaining, kept)
-                    if (remaining.isEmpty()) completeChapterProgress(ch, kept)
+                    resumes.remove(ch.id)
+                    if (remaining.isEmpty()) completeChapterProgress(ch, kept) else resumes[ch.id] = ResumePoint(ch.id, remaining, kept)
                 }
                 Mode.SURPRISE -> updateSurpriseBest()
                 else -> Unit
@@ -246,7 +249,18 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         this.progress = progress
     }
 
-    override fun resumableChapter(): String? = resume?.chapterId
+    override fun resumableChapter(): String? = resumes.keys.lastOrNull()
+
+    override fun resumableChapters(): List<String> = resumes.keys.toList()
+
+    override fun resumed(nowMs: Long) {
+        val r = run ?: return
+        if (phase != TrainingPhase.ACTIVE && phase != TrainingPhase.HINT) return
+        // 멈춘 동안 꺼 둔 반복 소리를 다시 틀고, 떠 있던 질문은 한 번 더 묻는다
+        r.def.loopSfx.forEach { events += CoachEvent.Sfx(it, loop = true) }
+        if (wiperSfxOn) events += CoachEvent.Sfx("wiper", loop = true)
+        r.choiceAsked = null
+    }
 
     // ---------- 단계 처리 ----------
 
@@ -559,7 +573,7 @@ class DefaultTrainingEngine(private val config: TrainingConfig = TrainingConfig(
         chapterResult = res
         phase = TrainingPhase.CHAPTER_DONE
         phaseStartMs = nowMs
-        resume = null
+        resumes.remove(ch.id)
         events += CoachEvent.Sfx("success")
         events += CoachEvent.Ambient(AmbientMood.CALM)
         val checkOnly = res.results.isNotEmpty() && res.results.all { it.id == SituationId.BEFORE_EXIT }

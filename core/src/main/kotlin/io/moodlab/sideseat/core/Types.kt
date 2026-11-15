@@ -190,11 +190,17 @@ interface TrainingEngine {
     /** 실패 뒤 다시 하는 중이거나 다시 하기 직전이면 그 상황을 접고 다음으로 넘어간다. */
     fun skip(nowMs: Long)
 
-    /** 끊긴 챕터의 이어 하기 지점(앱이 저장한다). 없으면 null. */
-    fun resumeState(): ResumeState?
+    /** 끊긴 챕터들의 이어 하기 지점(앱이 저장한다). 가장 최근에 끊긴 것이 맨 뒤다. */
+    fun resumeStates(): List<ResumeState>
 
     /** 저장해 둔 이어 하기 지점을 불러온다. 앱 시작 때 한 번. */
-    fun restoreResume(state: ResumeState?)
+    fun restoreResume(states: List<ResumeState>)
+
+    /** 이어 할 수 있는 챕터 전부(끊긴 순서). */
+    fun resumableChapters(): List<String>
+
+    /** 가려져서 멈췄던 훈련이 다시 보인다. 멈춘 동안 꺼 둔 반복 소리와 떠 있던 질문을 다음 [tick]에서 다시 낸다. */
+    fun resumed(nowMs: Long)
 
     /** 프레임마다 또는 신호가 바뀔 때 호출. 뷰와 그 사이 생긴 이벤트를 돌려준다. */
     fun tick(state: VehicleState, nowMs: Long): Pair<TrainingView, List<CoachEvent>>
@@ -211,7 +217,7 @@ interface TrainingEngine {
     /** 저장해 둔 기록을 불러온다. 앱 시작 때 한 번. */
     fun restore(progress: TrainingProgress)
 
-    /** P를 벗어나 중단된 챕터. 같은 id로 [start]하면 남은 상황부터 이어 한다. 없으면 null. */
+    /** 가장 최근에 중단된 챕터. 같은 id로 [start]하면 남은 상황부터 이어 한다. 없으면 null. */
     fun resumableChapter(): String?
 }
 

@@ -762,9 +762,9 @@ class TrainingEngineTest {
         d.until { it.phase == TrainingPhase.SUCCESS }
         d.until { it.phase == TrainingPhase.BRIEFING }
         d.engine.abort(d.now)
-        val saved = assertNotNull(d.engine.resumeState())
-        assertEquals("C2", saved.chapterId)
-        assertEquals(SituationId.ONCOMING_GLARE, saved.remaining.first())
+        val saved = d.engine.resumeStates()
+        assertEquals(listOf("C2"), saved.map { it.chapterId })
+        assertEquals(SituationId.ONCOMING_GLARE, saved[0].remaining.first())
         // 앱을 다시 열었다
         val again = driver()
         again.engine.restoreResume(saved)
@@ -778,6 +778,44 @@ class TrainingEngineTest {
         again.clearEvents()
         again.until { it.phase == TrainingPhase.CHAPTER_DONE }
         assertTrue(again.says().any { it.startsWith("외기와 창문은 잠깐 버티는 방법이에요.") }, "${again.says()}")
+    }
+
+    @Test
+    fun `each chapter keeps its own resume point`() {
+        val d = driver()
+        d.engine.start("C1", d.now)
+        d.until { it.phase == TrainingPhase.BRIEFING }
+        d.engine.abort(d.now)
+        d.tick()
+        d.engine.start("C2", d.now)
+        d.untilActive(SituationId.TUNNEL)
+        d.set { it.copy(lowBeamOn = true) }
+        d.until { it.phase == TrainingPhase.SUCCESS }
+        d.until { it.phase == TrainingPhase.BRIEFING }
+        d.engine.abort(d.now)
+        d.tick()
+        assertEquals(listOf("C1", "C2"), d.engine.resumableChapters())
+        assertEquals("C2", d.engine.resumableChapter()) // 가장 최근 것이 홈의 "이어서 하기"
+        // C2를 이어 해도 C1의 지점은 남는다
+        d.engine.start("C2", d.now)
+        assertEquals(SituationId.ONCOMING_GLARE, d.until { it.phase == TrainingPhase.BRIEFING }.situation)
+        assertEquals(listOf("C1"), d.engine.resumableChapters())
+    }
+
+    @Test
+    fun `a paused situation picks up its sounds and question again`() {
+        val d = driver()
+        d.engine.inject(SituationId.HEAVY_RAIN, d.now)
+        d.untilActive(SituationId.HEAVY_RAIN)
+        d.slowDownFirst(confirmHazard = false)
+        val before = d.view.elapsedMs
+        d.clearEvents()
+        // 앱이 가려졌다: 엔진에는 시간이 흐르지 않는다(앱이 시계를 멈춘다). 다시 보이면
+        d.engine.resumed(d.now)
+        d.tick()
+        assertEquals(before, d.view.elapsedMs)
+        assertTrue(d.events.any { it == CoachEvent.Sfx("rain", loop = true) })
+        assertTrue(d.says().any { it.endsWith("비상등 켰나요?") }, "${d.says()}")
     }
 
     @Test
