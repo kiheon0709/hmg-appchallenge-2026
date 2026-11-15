@@ -475,3 +475,23 @@
 
 - 위치 권한 창의 "알 수 없는 작업 실행" 문구(기능 15)는 시스템 문구라 그대로예요
 - `wind`·`chime`·`tick` 효과음은 여전히 쓰이지 않아요(v19에서 그대로 두기로 함)
+
+## v21 확인 (eabeedd) — 확인하지 못함, 새 크래시 1건
+
+**결과: (a)~(d) 모두 확인하지 못했어요.** 대신 확인 중에 타비가 한 번 죽은 것을 봤어요(아래 C1).
+
+### C1 (치명 후보): 시스템이 코치 서비스를 뒤에서 다시 띄우면 앱이 죽어요
+
+- 16:47:51 `io.moodlab.sideseat` 크래시: `RuntimeException: Unable to create service io.moodlab.sideseat.app.CoachService: android.app.ForegroundServiceStartNotAllowedException: Service.startForeground() not allowed due to mAllowStartForeground false`
+- 상황: 앱 프로세스가 내려간 뒤(아래 시스템 불안정), Android가 `START_STICKY`인 `CoachService`를 화면 없이 다시 만들었고, `onCreate`에서 `startForeground`를 부르자 Android 14가 막았어요. 앱 화면은 앞에 없었어요
+- 실차에서도 메모리가 모자라 프로세스가 정리된 뒤 같은 일이 생길 수 있어요. 앱이 연달아 죽거나 "앱이 멈춤"이 보일 수 있어요
+- 재현(추정): 앱을 연 뒤 다른 앱을 앞에 두고 `adb shell am kill io.moodlab.sideseat`처럼 프로세스만 정리되게 하면 서비스 재시작 때 같은 예외가 날 것으로 보여요. 이번에는 직접 재현하지 못했어요
+- 고칠 곳(제안): `CoachService.onStartCommand`를 `START_NOT_STICKY`로 하거나, `startForeground`를 `runCatching`으로 감싸 막히면 `stopSelf()`
+- 증거: `logs/2026-11-15_v21_attempt.log`
+
+### 확인하지 못한 이유
+
+- 16:39 `eabeedd`의 APK(27,493,265바이트, SHA-256 `b46c0895…`)를 `git show`로 꺼내 지우고 새로 설치(`-g` 없이)했어요. 실행하자 첫 권한 창(`GrantPermissionsActivity`)이 홈 화면 기록에 잡혔어요(16:44:52)
+- 그 무렵 다른 세션이 에뮬레이터 두 대(`Pleos_Connect_b` 5556, `Pleos_Connect_c` 5558, 헤드리스)를 더 띄워 맥의 부하가 568까지 올랐어요(`uptime`). 16:48 에뮬레이터 안에서 자동차 서비스가 무너져(`null cannot be cast to … CarPropertyManager`) 홈 화면, 시스템 UI, 차량 제어, 미디어 앱이 줄줄이 죽었고 화면이 검게 남았어요(`shots-coach/v21_a1_first.jpg`)
+- 이 상태에서는 소개 화면·권한·Gear D를 볼 수 없어서 제 에뮬레이터(5554)를 껐어요. 다른 두 대는 다른 세션 것이라 건드리지 않았어요
+- (a)~(d)는 맥 부하가 내려간 뒤 에뮬레이터 한 대로 다시 봐야 해요

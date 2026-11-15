@@ -1,0 +1,66 @@
+11-15 16:39:20.710 I/HOME_SCREEN( 2593): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{io.moodlab.sideseat/io.moodlab.sideseat.app.MainActivity} (1000365), distractionOptimized: true)
+11-15 16:43:14.746 I/HOME_SCREEN( 2593): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 16:44:52.163 I/HOME_SCREEN( 2593): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 16:44:52.774 I/HOME_SCREEN( 2593): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{com.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}
+11-15 16:45:57.858 I/SideSeatMeasure(14766): app first vehicle state parked=true
+11-15 16:45:57.860 I/SideSeatMeasure(14766): app graph ready debug=false llm=false relay=false
+11-15 16:47:51.155 D/AndroidRuntime(17556): Shutting down VM
+11-15 16:47:51.162 E/AndroidRuntime(17556): FATAL EXCEPTION: main
+11-15 16:47:51.162 E/AndroidRuntime(17556): Process: io.moodlab.sideseat, PID: 17556
+11-15 16:47:51.162 E/AndroidRuntime(17556): java.lang.RuntimeException: Unable to create service io.moodlab.sideseat.app.CoachService: android.app.ForegroundServiceStartNotAllowedException: Service.startForeground() not allowed due to mAllowStartForeground fal
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ActivityThread.handleCreateService(ActivityThread.java:4684)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ActivityThread.-$$Nest$mhandleCreateService(Unknown Source:0)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2269)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Looper.loopOnce(Looper.java:205)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Looper.loop(Looper.java:294)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ActivityThread.main(ActivityThread.java:8194)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at java.lang.reflect.Method.invoke(Native Method)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-15 16:47:51.162 E/AndroidRuntime(17556): Caused by: android.app.ForegroundServiceStartNotAllowedException: Service.startForeground() not allowed due to mAllowStartForeground false: service io.moodlab.sideseat/.app.CoachService
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ForegroundServiceStartNotAllowedException$1.createFromParcel(ForegroundServiceStartNotAllowedException.java:54)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ForegroundServiceStartNotAllowedException$1.createFromParcel(ForegroundServiceStartNotAllowedException.java:50)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.readParcelableInternal(Parcel.java:4870)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.readParcelable(Parcel.java:4852)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3052)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.createException(Parcel.java:3041)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.readException(Parcel.java:3024)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.os.Parcel.readException(Parcel.java:2966)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.IActivityManager$Stub$Proxy.setServiceForeground(IActivityManager.java:6761)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.Service.startForeground(Service.java:862)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at androidx.compose.ui.platform.T.n(Unknown Source:2)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at io.moodlab.sideseat.app.CoachService.startInForeground(Unknown Source:10)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at io.moodlab.sideseat.app.CoachService.onCreate(Unknown Source:30)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	at android.app.ActivityThread.handleCreateService(ActivityThread.java:4671)
+11-15 16:47:51.162 E/AndroidRuntime(17556): 	... 9 more
+11-15 17:11:48.569 I/HOME_SCREEN(25711): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{ai.umos.drivingview/ai.umos.drivingview.DrivingViewActivity} (1000366), distractionOptimized: true)
+11-15 17:11:48.606 I/HOME_SCREEN(25711): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{ai.umos.maps.android.navigation.app/ai.umos.maps.android.navigation.app.MainActivity} (1000367), distractionOptimized: true)
+11-15 17:11:49.472 I/HOME_SCREEN(25711): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{ai.umos.maps.android.navigation.app/ai.umos.maps.android.navigation.app.MainActivity}
+11-15 17:11:49.520 I/HOME_SCREEN(25711): [HOME_SCREEN][TaskViewManager::onTaskCreated] ComponentInfo{ai.umos.drivingview/ai.umos.drivingview.DrivingViewActivity} (1000368), distractionOptimized: true)
+11-15 17:11:53.934 I/HOME_SCREEN(25711): [HOME_SCREEN][HomeActivityViewModel::onInfoChanged] onInfoChanged: ComponentInfo{ai.umos.drivingview/ai.umos.drivingview.DrivingViewActivity}
+11-15 14:26:43.802 E/AndroidRuntime( 7541): Process: ai.pleos.gleoai.model.provider, PID: 7541
+11-15 14:26:43.942 E/AndroidRuntime( 7541): Process: ai.pleos.gleoai.model.provider, PID: 7541
+11-15 16:44:50.555 E/AndroidRuntime(13324): Process: com.android.systemui, PID: 13324
+11-15 16:46:03.283 E/AndroidRuntime(15770): Process: com.android.systemui, PID: 15770
+11-15 16:47:51.162 E/AndroidRuntime(17556): Process: io.moodlab.sideseat, PID: 17556
+11-15 16:48:05.160 E/AndroidRuntime(18397): Process: ai.umos.vehiclecontrol, PID: 18397
+11-15 16:48:08.030 E/AndroidRuntime(19479): Process: ai.umos.mediaapp, PID: 19479
+11-15 16:48:08.125 E/AndroidRuntime( 2593): Process: ai.umos.homescreen, PID: 2593
+11-15 16:48:08.130 E/AndroidRuntime( 3720): Process: ai.pleos.playground.service.cap, PID: 3720
+11-15 16:48:08.131 E/AndroidRuntime( 1860): Process: ai.pleos.playground.service.cap, PID: 1860
+11-15 16:48:08.132 E/AndroidRuntime( 4545): Process: ai.pleos.service.ui, PID: 4545
+11-15 16:48:08.133 E/AndroidRuntime( 4787): Process: ai.umos.notification, PID: 4787
+11-15 16:48:10.404 E/AndroidRuntime( 4756): Process: ai.umos.musicvisualizer, PID: 4756
+11-15 16:48:10.432 E/AndroidRuntime( 4719): Process: ai.umos.conveniencemodemanager, PID: 4719
+11-15 16:54:46.838 E/AndroidRuntime(21097): Process: ai.umos.musicvisualizer, PID: 21097
+11-15 16:54:47.863 E/AndroidRuntime(18380): Process: com.android.systemui, PID: 18380
+11-15 17:08:10.087 E/AndroidRuntime(20696): Process: ai.umos.homescreen, PID: 20696
+11-15 17:08:14.174 E/AndroidRuntime(22591): Process: ai.umos.drivingview, PID: 22591
+11-15 17:08:14.309 E/AndroidRuntime( 1146): Process: com.android.networkstack.process, PID: 1146
+11-15 17:08:14.947 E/AndroidRuntime( 1165): Process: com.android.phone, PID: 1165
+11-15 17:08:15.136 E/AndroidRuntime(22527): Process: com.android.car, PID: 22527
+11-15 17:08:15.137 E/AndroidRuntime(22553): Process: com.android.systemui, PID: 22553
+11-15 17:11:37.337 E/AndroidRuntime(23584): Process: com.android.systemui, PID: 23584
+11-15 17:11:50.811 E/AndroidRuntime(26871): Process: ai.pleos.gleoai.model.provider, PID: 26871
+11-15 17:11:50.982 E/AndroidRuntime(26871): Process: ai.pleos.gleoai.model.provider, PID: 26871
