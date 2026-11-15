@@ -394,7 +394,7 @@
 | --- | --- |
 | GitHub 저장소 (앱 소스, 중계 서버 코드, 문서) | https://github.com/kiheon0709/hmg-appchallenge-2026 |
 | 설치 파일 (release APK) | 저장소 `apk/` 폴더 |
-| 시연·소개 영상 | (업로드 후 링크 기입) |
+| 시연·소개 영상 (7분 45초) | https://youtu.be/Am3B5dWXMRc |
 | 앱 화면 모음 (기능별·상황별 화면 캡처) | 저장소 `docs/qa/2026-11-15_screen-catalog.md`, `docs/qa/shots-catalog/` |
 | 개발 상태와 실측 기록 | 저장소 `docs/STATUS.md` |
 | 운전자 리서치 문서 | 저장소 `docs/research/` |
